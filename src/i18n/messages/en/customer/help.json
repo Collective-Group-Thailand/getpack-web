@@ -52,61 +52,283 @@
     "contact": "Contact the team"
   },
   "contact": {
-    "title": "Contact us",
-    "intro": "Our customer service team helps with orders, quotations and artwork.",
-    "line": "LINE",
-    "phoneLabel": "Phone",
-    "emailLabel": "E-mail",
-    "hours": "Hours",
-    "formTitle": "Send the team a message",
+    "title": "How can we help?",
+    "metaTitle": "Contact getpack — orders, quotations, files, payment, delivery",
+    "intro": "Pick a topic and we show the answers people use most first. Not it? Send a message or chat on LINE.",
+    "status": {
+      "open": "The team is online now",
+      "closed": "Back at {time}",
+      "closedDay": "Back {day} at {time}",
+      "hours": "Answering on LINE {hours}"
+    },
+    "track": {
+      "label": "Track an order or a request",
+      "placeholder": "PK-2569-00100 or request CS-…",
+      "submit": "Track",
+      "invalid": "Enter an order number (PK-…) or a request number (CS-…)",
+      "verifyTitle": "Confirm it is yours",
+      "verifyHint": "The mobile number or e-mail you sent it with",
+      "verifyField": "Mobile or e-mail",
+      "verifySubmit": "See status",
+      "notFound": "Request not found. Check the number and the phone or e-mail you sent it with.",
+      "ticketTitle": "Request {ticket}",
+      "topic": "Topic: {topic}",
+      "stages": {
+        "received": "Received",
+        "in_progress": "In progress",
+        "answered": "Answered"
+      },
+      "respondBy": "We answer by {date}",
+      "answeredAt": "Answered {date}",
+      "addTitle": "Add information to this request",
+      "addField": "More information",
+      "addSubmit": "Send",
+      "added": "Sent — the team sees it on the same request",
+      "openLine": "Continue on LINE",
+      "failed": "Could not load the status. Please try again"
+    },
+    "intentsLabel": "Choose a topic",
+    "intents": {
+      "order": {
+        "title": "Orders",
+        "body": "Status, quantities, claims"
+      },
+      "quote": {
+        "title": "Quotations",
+        "body": "Prices, volume, special boxes"
+      },
+      "artwork": {
+        "title": "Files and samples",
+        "body": "File checks, dielines, proofs"
+      },
+      "payment": {
+        "title": "Payment",
+        "body": "Methods, tax invoices"
+      },
+      "delivery": {
+        "title": "Delivery",
+        "body": "Shipping cost, tracking"
+      },
+      "business": {
+        "title": "Business account",
+        "body": "Credit terms, branches"
+      },
+      "partnership": {
+        "title": "Become a partner factory",
+        "body": "getpack Factory"
+      },
+      "other": {
+        "title": "Something else",
+        "body": "Feedback, general questions"
+      }
+    },
+    "answersTitle": "{intent}: common answers",
+    "answers": {
+      "order": {
+        "status": {
+          "q": "Where do I see my order's status?",
+          "a": "Enter the order number (e.g. PK-2569-00100) in the box above, or open My account › Orders. The tracking link in your e-mail works without signing in."
+        },
+        "short": {
+          "q": "Fewer boxes than ordered",
+          "a": "Delivered quantities may vary by ± 5%; any shortfall comes back as credit. For a bigger shortfall or damage, claim from the order page within {days} days of receipt.",
+          "aNoDays": "Delivered quantities may vary by ± 5%; any shortfall comes back as credit. For a bigger shortfall or damage, claim from the order page."
+        },
+        "lead": {
+          "q": "How long does production take?",
+          "a": "Each job's production time is shown with its price on the product page and the quotation, counted after the sample is approved and paid."
+        }
+      },
+      "quote": {
+        "how": {
+          "q": "How do I get a quotation?",
+          "a": "For instantly priced products, calculate the price and save it as a quotation — the price holds {days} days. For special sizes or materials, send a quotation request with the spec and we answer with a quotation.",
+          "aNoDays": "For instantly priced products, calculate the price and save it as a quotation. For special sizes or materials, send a quotation request with the spec and we answer with a quotation."
+        },
+        "volume": {
+          "q": "Do larger quantities cost less?",
+          "a": "The price per piece falls with quantity; see the quantity table on each product page. For regular or multi-design orders, talk to sales."
+        }
+      },
+      "artwork": {
+        "files": {
+          "q": "Which files can I send?",
+          "a": "PDF or AI on a getpack dieline; download the dieline on the upload page. Your file is checked before it goes into the cart."
+        },
+        "proof": {
+          "q": "Do I see a sample before production?",
+          "a": "Yes. The team sends a sample for your approval on the order before every job starts."
+        }
+      },
+      "payment": {
+        "methods": {
+          "q": "How can I pay?",
+          "a": "Right now: {methods}"
+        },
+        "invoice": {
+          "q": "How do I get a tax invoice?",
+          "a": "Enter the tax-invoice details when you order; it is issued by {issuer} under the getpack brand.",
+          "aPlain": "Enter the tax-invoice details when you order; it is issued under the getpack brand."
+        },
+        "overdue": {
+          "q": "I missed the payment date",
+          "a": "Orders are never cancelled automatically. Press “Re-check price and pay” on the order: the current price is checked and you pay from there."
+        }
+      },
+      "delivery": {
+        "cost": {
+          "q": "Shipping cost, and outside Bangkok?",
+          "a": "Shipping is priced from the destination postcode, shown when you price a product and in the cart."
+        },
+        "track": {
+          "q": "Where do I track the parcel?",
+          "a": "The order page and the tracking link show the delivery status, and the proof of delivery once it arrives."
+        }
+      },
+      "business": {
+        "open": {
+          "q": "How do I open a company account?",
+          "a": "Enter the company details and attach the documents; the review takes 1–2 business days and you can order prepaid meanwhile."
+        },
+        "credit": {
+          "q": "When can we apply for credit terms?",
+          "a": "After 3 orders, or with financial statements when you apply. Terms of 15–60 days; Finance decides the limit."
+        }
+      },
+      "partnership": {
+        "what": {
+          "q": "What is getpack Factory?",
+          "a": "An ERP for packaging factories, free for every module with unlimited users, once the factory opens a factory account and signs the partner agreement with getpack."
+        },
+        "privacy": {
+          "q": "Is my factory's information disclosed?",
+          "a": "No. Partner factories' names, locations and data are never shown to customers or anyone outside."
+        }
+      },
+      "other": {
+        "samples": {
+          "q": "Can I get material samples first?",
+          "a": "Order a material and print sample kit on the samples page."
+        },
+        "help": {
+          "q": "Where are the other answers?",
+          "a": "The help centre covers ordering, files, payment and delivery."
+        }
+      }
+    },
+    "links": {
+      "track": "Track an order",
+      "orders": "My orders",
+      "products": "Products and prices",
+      "sales": "Talk to sales",
+      "upload": "Upload a file",
+      "studio": "Design studio",
+      "help": "Help centre",
+      "business": "getpack for business",
+      "apply": "Open a company account",
+      "factory": "See getpack Factory",
+      "factoryApply": "Apply as a partner factory",
+      "samples": "Sample kits",
+      "faq": "FAQ"
+    },
+    "formTitle": "Message the team · {intent}",
     "name": "Name",
     "required": "(required)",
-    "phone": "Mobile number",
+    "phone": "Mobile",
     "email": "E-mail",
-    "reachHint": "A phone number or an e-mail, at least one",
-    "topic": "Topic",
-    "topics": {
-      "order": "An order",
-      "quote": "A quotation",
-      "artwork": "Artwork and proofs",
-      "payment": "Payment",
-      "delivery": "Delivery",
-      "business": "Business account",
-      "partnership": "Becoming a production partner",
-      "other": "Something else"
-    },
+    "reachHint": "A mobile number or an e-mail, at least one",
     "orderCode": "Order number",
-    "orderCodeHint": "If you have one, e.g. PK-2569-00100",
+    "orderCodeHint": "In your confirmation e-mail or on the box, e.g. PK-2569-00100",
+    "orderCodeOptional": "Order number (if any)",
+    "product": "Product",
+    "productPlaceholder": "e.g. mailer box, paper bag",
+    "quantity": "Quantity (pcs)",
+    "insideSize": "Inside size L × W × H (mm)",
+    "insideSizePlaceholder": "e.g. 200 × 150 × 80",
+    "attachHint": "Files or pictures: send them on LINE or by e-mail with the request number after you send this",
+    "postcode": "Destination postcode",
+    "company": "Company name",
+    "factoryName": "Factory name",
+    "volume": "Approximate monthly volume",
+    "capabilities": "What you produce",
+    "province": "Province",
+    "provincePlaceholder": "Choose a province",
+    "partnerDeep": "Apply with your factory's details on the getpack Factory page",
     "message": "Message",
+    "messagePlaceholder": "Tell us briefly what you need",
+    "replyVia": "Reply by",
+    "reply": {
+      "line": "LINE",
+      "email": "E-mail",
+      "callback": "Call me back"
+    },
+    "callbackDay": "Day",
+    "callbackSlot": "Time",
+    "slot": "{from}–{to}",
+    "callbackPhone": "A call back needs a mobile number",
+    "replyTime": "We reply within {days} business days",
+    "pdpa": "Used only to get back to you about this, under our",
+    "privacy": "privacy policy",
     "submit": "Send message",
-    "sentTitle": "Message received — reference {ticket}",
-    "sent": "We'll get back to you by {date}",
-    "failed": "Couldn't send. Please try again.",
+    "sentTitle": "Received — request {ticket}",
+    "sentTopic": "Topic: {topic}",
+    "sent": "We will answer by {date}",
+    "sentCallback": "We will call you back {day}, {slot}",
+    "keepRef": "Keep the request number to track it in the box above",
+    "openLine": "Continue on LINE",
+    "another": "Send another",
+    "failed": "Could not send. Please try again",
     "rateLimited": "Too many messages — please wait about 10 minutes, or message us on LINE",
     "errors": {
-      "name": "Please enter your name",
-      "reach": "Enter a phone number or an e-mail",
-      "phone": "That mobile number doesn't look right",
-      "email": "That e-mail doesn't look right",
-      "message": "Write at least 10 characters"
+      "name": "Enter your name",
+      "reach": "A mobile number or an e-mail, at least one",
+      "phone": "That mobile number is not valid",
+      "email": "That e-mail is not valid",
+      "message": "Write at least 10 characters",
+      "orderCode": "Enter the order number",
+      "quantity": "Enter the quantity as a number",
+      "postcode": "A 5-digit postcode",
+      "company": "Enter the name",
+      "callbackPhone": "A call back needs a mobile number",
+      "callbackSlot": "Choose a day and a time"
     },
-    "openLine": "Continue in LINE",
-    "lineCta": "Chat with the team on LINE",
-    "selfServe": "Find it yourself, right now",
-    "shortcut": {
-      "track": {
-        "title": "Track an order",
-        "body": "See where it stands with the code on the box or your link"
+    "side": {
+      "lineTitle": "LINE Official Account",
+      "lineBody": "Fastest — send pictures and files",
+      "lineHours": "Fastest — send pictures and files, {hours}",
+      "addFriend": "Add friend",
+      "qrLabel": "QR code to add getpack on LINE",
+      "channelsTitle": "Other channels",
+      "email": "E-mail",
+      "phone": "Phone",
+      "office": "Office",
+      "companyTitle": "Company",
+      "operator": "getpack is operated by {name}",
+      "taxId": "Tax ID {taxId}",
+      "branch": "Branch {code}",
+      "headOffice": "Head office",
+      "address": "Address {address}"
+    },
+    "more": {
+      "title": "Other ways that may fit better",
+      "business": {
+        "title": "Order as a company",
+        "body": "Company account, approvers, credit terms, tax invoices per branch",
+        "cta": "See business accounts"
+      },
+      "factory": {
+        "title": "Become a partner factory",
+        "body": "Use getpack Factory (ERP) free and take jobs through getpack",
+        "cta": "See getpack Factory"
       },
       "help": {
         "title": "Help centre",
-        "body": "Ordering, artwork files, payment and delivery"
-      },
-      "faq": {
-        "title": "Frequent questions",
-        "body": "Short answers to what customers ask most"
+        "body": "Ordering, files, payment and delivery",
+        "cta": "Open the help centre"
       }
-    }
+    },
+    "orderCodePlaceholder": "PK-2569-00100",
+    "crumb": "Contact"
   },
   "samples": {
     "title": "Sample kits",

@@ -39,8 +39,8 @@ test.describe("getpack for business", () => {
   test("a visitor reads what a company account adds", async ({ page }) => {
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/business`);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("ในนามบริษัท");
-    await expect(page.getByRole("link", { name: "เปิดบัญชีบริษัท" })).toHaveAttribute(
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("จัดการในที่เดียว");
+    await expect(page.getByRole("link", { name: "เปิดบัญชีบริษัท ฟรี" })).toHaveAttribute(
       "href",
       /sign-in\?returnTo=%2Fbusiness%2Fapply/,
     );
@@ -203,7 +203,8 @@ test.describe("help", () => {
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/contact`);
     await page.getByRole("button", { name: "ส่งข้อความ" }).click();
-    await expect(page.getByText("ใส่เบอร์โทรหรืออีเมลอย่างน้อยหนึ่งช่องทาง").first()).toBeVisible();
+    await expect(page.getByText("ใส่เบอร์มือถือหรืออีเมลอย่างน้อยหนึ่งช่องทาง").first()).toBeVisible();
+    await page.getByRole("radio", { name: /อื่น ๆ/ }).click();
     await page.getByLabel(/^ชื่อ/).fill("ผู้ติดต่อทดสอบ");
     await page.getByLabel(/^อีเมล/).fill("contact.e2e@example.invalid");
     await page.getByLabel(/^ข้อความ/).fill("อยากทราบระยะเวลาผลิตกล่อง 3,000 ใบครับ");

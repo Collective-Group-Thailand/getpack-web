@@ -1891,6 +1891,7 @@ export const storeQuoteHandlers: HttpHandler[] = [
       phone: "02-000-0000",
       email: "support@getpack.invalid",
       hours: english(request) ? "Mon–Sat 09:00–18:00 (mock data)" : "จันทร์–เสาร์ 09:00–18:00 (ข้อมูลจำลอง)",
+      office: english(request) ? "Mock office, by appointment (mock data)" : "สำนักงานจำลอง นัดหมายล่วงหน้า (ข้อมูลจำลอง)",
     } satisfies Schemas["StoreSupportChannelsDto"]),
   ),
 ];

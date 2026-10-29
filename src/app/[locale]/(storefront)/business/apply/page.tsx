@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const me = await requireCustomer();
   const [t, company] = await Promise.all([getTranslations("business.apply"), getMyCompany()]);
-  return (
+  const body = (
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="text-title leading-tight">{t("title")}</h1>
@@ -33,4 +33,6 @@ export default async function Page() {
       )}
     </div>
   );
+  // A member sees it inside the company frame; a visitor gets the page column here (the layout frames members only).
+  return company ? body : <div className="max-w-content mx-auto w-full px-5 py-8 md:px-8">{body}</div>;
 }

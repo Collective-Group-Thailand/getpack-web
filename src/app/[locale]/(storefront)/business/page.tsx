@@ -10,7 +10,7 @@ import { readAccessToken } from "@/lib/auth/session";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("business.landing");
-  return { title: t("metaTitle"), description: t("intro") };
+  return { title: t("metaTitle"), description: t("metaDescription") };
 }
 
 /** `/business`: the landing for everyone, the company's overview for its members (F3 3.7). */

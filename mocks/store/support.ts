@@ -25,7 +25,13 @@ const DAY = 24 * 60;
 const LINE_OA = "@getpack.mock";
 
 let ticketSeq = 0;
-export const tickets: { ticketNo: string; kind: "contact" | "handoff"; body: unknown; at: string }[] = [];
+export const tickets: {
+  ticketNo: string;
+  kind: "contact" | "handoff";
+  body: unknown;
+  at: string;
+  added: string[];
+}[] = [];
 
 /** The topic as sent; a hand-off is always `guided_help` (D-440). */
 const topicOf = (kind: "contact" | "handoff", body: unknown) =>
@@ -35,7 +41,7 @@ function ticket(kind: "contact" | "handoff", body: unknown, withLine: boolean, s
   ticketSeq += 1;
   const ticketNo = `CS-2569-${String(ticketSeq).padStart(5, "0")}`;
   const at = bangkokIso();
-  tickets.push({ ticketNo, kind, body, at });
+  tickets.push({ ticketNo, kind, body, at, added: [] });
   const answer: Schemas["SupportTicketDto"] = {
     ticketNo,
     source: kind === "handoff" ? "handoff" : "contact_form",
@@ -49,6 +55,67 @@ function ticket(kind: "contact" | "handoff", body: unknown, withLine: boolean, s
     createdAt: at,
   };
   return HttpResponse.json(answer, { status: 201 });
+}
+
+const notFound = () =>
+  problem(404, "support.ticket_not_found", "ตรวจเลขเรื่อง และเบอร์โทรหรืออีเมลที่ใช้ตอนส่งเรื่องอีกครั้ง");
+
+const digits = (value: string | undefined) => (value ?? "").replace(/\D/g, "");
+
+function ownTicket(body: Schemas["SupportTicketLookupDto"] | null, signedIn: boolean) {
+  const found = tickets.find((candidate) => candidate.ticketNo === body?.ticketNo?.trim());
+  if (!found) return null;
+  const left = (found.body as { contact?: Schemas["SupportContactPersonDto"] }).contact;
+  if (signedIn && !left) return found;
+  const phone = digits(body?.contact?.phone);
+  const email = body?.contact?.email?.trim().toLowerCase();
+  if (phone && phone === digits(left?.phone)) return found;
+  if (email && email === left?.email?.trim().toLowerCase()) return found;
+  return null;
+}
+
+/** Received while untouched; the mock "takes" a ticket once more information was added to it. */
+const statusOf = (found: (typeof tickets)[number]): Schemas["SupportTicketStatusDto"] => ({
+  ticketNo: found.ticketNo,
+  topic: topicOf(found.kind, found.body),
+  stage: found.added.length > 0 ? "in_progress" : "received",
+  createdAt: found.at,
+  respondBy: bangkokIso(DAY),
+  answeredAt: null,
+  lineUrl: `https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA)}/?${encodeURIComponent(found.ticketNo)}`,
+});
+
+/** Next `count` weekdays after today (Bangkok); the mock has no holidays. */
+function weekdaysAfterToday(count: number): string[] {
+  const out: string[] = [];
+  const day = new Date(Date.now() + 7 * 60 * 60_000);
+  while (out.length < count) {
+    day.setUTCDate(day.getUTCDate() + 1);
+    if (day.getUTCDay() !== 0 && day.getUTCDay() !== 6) out.push(day.toISOString().slice(0, 10));
+  }
+  return out;
+}
+
+function contactOptions(): Schemas["SupportContactOptionsDto"] {
+  const local = new Date(Date.now() + 7 * 60 * 60_000);
+  const minute = local.getUTCHours() * 60 + local.getUTCMinutes();
+  const openNow = minute >= 9 * 60 && minute < 18 * 60;
+  const next = new Date(local);
+  if (minute >= 18 * 60) next.setUTCDate(next.getUTCDate() + 1);
+  const nextOpenAt = `${next.toISOString().slice(0, 10)}T09:00:00+07:00`;
+  return {
+    replyBusinessDays: 1,
+    replyBusinessDaysByTopic: {},
+    teamStatus: { openNow, nextOpenAt: openNow ? null : nextOpenAt },
+    callback: {
+      days: weekdaysAfterToday(5),
+      slots: [
+        { key: "morning", from: "09:00", to: "12:00" },
+        { key: "midday", from: "12:00", to: "15:00" },
+        { key: "afternoon", from: "15:00", to: "18:00" },
+      ],
+    },
+  };
 }
 
 const keyRequired = (request: Request) =>
@@ -164,7 +231,37 @@ export const storeSupportHandlers = [
     if (invalid) return invalid;
     const limited = throttled(`contact:${body.contact?.phone ?? body.contact?.email ?? body.contact?.name ?? "me"}`);
     if (limited) return limited;
-    return ticket("contact", body, false, signedIn);
+    if (body.replyChannel === "callback") {
+      const options = contactOptions();
+      const ok =
+        options.callback &&
+        body.contact?.phone &&
+        body.callback &&
+        options.callback.days.includes(body.callback.date) &&
+        options.callback.slots.some((slot) => slot.key === body.callback?.slot);
+      if (!ok)
+        return problem(422, "support.callback_unavailable", "เลือกวันและช่วงเวลาที่มีให้เลือก และใส่เบอร์มือถือ");
+    }
+    return ticket("contact", body, true, signedIn);
+  }),
+
+  // store.support.contactOptions (D-458): the mock's call-back windows are obviously fake; weekdays only.
+  http.get("*/v1/store/support/contact-options", () => HttpResponse.json(contactOptions())),
+
+  // store.support.lookupTicket / addInfo (D-458): the sender proves it with the phone or e-mail they left.
+  http.post("*/v1/store/support/actions/lookup", async ({ request }) => {
+    const body = (await request.json().catch(() => null)) as Schemas["SupportTicketLookupDto"] | null;
+    const found = ownTicket(body, principalOf(request)?.audience === "customer");
+    return found ? HttpResponse.json(statusOf(found)) : notFound();
+  }),
+  http.post("*/v1/store/support/actions/add-info", async ({ request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
+    const body = (await request.json().catch(() => null)) as Schemas["SupportAddInfoDto"] | null;
+    const found = ownTicket(body, principalOf(request)?.audience === "customer");
+    if (!found) return notFound();
+    found.added.push(body?.message ?? "");
+    return HttpResponse.json(statusOf(found));
   }),
 
   // store.support.handoff: the page and what was said, as a `guided_help` ticket; LINE or a call back.

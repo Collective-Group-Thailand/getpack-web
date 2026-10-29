@@ -1,33 +1,72 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { cookies } from "next/headers";
+import { getLocale, getTranslations } from "next-intl/server";
 
-import { getPublicConfig, getSupportChannels } from "@/features/customer/catalog/api.server";
+import {
+  getContactOptions,
+  getProductTypes,
+  getProvinces,
+  getPublicConfig,
+  getSupportChannels,
+} from "@/features/customer/catalog/api.server";
+import { pick } from "@/features/customer/catalog/localize";
 import { schemaOpeningHours } from "@/features/customer/catalog/support-hours";
 import { pageContext } from "@/features/customer/content/page-meta.server";
-import { ContactForm } from "@/features/customer/help/ContactForm";
+import { ContactCentre } from "@/features/customer/help/contact/ContactCentre";
+import { ContactSide } from "@/features/customer/help/contact/ContactSide";
+import { INTENTS, type Intent } from "@/features/customer/help/contact/intents";
+import { TeamStatus } from "@/features/customer/help/contact/TeamStatus";
+import { TrackBox } from "@/features/customer/help/contact/TrackBox";
+import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
-import { organizationSchema, webPageSchema } from "@/lib/seo";
-import { Button } from "@/ui/components/Button";
-import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Link } from "@/i18n/navigation";
-import { Icon } from "@/ui/icons";
+import { readAccessToken } from "@/lib/auth/session";
+import { organizationSchema, webPageSchema } from "@/lib/seo";
+import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
+import { Icon, type IconName } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("help.contact");
-  return { title: t("title"), description: t("intro") };
+  return { title: t("metaTitle"), description: t("intro") };
 }
 
-/** Contact (F3 3.7): the channels the API lists, and a message that becomes a ticket. */
-export default async function Page() {
-  const [t, channels, config] = await Promise.all([
+/** Old links (`?topic=partner`, `?topic=delivery`…) open on their intent. */
+const TOPIC_ALIASES: Record<string, Intent> = { partner: "partnership", file: "artwork", shipping: "delivery" };
+const MORE: { key: "business" | "factory" | "help"; href: string; icon: IconName }[] = [
+  { key: "business", href: "/business", icon: "building" },
+  { key: "factory", href: "/partner-with-us", icon: "factory" },
+  { key: "help", href: "/help", icon: "help" },
+];
+
+/**
+ * Contact (business pack Phase 2, C10): "มีอะไรให้ช่วยครับ", whether the team answers now (the API, Asia/Bangkok),
+ * one tracking box for orders and requests, 8 intents with their common answers and a form that follows the intent
+ * (a contact ticket routed by intent, D-458), the LINE OA, the other channels and the company's legal details — all
+ * from the contact config, a row without a value is not drawn — and the ways that may fit better.
+ */
+export default async function Page({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
+  const locale = await getLocale();
+  const [t, tPay, channels, config, options, types, provinces, { topic }, jar] = await Promise.all([
     getTranslations("help.contact"),
+    getTranslations("business.landing.credit.method"),
     getSupportChannels(),
     getPublicConfig(),
+    getContactOptions(),
+    getProductTypes().catch(() => []),
+    getProvinces(),
+    searchParams,
+    cookies(),
   ]);
+  const signedIn = Boolean(readAccessToken(jar));
+  const wanted = topic ? (TOPIC_ALIASES[topic] ?? topic) : "order";
+  const initialIntent: Intent = (INTENTS as readonly string[]).includes(wanted) ? (wanted as Intent) : "order";
   const openingHours = schemaOpeningHours(config?.supportHours);
-  const page = await pageContext("/contact", t("title"));
-  // The contact page as an entity, with the channels the API lists as the organisation's contact
-  // points — a phone or an email appears here only when the API has one (SEO pass).
+  const page = await pageContext("/contact", t("crumb"));
+  const issuer =
+    locale === "en"
+      ? (config?.issuer.legalNameEn ?? config?.issuer.legalNameTh ?? null)
+      : (config?.issuer.legalNameTh ?? null);
   const contactPoints = channels
     ? [
         ...(channels.phone
@@ -38,8 +77,11 @@ export default async function Page() {
           : []),
       ]
     : [];
+  const topicLabel = Object.fromEntries(INTENTS.map((value) => [value, t(`intents.${value}.title`)]));
+  const methods = (config?.paymentMethods ?? []).map((method) => tPay(method));
+
   return (
-    <div className="max-w-content mx-auto grid w-full gap-10 px-5 py-10 md:px-8 md:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+    <div className={cn(HOME_WRAP, "pb-24")}>
       <JsonLd data={page.breadcrumb} />
       <JsonLd
         data={{
@@ -52,114 +94,74 @@ export default async function Page() {
           }),
           mainEntity: {
             ...organizationSchema(page.origin),
+            ...(issuer ? { legalName: issuer } : {}),
             ...(contactPoints.length > 0 ? { contactPoint: contactPoints } : {}),
             ...(openingHours ? { openingHours } : {}),
           },
         }}
       />
-      <header className="flex flex-col gap-4">
-        <h1 className="text-4xl leading-tight md:text-5xl">{t("title")}</h1>
-        <p className="text-muted text-lg leading-relaxed">{t("intro")}</p>
-        {/* LINE first, as the channel the team answers fastest (UX audit, /contact). */}
-        {channels?.lineOaId ? (
-          <Button asChild size="lg" className="self-start" iconStart="chat">
-            <a
-              href={`https://line.me/R/ti/p/${encodeURIComponent(channels.lineOaId)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t("lineCta")}
-            </a>
-          </Button>
-        ) : null}
-        {channels ? (
-          <DescriptionList
-            items={[
-              ...(channels.lineOaId
-                ? [
-                    {
-                      term: t("line"),
-                      description: (
-                        <a
-                          href={`https://line.me/R/ti/p/${encodeURIComponent(channels.lineOaId)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary underline underline-offset-4"
-                        >
-                          {channels.lineOaId}
-                        </a>
-                      ),
-                    },
-                  ]
-                : []),
-              ...(channels.phone
-                ? [
-                    {
-                      term: t("phoneLabel"),
-                      description: (
-                        <a
-                          href={`tel:${channels.phone.replace(/\D/g, "")}`}
-                          className="text-primary underline underline-offset-4"
-                        >
-                          {channels.phone}
-                        </a>
-                      ),
-                    },
-                  ]
-                : []),
-              ...(channels.email
-                ? [
-                    {
-                      term: t("emailLabel"),
-                      description: (
-                        <a href={`mailto:${channels.email}`} className="text-primary underline underline-offset-4">
-                          {channels.email}
-                        </a>
-                      ),
-                    },
-                  ]
-                : []),
-              ...(channels.hours ? [{ term: t("hours"), description: channels.hours }] : []),
-            ]}
-          />
-        ) : null}
-        {/* The answers a customer can reach without waiting for anyone. */}
-        <nav aria-label={t("selfServe")} className="mt-4">
-          <p className="text-muted mb-2 text-sm font-semibold">{t("selfServe")}</p>
-          <ul className="border-border bg-surface divide-border rounded-card divide-y border">
-            {(
-              [
-                ["track", "/track", "truck"],
-                ["help", "/help", "help"],
-                ["faq", "/faq", "chat"],
-              ] as const
-            ).map(([key, href, icon]) => (
-              <li key={key}>
-                <Link href={href} className="group hover:bg-surface-subtle flex items-center gap-3.5 px-4 py-3.5">
-                  <span className="bg-primary-subtle text-primary grid size-10 shrink-0 place-items-center rounded-xl">
-                    <Icon name={icon} size={18} aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-semibold">{t(`shortcut.${key}.title`)}</span>
-                    <span className="text-muted block text-sm">{t(`shortcut.${key}.body`)}</span>
-                  </span>
+      <header className="pt-9 md:pt-11">
+        <Breadcrumbs
+          label={page.crumbLabel}
+          items={page.crumbs.map((crumb) => ({ label: crumb.name, href: crumb.url }))}
+        />
+        <div className="mt-3 grid items-end gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem]">
+          <div>
+            <h1 className="text-[clamp(2.125rem,4.2vw,3.375rem)] leading-[1.08] font-bold tracking-[-0.03em]">
+              {t("title")}
+            </h1>
+            <p className="text-muted mt-2.5 max-w-[60ch]">{t("intro")}</p>
+            <TrackBox signedIn={signedIn} topicLabel={topicLabel} />
+          </div>
+          <TeamStatus status={options?.teamStatus ?? null} hours={channels?.hours ?? null} />
+        </div>
+      </header>
+
+      <ContactCentre
+        initialIntent={initialIntent}
+        lineAvailable={Boolean(channels?.lineOaId)}
+        options={options}
+        facts={{
+          claimWindowDays: config?.claimWindowDays ?? null,
+          priceLockDays: config?.priceLockDays ?? null,
+          methods,
+          issuer,
+        }}
+        capabilities={types.map((type) => ({ value: type.code, label: pick(locale, type.nameTh, type.nameEn) }))}
+        provinces={provinces.map((province) => ({
+          value: province.code,
+          label: pick(locale, province.nameTh, province.nameEn),
+        }))}
+        side={<ContactSide channels={channels} issuer={config?.issuer ?? null} />}
+      />
+
+      <section aria-labelledby="contact-more" className="pt-14">
+        <h2 id="contact-more" className="mb-5 text-[1.625rem] leading-tight font-semibold">
+          {t("more.title")}
+        </h2>
+        <ul className="grid gap-3 md:grid-cols-3">
+          {MORE.map((card) => (
+            <li key={card.key}>
+              <Link
+                href={card.href}
+                className="group border-border bg-surface rounded-panel hover:border-primary flex h-full flex-col gap-1.5 border p-5 transition-colors"
+              >
+                <Icon name={card.icon} size={22} aria-hidden="true" className="text-primary" />
+                <b className="mt-1 text-[17px] font-semibold">{t(`more.${card.key}.title`)}</b>
+                <span className="text-muted text-sm">{t(`more.${card.key}.body`)}</span>
+                <span className="text-primary mt-1 inline-flex items-center gap-1.5 text-sm font-semibold">
+                  {t(`more.${card.key}.cta`)}
                   <Icon
                     name="arrow-right"
-                    size={16}
+                    size={15}
                     aria-hidden="true"
-                    className="text-muted duration-fast transition-transform motion-safe:group-hover:translate-x-1"
+                    className="duration-fast transition-transform motion-safe:group-hover:translate-x-1"
                   />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </header>
-      <section aria-labelledby="contact-form" className="border-border bg-surface rounded-card border p-6">
-        <h2 id="contact-form" className="mb-4 text-lg font-semibold">
-          {t("formTitle")}
-        </h2>
-        <ContactForm />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );
