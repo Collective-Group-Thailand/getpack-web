@@ -81,7 +81,7 @@ export default async function ReceivePage({ searchParams }: { searchParams: Prom
     );
 
   return (
-    <PartnerPage title={t("receiveTitle")} description={t("receiveBody")} back={back}>
+    <PartnerPage wide title={t("receiveTitle")} description={t("receiveBody")} back={back}>
       <GoodsReceiptForm
         key={order.data?.id ?? "none"}
         openOrders={open.data}

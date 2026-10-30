@@ -4,9 +4,10 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_RFQ_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -39,17 +40,23 @@ export default async function RfqsPage({
     factoryContext(),
   ]);
   const { contract } = await partnerServerApis();
-  const list = await attempt(
-    async () =>
-      (
-        await contract.GET("/v1/partner/factories/{factoryId}/erp/rfqs", {
-          params: {
-            path: { factoryId: context.factoryId },
-            query: { perPage: PER_PAGE, page, ...(view === "all" ? {} : { status: view }), ...(q ? { q } : {}) },
-          },
-        })
-      ).data!,
-  );
+  const read = (view: View, perPage: number) =>
+    contract.GET("/v1/partner/factories/{factoryId}/erp/rfqs", {
+      params: {
+        path: { factoryId: context.factoryId },
+        query: {
+          perPage,
+          page: perPage === 1 ? 1 : page,
+          ...(view === "all" ? {} : { status: view }),
+          ...(q ? { q } : {}),
+        },
+      },
+    });
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const [list, counts] = await Promise.all([
+    attempt(async () => (await read(view, PER_PAGE)).data!),
+    viewTotals(VIEWS, async (key) => (await read(key, 1)).data),
+  ]);
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/purchasing/rfqs${queryOf({ view: next === "open" ? undefined : next, ...extra })}`;
 
@@ -67,20 +74,22 @@ export default async function RfqsPage({
         ) : undefined
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      <SearchBar
-        id="rfq-q"
-        action="/purchasing/rfqs"
-        hidden={{ view: view === "open" ? undefined : view }}
-        q={q}
-        label={t("searchLabel")}
-        placeholder={t("searchPlaceholder")}
-        button={tCommon("search")}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key, { q }), label: t(`views.${key}`), count: counts[key] }))}
+        />
+        <SearchBar
+          id="rfq-q"
+          action="/purchasing/rfqs"
+          hidden={{ view: view === "open" ? undefined : view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
+      </ListToolbar>
       {list.data ? (
         <>
           <PartnerTable
@@ -88,7 +97,24 @@ export default async function RfqsPage({
             rows={list.data.data}
             rowKey={(r) => r.id}
             rowHref={(r) => `/purchasing/rfqs/${r.id}`}
-            empty={<EmptyState icon="scale" title={t("empty")} description={t("emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="scale"
+                title={t("empty")}
+                description={t("emptyBody")}
+                action={
+                  canAt(context, "factory_procurement.manage") ? (
+                    <Button asChild iconStart="plus">
+                      <Link href="/purchasing/rfqs/new">{t("new")}</Link>
+                    </Button>
+                  ) : view !== "all" ? (
+                    <Button asChild variant="secondary" iconEnd="arrow-right">
+                      <Link href={href("all")}>{t("views.all")}</Link>
+                    </Button>
+                  ) : undefined
+                }
+              />
+            }
             columns={[
               {
                 key: "no",

@@ -31,7 +31,8 @@
     "days": "{n} days",
     "close": "Close",
     "done": "Done",
-    "inWords": "({words})"
+    "inWords": "({words})",
+    "nextSteps": "Next steps"
   },
   "lines": {
     "line": "Line {n}",
@@ -93,7 +94,18 @@
     "priceInvalid": "Enter a price (up to 6 decimals)",
     "save": "Save draft",
     "saved": "Saved",
-    "linesFromDeliveries": "The lines come from the delivery notes and sales order — only the header can be edited here; if a line is wrong, delete the draft and make it again"
+    "linesFromDeliveries": "The lines come from the delivery notes and sales order — only the header can be edited here; if a line is wrong, delete the draft and make it again",
+    "sections": {
+      "customer": "Customer and dates",
+      "lines": "Items",
+      "delivery": "Delivery",
+      "terms": "Terms and notes",
+      "summary": "Summary",
+      "contact": "Contact details",
+      "followUp": "Sales follow-up",
+      "deal": "Opportunity details",
+      "forecast": "Value and chance to close"
+    }
   },
   "quotations": {
     "title": "Quotations",

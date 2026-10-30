@@ -22,6 +22,7 @@ export default async function StockTransferPage({ searchParams }: { searchParams
   const pickers = await erpPickers(context.factoryId);
   return (
     <PartnerPage
+      wide
       title={t("transferTitle")}
       description={t("transferBody")}
       back={{ href: "/stock", label: tStock("title") }}

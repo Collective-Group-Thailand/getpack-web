@@ -19,7 +19,12 @@ export default async function NewItemPage() {
   ]);
   const pickers = await erpPickers(context.factoryId);
   return (
-    <PartnerPage title={t("newTitle")} description={t("newBody")} back={{ href: "/stock", label: tStock("title") }}>
+    <PartnerPage
+      wide
+      title={t("newTitle")}
+      description={t("newBody")}
+      back={{ href: "/stock", label: tStock("title") }}
+    >
       {pickers.data ? <ItemForm suppliers={pickers.data.suppliers} /> : <PageError error={pickers.error} />}
     </PartnerPage>
   );

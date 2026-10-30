@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
@@ -55,6 +56,7 @@ export function CountSheet({
 }) {
   const t = useTranslations("partnerErp.count");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
   const tMove = useTranslations("partnerErp.move");
   const { factoryId } = useFactory();
   const router = useRouter();
@@ -134,8 +136,31 @@ export function CountSheet({
     }
   }
 
+  const unitOf = (code: string) => (tCommon.has(`units.${code}` as never) ? tCommon(`units.${code}` as never) : code);
+  const submitButton = (
+    <Button size="xl" iconStart="save" loading={busy} disabled={!entered.length} onClick={() => void submit()}>
+      {t("submit", { count: entered.length })}
+    </Button>
+  );
   return (
-    <div className="flex flex-col gap-4">
+    // The sheet on the left; what has been counted, the reason and the one save in a panel that stays in view.
+    <FormColumns
+      aside={
+        <FormSummary title={tSections("summary")} action={submitButton} className="print:hidden">
+          <p className="text-muted text-sm" aria-live="polite">
+            {t("summary", { counted: entered.length, total: lines.length, changed: changed.length })}
+          </p>
+          <Field label={tMove("reason")} required requiredLabel={tCommon("required")}>
+            <Textarea
+              rows={3}
+              value={reason}
+              placeholder={t("reasonPlaceholder")}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </Field>
+        </FormSummary>
+      }
+    >
       <div className="grid gap-3 md:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)] print:hidden">
         <Field label={tCommon("warehouse")}>
           <Select
@@ -166,7 +191,7 @@ export function CountSheet({
         <p className="text-muted">{t("empty")}</p>
       ) : (
         <div className="border-border overflow-x-auto rounded-xl border">
-          <table className="w-full min-w-[40rem] text-sm">
+          <table className="w-full text-sm">
             <caption className="sr-only">{t("caption")}</caption>
             <thead className="bg-surface-subtle text-muted text-xs">
               <tr>
@@ -174,11 +199,11 @@ export function CountSheet({
                   {t("item")}
                 </th>
                 {!blind ? (
-                  <th scope="col" className="px-3 py-2 text-end font-medium">
+                  <th scope="col" className="px-3 py-2 text-end font-medium max-md:hidden">
                     {t("system")}
                   </th>
                 ) : null}
-                <th scope="col" className="w-40 px-3 py-2 text-end font-medium">
+                <th scope="col" className="w-28 px-3 py-2 text-end font-medium md:w-40">
                   {t("counted")}
                 </th>
                 {!blind ? (
@@ -195,13 +220,16 @@ export function CountSheet({
                     <span className="block">{l.row.item.name}</span>
                     <span className="text-muted text-xs tabular-nums">{l.row.item.sku}</span>
                     {l.lots ? <span className="text-muted block text-xs">{t("byLot")}</span> : null}
+                    {/* On a phone the system figure sits under the name instead of in its own column. */}
+                    {!blind ? (
+                      <span className="text-muted block text-xs tabular-nums md:hidden">
+                        {t("system")} {formatQty(l.row.onHand, locale)} {unitOf(l.row.item.baseUnit)}
+                      </span>
+                    ) : null}
                   </td>
                   {!blind ? (
-                    <td className="px-3 py-2 text-end whitespace-nowrap tabular-nums">
-                      {formatQty(l.row.onHand, locale)}{" "}
-                      {tCommon.has(`units.${l.row.item.baseUnit}` as never)
-                        ? tCommon(`units.${l.row.item.baseUnit}` as never)
-                        : l.row.item.baseUnit}
+                    <td className="px-3 py-2 text-end whitespace-nowrap tabular-nums max-md:hidden">
+                      {formatQty(l.row.onHand, locale)} {unitOf(l.row.item.baseUnit)}
                     </td>
                   ) : null}
                   <td className="px-3 py-2">
@@ -231,27 +259,6 @@ export function CountSheet({
           </table>
         </div>
       )}
-      <p className="text-muted text-sm print:hidden" aria-live="polite">
-        {t("summary", { counted: entered.length, total: lines.length, changed: changed.length })}
-      </p>
-      <Field label={tMove("reason")} required requiredLabel={tCommon("required")} className="print:hidden">
-        <Textarea
-          rows={2}
-          value={reason}
-          placeholder={t("reasonPlaceholder")}
-          onChange={(e) => setReason(e.target.value)}
-        />
-      </Field>
-      <Button
-        size="xl"
-        iconStart="save"
-        loading={busy}
-        disabled={!entered.length}
-        onClick={() => void submit()}
-        className="self-start print:hidden"
-      >
-        {t("submit", { count: entered.length })}
-      </Button>
-    </div>
+    </FormColumns>
   );
 }

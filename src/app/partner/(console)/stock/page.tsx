@@ -6,14 +6,14 @@ import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/pa
 import { ReorderTable } from "@/features/partner/erp/ReorderTable";
 import { formatQty } from "@/features/partner/erp/format";
 import { ActionTiles, Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage } from "@/features/partner/frame";
-import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerStats } from "@/features/partner/frame";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerErp.stock"))("title") };
@@ -52,17 +52,23 @@ export default async function StockPage({
       async () =>
         (await contract.GET("/v1/partner/factories/{factoryId}/erp/stock/overview", { params: { path } })).data!,
     ),
-    view === "items"
-      ? attempt(
-          async () =>
-            (
-              await contract.GET("/v1/partner/factories/{factoryId}/erp/items", {
-                params: { path, query: { perPage: PER_PAGE, page, ...(q ? { q } : {}) } },
-              })
-            ).data!,
-        )
-      : null,
-    view === "low" && canAt(context, "factory_procurement.read")
+    // Read on every view: the items tab counts the rows it opens (with the same search).
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/items", {
+            params: {
+              path,
+              query: {
+                perPage: view === "items" ? PER_PAGE : 1,
+                page: view === "items" ? page : 1,
+                ...(q && view === "items" ? { q } : {}),
+              },
+            },
+          })
+        ).data!,
+    ),
+    canAt(context, "factory_procurement.read")
       ? attempt(
           async () =>
             (await contract.GET("/v1/partner/factories/{factoryId}/erp/stock/reorder", { params: { path } })).data!,
@@ -142,6 +148,12 @@ export default async function StockPage({
       full
       title={t("title")}
       description={t("body")}
+      meta={
+        <span className="text-muted inline-flex items-center gap-1.5 text-sm">
+          <Icon name="lock" size={14} aria-hidden />
+          {t("privacy")}
+        </span>
+      }
       actions={
         canMove ? (
           <Button asChild size="lg" variant="secondary" iconStart="plus">
@@ -150,11 +162,8 @@ export default async function StockPage({
         ) : undefined
       }
     >
-      <Callout tone="info" icon="lock">
-        {t("privacy")}
-      </Callout>
       {overview.data ? (
-        <StatStrip
+        <PartnerStats
           label={t("title")}
           items={[
             {
@@ -170,7 +179,8 @@ export default async function StockPage({
               label: t("stats.low"),
               value: format.number(overview.data.low),
               href: href("low"),
-              ...(overview.data.low ? { tone: "warning" as const } : {}),
+              // What the page asks of the factory: items to buy now, on the pale tint when there are any.
+              highlight: overview.data.low > 0,
             },
             { key: "value", label: t("stats.value"), value: format.thb(overview.data.value) },
             {
@@ -189,19 +199,24 @@ export default async function StockPage({
       )}
       {tiles.length ? <ActionTiles label={t("actions.label")} items={tiles} /> : null}
 
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({
-          key,
-          href: href(key),
-          label: t(`views.${key}`),
-          ...(key === "low" && overview.data ? { count: overview.data.low } : {}),
-        }))}
-      />
-
-      {view === "items" && items ? (
-        <>
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: href(key),
+            label: t(`views.${key}`),
+            // Each count is the rows its tab opens: the item list's total, the reorder list's length.
+            count:
+              key === "items"
+                ? (items.data?.meta.total ?? null)
+                : key === "low"
+                  ? (reorder?.data?.length ?? null)
+                  : null,
+          }))}
+        />
+        {view === "items" ? (
           <SearchBar
             id="stock-q"
             action="/stock"
@@ -210,6 +225,21 @@ export default async function StockPage({
             placeholder={t("searchPlaceholder")}
             button={tCommon("search")}
           />
+        ) : view === "movements" ? (
+          <SearchBar
+            id="moves-q"
+            action="/stock"
+            hidden={{ view: "movements" }}
+            q={q}
+            label={t("searchLabel")}
+            placeholder={t("searchMovesPlaceholder")}
+            button={tCommon("search")}
+          />
+        ) : null}
+      </ListToolbar>
+
+      {view === "items" ? (
+        <>
           {items.data ? (
             <>
               <PartnerTable
@@ -220,7 +250,20 @@ export default async function StockPage({
                 rowTone={(item) =>
                   item.stock.onHand.startsWith("-") ? "danger" : item.stock.low ? "warning" : undefined
                 }
-                empty={<EmptyState icon="warehouse" title={t("emptyItems")} description={t("emptyItemsBody")} />}
+                empty={
+                  <EmptyState
+                    icon="warehouse"
+                    title={t("emptyItems")}
+                    description={t("emptyItemsBody")}
+                    action={
+                      canMove ? (
+                        <Button asChild iconStart="plus">
+                          <Link href="/stock/items/new">{t("actions.newItem")}</Link>
+                        </Button>
+                      ) : undefined
+                    }
+                  />
+                }
                 columns={[
                   {
                     key: "name",
@@ -292,26 +335,34 @@ export default async function StockPage({
           reorder.data.length ? (
             <ReorderTable rows={reorder.data} canDraft={canAt(context, "factory_procurement.manage")} locale={locale} />
           ) : (
-            <EmptyState icon="package-check" title={t("emptyLow")} description={t("emptyLowBody")} />
+            <EmptyState
+              icon="package-check"
+              title={t("emptyLow")}
+              description={t("emptyLowBody")}
+              action={
+                <Button asChild variant="secondary" iconEnd="arrow-right">
+                  <Link href={href("items")}>{t("views.items")}</Link>
+                </Button>
+              }
+            />
           )
         ) : reorder ? (
           <PageError error={reorder.error} />
         ) : (
-          <EmptyState icon="lock" title={t("emptyLow")} />
+          <EmptyState
+            icon="lock"
+            title={t("emptyLow")}
+            action={
+              <Button asChild variant="secondary" iconEnd="arrow-right">
+                <Link href={href("items")}>{t("views.items")}</Link>
+              </Button>
+            }
+          />
         )
       ) : null}
 
       {view === "movements" && movements ? (
         <>
-          <SearchBar
-            id="moves-q"
-            action="/stock"
-            hidden={{ view: "movements" }}
-            q={q}
-            label={t("searchLabel")}
-            placeholder={t("searchMovesPlaceholder")}
-            button={tCommon("search")}
-          />
           {movements.data ? (
             <>
               <PartnerTable
@@ -331,7 +382,19 @@ export default async function StockPage({
                             ? `/invoices/notes/${move.sourceId}`
                             : `/stock/items/${move.item.id}`
                 }
-                empty={<EmptyState icon="history" title={t("emptyMoves")} />}
+                empty={
+                  <EmptyState
+                    icon="history"
+                    title={t("emptyMoves")}
+                    action={
+                      canMove ? (
+                        <Button asChild variant="secondary" iconStart="package-check">
+                          <Link href="/stock/receive">{t("actions.receive")}</Link>
+                        </Button>
+                      ) : undefined
+                    }
+                  />
+                }
                 columns={[
                   {
                     key: "document",

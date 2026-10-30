@@ -4,9 +4,10 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_QUOTATION_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { pagerLabels } from "@/features/partner/sales/view";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -39,17 +40,23 @@ export default async function QuotationsPage({
     factoryContext(),
   ]);
   const { contract } = await partnerServerApis();
-  const list = await attempt(
-    async () =>
-      (
-        await contract.GET("/v1/partner/factories/{factoryId}/erp/quotations", {
-          params: {
-            path: { factoryId: context.factoryId },
-            query: { perPage: PER_PAGE, page, ...(view === "all" ? {} : { status: view }), ...(q ? { q } : {}) },
-          },
-        })
-      ).data!,
-  );
+  const read = (status: View, perPage: number) =>
+    contract.GET("/v1/partner/factories/{factoryId}/erp/quotations", {
+      params: {
+        path: { factoryId: context.factoryId },
+        query: {
+          perPage,
+          page: perPage === 1 ? 1 : page,
+          ...(status === "all" ? {} : { status }),
+          ...(q ? { q } : {}),
+        },
+      },
+    });
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const countsPromise = viewTotals(VIEWS, async (status) => (await read(status, 1)).data);
+  const list = await attempt(async () => (await read(view, PER_PAGE)).data!);
+  const counts = await countsPromise;
+  const manage = canAt(context, "factory_sales.manage");
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/quotations${queryOf({ view: next === "open" ? undefined : next, ...extra })}`;
 
@@ -59,27 +66,34 @@ export default async function QuotationsPage({
       title={t("title")}
       description={t("body")}
       actions={
-        canAt(context, "factory_sales.manage") ? (
+        manage ? (
           <Button asChild size="lg" iconStart="plus">
             <Link href="/quotations/new">{t("new")}</Link>
           </Button>
         ) : undefined
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      <SearchBar
-        id="qt-q"
-        action="/quotations"
-        hidden={{ view: view === "open" ? undefined : view }}
-        q={q}
-        label={t("searchLabel")}
-        placeholder={t("searchPlaceholder")}
-        button={tCommon("search")}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: href(key, { q }),
+            label: t(`views.${key}`),
+            count: counts[key],
+          }))}
+        />
+        <SearchBar
+          id="qt-q"
+          action="/quotations"
+          hidden={{ view: view === "open" ? undefined : view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
+      </ListToolbar>
       {list.data ? (
         <>
           <PartnerTable
@@ -87,7 +101,24 @@ export default async function QuotationsPage({
             rows={list.data.data}
             rowKey={(row) => row.id}
             rowHref={(row) => `/quotations/${row.id}`}
-            empty={<EmptyState icon="document" title={t("empty")} description={t("emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="document"
+                title={t("empty")}
+                description={manage ? t("emptyBody") : undefined}
+                action={
+                  manage ? (
+                    <Button asChild iconStart="plus">
+                      <Link href="/quotations/new">{t("new")}</Link>
+                    </Button>
+                  ) : view !== "all" ? (
+                    <Button asChild variant="secondary" iconEnd="arrow-right">
+                      <Link href={href("all")}>{t("views.all")}</Link>
+                    </Button>
+                  ) : undefined
+                }
+              />
+            }
             columns={[
               {
                 key: "no",

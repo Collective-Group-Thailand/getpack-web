@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -9,12 +10,15 @@ import { TotalsEstimate } from "@/features/partner/erp/TotalsEstimate";
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { isZero, plainNumber, PRICE_PATTERN, QTY_PATTERN, trimZeros } from "@/features/partner/erp/format";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { problemMessage } from "@/features/shared/actions";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
@@ -93,6 +97,9 @@ export function SalesDocForm({
   const t = useTranslations("partnerSales.form");
   const tCommon = useTranslations("partnerSales.common");
   const tVat = useTranslations("partnerErp.common.vatModes");
+  const tSections = useTranslations("partnerSales.form.sections");
+  const tPartners = useTranslations("partnerErp.partners");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const [refresh] = useRefresh();
@@ -238,139 +245,189 @@ export function SalesDocForm({
     }
   }
 
-  if (!pickers.customers.length) return <p className="text-muted">{t("noCustomers")}</p>;
+  if (!pickers.customers.length)
+    return (
+      <EmptyState
+        icon="users"
+        title={t("noCustomers")}
+        action={
+          <Button asChild iconStart="plus">
+            <Link href="/partners/new?kind=customer">{tPartners("new")}</Link>
+          </Button>
+        }
+      />
+    );
   const dateLabel = kind === "quotation" ? t("quoteDate") : kind === "salesOrder" ? t("orderDate") : t("issueDate");
 
+  const lastStep = kind === "salesOrder" ? 4 : 3;
+  const summaryRows = [
+    { key: "customer", label: t("customer"), value: customers.get(customerId)?.name ?? "" },
+    { key: "date", label: dateLabel, value: date ? format.date(date) : "" },
+    ...(kind === "quotation"
+      ? [{ key: "valid", label: t("validUntil"), value: validUntil ? format.date(validUntil) : "" }]
+      : kind === "salesOrder"
+        ? [{ key: "delivery", label: t("deliveryDate"), value: deliveryDate ? format.date(deliveryDate) : "" }]
+        : []),
+    { key: "vat", label: t("vatMode"), value: tVat(vatMode) },
+  ];
+
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("customer")} required requiredLabel={tCommon("required")} error={customerError}>
-          {initial && kind === "invoice" ? (
-            <Input value={customers.get(customerId)?.name ?? ""} readOnly disabled />
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows rows={summaryRows} />
+            <div className="border-border border-t pt-3">
+              <TotalsEstimate plain lines={lines} vatMode={vatMode} fallback={t("moneyNote")} />
+            </div>
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("customer")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("customer")} required requiredLabel={tCommon("required")} error={customerError}>
+              {initial && kind === "invoice" ? (
+                <Input value={customers.get(customerId)?.name ?? ""} readOnly disabled />
+              ) : (
+                <Select
+                  value={customerId || null}
+                  placeholder={t("customerPlaceholder")}
+                  onValueChange={pickCustomer}
+                  options={pickers.customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
+                />
+              )}
+            </Field>
+            {kind !== "invoice" ? (
+              <Field label={t("salesperson")}>
+                <Select
+                  value={salespersonId || null}
+                  placeholder={t("salespersonPlaceholder")}
+                  onValueChange={setSalespersonId}
+                  options={pickers.people.map((p) => ({ value: p.id, label: p.name }))}
+                />
+              </Field>
+            ) : null}
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Field label={dateLabel}>
+              <Input type="date" value={date} onChange={(event) => setDate(event.target.value || bangkokToday())} />
+            </Field>
+            {kind === "quotation" ? (
+              <Field label={t("validUntil")} hint={t("validUntilHint")}>
+                <Input
+                  type="date"
+                  min={date}
+                  value={validUntil}
+                  onChange={(event) => setValidUntil(event.target.value)}
+                />
+              </Field>
+            ) : null}
+            {kind === "salesOrder" ? (
+              <Field label={t("deliveryDate")}>
+                <Input
+                  type="date"
+                  min={date}
+                  value={deliveryDate}
+                  onChange={(event) => setDeliveryDate(event.target.value)}
+                />
+              </Field>
+            ) : null}
+            <Field label={t("paymentTerms")}>
+              <NumberInput
+                min={0}
+                max={365}
+                unit={t("days")}
+                value={terms}
+                onChange={(event) => setTerms(event.target.value)}
+              />
+            </Field>
+            {kind === "quotation" ? (
+              <Field label={t("leadTime")}>
+                <NumberInput
+                  min={0}
+                  max={365}
+                  unit={t("days")}
+                  value={leadTime}
+                  placeholder={t("leadTimePlaceholder")}
+                  onChange={(event) => setLeadTime(event.target.value)}
+                />
+              </Field>
+            ) : (
+              <Field label={t("customerPoNo")}>
+                <Input
+                  value={customerPoNo}
+                  placeholder={t("customerPoNoPlaceholder")}
+                  onChange={(event) => setCustomerPoNo(event.target.value)}
+                />
+              </Field>
+            )}
+            {kind === "salesOrder" && pickers.warehouses.length > 1 ? (
+              <Field label={t("warehouse")}>
+                <Select
+                  value={warehouseId || null}
+                  onValueChange={setWarehouseId}
+                  options={pickers.warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))}
+                />
+              </Field>
+            ) : null}
+          </div>
+        </FormSection>
+        <FormSection card step={2} title={tSections("lines")}>
+          <SegmentedControl
+            label={t("vatMode")}
+            size="md"
+            value={vatMode}
+            onValueChange={setVatMode}
+            options={VAT_MODES.map((mode) => ({ value: mode, label: tVat(mode) }))}
+          />
+          {headerOnly ? (
+            <p className="text-muted text-sm">{t("linesFromDeliveries")}</p>
           ) : (
-            <Select
-              value={customerId || null}
-              placeholder={t("customerPlaceholder")}
-              onValueChange={pickCustomer}
-              options={pickers.customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
+            <SalesLinesEditor
+              items={pickers.items}
+              lines={lines}
+              onChange={setLines}
+              errors={errors}
+              locale={locale}
+              withFulfilment={kind === "salesOrder"}
             />
           )}
-        </Field>
-        {kind !== "invoice" ? (
-          <Field label={t("salesperson")}>
-            <Select
-              value={salespersonId || null}
-              placeholder={t("salespersonPlaceholder")}
-              onValueChange={setSalespersonId}
-              options={pickers.people.map((p) => ({ value: p.id, label: p.name }))}
-            />
-          </Field>
-        ) : null}
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Field label={dateLabel}>
-          <Input type="date" value={date} onChange={(event) => setDate(event.target.value || bangkokToday())} />
-        </Field>
-        {kind === "quotation" ? (
-          <Field label={t("validUntil")} hint={t("validUntilHint")}>
-            <Input type="date" min={date} value={validUntil} onChange={(event) => setValidUntil(event.target.value)} />
-          </Field>
-        ) : null}
+        </FormSection>
         {kind === "salesOrder" ? (
-          <Field label={t("deliveryDate")}>
-            <Input
-              type="date"
-              min={date}
-              value={deliveryDate}
-              onChange={(event) => setDeliveryDate(event.target.value)}
-            />
-          </Field>
+          <FormSection card step={3} title={tSections("delivery")}>
+            <Field label={t("shipTo")}>
+              <Textarea rows={2} value={shipTo} onChange={(event) => setShipTo(event.target.value)} />
+            </Field>
+          </FormSection>
         ) : null}
-        <Field label={t("paymentTerms")}>
-          <NumberInput
-            min={0}
-            max={365}
-            unit={t("days")}
-            value={terms}
-            onChange={(event) => setTerms(event.target.value)}
-          />
-        </Field>
-        {kind === "quotation" ? (
-          <Field label={t("leadTime")}>
-            <NumberInput
-              min={0}
-              max={365}
-              unit={t("days")}
-              value={leadTime}
-              placeholder={t("leadTimePlaceholder")}
-              onChange={(event) => setLeadTime(event.target.value)}
+        <FormSection card step={lastStep} title={kind === "quotation" ? tSections("terms") : t("note")}>
+          {kind === "quotation" ? (
+            <Field label={t("terms")} hint={t("termsHint")}>
+              <Textarea
+                rows={3}
+                value={conditions}
+                placeholder={t("termsPlaceholder")}
+                onChange={(event) => setConditions(event.target.value)}
+              />
+            </Field>
+          ) : null}
+          <Field label={t("note")}>
+            <Textarea
+              rows={2}
+              value={note}
+              placeholder={t("notePlaceholder")}
+              onChange={(event) => setNote(event.target.value)}
             />
           </Field>
-        ) : (
-          <Field label={t("customerPoNo")}>
-            <Input
-              value={customerPoNo}
-              placeholder={t("customerPoNoPlaceholder")}
-              onChange={(event) => setCustomerPoNo(event.target.value)}
-            />
-          </Field>
-        )}
-        {kind === "salesOrder" && pickers.warehouses.length > 1 ? (
-          <Field label={t("warehouse")}>
-            <Select
-              value={warehouseId || null}
-              onValueChange={setWarehouseId}
-              options={pickers.warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))}
-            />
-          </Field>
-        ) : null}
-      </div>
-      <SegmentedControl
-        label={t("vatMode")}
-        size="md"
-        value={vatMode}
-        onValueChange={setVatMode}
-        options={VAT_MODES.map((mode) => ({ value: mode, label: tVat(mode) }))}
-      />
-      {headerOnly ? (
-        <p className="text-muted text-sm">{t("linesFromDeliveries")}</p>
-      ) : (
-        <SalesLinesEditor
-          items={pickers.items}
-          lines={lines}
-          onChange={setLines}
-          errors={errors}
-          locale={locale}
-          withFulfilment={kind === "salesOrder"}
-        />
-      )}
-      <TotalsEstimate lines={lines} vatMode={vatMode} fallback={t("moneyNote")} />
-      {kind === "salesOrder" ? (
-        <Field label={t("shipTo")}>
-          <Textarea rows={2} value={shipTo} onChange={(event) => setShipTo(event.target.value)} />
-        </Field>
-      ) : null}
-      {kind === "quotation" ? (
-        <Field label={t("terms")} hint={t("termsHint")}>
-          <Textarea
-            rows={3}
-            value={conditions}
-            placeholder={t("termsPlaceholder")}
-            onChange={(event) => setConditions(event.target.value)}
-          />
-        </Field>
-      ) : null}
-      <Field label={t("note")}>
-        <Textarea
-          rows={2}
-          value={note}
-          placeholder={t("notePlaceholder")}
-          onChange={(event) => setNote(event.target.value)}
-        />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

@@ -31,7 +31,12 @@ export default async function StockCountPage({
   // One item (from its page) opens the single form; the store's walk round opens the sheet.
   const single = view === "single" || Boolean(item);
   return (
-    <PartnerPage title={t("countTitle")} description={t("countBody")} back={{ href: "/stock", label: tStock("title") }}>
+    <PartnerPage
+      wide
+      title={t("countTitle")}
+      description={t("countBody")}
+      back={{ href: "/stock", label: tStock("title") }}
+    >
       <ViewTabs
         label={tCount("tabs.label")}
         current={single ? "single" : "sheet"}

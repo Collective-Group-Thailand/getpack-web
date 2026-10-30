@@ -569,6 +569,10 @@
   height: auto;
   align-self: stretch;
 }
+/* A desk panel's stack (an ERP document's actions, a form's save): the same full width at the ordinary control height. */
+:is([data-zone="partner"], [data-zone="admin"]) main [data-fill="row"] > :is([data-big], [data-size]) {
+  min-height: 2.75rem;
+}
 
 /*
  * "ราคารวม VAT / ไม่รวม VAT" (owner decision D-447, DECISIONS-STAGE-A §10.6). A price the API sent with both figures

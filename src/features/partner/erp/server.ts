@@ -76,3 +76,19 @@ export async function erpPickers(factoryId: string) {
 }
 
 export type ErpPickers = NonNullable<Awaited<ReturnType<typeof erpPickers>>["data"]>;
+
+/**
+ * Each view's count for a list's tabs — one read per view for its `meta.total` only, with the same search — so a
+ * tab says exactly how many rows it opens. A view that could not be read shows no count (`null`).
+ */
+export async function viewTotals<V extends string>(
+  views: readonly V[],
+  read: (view: V) => Promise<{ meta: { total: number } } | undefined>,
+): Promise<Record<V, number | null>> {
+  const entries = await Promise.all(
+    views.map(
+      async (view) => [view, (await attempt(async () => (await read(view))!.meta.total)).data ?? null] as const,
+    ),
+  );
+  return Object.fromEntries(entries) as Record<V, number | null>;
+}

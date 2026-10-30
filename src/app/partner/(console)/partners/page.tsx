@@ -3,12 +3,12 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,29 +29,30 @@ export default async function TradingPartnersPage({
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "supplier";
   const page = pageOf(query.page);
   const q = query.q?.trim() || undefined;
-  const [t, tCommon, tStock, context] = await Promise.all([
+  const [t, tCommon, context] = await Promise.all([
     getTranslations("partnerErp.partners"),
     getTranslations("partnerErp.common"),
-    getTranslations("partnerErp.stock"),
     factoryContext(),
   ]);
   const { contract } = await partnerServerApis();
-  const list = await attempt(
-    async () =>
-      (
-        await contract.GET("/v1/partner/factories/{factoryId}/erp/partners", {
-          params: {
-            path: { factoryId: context.factoryId },
-            query: {
-              perPage: PER_PAGE,
-              page,
-              ...(view === "archived" ? { status: "archived" } : { role: view }),
-              ...(q ? { q } : {}),
-            },
-          },
-        })
-      ).data!,
-  );
+  const read = (key: View, perPage: number) =>
+    contract.GET("/v1/partner/factories/{factoryId}/erp/partners", {
+      params: {
+        path: { factoryId: context.factoryId },
+        query: {
+          perPage,
+          page: perPage === 1 ? 1 : page,
+          ...(key === "archived" ? { status: "archived" } : { role: key }),
+          ...(q ? { q } : {}),
+        },
+      },
+    });
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const [list, counts] = await Promise.all([
+    attempt(async () => (await read(view, PER_PAGE)).data!),
+    viewTotals(VIEWS, async (key) => (await read(key, 1)).data),
+  ]);
+  const manage = canAt(context, "factory_trading_partners.manage");
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/partners${queryOf({ view: next === "supplier" ? undefined : next, ...extra })}`;
   const pagination = {
@@ -63,34 +64,33 @@ export default async function TradingPartnersPage({
 
   return (
     <PartnerPage
-      wide
+      full
       title={t("title")}
       description={t("body")}
       actions={
-        canAt(context, "factory_trading_partners.manage") ? (
+        manage ? (
           <Button asChild size="lg" iconStart="plus">
             <Link href={`/partners/new${view === "customer" ? "?kind=customer" : ""}`}>{t("new")}</Link>
           </Button>
         ) : undefined
       }
     >
-      <Callout tone="info" icon="lock">
-        {tStock("privacy")}
-      </Callout>
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      <SearchBar
-        id="partners-q"
-        action="/partners"
-        hidden={{ view: view === "supplier" ? undefined : view }}
-        q={q}
-        label={t("searchLabel")}
-        placeholder={t("searchPlaceholder")}
-        button={tCommon("search")}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key, { q }), label: t(`views.${key}`), count: counts[key] }))}
+        />
+        <SearchBar
+          id="partners-q"
+          action="/partners"
+          hidden={{ view: view === "supplier" ? undefined : view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
+      </ListToolbar>
       {list.data ? (
         <>
           <PartnerTable
@@ -98,7 +98,26 @@ export default async function TradingPartnersPage({
             rows={list.data.data}
             rowKey={(p) => p.id}
             rowHref={(p) => `/partners/${p.id}`}
-            empty={<EmptyState icon="handshake" title={t("empty")} description={t("emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="handshake"
+                title={t("empty")}
+                description={t("emptyBody")}
+                action={
+                  manage && view !== "archived" ? (
+                    <Button asChild iconStart="plus">
+                      <Link href={`/partners/new${view === "customer" ? "?kind=customer" : ""}`}>{t("new")}</Link>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="secondary" iconEnd="arrow-right">
+                      <Link href={href(view === "supplier" ? "customer" : "supplier")}>
+                        {t(view === "supplier" ? "views.customer" : "views.supplier")}
+                      </Link>
+                    </Button>
+                  )
+                }
+              />
+            }
             columns={[
               {
                 key: "name",

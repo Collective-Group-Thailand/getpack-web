@@ -7,6 +7,7 @@ import { useState } from "react";
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { plainNumber } from "@/features/partner/erp/format";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format/useFormat";
@@ -17,7 +18,7 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
@@ -75,6 +76,8 @@ export function LeadForm({ lead, etag, people }: { lead?: Lead; etag?: string | 
   const tStage = useTranslations("status.erpLead");
   const tSource = useTranslations("partnerSales.crm.sources");
   const tCommon = useTranslations("partnerSales.common");
+  const tSections = useTranslations("partnerSales.form.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { run, busy } = useSave();
@@ -127,70 +130,100 @@ export function LeadForm({ lead, etag, people }: { lead?: Lead; etag?: string | 
     }
   }
 
+  const money = (value: string) => (value && MONEY.test(plainNumber(value)) ? format.thb(plainNumber(value)) : "");
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
-      <Field label={t("name")} hint={t("nameHint")} error={error} required requiredLabel={tCommon("required")}>
-        <Input value={v.name} onChange={(e) => set({ name: e.target.value })} />
-      </Field>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("contactName")}>
-          <Input value={v.contactName} onChange={(e) => set({ contactName: e.target.value })} />
-        </Field>
-        <Field label={t("phone")}>
-          <Input type="tel" value={v.phone} onChange={(e) => set({ phone: e.target.value })} />
-        </Field>
-        <Field label={t("lineId")}>
-          <Input value={v.lineId} onChange={(e) => set({ lineId: e.target.value })} />
-        </Field>
-        <Field label={t("email")}>
-          <Input type="email" value={v.email} onChange={(e) => set({ email: e.target.value })} />
-        </Field>
-        <Field label={t("source")}>
-          <Select
-            value={v.source}
-            onValueChange={(source) => set({ source: source as Source })}
-            options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))}
-          />
-        </Field>
-        <Field label={t("stage")}>
-          <Select
-            value={v.stage}
-            onValueChange={(stage) => set({ stage: stage as (typeof OPEN_LEAD)[number] })}
-            options={OPEN_LEAD.map((s) => ({ value: s, label: tStage(s) }))}
-          />
-        </Field>
-        <Field label={t("expectedValue")}>
-          <NumberInput
-            step="any"
-            min={0}
-            unit="฿"
-            value={v.expectedValue}
-            onChange={(e) => set({ expectedValue: e.target.value })}
-          />
-        </Field>
-        <Field label={tCommon("salesperson")}>
-          <Select
-            value={v.salespersonId || null}
-            placeholder={t("salespersonPlaceholder")}
-            onValueChange={(salespersonId) => set({ salespersonId })}
-            options={people.map((p) => ({ value: p.id, label: p.name }))}
-          />
-        </Field>
-      </div>
-      <Field label={t("address")}>
-        <Textarea rows={2} value={v.address} onChange={(e) => set({ address: e.target.value })} />
-      </Field>
-      <Field label={t("note")}>
-        <Textarea
-          rows={3}
-          value={v.note}
-          placeholder={t("notePlaceholder")}
-          onChange={(e) => set({ note: e.target.value })}
-        />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "name", label: t("name"), value: v.name.trim() },
+                { key: "stage", label: t("stage"), value: tStage(v.stage) },
+                { key: "value", label: t("expectedValue"), value: money(v.expectedValue) },
+                {
+                  key: "salesperson",
+                  label: tCommon("salesperson"),
+                  value: people.find((p) => p.id === v.salespersonId)?.name ?? "",
+                },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("contact")}>
+          <Field label={t("name")} hint={t("nameHint")} error={error} required requiredLabel={tCommon("required")}>
+            <Input value={v.name} onChange={(e) => set({ name: e.target.value })} />
+          </Field>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("contactName")}>
+              <Input value={v.contactName} onChange={(e) => set({ contactName: e.target.value })} />
+            </Field>
+            <Field label={t("phone")}>
+              <Input type="tel" value={v.phone} onChange={(e) => set({ phone: e.target.value })} />
+            </Field>
+            <Field label={t("lineId")}>
+              <Input value={v.lineId} onChange={(e) => set({ lineId: e.target.value })} />
+            </Field>
+            <Field label={t("email")}>
+              <Input type="email" value={v.email} onChange={(e) => set({ email: e.target.value })} />
+            </Field>
+          </div>
+          <Field label={t("address")}>
+            <Textarea rows={2} value={v.address} onChange={(e) => set({ address: e.target.value })} />
+          </Field>
+        </FormSection>
+        <FormSection card step={2} title={tSections("followUp")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("source")}>
+              <Select
+                value={v.source}
+                onValueChange={(source) => set({ source: source as Source })}
+                options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))}
+              />
+            </Field>
+            <Field label={t("stage")}>
+              <Select
+                value={v.stage}
+                onValueChange={(stage) => set({ stage: stage as (typeof OPEN_LEAD)[number] })}
+                options={OPEN_LEAD.map((s) => ({ value: s, label: tStage(s) }))}
+              />
+            </Field>
+            <Field label={t("expectedValue")}>
+              <NumberInput
+                step="any"
+                min={0}
+                unit="฿"
+                value={v.expectedValue}
+                onChange={(e) => set({ expectedValue: e.target.value })}
+              />
+            </Field>
+            <Field label={tCommon("salesperson")}>
+              <Select
+                value={v.salespersonId || null}
+                placeholder={t("salespersonPlaceholder")}
+                onValueChange={(salespersonId) => set({ salespersonId })}
+                options={people.map((p) => ({ value: p.id, label: p.name }))}
+              />
+            </Field>
+          </div>
+          <Field label={t("note")}>
+            <Textarea
+              rows={3}
+              value={v.note}
+              placeholder={t("notePlaceholder")}
+              onChange={(e) => set({ note: e.target.value })}
+            />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
@@ -212,6 +245,8 @@ export function OpportunityForm({
   const t = useTranslations("partnerSales.crm.opportunityForm");
   const tStage = useTranslations("status.erpOpportunity");
   const tCommon = useTranslations("partnerSales.common");
+  const tSections = useTranslations("partnerSales.form.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { run, busy } = useSave();
@@ -267,59 +302,102 @@ export function OpportunityForm({
     }
   }
 
+  const money = (value: string) => (value && MONEY.test(plainNumber(value)) ? format.thb(plainNumber(value)) : "");
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
-      <Field label={t("title")} hint={t("titleHint")} error={error} required requiredLabel={tCommon("required")}>
-        <Input value={v.title} onChange={(e) => set({ title: e.target.value })} />
-      </Field>
-      <div className="grid gap-4 md:grid-cols-2">
-        {!preset.leadId ? (
-          <Field label={tCommon("customer")}>
-            <Select
-              value={v.customerId || null}
-              placeholder={t("customerPlaceholder")}
-              onValueChange={(customerId) => set({ customerId })}
-              options={customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "title", label: t("title"), value: v.title.trim() },
+                ...(!preset.leadId
+                  ? [
+                      {
+                        key: "customer",
+                        label: tCommon("customer"),
+                        value: customers.find((c) => c.id === v.customerId)?.name ?? "",
+                      },
+                    ]
+                  : []),
+                { key: "stage", label: t("stage"), value: tStage(v.stage) },
+                { key: "value", label: t("value"), value: money(v.value) },
+                {
+                  key: "close",
+                  label: t("expectedCloseOn"),
+                  value: v.expectedCloseOn ? format.date(v.expectedCloseOn) : "",
+                },
+              ]}
             />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("deal")}>
+          <Field label={t("title")} hint={t("titleHint")} error={error} required requiredLabel={tCommon("required")}>
+            <Input value={v.title} onChange={(e) => set({ title: e.target.value })} />
           </Field>
-        ) : null}
-        <Field label={t("stage")} hint={t("stageHint")}>
-          <Select
-            value={v.stage}
-            onValueChange={(stage) => set({ stage: stage as (typeof OPEN_OPP)[number] })}
-            options={OPEN_OPP.map((s) => ({ value: s, label: tStage(s) }))}
-          />
-        </Field>
-        <Field label={t("value")}>
-          <NumberInput step="any" min={0} unit="฿" value={v.value} onChange={(e) => set({ value: e.target.value })} />
-        </Field>
-        <Field label={t("probability")} hint={t("probabilityHint")}>
-          <NumberInput
-            min={0}
-            max={100}
-            unit="%"
-            value={v.probabilityPct}
-            onChange={(e) => set({ probabilityPct: e.target.value })}
-          />
-        </Field>
-        <Field label={t("expectedCloseOn")}>
-          <Input type="date" value={v.expectedCloseOn} onChange={(e) => set({ expectedCloseOn: e.target.value })} />
-        </Field>
-        <Field label={tCommon("salesperson")}>
-          <Select
-            value={v.salespersonId || null}
-            placeholder={t("salespersonPlaceholder")}
-            onValueChange={(salespersonId) => set({ salespersonId })}
-            options={people.map((p) => ({ value: p.id, label: p.name }))}
-          />
-        </Field>
-      </div>
-      <Field label={t("note")}>
-        <Textarea rows={3} value={v.note} onChange={(e) => set({ note: e.target.value })} />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+          {!preset.leadId ? (
+            <Field label={tCommon("customer")}>
+              <Select
+                value={v.customerId || null}
+                placeholder={t("customerPlaceholder")}
+                onValueChange={(customerId) => set({ customerId })}
+                options={customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
+              />
+            </Field>
+          ) : null}
+          <Field label={t("note")}>
+            <Textarea rows={3} value={v.note} onChange={(e) => set({ note: e.target.value })} />
+          </Field>
+        </FormSection>
+        <FormSection card step={2} title={tSections("forecast")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("stage")} hint={t("stageHint")}>
+              <Select
+                value={v.stage}
+                onValueChange={(stage) => set({ stage: stage as (typeof OPEN_OPP)[number] })}
+                options={OPEN_OPP.map((s) => ({ value: s, label: tStage(s) }))}
+              />
+            </Field>
+            <Field label={t("value")}>
+              <NumberInput
+                step="any"
+                min={0}
+                unit="฿"
+                value={v.value}
+                onChange={(e) => set({ value: e.target.value })}
+              />
+            </Field>
+            <Field label={t("probability")} hint={t("probabilityHint")}>
+              <NumberInput
+                min={0}
+                max={100}
+                unit="%"
+                value={v.probabilityPct}
+                onChange={(e) => set({ probabilityPct: e.target.value })}
+              />
+            </Field>
+            <Field label={t("expectedCloseOn")}>
+              <Input type="date" value={v.expectedCloseOn} onChange={(e) => set({ expectedCloseOn: e.target.value })} />
+            </Field>
+            <Field label={tCommon("salesperson")}>
+              <Select
+                value={v.salespersonId || null}
+                placeholder={t("salespersonPlaceholder")}
+                onValueChange={(salespersonId) => set({ salespersonId })}
+                options={people.map((p) => ({ value: p.id, label: p.name }))}
+              />
+            </Field>
+          </div>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

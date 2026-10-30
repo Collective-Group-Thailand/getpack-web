@@ -16,7 +16,7 @@ export default async function NewTradingPartnerPage({ searchParams }: { searchPa
     getTranslations("partnerErp.partners"),
   ]);
   return (
-    <PartnerPage title={t("newTitle")} back={{ href: "/partners", label: tList("title") }}>
+    <PartnerPage wide title={t("newTitle")} back={{ href: "/partners", label: tList("title") }}>
       <PartnerForm initialKind={kind === "customer" ? "customer" : "supplier"} />
     </PartnerPage>
   );

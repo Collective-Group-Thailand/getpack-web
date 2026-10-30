@@ -15,11 +15,14 @@ export function TotalsEstimate({
   vatMode,
   vatRatePct = "7",
   fallback,
+  plain = false,
 }: {
   lines: { quantity: string; price?: string; discountPct?: string }[];
   vatMode: "exclusive" | "inclusive" | "none";
   vatRatePct?: string;
   fallback: string;
+  /** Inside a summary panel: no box of its own. */
+  plain?: boolean;
 }) {
   const t = useTranslations("partnerErp.common.estimate");
   const format = useFormat();
@@ -38,7 +41,11 @@ export function TotalsEstimate({
   const thb = (n: number) => format.thb((n / 100).toFixed(2));
   return (
     <dl
-      className="border-border bg-surface ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 rounded-xl border p-3 text-sm"
+      className={
+        plain
+          ? "grid w-full grid-cols-[1fr_auto] gap-x-6 gap-y-1.5 text-sm"
+          : "border-border bg-surface ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 rounded-xl border p-3 text-sm"
+      }
       aria-live="polite"
     >
       <dt className="text-muted">{t("subtotal")}</dt>
@@ -49,8 +56,16 @@ export function TotalsEstimate({
           <dd className="text-end tabular-nums">{thb(vat)}</dd>
         </>
       ) : null}
-      <dt className="font-semibold">{t("total")}</dt>
-      <dd className="text-end font-semibold tabular-nums">{thb(net + vat)}</dd>
+      <dt className={plain ? "border-border mt-1 border-t pt-2 font-semibold" : "font-semibold"}>{t("total")}</dt>
+      <dd
+        className={
+          plain
+            ? "border-border mt-1 border-t pt-2 text-end text-base font-semibold tabular-nums"
+            : "text-end font-semibold tabular-nums"
+        }
+      >
+        {thb(net + vat)}
+      </dd>
       <dd className="text-muted col-span-2 text-xs">{t("note")}</dd>
     </dl>
   );

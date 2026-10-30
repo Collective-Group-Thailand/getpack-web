@@ -1,18 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
@@ -48,6 +52,9 @@ export function PurchaseOrderForm({
 }) {
   const t = useTranslations("partnerErp.purchasing.form");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
+  const tPartners = useTranslations("partnerErp.partners");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const [refresh] = useRefresh();
@@ -167,99 +174,147 @@ export function PurchaseOrderForm({
     }
   }
 
-  if (!suppliers.length) return <p className="text-muted">{t("noSuppliers")}</p>;
+  if (!suppliers.length)
+    return (
+      <EmptyState
+        icon="handshake"
+        title={t("noSuppliers")}
+        action={
+          <Button asChild iconStart="plus">
+            <Link href="/partners/new">{tPartners("new")}</Link>
+          </Button>
+        }
+      />
+    );
 
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <Field label={t("supplier")} required requiredLabel={tCommon("required")} error={supplierError}>
-        <Select
-          value={supplierId || null}
-          placeholder={tCommon("selectSupplier")}
-          onValueChange={setSupplierId}
-          options={suppliers.map((s) => ({ value: s.id, label: s.name, description: s.code }))}
-        />
-      </Field>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("orderedOn")}>
-          <Input
-            type="date"
-            value={orderedOn}
-            onChange={(event) => setOrderedOn(event.target.value || bangkokToday())}
-          />
-        </Field>
-        <Field label={t("expectedOn")}>
-          <Input
-            type="date"
-            min={orderedOn}
-            value={expectedOn}
-            onChange={(event) => setExpectedOn(event.target.value)}
-          />
-        </Field>
-      </div>
-      <div className="flex flex-col gap-2">
-        <SegmentedControl
-          label={t("vatMode")}
-          size="md"
-          value={vatMode}
-          onValueChange={setVatMode}
-          options={VAT_MODES.map((mode) => ({ value: mode, label: tCommon(`vatModes.${mode}`) }))}
-        />
-        {vatMode !== "none" ? (
-          <div className="max-w-48">
-            <Field label={t("vatRate")}>
-              <NumberInput
-                min={0}
-                max={99}
-                step="any"
-                unit="%"
-                value={vatRate}
-                onChange={(event) => setVatRate(event.target.value)}
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                {
+                  key: "supplier",
+                  label: t("supplier"),
+                  value: suppliers.find((s) => s.id === supplierId)?.name ?? "",
+                },
+                { key: "ordered", label: t("orderedOn"), value: orderedOn ? format.date(orderedOn) : "" },
+                { key: "expected", label: t("expectedOn"), value: expectedOn ? format.date(expectedOn) : "" },
+                { key: "vat", label: t("vatMode"), value: tCommon(`vatModes.${vatMode}`) },
+              ]}
+            />
+            <div className="border-border border-t pt-3">
+              <TotalsEstimate
+                plain
+                lines={lines}
+                vatMode={vatMode}
+                vatRatePct={vatRate}
+                fallback={tCommon("moneyNote")}
+              />
+            </div>
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("supplier")}>
+          <Field label={t("supplier")} required requiredLabel={tCommon("required")} error={supplierError}>
+            <Select
+              value={supplierId || null}
+              placeholder={tCommon("selectSupplier")}
+              onValueChange={setSupplierId}
+              options={suppliers.map((s) => ({ value: s.id, label: s.name, description: s.code }))}
+            />
+          </Field>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("orderedOn")}>
+              <Input
+                type="date"
+                value={orderedOn}
+                onChange={(event) => setOrderedOn(event.target.value || bangkokToday())}
+              />
+            </Field>
+            <Field label={t("expectedOn")}>
+              <Input
+                type="date"
+                min={orderedOn}
+                value={expectedOn}
+                onChange={(event) => setExpectedOn(event.target.value)}
               />
             </Field>
           </div>
-        ) : null}
-      </div>
-      <LinesEditor
-        items={items}
-        lines={lines}
-        onChange={setLines}
-        errors={errors}
-        locale={locale}
-        withUnit
-        withPrice={t("unitPrice")}
-        withDiscount
-        withDescription
-        showOnHand
-        terms={terms}
-      />
-      <TotalsEstimate lines={lines} vatMode={vatMode} vatRatePct={vatRate} fallback={tCommon("moneyNote")} />
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("supplierRef")}>
-          <Input
-            value={supplierRef}
-            placeholder={t("supplierRefPlaceholder")}
-            onChange={(event) => setSupplierRef(event.target.value)}
+        </FormSection>
+        <FormSection card step={2} title={tSections("lines")}>
+          <div className="flex flex-col gap-2">
+            <SegmentedControl
+              label={t("vatMode")}
+              size="md"
+              value={vatMode}
+              onValueChange={setVatMode}
+              options={VAT_MODES.map((mode) => ({ value: mode, label: tCommon(`vatModes.${mode}`) }))}
+            />
+            {vatMode !== "none" ? (
+              <div className="max-w-48">
+                <Field label={t("vatRate")}>
+                  <NumberInput
+                    min={0}
+                    max={99}
+                    step="any"
+                    unit="%"
+                    value={vatRate}
+                    onChange={(event) => setVatRate(event.target.value)}
+                  />
+                </Field>
+              </div>
+            ) : null}
+          </div>
+          <LinesEditor
+            items={items}
+            lines={lines}
+            onChange={setLines}
+            errors={errors}
+            locale={locale}
+            withUnit
+            withPrice={t("unitPrice")}
+            withDiscount
+            withDescription
+            showOnHand
+            terms={terms}
           />
-        </Field>
-        <Field label={t("deliverTo")}>
-          <Input
-            value={deliverTo}
-            placeholder={t("deliverToPlaceholder")}
-            onChange={(event) => setDeliverTo(event.target.value)}
-          />
-        </Field>
-      </div>
-      <Field label={t("note")}>
-        <Textarea
-          rows={2}
-          value={note}
-          placeholder={tCommon("notePlaceholder")}
-          onChange={(event) => setNote(event.target.value)}
-        />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+        </FormSection>
+        <FormSection card step={3} title={tSections("references")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("supplierRef")}>
+              <Input
+                value={supplierRef}
+                placeholder={t("supplierRefPlaceholder")}
+                onChange={(event) => setSupplierRef(event.target.value)}
+              />
+            </Field>
+            <Field label={t("deliverTo")}>
+              <Input
+                value={deliverTo}
+                placeholder={t("deliverToPlaceholder")}
+                onChange={(event) => setDeliverTo(event.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label={t("note")}>
+            <Textarea
+              rows={2}
+              value={note}
+              placeholder={tCommon("notePlaceholder")}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

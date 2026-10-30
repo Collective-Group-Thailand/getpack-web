@@ -6,10 +6,12 @@ import { useState } from "react";
 
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 
 import { useErpCall } from "./call";
@@ -37,6 +39,8 @@ export function RequestForm({
 }) {
   const t = useTranslations("partnerFactory.requests");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { call, busy } = useErpCall();
@@ -91,36 +95,57 @@ export function RequestForm({
   }
 
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <LinesEditor
-        items={items}
-        lines={lines}
-        onChange={setLines}
-        errors={errors}
-        locale={locale}
-        quantityLabel={t("quantity")}
-      />
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("neededBy")}>
-          <Input
-            type="date"
-            min={bangkokToday()}
-            value={neededBy}
-            onChange={(event) => setNeededBy(event.target.value)}
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "lines", label: tSections("lines"), value: String(lines.filter((line) => line.itemId).length) },
+                { key: "needed", label: t("neededBy"), value: neededBy ? format.date(neededBy) : "" },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("lines")}>
+          <LinesEditor
+            items={items}
+            lines={lines}
+            onChange={setLines}
+            errors={errors}
+            locale={locale}
+            quantityLabel={t("quantity")}
           />
-        </Field>
-      </div>
-      <Field label={t("note")}>
-        <Textarea
-          rows={2}
-          value={note}
-          placeholder={t("notePlaceholder")}
-          onChange={(event) => setNote(event.target.value)}
-        />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+        </FormSection>
+        <FormSection card step={2} title={tSections("references")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("neededBy")}>
+              <Input
+                type="date"
+                min={bangkokToday()}
+                value={neededBy}
+                onChange={(event) => setNeededBy(event.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label={t("note")}>
+            <Textarea
+              rows={2}
+              value={note}
+              placeholder={t("notePlaceholder")}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

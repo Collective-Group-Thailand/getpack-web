@@ -25,6 +25,7 @@ export function SalesOrderActions({ order, etag }: { order: SalesOrder; etag: st
   const over = order.credit.over;
   return (
     <SalesActions
+      layout="panel"
       offered={order.nextActions}
       etag={etag}
       actions={[

@@ -6,8 +6,8 @@ import { ERP_LEAD_STAGE, ERP_OPPORTUNITY_STAGE } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain } from "@/features/partner/erp/format";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { Activities, TargetForm } from "@/features/partner/sales/CrmForms";
 import { erpSalespeople } from "@/features/partner/sales/server";
 import { pagerLabels } from "@/features/partner/sales/view";
@@ -56,6 +56,19 @@ export default async function CrmPage({
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/crm${queryOf({ view: next === "pipeline" ? undefined : next, ...extra })}`;
   const labels = await pagerLabels();
+  // The two ways to start a record; an empty list offers the one it lists (`primary` there, outlined elsewhere).
+  const newLead = (variant: "primary" | "secondary") =>
+    manage ? (
+      <Button asChild variant={variant} iconStart="user-plus">
+        <Link href="/crm/leads/new">{t("newLead")}</Link>
+      </Button>
+    ) : undefined;
+  const newOpportunity = (variant: "primary" | "secondary") =>
+    manage ? (
+      <Button asChild variant={variant} iconStart="handshake">
+        <Link href="/crm/opportunities/new">{t("newOpportunity")}</Link>
+      </Button>
+    ) : undefined;
 
   let body: React.ReactNode;
   if (view === "pipeline") {
@@ -64,7 +77,7 @@ export default async function CrmPage({
     );
     body = p.data ? (
       <>
-        <StatStrip
+        <PartnerStats
           label={t("pipeline.summary")}
           items={[
             { key: "open", label: t("pipeline.openValue"), value: format.thb(p.data.openValue) },
@@ -85,7 +98,8 @@ export default async function CrmPage({
               label: t("pipeline.myDue"),
               value: p.data.myDue,
               href: href("activities"),
-              tone: p.data.myDue ? "warning" : "neutral",
+              // What the page asks of the reader: follow-ups due, on the pale tint when there are any.
+              highlight: p.data.myDue > 0,
             },
           ]}
         />
@@ -110,7 +124,7 @@ export default async function CrmPage({
             caption={t("pipeline.bySalesperson")}
             rows={p.data.salespeople}
             rowKey={(row) => row.salesperson?.id ?? "none"}
-            empty={<EmptyState icon="users" title={t("pipeline.empty")} />}
+            empty={<EmptyState icon="users" title={t("pipeline.empty")} action={newOpportunity("secondary")} />}
             columns={[
               {
                 key: "p",
@@ -147,7 +161,14 @@ export default async function CrmPage({
           rows={list.data.data}
           rowKey={(row) => row.id}
           rowHref={(row) => `/crm/leads/${row.id}`}
-          empty={<EmptyState icon="user-plus" title={t("leads.empty")} description={t("leads.emptyBody")} />}
+          empty={
+            <EmptyState
+              icon="user-plus"
+              title={t("leads.empty")}
+              description={t("leads.emptyBody")}
+              action={newLead("primary")}
+            />
+          }
           columns={[
             { key: "n", header: t("leads.name"), primary: true, cell: (row) => row.name },
             {
@@ -207,7 +228,12 @@ export default async function CrmPage({
           rowKey={(row) => row.id}
           rowHref={(row) => `/crm/opportunities/${row.id}`}
           empty={
-            <EmptyState icon="handshake" title={t("opportunities.empty")} description={t("opportunities.emptyBody")} />
+            <EmptyState
+              icon="handshake"
+              title={t("opportunities.empty")}
+              description={t("opportunities.emptyBody")}
+              action={newOpportunity("primary")}
+            />
           }
           columns={[
             { key: "t", header: t("opportunities.title"), primary: true, cell: (row) => row.title },
@@ -275,17 +301,7 @@ export default async function CrmPage({
     ]);
     body = report.data ? (
       <>
-        <form className="flex flex-wrap items-end gap-2" action="/crm">
-          <input type="hidden" name="view" value="report" />
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">{t("report.month")}</span>
-            <Input type="month" name="month" defaultValue={month} className="w-48" />
-          </label>
-          <Button type="submit" variant="secondary">
-            {t("report.show")}
-          </Button>
-        </form>
-        <StatStrip
+        <PartnerStats
           label={t("report.summary")}
           items={[
             { key: "net", label: t("report.invoicedNet"), value: format.thb(report.data.invoicedNet) },
@@ -363,22 +379,35 @@ export default async function CrmPage({
         ) : undefined
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      {view === "leads" || view === "opportunities" ? (
-        <SearchBar
-          id="crm-q"
-          action="/crm"
-          hidden={{ view }}
-          q={q}
-          label={t("searchLabel")}
-          placeholder={t("searchPlaceholder")}
-          button={tCommon("search")}
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
         />
-      ) : null}
+        {view === "leads" || view === "opportunities" ? (
+          <SearchBar
+            id="crm-q"
+            action="/crm"
+            hidden={{ view }}
+            q={q}
+            label={t("searchLabel")}
+            placeholder={t("searchPlaceholder")}
+            button={tCommon("search")}
+          />
+        ) : view === "report" ? (
+          <form className="flex flex-wrap items-end gap-2" action="/crm">
+            <input type="hidden" name="view" value="report" />
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">{t("report.month")}</span>
+              <Input type="month" name="month" defaultValue={month} className="w-48" />
+            </label>
+            <Button type="submit" variant="secondary">
+              {t("report.show")}
+            </Button>
+          </form>
+        ) : null}
+      </ListToolbar>
       {body}
     </PartnerPage>
   );

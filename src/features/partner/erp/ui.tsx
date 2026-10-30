@@ -64,14 +64,23 @@ export function SearchBar({
   button: string;
 }) {
   return (
-    <form role="search" className="flex max-w-xl gap-2" action={action}>
+    // Sized for the list toolbar (`ListToolbar`): the whole row on a phone, a fixed field beside the views on a desk.
+    <form role="search" className="flex w-full max-w-xl gap-2 md:w-auto md:min-w-[22rem]" action={action}>
       {Object.entries(hidden).map(([name, value]) =>
         value ? <input key={name} type="hidden" name={name} value={value} /> : null,
       )}
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
-      <Input id={id} name="q" inputSize="lg" className="md:h-10" defaultValue={q ?? ""} placeholder={placeholder} />
+      <Input
+        id={id}
+        name="q"
+        type="search"
+        inputSize="lg"
+        className="md:h-10"
+        defaultValue={q ?? ""}
+        placeholder={placeholder}
+      />
       <Button type="submit" size="lg" variant="secondary" iconStart="search" className="h-11 shrink-0 md:h-10">
         {button}
       </Button>

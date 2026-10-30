@@ -194,3 +194,11 @@ export function StatStrip({
     </ul>
   );
 }
+
+/**
+ * The one toolbar over a list: the views (`ViewTabs`) on the left, the search (`SearchBar`) on the right, wrapping
+ * under each other on a phone. Either may be left out.
+ */
+export function ListToolbar({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center justify-between gap-3">{children}</div>;
+}

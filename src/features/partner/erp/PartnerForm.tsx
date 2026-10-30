@@ -7,13 +7,14 @@ import { useEffect, useState } from "react";
 import { isValidThaiTaxId } from "@/domain/tax-id";
 import { useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
@@ -39,6 +40,7 @@ export function PartnerForm({
 }) {
   const t = useTranslations("partnerErp.partners.form");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
   const { factoryId, can } = useFactory();
   const router = useRouter();
   const [refresh] = useRefresh();
@@ -123,8 +125,8 @@ export function PartnerForm({
     }
   }
 
-  return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
+  const details = (
+    <>
       <SegmentedControl
         label={t("kind")}
         size="xl"
@@ -207,6 +209,10 @@ export function PartnerForm({
           onChange={(event) => setAddress(event.target.value)}
         />
       </Field>
+    </>
+  );
+  const terms = (
+    <>
       <div className="grid gap-4 md:grid-cols-2">
         <SegmentedControl
           label={tSales("entityType")}
@@ -249,9 +255,46 @@ export function PartnerForm({
           />
         </Field>
       </div>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {partner ? tCommon("save") : t("create")}
-      </Button>
+    </>
+  );
+  const submit = (
+    <Button type="submit" size="xl" loading={busy} iconStart="save">
+      {partner ? tCommon("save") : t("create")}
+    </Button>
+  );
+
+  // Editing happens inside the partner's page: the fields in one column. A new partner gets the numbered
+  // sections and the summary panel with the one save.
+  if (partner)
+    return (
+      <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
+        {details}
+        {terms}
+        <div className="flex">{submit}</div>
+      </form>
+    );
+  return (
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary title={tSections("summary")} action={submit}>
+            <SummaryRows
+              rows={[
+                { key: "kind", label: t("kind"), value: tCommon(`partnerKinds.${kind}`) },
+                { key: "name", label: t("name"), value: name.trim() },
+                { key: "terms", label: t("paymentTerm"), value: days.trim() },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("partner")}>
+          {details}
+        </FormSection>
+        <FormSection card step={2} title={tSections("terms")}>
+          {terms}
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

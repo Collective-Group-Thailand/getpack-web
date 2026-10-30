@@ -6,14 +6,16 @@ import { useState } from "react";
 
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
@@ -47,6 +49,8 @@ export function GoodsReceiptForm({
   const t = useTranslations("partnerErp.move");
   const tCommon = useTranslations("partnerErp.common");
   const tRecv = useTranslations("partnerOps.receiving");
+  const tSections = useTranslations("partnerErp.common.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const main = warehouses.find((w) => w.isDefault) ?? warehouses[0];
@@ -180,143 +184,179 @@ export function GoodsReceiptForm({
   }
 
   return (
-    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-5" noValidate>
-      <Field label={t("purchaseOrder")}>
-        <Select
-          value={order?.id ?? NONE}
-          onValueChange={choose}
-          options={[
-            { value: NONE, label: t("noPurchaseOrder") },
-            ...openOrders.map((po) => ({
-              value: po.id,
-              label: `${po.poNo ?? ""} · ${po.supplier.name}`,
-              description: po.expectedOn ?? undefined,
-            })),
-          ]}
-        />
-      </Field>
-      <div className="grid gap-4 md:grid-cols-3">
-        {order ? (
-          <Field label={t("supplier")}>
-            <Input value={order.supplier.name} readOnly />
-          </Field>
-        ) : (
-          <Field label={t("supplier")} required requiredLabel={tCommon("required")} error={supplierError}>
+    <form onSubmit={(event) => void submit(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="package-check">
+                {t("receiveSubmit")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "po", label: t("purchaseOrder"), value: order ? (order.poNo ?? "") : t("noPurchaseOrder") },
+                {
+                  key: "supplier",
+                  label: t("supplier"),
+                  value: order ? order.supplier.name : (suppliers.find((s) => s.id === supplierId)?.name ?? ""),
+                },
+                {
+                  key: "warehouse",
+                  label: tCommon("warehouse"),
+                  value: warehouses.find((w) => w.id === warehouseId)?.name ?? "",
+                },
+                { key: "date", label: t("receivedOn"), value: receivedOn ? format.date(receivedOn) : "" },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("delivery")}>
+          <Field label={t("purchaseOrder")}>
             <Select
-              value={supplierId || null}
-              placeholder={tCommon("selectSupplier")}
-              onValueChange={setSupplierId}
-              options={suppliers.map((s) => ({ value: s.id, label: s.name, description: s.code }))}
+              value={order?.id ?? NONE}
+              onValueChange={choose}
+              options={[
+                { value: NONE, label: t("noPurchaseOrder") },
+                ...openOrders.map((po) => ({
+                  value: po.id,
+                  label: `${po.poNo ?? ""} · ${po.supplier.name}`,
+                  description: po.expectedOn ?? undefined,
+                })),
+              ]}
             />
           </Field>
-        )}
-        <Field label={tCommon("warehouse")}>
-          <Select
-            value={warehouseId}
-            onValueChange={setWarehouseId}
-            options={warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))}
-          />
-        </Field>
-        <Field label={t("receivedOn")}>
-          <Input
-            type="date"
-            max={bangkokToday()}
-            value={receivedOn}
-            onChange={(event) => setReceivedOn(event.target.value || bangkokToday())}
-          />
-        </Field>
-      </div>
-      <Field label={t("deliveryNote")}>
-        <Input
-          value={deliveryNoteNo}
-          placeholder={t("deliveryNotePlaceholder")}
-          onChange={(event) => setDeliveryNoteNo(event.target.value)}
-        />
-      </Field>
-
-      {order ? (
-        <ol className="flex flex-col gap-3">
-          {order.lines.map((line) => {
-            const tracks = byId.get(line.item.id)?.trackLots;
-            return (
-              <li
-                key={line.id}
-                className="border-border bg-surface grid gap-3 rounded-xl border p-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:p-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium">{line.item.name}</p>
-                  <p className="text-muted text-sm">
-                    {line.item.sku} ·{" "}
-                    {t("remaining", {
-                      qty: tCommon("inUnit", { qty: formatQty(line.remainingQty, locale), unit: unit(line.unit) }),
-                    })}
-                  </p>
-                </div>
-                <Field label={tCommon("quantity")} error={poErrors[line.id]}>
-                  <NumberInput
-                    min={0}
-                    step="any"
-                    unit={unit(line.unit)}
-                    value={poQty[line.id] ?? ""}
-                    placeholder={tCommon("qtyPlaceholder")}
-                    onChange={(event) => setPoQty({ ...poQty, [line.id]: event.target.value })}
-                  />
-                </Field>
-                {tracks ? (
-                  <Field label={tCommon("lotNo")} error={poErrors[`${line.id}:lot`]}>
-                    <Input
-                      value={poLots[line.id] ?? ""}
-                      placeholder={tCommon("lotPlaceholder")}
-                      onChange={(event) => setPoLots({ ...poLots, [line.id]: event.target.value })}
-                    />
-                  </Field>
-                ) : null}
-                <Field label={tRecv("rejected")} hint={tRecv("rejectedHint")} error={poErrors[`${line.id}:rejected`]}>
-                  <NumberInput
-                    min={0}
-                    step="any"
-                    unit={unit(line.unit)}
-                    value={poRejected[line.id] ?? ""}
-                    onChange={(event) => setPoRejected({ ...poRejected, [line.id]: event.target.value })}
-                  />
-                </Field>
-                {poRejected[line.id] && !isZero(plainNumber(poRejected[line.id]!)) ? (
-                  <Field label={tRecv("rejectReason")} error={poErrors[`${line.id}:reason`]}>
-                    <Input
-                      value={poReasons[line.id] ?? ""}
-                      placeholder={tRecv("rejectReasonPlaceholder")}
-                      onChange={(event) => setPoReasons({ ...poReasons, [line.id]: event.target.value })}
-                    />
-                  </Field>
-                ) : null}
-              </li>
-            );
-          })}
-        </ol>
-      ) : (
-        <LinesEditor
-          items={items}
-          lines={lines}
-          onChange={setLines}
-          errors={errors}
-          locale={locale}
-          withUnit
-          withPrice={t("price")}
-          showOnHand={false}
-        />
-      )}
-      <ChargesEditor rows={charges} onChange={setCharges} partners={suppliers} errors={chargeErrors} />
-      <Field label={tCommon("notePlaceholder")} labelHidden>
-        <Textarea
-          rows={2}
-          value={note}
-          placeholder={tCommon("notePlaceholder")}
-          onChange={(event) => setNote(event.target.value)}
-        />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="package-check" className="self-start">
-        {t("receiveSubmit")}
-      </Button>
+          <div className="grid gap-4 md:grid-cols-3">
+            {order ? (
+              <Field label={t("supplier")}>
+                <Input value={order.supplier.name} readOnly />
+              </Field>
+            ) : (
+              <Field label={t("supplier")} required requiredLabel={tCommon("required")} error={supplierError}>
+                <Select
+                  value={supplierId || null}
+                  placeholder={tCommon("selectSupplier")}
+                  onValueChange={setSupplierId}
+                  options={suppliers.map((s) => ({ value: s.id, label: s.name, description: s.code }))}
+                />
+              </Field>
+            )}
+            <Field label={tCommon("warehouse")}>
+              <Select
+                value={warehouseId}
+                onValueChange={setWarehouseId}
+                options={warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))}
+              />
+            </Field>
+            <Field label={t("receivedOn")}>
+              <Input
+                type="date"
+                max={bangkokToday()}
+                value={receivedOn}
+                onChange={(event) => setReceivedOn(event.target.value || bangkokToday())}
+              />
+            </Field>
+          </div>
+          <Field label={t("deliveryNote")}>
+            <Input
+              value={deliveryNoteNo}
+              placeholder={t("deliveryNotePlaceholder")}
+              onChange={(event) => setDeliveryNoteNo(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+        <FormSection card step={2} title={tSections("lines")}>
+          {order ? (
+            <ol className="flex flex-col gap-3">
+              {order.lines.map((line) => {
+                const tracks = byId.get(line.item.id)?.trackLots;
+                return (
+                  <li
+                    key={line.id}
+                    className="border-border bg-surface grid gap-3 rounded-xl border p-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:p-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium">{line.item.name}</p>
+                      <p className="text-muted text-sm">
+                        {line.item.sku} ·{" "}
+                        {t("remaining", {
+                          qty: tCommon("inUnit", { qty: formatQty(line.remainingQty, locale), unit: unit(line.unit) }),
+                        })}
+                      </p>
+                    </div>
+                    <Field label={tCommon("quantity")} error={poErrors[line.id]}>
+                      <NumberInput
+                        min={0}
+                        step="any"
+                        unit={unit(line.unit)}
+                        value={poQty[line.id] ?? ""}
+                        placeholder={tCommon("qtyPlaceholder")}
+                        onChange={(event) => setPoQty({ ...poQty, [line.id]: event.target.value })}
+                      />
+                    </Field>
+                    {tracks ? (
+                      <Field label={tCommon("lotNo")} error={poErrors[`${line.id}:lot`]}>
+                        <Input
+                          value={poLots[line.id] ?? ""}
+                          placeholder={tCommon("lotPlaceholder")}
+                          onChange={(event) => setPoLots({ ...poLots, [line.id]: event.target.value })}
+                        />
+                      </Field>
+                    ) : null}
+                    <Field
+                      label={tRecv("rejected")}
+                      hint={tRecv("rejectedHint")}
+                      error={poErrors[`${line.id}:rejected`]}
+                    >
+                      <NumberInput
+                        min={0}
+                        step="any"
+                        unit={unit(line.unit)}
+                        value={poRejected[line.id] ?? ""}
+                        onChange={(event) => setPoRejected({ ...poRejected, [line.id]: event.target.value })}
+                      />
+                    </Field>
+                    {poRejected[line.id] && !isZero(plainNumber(poRejected[line.id]!)) ? (
+                      <Field label={tRecv("rejectReason")} error={poErrors[`${line.id}:reason`]}>
+                        <Input
+                          value={poReasons[line.id] ?? ""}
+                          placeholder={tRecv("rejectReasonPlaceholder")}
+                          onChange={(event) => setPoReasons({ ...poReasons, [line.id]: event.target.value })}
+                        />
+                      </Field>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <LinesEditor
+              items={items}
+              lines={lines}
+              onChange={setLines}
+              errors={errors}
+              locale={locale}
+              withUnit
+              withPrice={t("price")}
+              showOnHand={false}
+            />
+          )}
+        </FormSection>
+        <FormSection card step={3} title={tSections("references")}>
+          <ChargesEditor rows={charges} onChange={setCharges} partners={suppliers} errors={chargeErrors} />
+          <Field label={tCommon("notePlaceholder")} labelHidden>
+            <Textarea
+              rows={2}
+              value={note}
+              placeholder={tCommon("notePlaceholder")}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
