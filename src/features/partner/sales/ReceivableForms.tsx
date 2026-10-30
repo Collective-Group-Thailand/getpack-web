@@ -488,12 +488,20 @@ export function BillingForm({
 }
 
 /** A receipt's actions (D-365): print it, or cancel it (what it settled is owed again). */
-export function ReceiptActions({ receipt }: { receipt: Schemas["ErpCustomerReceiptDto"] }) {
+export function ReceiptActions({
+  receipt,
+  layout,
+}: {
+  receipt: Schemas["ErpCustomerReceiptDto"];
+  /** `panel` on the record page's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.receipts.actions");
   const tCommon = useTranslations("partnerSales.common");
   const params = { receiptId: receipt.id };
   return (
     <SalesActions
+      layout={layout}
       offered={receipt.nextActions}
       actions={[
         { key: "erp_rc.pdf", kind: "pdf", path: "/receipts/{receiptId}/pdf", params },
@@ -515,12 +523,20 @@ export function ReceiptActions({ receipt }: { receipt: Schemas["ErpCustomerRecei
 }
 
 /** A billing note's actions (D-365): print or cancel it. */
-export function BillingActions({ billing }: { billing: Schemas["ErpBillingNoteDto"] }) {
+export function BillingActions({
+  billing,
+  layout,
+}: {
+  billing: Schemas["ErpBillingNoteDto"];
+  /** `panel` on the record page's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.billing.actions");
   const tCommon = useTranslations("partnerSales.common");
   const params = { billingNoteId: billing.id };
   return (
     <SalesActions
+      layout={layout}
       offered={billing.nextActions}
       actions={[
         { key: "erp_bn.pdf", kind: "pdf", path: "/billing-notes/{billingNoteId}/pdf", params },

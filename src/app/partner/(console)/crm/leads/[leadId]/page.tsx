@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_LEAD_STAGE } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { Activities, LeadActions } from "@/features/partner/sales/CrmForms";
 import { erpCustomers, erpSalespeople } from "@/features/partner/sales/server";
 import { StatusChip } from "@/features/partner/status";
@@ -56,63 +56,72 @@ export default async function LeadPage({ params }: { params: Promise<{ leadId: s
       </PartnerPage>
     );
   const lead = read.data;
+  const tNext = await getTranslations("partnerSales.common");
   return (
-    <PartnerPage full title={lead.name} back={back} meta={<StatusChip map={ERP_LEAD_STAGE} value={lead.stage} />}>
-      <LeadActions
-        lead={lead}
-        customers={(customers.data ?? []).map((c) => ({ id: c.id, code: c.code, name: c.name }))}
-      />
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            ...(lead.contactName ? [{ term: t("leadForm.contactName"), description: lead.contactName }] : []),
-            ...(lead.phone
-              ? [
-                  {
-                    term: t("leadForm.phone"),
-                    description: (
-                      <a className="text-link underline" href={`tel:${lead.phone}`}>
-                        {lead.phone}
-                      </a>
-                    ),
-                  },
-                ]
-              : []),
-            ...(lead.lineId ? [{ term: t("leadForm.lineId"), description: lead.lineId }] : []),
-            ...(lead.email ? [{ term: t("leadForm.email"), description: lead.email }] : []),
-            { term: t("leadForm.source"), description: tSource(lead.source) },
-            { term: tCommon("salesperson"), description: lead.salesperson?.name ?? tCommon("noSalesperson") },
-            ...(lead.expectedValue
-              ? [{ term: t("leadForm.expectedValue"), description: format.thb(lead.expectedValue) }]
-              : []),
-            ...(lead.customer
-              ? [
-                  {
-                    term: tCommon("customer"),
-                    description: (
-                      <Link className="text-link underline" href={`/partners/${lead.customer.id}`}>
-                        {lead.customer.name}
-                      </Link>
-                    ),
-                  },
-                ]
-              : []),
-            ...(lead.address ? [{ term: t("leadForm.address"), description: lead.address }] : []),
-            ...(lead.note ? [{ term: t("leadForm.note"), description: lead.note }] : []),
-            ...(lead.lostReason ? [{ term: tCommon("reason"), description: lead.lostReason }] : []),
-            { term: t("created"), description: format.dateTime(lead.createdAt) },
-          ]}
-        />
-      </Card>
-      <PartnerSection title={t("activities.title")}>
-        <Activities
-          activities={activities.data?.data ?? []}
-          subject={{ leadId: lead.id }}
-          people={people.data ?? []}
-          canManage={canAt(context, "factory_sales.manage")}
-        />
-      </PartnerSection>
+    <PartnerPage full title={lead.name} back={back} status={<StatusChip map={ERP_LEAD_STAGE} value={lead.stage} />}>
+      <PartnerDetail
+        aside={
+          <ActionPanel id="next-steps" tone="neutral" title={tNext("nextSteps")}>
+            <LeadActions
+              lead={lead}
+              customers={(customers.data ?? []).map((c) => ({ id: c.id, code: c.code, name: c.name }))}
+              layout="panel"
+            />
+          </ActionPanel>
+        }
+      >
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              ...(lead.contactName ? [{ term: t("leadForm.contactName"), description: lead.contactName }] : []),
+              ...(lead.phone
+                ? [
+                    {
+                      term: t("leadForm.phone"),
+                      description: (
+                        <a className="text-primary underline" href={`tel:${lead.phone}`}>
+                          {lead.phone}
+                        </a>
+                      ),
+                    },
+                  ]
+                : []),
+              ...(lead.lineId ? [{ term: t("leadForm.lineId"), description: lead.lineId }] : []),
+              ...(lead.email ? [{ term: t("leadForm.email"), description: lead.email }] : []),
+              { term: t("leadForm.source"), description: tSource(lead.source) },
+              { term: tCommon("salesperson"), description: lead.salesperson?.name ?? tCommon("noSalesperson") },
+              ...(lead.expectedValue
+                ? [{ term: t("leadForm.expectedValue"), description: format.thb(lead.expectedValue) }]
+                : []),
+              ...(lead.customer
+                ? [
+                    {
+                      term: tCommon("customer"),
+                      description: (
+                        <Link className="text-primary underline" href={`/partners/${lead.customer.id}`}>
+                          {lead.customer.name}
+                        </Link>
+                      ),
+                    },
+                  ]
+                : []),
+              ...(lead.address ? [{ term: t("leadForm.address"), description: lead.address }] : []),
+              ...(lead.note ? [{ term: t("leadForm.note"), description: lead.note }] : []),
+              ...(lead.lostReason ? [{ term: tCommon("reason"), description: lead.lostReason }] : []),
+              { term: t("created"), description: format.dateTime(lead.createdAt) },
+            ]}
+          />
+        </Card>
+        <PartnerSection title={t("activities.title")}>
+          <Activities
+            activities={activities.data?.data ?? []}
+            subject={{ leadId: lead.id }}
+            people={people.data ?? []}
+            canManage={canAt(context, "factory_sales.manage")}
+          />
+        </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

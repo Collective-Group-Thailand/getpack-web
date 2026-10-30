@@ -10,7 +10,14 @@ import type { Schemas } from "@/lib/api/types";
 import { ActionBar } from "./ActionBar";
 
 /** A supplier invoice's actions (D-337): approve a variance, pay, cancel — as the API offers them. */
-export function InvoiceActions({ invoice }: { invoice: Schemas["ErpSupplierInvoiceDto"] }) {
+export function InvoiceActions({
+  invoice,
+  layout,
+}: {
+  invoice: Schemas["ErpSupplierInvoiceDto"];
+  /** `panel` on the invoice page's next-steps panel (`ActionBar`). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerFactory.payables.actions");
   const tCommon = useTranslations("partnerErp.common");
   const tStatus = useTranslations("status.action");
@@ -19,6 +26,7 @@ export function InvoiceActions({ invoice }: { invoice: Schemas["ErpSupplierInvoi
   const path = { factoryId, invoiceId: invoice.id };
   return (
     <ActionBar
+      layout={layout}
       offered={invoice.nextActions}
       failed={tCommon("failed")}
       actions={[
@@ -78,7 +86,13 @@ export function InvoiceActions({ invoice }: { invoice: Schemas["ErpSupplierInvoi
 }
 
 /** A payment's one action (D-338): reverse it — a negative payment names it and its invoices reopen. */
-export function PaymentActions({ payment }: { payment: Schemas["ErpSupplierPaymentDto"] }) {
+export function PaymentActions({
+  payment,
+  layout,
+}: {
+  payment: Schemas["ErpSupplierPaymentDto"];
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerFactory.payables.actions");
   const tCommon = useTranslations("partnerErp.common");
   const tStatus = useTranslations("status.action");
@@ -86,6 +100,7 @@ export function PaymentActions({ payment }: { payment: Schemas["ErpSupplierPayme
   const { factoryId } = useFactory();
   return (
     <ActionBar
+      layout={layout}
       offered={payment.nextActions}
       failed={tCommon("failed")}
       actions={[

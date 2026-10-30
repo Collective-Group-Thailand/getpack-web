@@ -218,12 +218,20 @@ export function WhtCertificateForm({ suggestion }: { suggestion: Suggestion }) {
 }
 
 /** A certificate's actions (D-366): print the 50 ทวิ, or void it to issue a corrected one. */
-export function WhtActions({ certificate }: { certificate: Schemas["ErpWhtCertificateDto"] }) {
+export function WhtActions({
+  certificate,
+  layout,
+}: {
+  certificate: Schemas["ErpWhtCertificateDto"];
+  /** `panel` on the record page's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.tax.certificates.actions");
   const tCommon = useTranslations("partnerSales.common");
   const params = { certificateId: certificate.id };
   return (
     <SalesActions
+      layout={layout}
       offered={certificate.nextActions}
       actions={[
         { key: "erp_wht.pdf", kind: "pdf", path: "/wht-certificates/{certificateId}/pdf", params },

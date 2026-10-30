@@ -403,7 +403,16 @@ export function OpportunityForm({
 }
 
 /** A lead's actions (D-359): edit, convert into a customer (optionally opening a deal), mark lost. */
-export function LeadActions({ lead, customers }: { lead: Lead; customers: Customers }) {
+export function LeadActions({
+  lead,
+  customers,
+  layout,
+}: {
+  lead: Lead;
+  customers: Customers;
+  /** `panel` on the lead's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.crm.leadActions");
   const tCommon = useTranslations("partnerSales.common");
   const { factoryId } = useFactory();
@@ -445,6 +454,7 @@ export function LeadActions({ lead, customers }: { lead: Lead; customers: Custom
   return (
     <>
       <SalesActions
+        layout={layout}
         offered={lead.nextActions}
         actions={[
           {
@@ -520,7 +530,14 @@ export function LeadActions({ lead, customers }: { lead: Lead; customers: Custom
 }
 
 /** An opportunity's actions (D-359): quote it, edit, mark it won or lost. */
-export function OpportunityActions({ opportunity }: { opportunity: Opportunity }) {
+export function OpportunityActions({
+  opportunity,
+  layout,
+}: {
+  opportunity: Opportunity;
+  /** `panel` on the record page's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.crm.opportunityActions");
   const format = useFormat();
   const params = { opportunityId: opportunity.id };
@@ -530,6 +547,7 @@ export function OpportunityActions({ opportunity }: { opportunity: Opportunity }
   });
   return (
     <SalesActions
+      layout={layout}
       offered={opportunity.nextActions}
       actions={[
         { key: "erp_opportunity.quote", kind: "link", primary: true, href: `/quotations/new?${query.toString()}` },

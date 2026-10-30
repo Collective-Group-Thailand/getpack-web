@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_OPPORTUNITY_STAGE, ERP_QUOTATION_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { Row, RowList } from "@/features/partner/rows";
 import { Activities, OpportunityActions } from "@/features/partner/sales/CrmForms";
 import { erpSalespeople } from "@/features/partner/sales/server";
@@ -63,69 +63,81 @@ export default async function OpportunityPage({ params }: { params: Promise<{ op
       </PartnerPage>
     );
   const o = read.data;
+  const tNext = await getTranslations("partnerSales.common");
   return (
-    <PartnerPage full title={o.title} back={back} meta={<StatusChip map={ERP_OPPORTUNITY_STAGE} value={o.stage} />}>
-      <OpportunityActions opportunity={o} />
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            ...(o.customer
-              ? [{ term: tCommon("customer"), description: `${o.customer.name} (${o.customer.code})` }]
-              : []),
-            ...(o.lead
-              ? [
-                  {
-                    term: t("lead"),
-                    description: (
-                      <Link className="text-link underline" href={`/crm/leads/${o.lead.id}`}>
-                        {o.lead.name}
-                      </Link>
-                    ),
-                  },
-                ]
-              : []),
-            { term: t("opportunityForm.value"), description: format.thb(o.value) },
-            {
-              term: t("opportunityForm.probability"),
-              description: `${o.probabilityPct}% · ${format.thb(o.weightedValue)}`,
-            },
-            {
-              term: t("opportunityForm.expectedCloseOn"),
-              description: o.expectedCloseOn ? format.date(o.expectedCloseOn) : "—",
-            },
-            { term: tCommon("salesperson"), description: o.salesperson?.name ?? tCommon("noSalesperson") },
-            ...(o.note ? [{ term: t("opportunityForm.note"), description: o.note }] : []),
-            ...(o.lostReason ? [{ term: tCommon("reason"), description: o.lostReason }] : []),
-          ]}
-        />
-      </Card>
-      <PartnerSection title={t("quotesTitle")}>
-        {quotes.data?.data.length ? (
-          <RowList label={t("quotesTitle")}>
-            {quotes.data.data.map((qt) => (
-              <Row
-                key={qt.id}
-                href={`/quotations/${qt.id}`}
-                icon="document"
-                title={<span className="tabular-nums">{qt.quoteNo}</span>}
-                meta={<StatusChip map={ERP_QUOTATION_STATUS} value={qt.status} />}
-                aside={format.thb(qt.total)}
-              />
-            ))}
-          </RowList>
-        ) : (
-          <p className="text-muted text-sm">{t("noQuotes")}</p>
-        )}
-      </PartnerSection>
-      <PartnerSection title={t("activities.title")}>
-        <Activities
-          activities={activities.data?.data ?? []}
-          subject={{ opportunityId: o.id }}
-          people={people.data ?? []}
-          canManage={canAt(context, "factory_sales.manage")}
-        />
-      </PartnerSection>
+    <PartnerPage full title={o.title} back={back} status={<StatusChip map={ERP_OPPORTUNITY_STAGE} value={o.stage} />}>
+      <PartnerDetail
+        aside={
+          <ActionPanel id="next-steps" tone="neutral" title={tNext("nextSteps")}>
+            <dl className="border-border grid grid-cols-[1fr_auto] items-baseline gap-x-3 border-b pb-3">
+              <dt className="text-muted text-sm">{t("opportunityForm.value")}</dt>
+              <dd className="text-end text-xl font-semibold tabular-nums">{format.thb(o.value)}</dd>
+            </dl>
+            <OpportunityActions opportunity={o} layout="panel" />
+          </ActionPanel>
+        }
+      >
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              ...(o.customer
+                ? [{ term: tCommon("customer"), description: `${o.customer.name} (${o.customer.code})` }]
+                : []),
+              ...(o.lead
+                ? [
+                    {
+                      term: t("lead"),
+                      description: (
+                        <Link className="text-primary underline" href={`/crm/leads/${o.lead.id}`}>
+                          {o.lead.name}
+                        </Link>
+                      ),
+                    },
+                  ]
+                : []),
+              { term: t("opportunityForm.value"), description: format.thb(o.value) },
+              {
+                term: t("opportunityForm.probability"),
+                description: `${o.probabilityPct}% · ${format.thb(o.weightedValue)}`,
+              },
+              {
+                term: t("opportunityForm.expectedCloseOn"),
+                description: o.expectedCloseOn ? format.date(o.expectedCloseOn) : "—",
+              },
+              { term: tCommon("salesperson"), description: o.salesperson?.name ?? tCommon("noSalesperson") },
+              ...(o.note ? [{ term: t("opportunityForm.note"), description: o.note }] : []),
+              ...(o.lostReason ? [{ term: tCommon("reason"), description: o.lostReason }] : []),
+            ]}
+          />
+        </Card>
+        <PartnerSection title={t("quotesTitle")}>
+          {quotes.data?.data.length ? (
+            <RowList label={t("quotesTitle")}>
+              {quotes.data.data.map((qt) => (
+                <Row
+                  key={qt.id}
+                  href={`/quotations/${qt.id}`}
+                  icon="document"
+                  title={<span className="tabular-nums">{qt.quoteNo}</span>}
+                  meta={<StatusChip map={ERP_QUOTATION_STATUS} value={qt.status} />}
+                  aside={format.thb(qt.total)}
+                />
+              ))}
+            </RowList>
+          ) : (
+            <p className="text-muted text-sm">{t("noQuotes")}</p>
+          )}
+        </PartnerSection>
+        <PartnerSection title={t("activities.title")}>
+          <Activities
+            activities={activities.data?.data ?? []}
+            subject={{ opportunityId: o.id }}
+            people={people.data ?? []}
+            canManage={canAt(context, "factory_sales.manage")}
+          />
+        </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

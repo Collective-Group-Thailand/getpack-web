@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { ScoreChart } from "@/features/partner/account/actions";
+import { TrendChart } from "@/features/partner/charts";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { cn } from "@/ui/lib/cn";
+import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerAccount.performance"))("title") };
@@ -16,18 +15,21 @@ const METRICS = [
   ["acceptance", "onTimeAcceptancePct"],
   ["shipping", "onTimeShippingPct"],
   ["firstPass", "qcFirstPassPct"],
-  ["claims", "claimRatePct"],
   ["updates", "onTimeUpdatesPct"],
+  ["claims", "claimRatePct"],
 ] as const;
 
 /**
- * The factory's own monthly scorecard (D-155, `partner.production.scorecards`) — the same numbers
- * getpack's allocation weighs (D-075): this month so far, the last full month, and the trend.
+ * The factory's own monthly scorecard (D-155, `partner.production.scorecards`): one card per measure — the last
+ * full month's figure, its line over the months on record, and what it is measured from in a fold. Every card is
+ * drawn the same way (no red/green verdict): the figures speak, the line shows the direction.
  */
 export default async function PerformancePage() {
-  const t = await getTranslations("partnerAccount.performance");
-  const format = await getFormat();
-  const context = await factoryContext();
+  const [t, format, context] = await Promise.all([
+    getTranslations("partnerAccount.performance"),
+    getFormat(),
+    factoryContext(),
+  ]);
   const { contract } = await partnerServerApis();
   const cards = await attempt(
     async () =>
@@ -46,67 +48,81 @@ export default async function PerformancePage() {
   const [current, last] = cards.data;
   // `month` is the first day of the month (`ScorecardDto`); mid-month keeps every zone in the same month.
   const monthLabel = (month: string) => format.date(`${month.slice(0, 7)}-15`, { style: "month" });
+  const shortMonth = (month: string) =>
+    new Intl.DateTimeFormat(format.locale === "en" ? "en-GB" : "th-TH", { month: "short", timeZone: "UTC" }).format(
+      new Date(`${month.slice(0, 7)}-15T00:00:00Z`),
+    );
   const shown = last ?? current;
+  const oldestFirst = [...cards.data].reverse();
+  const trend = cards.data.length >= 2;
 
   return (
     <PartnerPage title={t("title")} description={t("body")} wide>
       {shown ? (
         <PartnerSection
+          id="scorecard"
           title={t("monthTitle", { month: monthLabel(shown.month) })}
           description={t("jobs", { count: shown.jobsCount })}
         >
-          <PartnerTable
-            caption={t("monthTitle", { month: monthLabel(shown.month) })}
-            rows={[...METRICS]}
-            rowKey={([key]) => key}
-            columns={[
-              {
-                key: "metric",
-                header: t("table.metric"),
-                primary: true,
-                cell: ([key]) => <span className="font-medium">{t(`metrics.${key}`)}</span>,
-              },
-              {
-                key: "value",
-                header: t("table.value"),
-                align: "end",
-                cell: ([key, field]) => {
-                  const value = shown[field];
-                  // The same lines the old tiles were coloured by: under 85% (over 3% for claims) needs a look.
-                  const weak = key === "claims" ? Number(value ?? 0) > 3 : Number(value ?? 100) < 85;
-                  return (
-                    <span className={cn("font-semibold", weak ? "text-warning-subtle-fg" : "text-success-subtle-fg")}>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 sm:max-lg:[&>li:last-child]:col-span-2">
+            {METRICS.map(([key, field]) => {
+              const value = shown[field];
+              const values = oldestFirst.map((m) => (m[field] === null ? null : Number(m[field])));
+              // Claims are a small rate: their own scale, so a 2% month is not drawn as a flat line on the floor.
+              const max = key === "claims" ? Math.max(5, Math.ceil(Math.max(0, ...values.map((v) => v ?? 0)))) : 100;
+              return (
+                <li
+                  key={key}
+                  className="rounded-card border-border bg-surface flex min-w-0 flex-col gap-3 border p-4 sm:p-5"
+                >
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-muted text-sm font-medium">{t(`metrics.${key}`)}</h3>
+                    <p className="text-[1.75rem] leading-tight font-semibold tracking-tight tabular-nums">
                       {value === null ? "—" : format.percent(value)}
-                    </span>
-                  );
-                },
-              },
-              {
-                key: "meaning",
-                header: t("table.meaning"),
-                cell: ([key]) => <span className="text-muted">{t(`hints.${key}`)}</span>,
-              },
-            ]}
-          />
+                    </p>
+                  </div>
+                  {trend ? (
+                    <TrendChart
+                      title={t(`metrics.${key}`)}
+                      height={72}
+                      max={max}
+                      ticks={[0, max]}
+                      formatTick={(tick) => format.percent(String(tick), 0)}
+                      points={oldestFirst.map((m, at) => ({
+                        key: m.month,
+                        label: shortMonth(m.month),
+                        value: values[at] ?? null,
+                        display: m[field] === null ? "—" : format.percent(m[field]),
+                      }))}
+                    />
+                  ) : null}
+                  <details className="group border-border mt-auto border-t pt-2">
+                    <summary className="text-muted hover:text-fg focus-visible:ring-focus-ring flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md text-sm outline-none focus-visible:ring-2 md:min-h-8 [&::-webkit-details-marker]:hidden">
+                      {t("table.meaning")}
+                      <Icon
+                        name="chevron-down"
+                        size={16}
+                        aria-hidden="true"
+                        className="transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                      />
+                    </summary>
+                    <p className="pt-1 pb-1 text-sm text-pretty">{t(`hints.${key}`)}</p>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
         </PartnerSection>
       ) : null}
-      {current && last ? (
-        <p className="text-muted text-sm">
-          {t("currentNote", { month: monthLabel(current.month) })}{" "}
-          {t("computedAt", { date: format.dateTime(current.computedAt) })}
-        </p>
-      ) : null}
-      <PartnerSection title={t("trend")}>
-        {cards.data.length >= 2 ? (
-          <ScoreChart
-            months={cards.data}
-            monthLabels={Object.fromEntries(cards.data.map((item) => [item.month, monthLabel(item.month)]))}
-          />
-        ) : (
-          // One month is a point, not a trend: say when the line will appear instead of an empty frame.
-          <p className="border-border text-muted rounded-xl border border-dashed p-4 text-sm">{t("trendSoon")}</p>
-        )}
-      </PartnerSection>
+      <div className="text-muted flex flex-col gap-1 text-sm">
+        {current && last ? (
+          <p>
+            {t("currentNote", { month: monthLabel(current.month) })}{" "}
+            {t("computedAt", { date: format.dateTime(current.computedAt) })}
+          </p>
+        ) : null}
+        {trend ? null : <p>{t("trendSoon")}</p>}
+      </div>
     </PartnerPage>
   );
 }

@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { StickySave } from "@/features/partner/form-layout";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
@@ -13,7 +14,7 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { FilePickButton } from "@/ui/components/FilePickButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
@@ -156,232 +157,245 @@ export function ErpSettingsForm({
   }
 
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-6" noValidate>
-      <p className="text-muted">{settings.vatRegistered ? t("vatRegistered") : t("vatNotRegistered")}</p>
-      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
-        <legend className="mb-1 text-lg font-semibold">{t("rules")}</legend>
-        <Checkbox
-          label={t("allowNegative")}
-          description={t("allowNegativeHint")}
-          checked={allowNegative}
-          onCheckedChange={(checked) => setAllowNegative(checked === true)}
-        />
-        <div className="max-w-48">
-          <Field label={t("overReceipt")} hint={t("overReceiptHint")} error={errors.overReceiptPct}>
-            <NumberInput
-              min={0}
-              max={100}
-              step="any"
-              unit="%"
-              value={overReceipt}
-              onChange={(event) => setOverReceipt(event.target.value)}
-            />
-          </Field>
-        </div>
-        <Checkbox
-          label={t("requireApproval")}
-          description={t("requireApprovalHint")}
-          checked={approval}
-          onCheckedChange={(checked) => setApproval(checked === true)}
-        />
-        <div className="max-w-48">
-          <Field label={t("priceTolerance")} hint={t("priceToleranceHint")} error={errors.priceTolerancePct}>
-            <NumberInput
-              min={0}
-              max={100}
-              step="any"
-              unit="%"
-              value={tolerance}
-              onChange={(event) => setTolerance(event.target.value)}
-            />
-          </Field>
-        </div>
-      </fieldset>
-      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
-        <legend className="mb-1 text-lg font-semibold">{tOps("sourcingTitle")}</legend>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={tOps("priceAlertPct")} hint={tOps("priceAlertHint")} error={errors.priceAlertPct}>
-            <NumberInput
-              min={0}
-              max={100}
-              step="any"
-              unit="%"
-              value={priceAlert}
-              onChange={(event) => setPriceAlert(event.target.value)}
-            />
-          </Field>
-          <Field label={tOps("quoteExpiryDays")} hint={tOps("quoteExpiryHint")} error={errors.quoteExpiryDays}>
-            <NumberInput
-              min={0}
-              max={90}
-              step={1}
-              unit={tOps("days")}
-              value={quoteDays}
-              onChange={(event) => setQuoteDays(event.target.value)}
-            />
-          </Field>
-        </div>
-        <SegmentedControl
-          label={tOps("supplierApproval")}
-          size="md"
-          value={policy}
-          onValueChange={setPolicy}
-          options={POLICIES.map((p) => ({ value: p, label: tOps(`policies.${p}`) }))}
-        />
-        <p className="text-muted text-sm">{tOps("supplierApprovalHint")}</p>
-      </fieldset>
-      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
-        <legend className="mb-1 text-lg font-semibold">{tSales("title")}</legend>
-        <p className="text-muted text-sm">{tSales("body")}</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={tSales("quoteValidDays")} hint={tSales("quoteValidDaysHint")} error={errors.quoteValidDays}>
-            <NumberInput
-              min={1}
-              max={365}
-              step={1}
-              unit={tOps("days")}
-              value={validDays}
-              onChange={(event) => setValidDays(event.target.value)}
-            />
-          </Field>
-          <Field label={tSales("signatory")} hint={tSales("signatoryHint")}>
-            <Input value={signatory} onChange={(event) => setSignatory(event.target.value)} />
-          </Field>
-        </div>
-        <Field label={tSales("bank")} hint={tSales("bankHint")}>
-          <Textarea
-            rows={2}
-            value={bank}
-            placeholder={tSales("bankPlaceholder")}
-            onChange={(event) => setBank(event.target.value)}
+    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
+      <FormSection card step={1} title={t("rules")}>
+        <fieldset className="flex min-w-0 flex-col gap-4" disabled={!canEdit}>
+          <legend className="sr-only">{t("rules")}</legend>
+          <Checkbox
+            label={t("allowNegative")}
+            description={t("allowNegativeHint")}
+            checked={allowNegative}
+            onCheckedChange={(checked) => setAllowNegative(checked === true)}
           />
-        </Field>
-        <Field label={tSales("footer")} hint={tSales("footerHint")}>
-          <Textarea
-            rows={2}
-            value={footer}
-            placeholder={tSales("footerPlaceholder")}
-            onChange={(event) => setFooter(event.target.value)}
-          />
-        </Field>
-        <Field
-          label={tSales("logo")}
-          hint={logoId ? tSales("logoSet") : tSales("logoHint")}
-          error={errors.documentLogoFileId}
-        >
-          <span className="flex flex-wrap items-center gap-2">
-            <FilePickButton
-              label={logoId ? tSales("logoReplace") : tSales("logoChoose")}
-              accept="image/png,image/jpeg"
-              icon="image"
-              disabled={!canEdit}
-              loading={logoBusy}
-              onFiles={async ([file]) => {
-                if (!file) return;
-                setLogoBusy(true);
-                try {
-                  const uploaded = await uploadFile("partner", file, "document", { factoryId });
-                  setLogoId(uploaded.id);
-                  toast.success(tSales("logoUploaded"));
-                } catch (error) {
-                  toast.error(problemMessage(error, tCommon("failed")));
-                } finally {
-                  setLogoBusy(false);
-                }
-              }}
-            />
-            {logoId ? (
-              <Button size="sm" variant="ghost" iconStart="trash" onClick={() => setLogoId(null)}>
-                {tSales("logoRemove")}
-              </Button>
-            ) : null}
-          </span>
-        </Field>
-      </fieldset>
-      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
-        <legend className="mb-1 text-lg font-semibold">{t("insight.title")}</legend>
-        <p className="text-muted text-sm">{t("insight.body")}</p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label={t("insight.labour")} hint={t("insight.labourHint")} error={errors.labourRatePerHour}>
-            <NumberInput
-              min={0}
-              step="any"
-              unit="฿"
-              value={labour}
-              onChange={(event) => setLabour(event.target.value)}
-            />
-          </Field>
-          <Field label={t("insight.overhead")} hint={t("insight.overheadHint")} error={errors.overheadPct}>
-            <NumberInput
-              min={0}
-              max={500}
-              step="any"
-              unit="%"
-              value={overhead}
-              onChange={(event) => setOverhead(event.target.value)}
-            />
-          </Field>
-          <Field label={t("insight.oeeAlert")} hint={t("insight.oeeAlertHint")} error={errors.oeeAlertPct}>
-            <NumberInput
-              min={0}
-              max={100}
-              step="any"
-              unit="%"
-              value={oeeAlert}
-              onChange={(event) => setOeeAlert(event.target.value)}
-            />
-          </Field>
-        </div>
-        <Checkbox
-          label={t("insight.dailySummary")}
-          description={t("insight.dailySummaryHint")}
-          checked={daily}
-          onCheckedChange={(checked) => setDaily(checked === true)}
-        />
-        <p className="text-muted text-sm">{t("insight.rates")}</p>
-      </fieldset>
-      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
-        <legend className="mb-1 text-lg font-semibold">{t("prefixes")}</legend>
-        <p className="text-muted text-sm">{t("prefixesHint")}</p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {PREFIXES.map((key) => (
-            <Field key={key} label={t(`prefix.${key}`)} error={errors[`prefixes.${key}`]}>
-              <Input
-                maxLength={6}
-                autoCapitalize="characters"
-                value={prefixes[key] ?? ""}
-                placeholder={key.toUpperCase()}
-                onChange={(event) =>
-                  setPrefixes({ ...prefixes, [key]: event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })
-                }
+          <div className="max-w-48">
+            <Field label={t("overReceipt")} hint={t("overReceiptHint")} error={errors.overReceiptPct}>
+              <NumberInput
+                min={0}
+                max={100}
+                step="any"
+                unit="%"
+                value={overReceipt}
+                onChange={(event) => setOverReceipt(event.target.value)}
               />
             </Field>
-          ))}
-        </div>
-      </fieldset>
-      <fieldset className="flex flex-col gap-3" disabled={!canEdit}>
-        <legend className="mb-1 text-lg font-semibold">{t("modules")}</legend>
-        <p className="text-muted text-sm">{t("modulesHint")}</p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {MODULES.map((key) => (
-            <Checkbox
-              key={key}
-              label={t(`module.${key}`)}
-              disabled={!LIVE.has(key)}
-              checked={modules.includes(key)}
-              onCheckedChange={(checked) =>
-                setModules((current) =>
-                  checked === true ? [...new Set([...current, key])] : current.filter((m) => m !== key),
-                )
-              }
+          </div>
+          <Checkbox
+            label={t("requireApproval")}
+            description={t("requireApprovalHint")}
+            checked={approval}
+            onCheckedChange={(checked) => setApproval(checked === true)}
+          />
+          <div className="max-w-48">
+            <Field label={t("priceTolerance")} hint={t("priceToleranceHint")} error={errors.priceTolerancePct}>
+              <NumberInput
+                min={0}
+                max={100}
+                step="any"
+                unit="%"
+                value={tolerance}
+                onChange={(event) => setTolerance(event.target.value)}
+              />
+            </Field>
+          </div>
+        </fieldset>
+      </FormSection>
+      <FormSection card step={2} title={tOps("sourcingTitle")}>
+        <fieldset className="flex min-w-0 flex-col gap-4" disabled={!canEdit}>
+          <legend className="sr-only">{tOps("sourcingTitle")}</legend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={tOps("priceAlertPct")} hint={tOps("priceAlertHint")} error={errors.priceAlertPct}>
+              <NumberInput
+                min={0}
+                max={100}
+                step="any"
+                unit="%"
+                value={priceAlert}
+                onChange={(event) => setPriceAlert(event.target.value)}
+              />
+            </Field>
+            <Field label={tOps("quoteExpiryDays")} hint={tOps("quoteExpiryHint")} error={errors.quoteExpiryDays}>
+              <NumberInput
+                min={0}
+                max={90}
+                step={1}
+                unit={tOps("days")}
+                value={quoteDays}
+                onChange={(event) => setQuoteDays(event.target.value)}
+              />
+            </Field>
+          </div>
+          <SegmentedControl
+            label={tOps("supplierApproval")}
+            size="md"
+            value={policy}
+            onValueChange={setPolicy}
+            options={POLICIES.map((p) => ({ value: p, label: tOps(`policies.${p}`) }))}
+          />
+          <p className="text-muted text-sm">{tOps("supplierApprovalHint")}</p>
+        </fieldset>
+      </FormSection>
+      <FormSection card step={3} title={tSales("title")}>
+        <fieldset className="flex min-w-0 flex-col gap-4" disabled={!canEdit}>
+          <legend className="sr-only">{tSales("title")}</legend>
+          <p className="text-muted text-sm">{tSales("body")}</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={tSales("quoteValidDays")} hint={tSales("quoteValidDaysHint")} error={errors.quoteValidDays}>
+              <NumberInput
+                min={1}
+                max={365}
+                step={1}
+                unit={tOps("days")}
+                value={validDays}
+                onChange={(event) => setValidDays(event.target.value)}
+              />
+            </Field>
+            <Field label={tSales("signatory")} hint={tSales("signatoryHint")}>
+              <Input value={signatory} onChange={(event) => setSignatory(event.target.value)} />
+            </Field>
+          </div>
+          <Field label={tSales("bank")} hint={tSales("bankHint")}>
+            <Textarea
+              rows={2}
+              value={bank}
+              placeholder={tSales("bankPlaceholder")}
+              onChange={(event) => setBank(event.target.value)}
             />
-          ))}
-        </div>
-      </fieldset>
+          </Field>
+          <Field label={tSales("footer")} hint={tSales("footerHint")}>
+            <Textarea
+              rows={2}
+              value={footer}
+              placeholder={tSales("footerPlaceholder")}
+              onChange={(event) => setFooter(event.target.value)}
+            />
+          </Field>
+          <Field
+            label={tSales("logo")}
+            hint={logoId ? tSales("logoSet") : tSales("logoHint")}
+            error={errors.documentLogoFileId}
+          >
+            <span className="flex flex-wrap items-center gap-2">
+              <FilePickButton
+                label={logoId ? tSales("logoReplace") : tSales("logoChoose")}
+                accept="image/png,image/jpeg"
+                icon="image"
+                disabled={!canEdit}
+                loading={logoBusy}
+                onFiles={async ([file]) => {
+                  if (!file) return;
+                  setLogoBusy(true);
+                  try {
+                    const uploaded = await uploadFile("partner", file, "document", { factoryId });
+                    setLogoId(uploaded.id);
+                    toast.success(tSales("logoUploaded"));
+                  } catch (error) {
+                    toast.error(problemMessage(error, tCommon("failed")));
+                  } finally {
+                    setLogoBusy(false);
+                  }
+                }}
+              />
+              {logoId ? (
+                <Button size="sm" variant="ghost" iconStart="trash" onClick={() => setLogoId(null)}>
+                  {tSales("logoRemove")}
+                </Button>
+              ) : null}
+            </span>
+          </Field>
+        </fieldset>
+      </FormSection>
+      <FormSection card step={4} title={t("insight.title")}>
+        <fieldset className="flex min-w-0 flex-col gap-4" disabled={!canEdit}>
+          <legend className="sr-only">{t("insight.title")}</legend>
+          <p className="text-muted text-sm">{t("insight.body")}</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label={t("insight.labour")} hint={t("insight.labourHint")} error={errors.labourRatePerHour}>
+              <NumberInput
+                min={0}
+                step="any"
+                unit="฿"
+                value={labour}
+                onChange={(event) => setLabour(event.target.value)}
+              />
+            </Field>
+            <Field label={t("insight.overhead")} hint={t("insight.overheadHint")} error={errors.overheadPct}>
+              <NumberInput
+                min={0}
+                max={500}
+                step="any"
+                unit="%"
+                value={overhead}
+                onChange={(event) => setOverhead(event.target.value)}
+              />
+            </Field>
+            <Field label={t("insight.oeeAlert")} hint={t("insight.oeeAlertHint")} error={errors.oeeAlertPct}>
+              <NumberInput
+                min={0}
+                max={100}
+                step="any"
+                unit="%"
+                value={oeeAlert}
+                onChange={(event) => setOeeAlert(event.target.value)}
+              />
+            </Field>
+          </div>
+          <Checkbox
+            label={t("insight.dailySummary")}
+            description={t("insight.dailySummaryHint")}
+            checked={daily}
+            onCheckedChange={(checked) => setDaily(checked === true)}
+          />
+          <p className="text-muted text-sm">{t("insight.rates")}</p>
+        </fieldset>
+      </FormSection>
+      <FormSection card step={5} title={t("prefixes")}>
+        <fieldset className="flex min-w-0 flex-col gap-4" disabled={!canEdit}>
+          <legend className="sr-only">{t("prefixes")}</legend>
+          <p className="text-muted text-sm">{t("prefixesHint")}</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {PREFIXES.map((key) => (
+              <Field key={key} label={t(`prefix.${key}`)} error={errors[`prefixes.${key}`]}>
+                <Input
+                  maxLength={6}
+                  autoCapitalize="characters"
+                  value={prefixes[key] ?? ""}
+                  placeholder={key.toUpperCase()}
+                  onChange={(event) =>
+                    setPrefixes({ ...prefixes, [key]: event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })
+                  }
+                />
+              </Field>
+            ))}
+          </div>
+        </fieldset>
+      </FormSection>
+      <FormSection card step={6} title={t("modules")}>
+        <fieldset className="flex min-w-0 flex-col gap-4" disabled={!canEdit}>
+          <legend className="sr-only">{t("modules")}</legend>
+          <p className="text-muted text-sm">{t("modulesHint")}</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {MODULES.map((key) => (
+              <Checkbox
+                key={key}
+                label={t(`module.${key}`)}
+                disabled={!LIVE.has(key)}
+                checked={modules.includes(key)}
+                onCheckedChange={(checked) =>
+                  setModules((current) =>
+                    checked === true ? [...new Set([...current, key])] : current.filter((m) => m !== key),
+                  )
+                }
+              />
+            ))}
+          </div>
+        </fieldset>
+      </FormSection>
       {canEdit ? (
-        <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-          {t("save")}
-        </Button>
+        <StickySave note={settings.vatRegistered ? t("vatRegistered") : t("vatNotRegistered")}>
+          <Button type="submit" size="lg" loading={busy} iconStart="save">
+            {t("save")}
+          </Button>
+        </StickySave>
       ) : (
         <p className="text-muted text-sm">{t("ownerOnly")}</p>
       )}
@@ -497,7 +511,14 @@ export function WarehouseManager({ warehouses, canEdit }: { warehouses: Warehous
               onChange={(event) => setName(event.target.value)}
             />
           </Field>
-          <Button type="submit" size="lg" iconStart="plus" loading={busy === "add"} className="h-11 md:h-10">
+          <Button
+            type="submit"
+            size="lg"
+            variant="secondary"
+            iconStart="plus"
+            loading={busy === "add"}
+            className="h-11 md:h-10"
+          >
             {t("addWarehouse")}
           </Button>
         </form>

@@ -60,3 +60,20 @@ export function SummaryRows({ rows }: { rows: { key: string; label: React.ReactN
     </dl>
   );
 }
+
+/**
+ * The save of a long settings form that has no summary column: a bar that stays at the bottom of the view while the
+ * sections scroll (a desk), or the phone's bottom action bar — so the save is never a scroll away. `note` says what
+ * the save covers or why it is off.
+ */
+export function StickySave({ note, children }: { note?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <>
+      <div className="border-border bg-surface shadow-overlay rounded-card sticky bottom-4 z-10 hidden items-center justify-between gap-4 border px-4 py-3 md:flex">
+        <p className="text-muted min-w-0 text-sm text-pretty">{note}</p>
+        <div className="flex shrink-0 items-center gap-2">{children}</div>
+      </div>
+      <MobileActionBar className="bottom-[max(4rem,var(--mobile-tab-h))]">{children}</MobileActionBar>
+    </>
+  );
+}

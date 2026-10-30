@@ -49,7 +49,7 @@ export default async function NewDocumentPage({
     ...(query.folder ? { folderId: query.folder } : {}),
   };
   return (
-    <PartnerPage title={t("newTitle")} back={{ href: "/documents", label: t("title") }}>
+    <PartnerPage wide title={t("newTitle")} back={{ href: "/documents", label: t("title") }}>
       {read.data ? (
         <DocumentForm folders={read.data.folders} targets={read.data.targets} prefill={prefill} />
       ) : (

@@ -7,13 +7,14 @@ import { useState } from "react";
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { isZero, plainNumber, QTY_PATTERN } from "@/features/partner/erp/format";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { newIdempotencyKey } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
@@ -53,6 +54,7 @@ const newLine = (patch: Partial<NoteLine> = {}): NoteLine => ({
  * by value before VAT; goods returned may go back into stock. The API checks it against the invoice.
  */
 export function NoteForm({ invoice, kind }: { invoice: Invoice; kind: Kind }) {
+  const tSections = useTranslations("partnerSales.form.sections");
   const t = useTranslations("partnerSales.notes.form");
   const tReasons = useTranslations("partnerSales.notes.reasons");
   const tCommon = useTranslations("partnerSales.common");
@@ -115,112 +117,141 @@ export function NoteForm({ invoice, kind }: { invoice: Invoice; kind: Kind }) {
   }
 
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <p className="text-muted text-sm">
-        {t("against", {
-          no: invoice.invoiceNo ?? "",
-          total: format.thb(invoice.total),
-          customer: invoice.customer.name,
-        })}
-      </p>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("reason")}>
-          <Select
-            value={reason}
-            onValueChange={(value) => setReason(value as Reason)}
-            options={REASONS[kind].map((r) => ({ value: r, label: tReasons(r) }))}
-          />
-        </Field>
-        <Field label={t("issueDate")}>
-          <Input
-            type="date"
-            value={issueDate}
-            onChange={(event) => setIssueDate(event.target.value || bangkokToday())}
-          />
-        </Field>
-      </div>
-      <Field label={t("reasonText")} hint={t("reasonTextHint")}>
-        <Textarea rows={2} value={reasonText} onChange={(event) => setReasonText(event.target.value)} />
-      </Field>
-      <ol className="flex flex-col gap-3">
-        {lines.map((line, index) => (
-          <li key={line.key} className="border-border bg-surface rounded-xl border p-3 md:p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-muted text-sm font-medium">{t("line", { n: index + 1 })}</span>
-              {lines.length > 1 ? (
-                <IconButton
-                  name="trash"
-                  size="sm"
-                  label={t("remove", { n: index + 1 })}
-                  onClick={() => setLines(lines.filter((_, i) => i !== index))}
-                />
-              ) : null}
-            </div>
-            <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
-              <Field label={t("description")} error={errors[index]}>
-                <Input
-                  value={line.description}
-                  placeholder={t("descriptionPlaceholder")}
-                  onChange={(event) => update(index, { description: event.target.value })}
-                />
-              </Field>
-              <Field label={t("amount")} hint={t("amountHint")}>
-                <NumberInput
-                  step="any"
-                  min={0}
-                  unit="฿"
-                  value={line.amount}
-                  onChange={(event) => update(index, { amount: event.target.value })}
-                />
-              </Field>
-              {returns && items.length ? (
-                <>
-                  <Field label={t("returnItem")}>
-                    <Select
-                      value={line.itemId || null}
-                      placeholder={t("returnItemPlaceholder")}
-                      onValueChange={(itemId) => update(index, { itemId })}
-                      options={items}
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t(kind === "credit" ? "saveCredit" : "saveDebit")}
+              </Button>
+            }
+          >
+            <p className="text-muted text-sm text-pretty">
+              {t("against", {
+                no: invoice.invoiceNo ?? "",
+                total: format.thb(invoice.total),
+                customer: invoice.customer.name,
+              })}
+            </p>
+            <SummaryRows
+              rows={[
+                { key: "reason", label: t("reason"), value: tReasons(reason) },
+                { key: "date", label: t("issueDate"), value: issueDate },
+              ]}
+            />
+            <p className="text-muted text-sm">{t("vatNote")}</p>
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={t("reason")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("reason")}>
+              <Select
+                value={reason}
+                onValueChange={(value) => setReason(value as Reason)}
+                options={REASONS[kind].map((r) => ({ value: r, label: tReasons(r) }))}
+              />
+            </Field>
+            <Field label={t("issueDate")}>
+              <Input
+                type="date"
+                value={issueDate}
+                onChange={(event) => setIssueDate(event.target.value || bangkokToday())}
+              />
+            </Field>
+          </div>
+          <Field label={t("reasonText")} hint={t("reasonTextHint")}>
+            <Textarea rows={2} value={reasonText} onChange={(event) => setReasonText(event.target.value)} />
+          </Field>
+        </FormSection>
+        <FormSection card step={2} title={tSections("lines")}>
+          <ol className="flex flex-col gap-3">
+            {lines.map((line, index) => (
+              <li key={line.key} className="border-border bg-surface rounded-xl border p-3 md:p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-muted text-sm font-medium">{t("line", { n: index + 1 })}</span>
+                  {lines.length > 1 ? (
+                    <IconButton
+                      name="trash"
+                      size="sm"
+                      label={t("remove", { n: index + 1 })}
+                      onClick={() => setLines(lines.filter((_, i) => i !== index))}
+                    />
+                  ) : null}
+                </div>
+                <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
+                  <Field label={t("description")} error={errors[index]}>
+                    <Input
+                      value={line.description}
+                      placeholder={t("descriptionPlaceholder")}
+                      onChange={(event) => update(index, { description: event.target.value })}
                     />
                   </Field>
-                  <Field label={t("returnQty")}>
+                  <Field label={t("amount")} hint={t("amountHint")}>
                     <NumberInput
                       step="any"
                       min={0}
-                      value={line.returnQty}
-                      onChange={(event) => update(index, { returnQty: event.target.value })}
+                      unit="฿"
+                      value={line.amount}
+                      onChange={(event) => update(index, { amount: event.target.value })}
                     />
                   </Field>
-                </>
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <Button
-        variant="secondary"
-        iconStart="plus"
-        className="self-start"
-        onClick={() => setLines([...lines, newLine()])}
-      >
-        {t("add")}
-      </Button>
-      <p className="text-muted text-sm">{t("vatNote")}</p>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t(kind === "credit" ? "saveCredit" : "saveDebit")}
-      </Button>
+                  {returns && items.length ? (
+                    <>
+                      <Field label={t("returnItem")}>
+                        <Select
+                          value={line.itemId || null}
+                          placeholder={t("returnItemPlaceholder")}
+                          onValueChange={(itemId) => update(index, { itemId })}
+                          options={items}
+                        />
+                      </Field>
+                      <Field label={t("returnQty")}>
+                        <NumberInput
+                          step="any"
+                          min={0}
+                          value={line.returnQty}
+                          onChange={(event) => update(index, { returnQty: event.target.value })}
+                        />
+                      </Field>
+                    </>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+          <Button
+            variant="secondary"
+            iconStart="plus"
+            className="self-start"
+            onClick={() => setLines([...lines, newLine()])}
+          >
+            {t("add")}
+          </Button>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
 
 /** What can be done with a credit / debit note now (D-364): issue, void, delete the draft, print. */
-export function NoteActions({ note }: { note: Note }) {
+export function NoteActions({
+  note,
+  layout,
+}: {
+  note: Note;
+  /** `panel` on the record page's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.notes.actions");
   const tCommon = useTranslations("partnerSales.common");
   const format = useFormat();
   const params = { noteId: note.id };
   return (
     <SalesActions
+      layout={layout}
       offered={note.nextActions}
       actions={[
         {

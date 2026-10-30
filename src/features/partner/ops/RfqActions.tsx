@@ -8,7 +8,14 @@ import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 
 /** What can be done with a request for quotation now (D-348): send, edit, cancel — as the API offers. */
-export function RfqActions({ rfq }: { rfq: Schemas["ErpRfqDto"] }) {
+export function RfqActions({
+  rfq,
+  layout,
+}: {
+  rfq: Schemas["ErpRfqDto"];
+  /** `panel` on the record page's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerOps.rfqs.actions");
   const tCommon = useTranslations("partnerErp.common");
   const tStatus = useTranslations("status.action");
@@ -18,6 +25,7 @@ export function RfqActions({ rfq }: { rfq: Schemas["ErpRfqDto"] }) {
 
   return (
     <ActionBar
+      layout={layout}
       offered={rfq.nextActions}
       failed={tCommon("failed")}
       actions={[

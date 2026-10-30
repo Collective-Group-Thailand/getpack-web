@@ -4,10 +4,11 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_DOC_EXPIRY } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { FolderActions } from "@/features/partner/ops/DocumentForms";
-import { ViewTabs } from "@/features/partner/rows";
+import { FilterLinks, ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -63,12 +64,36 @@ export default async function DocumentsPage({
     ]);
     return { folders: folders.data!, list: list.data! };
   });
+  const totals = read.data
+    ? await viewTotals(
+        VIEWS,
+        async (key) =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/documents", {
+              params: {
+                path,
+                query: {
+                  perPage: 1,
+                  ...(key === "expiring" || key === "expired" ? { expiry: key } : {}),
+                  ...(key === "archived" ? { status: "archived" as const } : {}),
+                  ...(folderId ? { folderId } : {}),
+                  ...(q ? { q } : {}),
+                },
+              },
+            })
+          ).data,
+      )
+    : null;
   const href = (next: { view?: View; folder?: string | null; q?: string; page?: number }) => {
     const v = next.view ?? view;
     const f = next.folder === null ? undefined : (next.folder ?? folderId);
     return `/documents${queryOf({ view: v === "all" ? undefined : v, folder: f, q: next.q, page: next.page })}`;
   };
   const folder = read.data?.folders.find((f) => f.id === folderId);
+  const folderItems = [
+    { id: "", name: t("allDocuments"), docCount: null as number | null },
+    ...(read.data?.folders ?? []),
+  ];
 
   return (
     <PartnerPage
@@ -78,63 +103,108 @@ export default async function DocumentsPage({
       {...(folder ? { back: { href: href({ folder: null }), label: t("allDocuments") } } : {})}
       actions={
         canManage ? (
-          <Button asChild size="lg" iconStart="plus">
+          <Button asChild iconStart="plus">
             <Link href={`/documents/new${queryOf({ folder: folderId })}`}>{t("add")}</Link>
           </Button>
         ) : undefined
       }
     >
       {read.data ? (
-        <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
-          <nav aria-label={t("folders")} className="flex flex-col gap-2">
-            <p className="text-muted text-sm font-semibold">{t("folders")}</p>
-            <ul className="flex gap-1 overflow-x-auto lg:flex-col">
-              {[{ id: "", name: t("allDocuments"), docCount: null as number | null }, ...read.data.folders].map((f) => {
+        <div className="grid items-start gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
+          {/* Folders: a side list on a desk; on a phone a wrapping filter line under the toolbar instead. */}
+          <nav aria-label={t("folders")} className="hidden flex-col gap-2 lg:sticky lg:top-20 lg:flex">
+            <p className="text-muted px-3 text-sm font-medium">{t("folders")}</p>
+            <ul className="flex flex-col gap-0.5">
+              {folderItems.map((f) => {
                 const current = (f.id || undefined) === folderId;
                 return (
-                  <li key={f.id || "all"} className="shrink-0">
+                  <li key={f.id || "all"}>
                     <Link
                       href={href({ folder: f.id || null })}
                       aria-current={current ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm",
-                        current ? "bg-primary-subtle text-primary-subtle-fg font-medium" : "hover:bg-surface-subtle",
+                        "focus-visible:ring-focus-ring flex min-h-9 items-center gap-2.5 rounded-lg px-3 text-sm outline-none focus-visible:ring-2",
+                        current
+                          ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                          : "text-fg hover:bg-surface-subtle",
                       )}
                     >
-                      <Icon name="folder" size={16} />
-                      <span className="truncate">{f.name}</span>
+                      <Icon name="folder" size={16} aria-hidden="true" className={current ? undefined : "text-muted"} />
+                      <span className="min-w-0 flex-1 truncate">{f.name}</span>
                       {f.docCount !== null ? (
-                        <span className="text-muted ms-auto tabular-nums">{f.docCount}</span>
+                        <span className={cn("text-xs tabular-nums", current ? undefined : "text-muted")}>
+                          {f.docCount}
+                        </span>
                       ) : null}
                     </Link>
                   </li>
                 );
               })}
             </ul>
-            {canManage ? <FolderActions {...(folder ? { folder } : {})} /> : null}
+            {canManage ? (
+              <div className="border-border mt-2 border-t px-1 pt-3">
+                <FolderActions {...(folder ? { folder } : {})} />
+              </div>
+            ) : null}
           </nav>
           <div className="flex min-w-0 flex-col gap-4">
-            <ViewTabs
-              label={t("views.label")}
-              current={view}
-              items={VIEWS.map((key) => ({ key, href: href({ view: key }), label: t(`views.${key}`) }))}
-            />
-            <SearchBar
-              id="doc-q"
-              action="/documents"
-              hidden={{ view: view === "all" ? undefined : view, folder: folderId }}
-              q={q}
-              label={t("searchLabel")}
-              placeholder={t("searchPlaceholder")}
-              button={tCommon("search")}
-            />
+            <ListToolbar>
+              <ViewTabs
+                label={t("views.label")}
+                current={view}
+                items={VIEWS.map((key) => ({
+                  key,
+                  href: href({ view: key, q }),
+                  label: t(`views.${key}`),
+                  count: totals?.[key] ?? null,
+                }))}
+              />
+              <SearchBar
+                id="doc-q"
+                action="/documents"
+                hidden={{ view: view === "all" ? undefined : view, folder: folderId }}
+                q={q}
+                label={t("searchLabel")}
+                placeholder={t("searchPlaceholder")}
+                button={tCommon("search")}
+              />
+            </ListToolbar>
+            {folderItems.length > 1 || canManage ? (
+              <div className="flex flex-col gap-2 lg:hidden">
+                {folderItems.length > 1 ? (
+                  <FilterLinks
+                    label={t("folders")}
+                    current={folderId ?? ""}
+                    items={folderItems.map((f) => ({ key: f.id, href: href({ folder: f.id || null }), label: f.name }))}
+                  />
+                ) : null}
+                {canManage ? <FolderActions {...(folder ? { folder } : {})} /> : null}
+              </div>
+            ) : null}
             <PartnerTable
               caption={t(`views.${view}`)}
               rows={read.data.list.data}
               rowKey={(d) => d.id}
               rowHref={(d) => `/documents/${d.id}`}
               rowTone={(d) => (d.expiry === "expired" ? "danger" : d.expiry === "expiring" ? "warning" : undefined)}
-              empty={<EmptyState icon="folder" title={t("empty")} description={t("emptyBody")} />}
+              empty={
+                <EmptyState
+                  icon="folder"
+                  title={t("empty")}
+                  description={t("emptyBody")}
+                  action={
+                    canManage ? (
+                      <Button asChild variant="secondary" iconStart="plus">
+                        <Link href={`/documents/new${queryOf({ folder: folderId })}`}>{t("add")}</Link>
+                      </Button>
+                    ) : (
+                      <Button asChild variant="secondary">
+                        <Link href="/documents">{t("allDocuments")}</Link>
+                      </Button>
+                    )
+                  }
+                />
+              }
               columns={[
                 { key: "title", header: t("table.title"), primary: true, cell: (d) => d.title },
                 { key: "category", header: t("table.category"), cell: (d) => t(`categories.${d.category}`) },

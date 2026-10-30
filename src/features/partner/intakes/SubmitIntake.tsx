@@ -108,7 +108,11 @@ export function SubmitIntake({ terms }: { terms: Schemas["IntakeTermsDto"] }) {
           maxLength={2000}
         />
       </Field>
-      <section aria-labelledby="intake-terms" className="border-border bg-bg-subtle rounded-lg border p-3">
+      <section
+        aria-labelledby="intake-terms"
+        tabIndex={0}
+        className="border-border bg-bg-subtle focus-visible:ring-focus-ring max-h-60 overflow-y-auto rounded-lg border p-3 outline-none focus-visible:ring-2"
+      >
         <h3 id="intake-terms" className="mb-1 text-sm font-semibold">
           {t("termsTitle", { version: terms.version })}
         </h3>

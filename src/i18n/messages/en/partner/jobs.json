@@ -323,7 +323,8 @@
     "empty": "No guides yet",
     "noResults": "No guide matches",
     "published": "Published {date}",
-    "back": "Back to all guides"
+    "back": "Back to all guides",
+    "onThisPage": "On this page"
   },
   "intakes": {
     "title": "Offer a dieline",
