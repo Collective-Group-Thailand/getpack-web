@@ -59,6 +59,10 @@ export interface CreditLimitVersionRow {
   approvalRequestId: string | null;
   requestedBy: UserRow;
   createdAt: string;
+  /** D-462: a term outside `b2b.credit_terms.allowedDays`. */
+  customTerm?: boolean;
+  /** D-462: a temporary limit ends here. */
+  validUntil?: string | null;
 }
 
 export interface CompanyRow {
@@ -86,6 +90,10 @@ export interface CompanyRow {
     /** Whether a prepaid company meets D-121 (paid orders from `b2b.credit_eligibility_paid_orders`). */
     eligible: boolean;
     eligibleReason: "paid_orders" | "financial_statement" | "not_yet";
+    /** D-462: the limit in force is temporary and ends here; then `fallback*` applies. */
+    validUntil?: string | null;
+    fallbackLimitAmount?: string | null;
+    fallbackTermDays?: number | null;
     versions: CreditLimitVersionRow[];
   };
   discount: {

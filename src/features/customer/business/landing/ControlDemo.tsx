@@ -17,22 +17,12 @@ import type { PricedProduct } from "./samples.server";
 const BUDGET = { min: 10_000, max: 200_000, step: 5_000, start: 50_000 };
 
 /**
- * "ควบคุมการสั่งซื้อ" (business pack Phase 1 item 4): how the company catalogue and the budgets will work — both
- * Phase 4 features, labelled "เร็ว ๆ นี้" from `storefront.roadmap`. Nothing here is sample data: the catalogue rows
+ * "ควบคุมการสั่งซื้อ" (business pack Phase 1 item 4): how the company catalogue and the budgets work (no status
+ * chip — every company-account feature is live, product owner 2026-10-30). Nothing here is sample data: the catalogue rows
  * are real products with their real prices per quantity (the pricing service's tiers; the stepper walks those
  * quantities, no amount is added up), and the budget uses only numbers the visitor enters.
  */
-export function ControlDemo({
-  products,
-  soonLabel,
-  catalogueSoon,
-  budgetsSoon,
-}: {
-  products: PricedProduct[];
-  soonLabel: string;
-  catalogueSoon: boolean;
-  budgetsSoon: boolean;
-}) {
+export function ControlDemo({ products }: { products: PricedProduct[] }) {
   const t = useTranslations("business.landing.control");
   const format = useFormat();
   // Index into each product's priced quantities; -1 = not chosen.
@@ -45,12 +35,6 @@ export function ControlDemo({
   const baht = (value: number) => formatTHB(String(value), format.locale, { decimals: 0 });
   const lines = products.filter((product) => (chosen[product.slug] ?? -1) >= 0);
   const pieces = lines.reduce((sum, product) => sum + product.steps[chosen[product.slug]!]!.quantity, 0);
-  const soon = (on: boolean) =>
-    on ? (
-      <span className="bg-instant-subtle text-instant-subtle-fg rounded-control px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap">
-        {soonLabel}
-      </span>
-    ) : null;
 
   return (
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -61,11 +45,8 @@ export function ControlDemo({
         >
           <h3 id="ctl-catalogue" className="flex flex-wrap items-center justify-between gap-2.5 text-lg font-semibold">
             {t("catalogue.title")}
-            <span className="flex gap-1.5">
-              {soon(catalogueSoon)}
-              <span className="border-border text-muted rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
-                {t("demo")}
-              </span>
+            <span className="border-border text-muted rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
+              {t("demo")}
             </span>
           </h3>
           <p className="text-muted -mt-1 text-sm">{t("catalogue.body")}</p>
@@ -139,11 +120,8 @@ export function ControlDemo({
       >
         <h3 id="ctl-budget" className="flex flex-wrap items-center justify-between gap-2.5 text-lg font-semibold">
           {t("budget.title")}
-          <span className="flex gap-1.5">
-            {soon(budgetsSoon)}
-            <span className="border-border text-muted rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
-              {t("demo")}
-            </span>
+          <span className="border-border text-muted rounded-control border border-dashed px-2 py-0.5 text-[11px] font-medium">
+            {t("demo")}
           </span>
         </h3>
         <p className="text-muted -mt-1 text-sm">{t("budget.body")}</p>

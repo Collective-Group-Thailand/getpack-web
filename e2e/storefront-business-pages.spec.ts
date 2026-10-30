@@ -41,7 +41,7 @@ test.describe("/business (C10 Phase 1)", () => {
   }) => {
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/business`);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("จัดการในที่เดียว");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("ได้ราคาจริงทันที");
     const flow = page.getByRole("list", { name: "เส้นทางของคำสั่งซื้อนี้" });
     const orders = page.getByRole("radiogroup", { name: "ตัวอย่างคำสั่งซื้อ" }).getByRole("radio");
     await expect(orders.first()).toContainText("฿");
@@ -147,12 +147,13 @@ test.describe("/contact (C10 Phase 2)", () => {
 });
 
 test.describe("/partner-with-us (C10 Phase 3)", () => {
-  test("getpack Factory lists its modules with their status and takes an application", async ({ page }) => {
+  test("getpack Factory lists its modules without status chips and takes an application", async ({ page }) => {
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/partner-with-us`);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("ใช้ฟรี");
-    await expect(page.getByText("ใช้ได้แล้ว").first()).toBeVisible();
-    await expect(page.getByText("กำลังพัฒนา").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("ฟรี");
+    // Every module is live (product owner, 2026-10-30): no "ใช้ได้แล้ว" / "กำลังพัฒนา" chip anywhere.
+    await expect(page.locator("#modules")).toContainText("รับงานจาก getpack");
+    await expect(page.getByText("กำลังพัฒนา")).toHaveCount(0);
     await expect(page.getByRole("table")).toContainText("บัญชีและบัญชีแยกประเภท");
     const apply = page.locator("#apply");
     // C12 (D-460, legal draft): the partner agreement's key clauses next to the application.

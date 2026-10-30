@@ -39,7 +39,7 @@ test.describe("getpack for business", () => {
   test("a visitor reads what a company account adds", async ({ page }) => {
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/business`);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("จัดการในที่เดียว");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("ได้ราคาจริงทันที");
     await expect(page.getByRole("link", { name: "เปิดบัญชีบริษัท ฟรี" })).toHaveAttribute(
       "href",
       /sign-in\?returnTo=%2Fbusiness%2Fapply/,

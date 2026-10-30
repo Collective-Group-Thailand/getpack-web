@@ -937,3 +937,238 @@
     box-shadow: var(--rest);
   }
 }
+/*
+ * Hero story (business / getpack Factory heroes, 2026-10-30): one scene at a time, each a short CSS-only
+ * sequence — enter, lines rising in turn, a typed query, a bar filling, a cursor pressing a button, a toast.
+ * Every element sets its own `animation-delay` inline. With less motion requested the scene simply appears,
+ * every element in its final state, and the story does not auto-advance (the component checks the same query).
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .pk-story-enter {
+    animation: pk-story-enter 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .pk-story-up {
+    opacity: 0;
+    animation: pk-story-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .pk-story-pop {
+    opacity: 0;
+    animation: pk-story-pop 0.4s ease forwards;
+  }
+  .pk-story-type {
+    max-width: 0;
+    animation: pk-story-type 1s linear forwards;
+  }
+  .pk-story-caret {
+    animation: pk-story-blink 1s steps(1) infinite;
+  }
+  .pk-story-bar {
+    width: 0;
+    animation: pk-story-bar 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .pk-story-ping {
+    animation: pk-story-ping 1.4s ease-out infinite;
+  }
+  .pk-story-cursor {
+    opacity: 0;
+    animation: pk-story-cursor 1.6s ease forwards;
+  }
+  .pk-story-press {
+    animation: pk-story-press 0.3s ease;
+  }
+  .pk-story-toast {
+    opacity: 0;
+    animation: pk-story-toast 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .pk-story-hi {
+    animation:
+      pk-story-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+      pk-story-hi 1.4s ease 2.9s;
+  }
+  .pk-story-strike {
+    width: 0;
+    animation: pk-story-strike 0.5s ease 0.15s forwards;
+  }
+  .pk-story-drop {
+    opacity: 0;
+    animation: pk-story-drop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .pk-story-swatch {
+    animation: pk-story-swatch 0.9s ease forwards;
+  }
+  .pk-story-fan-l {
+    animation: pk-story-fan-l 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.7s forwards;
+  }
+  .pk-story-fan-r {
+    animation: pk-story-fan-r 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s forwards;
+  }
+  .pk-story-fill {
+    animation: pk-story-fill var(--pk-story-duration, 6s) linear forwards;
+  }
+  .pk-story-paused .pk-story-fill {
+    animation-play-state: paused;
+  }
+}
+@keyframes pk-story-enter {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pk-story-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pk-story-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes pk-story-type {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 20rem;
+  }
+}
+@keyframes pk-story-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes pk-story-bar {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes pk-story-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-primary) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+@keyframes pk-story-cursor {
+  0% {
+    opacity: 0;
+    transform: translate(60px, 50px);
+  }
+  20% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  70% {
+    transform: translate(0, 0) scale(0.82);
+  }
+  82% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+}
+@keyframes pk-story-press {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.92);
+  }
+}
+@keyframes pk-story-toast {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pk-story-hi {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  35%,
+  70% {
+    background-color: var(--color-primary-subtle);
+  }
+}
+@keyframes pk-story-strike {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes pk-story-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-26px) rotate(-8deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pk-story-swatch {
+  from {
+    background-color: var(--color-instant);
+  }
+  to {
+    background-color: var(--color-primary);
+  }
+}
+@keyframes pk-story-fan-l {
+  to {
+    transform: rotate(-3.5deg) translate(-6px, 10px);
+  }
+}
+@keyframes pk-story-fan-r {
+  to {
+    transform: rotate(2.5deg) translate(8px, 6px);
+  }
+}
+@keyframes pk-story-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}

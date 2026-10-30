@@ -14,42 +14,26 @@
     "menuCurrent": "This page: {page}"
   },
   "landing": {
-    "metaTitle": "getpack for business — company account, approvers, credit terms, tax invoices per branch",
+    "metaTitle": "getpack for business — instant real prices, in-system approval, tax invoices per branch, credit terms",
     "metaDescription": "One company account for the whole team: approvers by amount, PO numbers, tax invoices per branch, 15–60 day credit terms and bulk reorders. Opening an account is free.",
-    "intro": "One company account for your whole team: set approvers, add PO numbers, split tax invoices by branch, apply for credit terms and reorder many items at once — real prices every time, no waiting for quotations.",
-    "titleStart": "Your company's packaging,",
-    "titleEm": "managed in one place",
+    "intro": "No waiting for quotations. One company account for the whole team: approvers by spending limit, PO numbers, tax invoices issued to the right branch, credit terms, and bulk reorders from a single file.",
+    "titleStart": "Order packaging for your whole company,",
+    "titleEm": "priced instantly",
     "apply": "Open a company account — free",
     "talk": "Talk to sales",
     "facts": {
+      "lock": {
+        "value": "Price held {days} days",
+        "label": "Save it as a quotation"
+      },
       "credit": {
         "value": "15–60 days",
         "label": "Credit terms"
       },
-      "review": {
-        "value": "1–2 business days",
-        "label": "Document review"
-      },
-      "roles": {
-        "value": "4 roles",
-        "label": "In one team"
+      "free": {
+        "value": "Free",
+        "label": "To open a company account"
       }
-    },
-    "screen": {
-      "label": "Illustration of the company account: spend by branch, orders waiting for approval and the credit line",
-      "caption": "Sample screen · illustration, not real data",
-      "company": "Company account",
-      "tabs": {
-        "overview": "Overview",
-        "orders": "Orders",
-        "team": "Team",
-        "statements": "Statements"
-      },
-      "spend": "Spend by branch",
-      "pending": "Waiting for approval",
-      "approve": "Approve",
-      "credit": "Credit line",
-      "reorder": "Frequent reorders"
     },
     "audienceLabel": "Made for",
     "audience": {
@@ -91,7 +75,6 @@
     },
     "features": {
       "title": "Everything purchasing, accounting and marketing need",
-      "soon": "Coming soon",
       "items": {
         "team": {
           "title": "The whole team, one account",
@@ -435,10 +418,110 @@
       "rateLimited": "Too many messages — please wait a moment, or message us on LINE",
       "required": "(required)"
     },
-    "flow": {
-      "label": "How an order moves through a company account"
-    },
-    "showcaseLabel": "Packaging made with getpack"
+    "story": {
+      "label": "The getpack company account, scene by scene",
+      "pieces": "{count} pcs",
+      "price": {
+        "label": "Price",
+        "before": "Ask 3 suppliers, wait 2–3 days",
+        "title": "See the real price the moment you pick a product",
+        "query": "Search products",
+        "leadTime": "{days}-day production",
+        "pill": "Real price, no quotation needed",
+        "order": "Order",
+        "toast": "Added to the purchase order"
+      },
+      "approval": {
+        "label": "Approval",
+        "before": "Approvals in chat, impossible to track",
+        "title": "Approved in the system by spending limit, every step on record",
+        "order": "Purchase order · PO number optional",
+        "orderNoAmount": "Company purchase order",
+        "limit": "Limit",
+        "within": "OK",
+        "steps": {
+          "buyer": {
+            "initial": "B",
+            "title": "Purchasing",
+            "body": "Creates the purchase order"
+          },
+          "approver": {
+            "initial": "A",
+            "title": "Approver",
+            "body": "Within the set limit"
+          },
+          "accountant": {
+            "initial": "F",
+            "title": "Accounting",
+            "body": "Waiting for documents"
+          }
+        },
+        "approve": "Approve",
+        "next": "Next",
+        "toast": "Approved",
+        "toastDetail": "Every step on record"
+      },
+      "invoice": {
+        "label": "Tax invoice",
+        "before": "Invoice to the wrong branch, corrected later",
+        "title": "Tax invoices split by branch, automatically",
+        "branches": {
+          "hq": "Head office",
+          "one": "Branch 1",
+          "two": "Branch 2"
+        },
+        "issuedTo": "Issued to {branch}",
+        "issued": "Issued",
+        "toast": "Issued for every branch",
+        "toastDetail": "No corrections later"
+      },
+      "reorder": {
+        "label": "Reorder",
+        "before": "Every reorder means resending files and specs",
+        "title": "Upload one CSV, reorder many items at once",
+        "file": "reorder-this-month.csv",
+        "pill": "File read",
+        "toast": "Same specs on every line",
+        "toastDetail": "Prices recalculated instantly"
+      },
+      "account": {
+        "label": "Company account",
+        "before": "Cash on every order, documents everywhere",
+        "title": "One account for the team, with {terms} credit terms",
+        "facts": {
+          "lock": {
+            "value": "{days} days",
+            "label": "Price held"
+          },
+          "credit": {
+            "label": "Credit terms"
+          },
+          "free": {
+            "value": "Free",
+            "label": "To open"
+          }
+        },
+        "roles": {
+          "buyer": {
+            "title": "Buyer",
+            "body": "Designs and orders"
+          },
+          "approver": {
+            "title": "Approver",
+            "body": "Approves by limit"
+          },
+          "accountant": {
+            "title": "Accounting",
+            "body": "Invoices and payment"
+          },
+          "admin": {
+            "title": "Admin",
+            "body": "Settings and members"
+          }
+        }
+      },
+      "role": "carousel"
+    }
   },
   "dashboard": {
     "status": {
@@ -502,7 +585,9 @@
     "creditNone": "Credit",
     "requestCredit": "Request a credit line",
     "spendEmpty": "No company orders yet",
-    "spendEmptyBody": "Once members order on the company's behalf, the totals — by month, member, branch and product type — appear here"
+    "spendEmptyBody": "Once members order on the company's behalf, the totals — by month, member, branch and product type — appear here",
+    "creditTerm": "{days}-day credit after delivery",
+    "creditUntil": "Temporary limit, valid until {date}"
   },
   "apply": {
     "title": "Open a company account",
@@ -729,7 +814,7 @@
   "credit": {
     "title": "Credit & statements",
     "intro": "Your limit, terms, what's outstanding and the monthly statements.",
-    "noAccess": "Statements are for the company admin and accountants.",
+    "noAccess": "You see the available credit and the term; the full limit and statements are for the company admin and accountant",
     "summary": "Credit",
     "statusLabel": "Status",
     "statuses": {
@@ -801,7 +886,11 @@
     "owedTitle": "Owed as of {date}",
     "nextDueTerm": "Next due",
     "openFile": "Open file",
-    "nothingOwed": "Nothing is owed"
+    "nothingOwed": "Nothing is owed",
+    "temporaryTitle": "This is a temporary limit, valid until {date}",
+    "temporaryFallback": "Afterwards {limit} on {days}-day credit applies again",
+    "temporaryNoFallback": "Afterwards the company pays in advance until a new limit is approved",
+    "temporaryBuyer": "The limit may drop after this date; ask your company admin"
   },
   "reorder": {
     "title": "Bulk reorder",

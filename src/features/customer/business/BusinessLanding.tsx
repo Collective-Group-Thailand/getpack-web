@@ -4,14 +4,13 @@ import { getContactOptions, getPublicConfig, getSupportChannels } from "@/featur
 import { pageContext } from "@/features/customer/content/page-meta.server";
 import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
-import { showcasePhotos } from "@/features/customer/styles/showcase.server";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
-import { HeroFlow } from "@/ui/components/HeroFlow";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { ApprovalSimulator } from "./landing/ApprovalSimulator";
+import { BusinessStory } from "./landing/BusinessStory";
 import { ControlDemo } from "./landing/ControlDemo";
 import { DocChecklist } from "./landing/DocChecklist";
 import { RoiCalculator } from "./landing/RoiCalculator";
@@ -73,8 +72,8 @@ function SectionHead({ id, title, lead }: { id: string; title: string; lead?: st
 }
 
 /**
- * getpack for business, for a visitor (business pack Phase 1, C10): dark hero with the account illustration, who it
- * is for, before → after, the features (live and "เร็ว ๆ นี้" from `storefront.roadmap`), the approval simulator on
+ * getpack for business, for a visitor (business pack Phase 1, C10): light hero with the five-scene story on real prices, who it
+ * is for, before → after, the features (ordered by `storefront.roadmap`, all live), the approval simulator on
  * real prices, the catalogue and budget demo, the ROI calculator, the credit path, opening an account with the
  * document checklist, purchasing FAQ, what customers see during production, and the sales form. Every figure is the
  * API's (prices, price lock, reply days, payment methods, issuer) or the visitor's own; nothing is sample data.
@@ -88,19 +87,23 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
     getContactOptions(),
     pricedSamples(locale),
   ]);
-  const photos = await showcasePhotos(locale, 0, 4);
   const page = await pageContext("/business", t("metaTitle"));
   const applyHref = signedIn ? "/business/apply" : `/sign-in?returnTo=${encodeURIComponent("/business/apply")}`;
-  // Without the roadmap the page claims only what the pack calls live, and shows no "เร็ว ๆ นี้" card.
-  const features = (config?.roadmap.business ?? [])
-    .filter((item) => item.key in FEATURE_ICONS)
-    .map((item) => ({ key: item.key, soon: item.status !== "live" }));
-  const soon = t("features.soon");
+  // Every company-account feature is live (product owner, 2026-10-30): the roadmap only orders the cards.
+  const features = (config?.roadmap.business ?? []).filter((item) => item.key in FEATURE_ICONS);
   const issuer =
     locale === "en" ? (config?.issuer.legalNameEn ?? config?.issuer.legalNameTh) : config?.issuer.legalNameTh;
   const methods = (config?.paymentMethods ?? []).filter((method) => method in PAY_ICONS);
   const faq = FAQ.map((key) => ({ key, question: t(`faq.items.${key}.q`), answer: t(`faq.items.${key}.a`) }));
   const replyDays = options?.replyBusinessDaysByTopic.business ?? options?.replyBusinessDays ?? null;
+  // The hero's figures: the price lock is the API's (D-309, left out without one); the rest is the offer itself.
+  const facts: { key: string; value: string; label: string }[] = [
+    ...(config?.priceLockDays
+      ? [{ key: "lock", value: t("facts.lock.value", { days: config.priceLockDays }), label: t("facts.lock.label") }]
+      : []),
+    { key: "credit", value: t("facts.credit.value"), label: t("facts.credit.label") },
+    { key: "free", value: t("facts.free.value"), label: t("facts.free.label") },
+  ];
   const salesPoints: { key: string; icon: IconName; text: string }[] = [
     ...(replyDays !== null
       ? [{ key: "reply", icon: "check" as const, text: t("sales.points.reply", { days: replyDays }) }]
@@ -133,13 +136,12 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
       />
       <JsonLd data={faqPageSchema(faq.map(({ question, answer }) => ({ question, answer })))} />
 
-      {/* The hero (Project A): light like the rest of the storefront — the surface with a hairline under it; it was a
-          forced dark band. */}
-      <section aria-labelledby="business-hero" className="bg-surface border-border text-fg border-b">
+      {/* The hero (redesign 2026-10-30): light, the five-scene story beside the claim — no dark band. */}
+      <section aria-labelledby="business-hero" className="bg-surface">
         <div
           className={cn(
             HOME_WRAP,
-            "grid items-center gap-10 py-12 md:py-16 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12",
+            "grid items-center gap-8 py-10 md:py-14 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12 xl:py-16",
           )}
         >
           <div>
@@ -151,46 +153,30 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
             </h1>
             <p className="text-muted mt-4 max-w-[48ch] text-[16.5px] leading-relaxed">{t("intro")}</p>
             <div className="mt-7 flex flex-wrap gap-2.5">
-              <Button asChild size="lg" iconEnd="arrow-right">
+              <Button asChild size="lg" iconEnd="arrow-right" className="w-full sm:w-auto">
                 <TrackedLink event="biz_cta" target="apply" href={applyHref}>
                   {t("apply")}
                 </TrackedLink>
               </Button>
-              <Button asChild size="lg" variant="secondary">
+              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                 <TrackedAnchor event="biz_cta" target="sales" href="#sales">
                   {t("talk")}
                 </TrackedAnchor>
               </Button>
             </div>
             <dl className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
-              {(["credit", "review", "roles"] as const).map((fact) => (
-                <div key={fact} className="flex flex-col-reverse">
-                  <dt className="text-muted text-[13px]">{t(`facts.${fact}.label`)}</dt>
-                  <dd className="text-2xl leading-tight font-bold tabular-nums">{t(`facts.${fact}.value`)}</dd>
+              {facts.map((fact) => (
+                <div key={fact.key} className="flex flex-col-reverse">
+                  <dt className="text-muted text-[13px]">{fact.label}</dt>
+                  <dd className="text-2xl leading-tight font-bold tabular-nums">{fact.value}</dd>
                 </div>
               ))}
             </dl>
           </div>
-          {/* The hero's picture (owner decision 2026-10-30): how an order moves through the account's roles, each
-              step with a real product photo, on a curve a dot travels. */}
-          <HeroFlow
-            id="business-flow"
-            label={t("flow.label")}
-            promise={t("features.items.approval.title")}
-            steps={[
-              { key: "buyer", title: t("features.roles.buyer.title"), caption: t("features.items.reorder.title") },
-              {
-                key: "approver",
-                title: t("features.roles.approver.title"),
-                caption: t("features.items.approval.title"),
-              },
-              {
-                key: "accountant",
-                title: t("features.roles.accountant.title"),
-                caption: t("features.items.credit.title"),
-              },
-              { key: "admin", title: t("features.roles.admin.title"), caption: t("features.items.team.title") },
-            ].map((step, index) => ({ ...step, photo: photos[index]! }))}
+          <BusinessStory
+            products={products}
+            priceLockDays={config?.priceLockDays ?? null}
+            creditTerms={t("facts.credit.value")}
           />
         </div>
       </section>
@@ -294,13 +280,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
 
         <section aria-labelledby="business-control" className={SECTION}>
           <SectionHead id="business-control" title={t("control.title")} lead={t("control.lead")} />
-          <ControlDemo
-            products={products}
-            soonLabel={soon}
-            // Owner rule (Project A): every module is live — no "เร็ว ๆ นี้" badge anywhere in the storefront.
-            catalogueSoon={false}
-            budgetsSoon={false}
-          />
+          <ControlDemo products={products} />
         </section>
 
         <section aria-labelledby="business-roi" className={SECTION}>

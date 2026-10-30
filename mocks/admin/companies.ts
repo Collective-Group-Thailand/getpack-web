@@ -64,6 +64,8 @@ type Seed = {
   overdue: number;
   overdueDays: number;
   threshold: number | null;
+  /** D-462: the limit is temporary for this many more days, then the fallback applies. */
+  temporary?: { days: number; fallbackLimit: number; fallbackTermDays: number };
 };
 
 const SEEDS: Seed[] = [
@@ -127,6 +129,20 @@ const SEEDS: Seed[] = [
     overdueDays: 0,
     threshold: null,
   },
+  // D-462: a temporary THB 150,000 / 90-day limit (custom term) over a permanent THB 30,000 / 30 days.
+  {
+    customer: 11,
+    status: "active",
+    creditStatus: "credit",
+    paidOrders: 6,
+    limit: 150000,
+    termDays: 90,
+    open: 42000,
+    overdue: 0,
+    overdueDays: 0,
+    threshold: null,
+    temporary: { days: 45, fallbackLimit: 30000, fallbackTermDays: 30 },
+  },
 ];
 
 /** What each status action (`admin.companies.setStatus`) moves the company from and to. */
@@ -168,8 +184,39 @@ const stores = SEEDS.map((seed, index) => {
       availableAmount: "0.00",
       eligible: false,
       eligibleReason: "not_yet",
-      versions:
-        seed.limit > 0
+      validUntil: seed.temporary ? bangkokIso(seed.temporary.days * DAY) : null,
+      fallbackLimitAmount: seed.temporary ? baht(seed.temporary.fallbackLimit * 100) : null,
+      fallbackTermDays: seed.temporary?.fallbackTermDays ?? null,
+      versions: seed.temporary
+        ? [
+            {
+              versionNo: 2,
+              limitAmount: baht(seed.limit * 100),
+              termDays: seed.termDays!,
+              status: "approved",
+              basis: "paid_orders",
+              reason: "วงเงินชั่วคราวช่วงเทศกาล (ข้อมูลจำลอง)",
+              effectiveFrom: bangkokIso(-15 * DAY),
+              approvalRequestId: null,
+              requestedBy: { id: FINANCE.id, displayName: FINANCE.displayName },
+              createdAt: bangkokIso(-16 * DAY),
+              customTerm: true,
+              validUntil: bangkokIso(seed.temporary.days * DAY),
+            },
+            {
+              versionNo: 1,
+              limitAmount: baht(seed.temporary.fallbackLimit * 100),
+              termDays: seed.temporary.fallbackTermDays,
+              status: "approved",
+              basis: "paid_orders",
+              reason: "ชำระตรงเวลาครบ 3 คำสั่งซื้อ (ข้อมูลจำลอง)",
+              effectiveFrom: bangkokIso(-90 * DAY),
+              approvalRequestId: null,
+              requestedBy: { id: FINANCE.id, displayName: FINANCE.displayName },
+              createdAt: bangkokIso(-91 * DAY),
+            },
+          ]
+        : seed.limit > 0
           ? [
               {
                 versionNo: 1,
@@ -207,7 +254,7 @@ const stores = SEEDS.map((seed, index) => {
       status: "active",
       joinedAt: company.createdAt,
     },
-    ...(index < 2
+    ...(index < 2 || seed.temporary
       ? [
           {
             id: mockId("cmm", index * 10 + 2),
@@ -481,6 +528,9 @@ function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["AdminCompa
     creditStatus: company.creditStatus,
     limitAmount: Number(company.credit.limitAmount) > 0 ? company.credit.limitAmount : null,
     termDays: company.credit.termDays,
+    validUntil: company.credit.validUntil ?? null,
+    fallbackLimitAmount: company.credit.validUntil ? (company.credit.fallbackLimitAmount ?? null) : null,
+    fallbackTermDays: company.credit.validUntil ? (company.credit.fallbackTermDays ?? null) : null,
     availableAmount: company.credit.availableAmount,
     exposureAmount: company.receivables.openAmount,
     currency: "THB",
@@ -499,6 +549,8 @@ function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["AdminCompa
       versionNo: version.versionNo,
       limitAmount: version.limitAmount,
       termDays: version.termDays,
+      customTerm: version.customTerm ?? false,
+      validUntil: version.validUntil ?? null,
       basis: version.basis,
       reason: version.reason,
       status: version.status,
@@ -812,13 +864,31 @@ export const companyHandlers = [
     const { allowedDays, defaultDays } = settingValue<{ allowedDays: number[]; defaultDays: number }>(
       "b2b.credit_terms",
     );
+    const custom = settingValue<{ minDays: number; maxDays: number; temporaryMaxDays: number }>(
+      "b2b.credit_custom_terms",
+    );
     const termDays = body?.termDays ?? defaultDays;
+    const customTerm = !allowedDays.includes(termDays);
+    const validUntil = body?.validUntil ? new Date(body.validUntil) : null;
     const errors = [
       ...(!body?.limitAmount || !/^\d{1,12}(\.\d{1,2})?$/.test(body.limitAmount) || Number(body.limitAmount) <= 0
         ? [{ path: "limitAmount", code: "pattern", message: "จำนวนเงินไม่ถูกต้อง" }]
         : []),
-      ...(!allowedDays.includes(termDays)
-        ? [{ path: "termDays", code: "oneOf", message: allowedDays.join(", ") }]
+      // D-462: staff may give a term outside the list, within b2b.credit_custom_terms.
+      ...(customTerm && (termDays < custom.minDays || termDays > custom.maxDays)
+        ? [
+            {
+              path: "termDays",
+              code: "in",
+              message: `${allowedDays.join(", ")} หรือ ${custom.minDays}–${custom.maxDays} วัน`,
+            },
+          ]
+        : []),
+      ...(validUntil &&
+      (Number.isNaN(validUntil.getTime()) ||
+        validUntil.getTime() <= Date.now() + 86_400_000 ||
+        validUntil.getTime() > Date.now() + custom.temporaryMaxDays * 86_400_000)
+        ? [{ path: "validUntil", code: "range", message: `1–${custom.temporaryMaxDays} วันนับจากวันนี้` }]
         : []),
       ...(!body || !["paid_orders", "financial_statement"].includes(body.basis)
         ? [{ path: "basis", code: "enum", message: "paid_orders | financial_statement" }]
@@ -852,6 +922,8 @@ export const companyHandlers = [
         company: `${company.companyCode} ${company.legalName}`,
         limitAmount: body.limitAmount,
         termDays,
+        customTerm,
+        validUntil: body.validUntil ?? null,
         basis: body.basis,
         reason,
       },
@@ -867,6 +939,8 @@ export const companyHandlers = [
       approvalRequestId: opened.id,
       requestedBy: { id: ok.who.id, displayName: ok.who.displayName },
       createdAt: bangkokIso(),
+      customTerm,
+      validUntil: validUntil ? validUntil.toISOString() : null,
     });
     company.updatedAt = bangkokIso();
     const credit = toCompanyCreditDto(ok.store);

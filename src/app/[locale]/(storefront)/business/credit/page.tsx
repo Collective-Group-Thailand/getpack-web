@@ -5,7 +5,7 @@ import { getIssuedStatements } from "@/features/customer/business/api.server";
 import { CreditApplication, StatementLink } from "@/features/customer/business/CreditPanel";
 import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { Panel } from "@/features/customer/account/Panel";
-import { SummaryCards } from "@/features/customer/account/SummaryCards";
+import { SummaryCards, type SummaryItem } from "@/features/customer/account/SummaryCards";
 import { requireMember } from "@/features/customer/business/guard.server";
 import { getFormat } from "@/features/shared/format/server";
 import { Callout } from "@/ui/components/Callout";
@@ -31,7 +31,8 @@ export default async function Page() {
   ]);
   const { receivables } = company;
   const credit = company.credit;
-  const status = credit?.creditStatus ?? company.creditStatus;
+  const summary = company.creditSummary;
+  const status = credit?.creditStatus ?? summary?.creditStatus ?? company.creditStatus;
   const hasCredit = status === "credit" || status === "blocked_overdue";
   const issued = statements ?? [];
 
@@ -45,6 +46,49 @@ export default async function Page() {
         ["over90", receivables.aging.over_90],
       ] as const)
     : [];
+  const validUntil = credit?.validUntil ?? summary?.validUntil ?? null;
+  // D-462: a buyer (no `credit`, only the summary) sees the available credit and the term, not the limit.
+  const buyerCredit = hasCredit && !credit && summary?.availableAmount ? summary : null;
+  const facts: SummaryItem[] = [
+    {
+      key: "status",
+      label: t("statusLabel"),
+      value: t(`statuses.${status}`),
+      icon: "wallet",
+      highlight: !hasCredit,
+      tone: blocked ? "danger" : "neutral",
+    },
+    ...(hasCredit && credit
+      ? [
+          {
+            key: "available",
+            label: t("available"),
+            value: format.thb(credit.availableAmount),
+            icon: "coins" as const,
+            highlight: true,
+          },
+          ...(credit.limitAmount
+            ? [{ key: "limit", label: t("limitLabel"), value: format.thb(credit.limitAmount) }]
+            : []),
+          { key: "term", label: t("termLabel"), value: t("days", { days: credit.termDays ?? 0 }) },
+        ]
+      : []),
+    ...(buyerCredit?.availableAmount
+      ? [
+          {
+            key: "available",
+            label: t("available"),
+            value: format.thb(buyerCredit.availableAmount),
+            icon: "coins" as const,
+            highlight: true,
+          },
+          { key: "term", label: t("termLabel"), value: t("days", { days: buyerCredit.termDays ?? 0 }) },
+        ]
+      : []),
+    ...(receivables && !(hasCredit && credit)
+      ? [{ key: "open", label: t("open"), value: format.thb(receivables.openAmount), icon: "receipt" as const }]
+      : []),
+  ];
 
   // Project C: the credit as summary cards (what is left on the tint), what is owed by age as one row of
   // buckets, applying for credit and the statements as panels.
@@ -54,44 +98,20 @@ export default async function Page() {
 
       {!company.can.viewFinance ? <Callout tone="info">{t("noAccess")}</Callout> : null}
 
-      <SummaryCards
-        columns={hasCredit && credit ? 4 : 2}
-        items={[
-          {
-            key: "status",
-            label: t("statusLabel"),
-            value: t(`statuses.${status}`),
-            icon: "wallet",
-            highlight: !hasCredit,
-            tone: blocked ? "danger" : "neutral",
-          },
-          ...(hasCredit && credit
-            ? [
-                {
-                  key: "available",
-                  label: t("available"),
-                  value: format.thb(credit.availableAmount),
-                  icon: "coins" as const,
-                  highlight: true,
-                },
-                ...(credit.limitAmount
-                  ? [{ key: "limit", label: t("limitLabel"), value: format.thb(credit.limitAmount) }]
-                  : []),
-                { key: "term", label: t("termLabel"), value: t("days", { days: credit.termDays ?? 0 }) },
-              ]
-            : []),
-          ...(receivables && !(hasCredit && credit)
-            ? [
-                {
-                  key: "open",
-                  label: t("open"),
-                  value: format.thb(receivables.openAmount),
-                  icon: "receipt" as const,
-                },
-              ]
-            : []),
-        ]}
-      />
+      <h2 className="sr-only">{t("summary")}</h2>
+      <SummaryCards columns={facts.length >= 4 ? 4 : facts.length === 3 ? 3 : 2} items={facts} />
+      {validUntil ? (
+        <Callout tone="info" title={t("temporaryTitle", { date: format.date(validUntil) })}>
+          {credit?.fallbackLimitAmount && credit.fallbackTermDays !== null
+            ? t("temporaryFallback", {
+                limit: format.thb(credit.fallbackLimitAmount),
+                days: credit.fallbackTermDays,
+              })
+            : credit
+              ? t("temporaryNoFallback")
+              : t("temporaryBuyer")}
+        </Callout>
+      ) : null}
       {blocked ? (
         <Callout tone="danger" title={t("blockedTitle")}>
           {receivables?.oldestOverdueDays

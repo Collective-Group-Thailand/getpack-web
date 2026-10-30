@@ -4,17 +4,16 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { TrackedAnchor } from "@/features/customer/business/landing/TrackedLink";
 import { getProductTypes, getProvinces, getPublicConfig } from "@/features/customer/catalog/api.server";
-import { showcasePhotos } from "@/features/customer/styles/showcase.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { pageContext } from "@/features/customer/content/page-meta.server";
 import { FactoryApplyForm } from "@/features/customer/factory-programme/FactoryApplyForm";
+import { FactoryStory } from "@/features/customer/factory-programme/FactoryStory";
 import { OperatorPhone } from "@/features/customer/factory-programme/Illustrations";
 import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { zoneHosts } from "@/lib/env/server";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
-import { HeroFlow } from "@/ui/components/HeroFlow";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -67,7 +66,7 @@ function SectionHead({ id, title, lead }: { id: string; title: string; lead?: st
 /**
  * getpack Factory (business pack Phase 3, C10) — the only customer-zone page that talks TO factories (GLOBAL-RULES §1
  * exception): the free whole-factory ERP offer (free, every module, unlimited users, after a factory account and the
- * partner agreement — never why it is free, §2), job sources, the modules with their status from `storefront.roadmap`,
+ * partner agreement — never why it is free, §2), job sources, the modules (ordered by `storefront.roadmap`, all live),
  * the shop floor, the comparison, participation tiers and price sources, the application (a contact ticket routed to
  * the Partner team, D-458) and the factory FAQ. Nothing names, counts or describes existing partner factories, and
  * no payment or delivery terms (they are in the partner agreement only).
@@ -83,7 +82,6 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
     getProvinces(),
   ]);
   const page = await pageContext("/partner-with-us", t("title"));
-  const photos = await showcasePhotos(locale, 4, 5);
   const scheme = headerList.get("x-forwarded-proto") ?? (zoneHosts.partner.startsWith("localhost") ? "http" : "https");
   const partnerLoginUrl = `${scheme}://${zoneHosts.partner}/login`;
   const modules = (config?.roadmap.erpModules ?? []).filter((item) => item.key in MODULE_ICONS);
@@ -111,12 +109,12 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
       />
       <JsonLd data={faqPageSchema(faq.map(({ question, answer }) => ({ question, answer })))} />
 
-      {/* Project A: a light hero like the rest of the storefront (it was a forced dark band). */}
-      <section aria-labelledby="factory-hero" className="bg-surface border-border text-fg border-b">
+      {/* The hero (redesign 2026-10-30): light, the five-scene story beside the offer — no dark band. */}
+      <section aria-labelledby="factory-hero" className="bg-surface">
         <div
           className={cn(
             HOME_WRAP,
-            "grid items-center gap-10 py-12 md:py-16 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12",
+            "grid items-center gap-8 py-10 md:py-14 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12 xl:py-16",
           )}
         >
           <div>
@@ -124,7 +122,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               id="factory-hero"
               className="text-[2.25rem] leading-[1.08] font-bold tracking-[-0.03em] text-balance md:text-[3.25rem] xl:text-[3.625rem]"
             >
-              {t("titleStart")} <em className="text-primary not-italic">{t("titleEm")}</em> {t("titleEnd")}
+              {t("titleStart")} <em className="text-primary not-italic">{t("titleEm")}</em>
             </h1>
             <p className={lede}>{t("lede")}</p>
             <div className="mt-7 flex flex-wrap gap-2.5">
@@ -140,29 +138,24 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </Button>
             </div>
             <p className="border-border bg-surface rounded-card mt-5.5 inline-flex flex-wrap items-center gap-x-2.5 gap-y-1 border px-3.5 py-2.5 text-sm">
-              <b className="text-instant text-[1.375rem] font-bold tabular-nums">{t("offerPrice")}</b>
+              <b className="text-primary text-[1.375rem] font-bold tabular-nums">{t("offerPrice")}</b>
               <span className="text-muted">{t("offer")}</span>
             </p>
+            <ul className="text-muted mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-[13.5px]">
+              {(["jobs", "paid", "data"] as const).map((point) => (
+                <li key={point} className="flex items-center gap-1.5">
+                  <Icon name="check" size={14} aria-hidden="true" className="text-primary shrink-0" />
+                  {t(`trust.${point}`)}
+                </li>
+              ))}
+            </ul>
             <p className="mt-4 text-sm">
               <a href={partnerLoginUrl} className="text-muted hover:text-fg underline underline-offset-4">
                 {t("login")}
               </a>
             </p>
           </div>
-          {/* The hero's picture (owner decision 2026-10-30): a getpack job's path through the partner, each step with
-              a real product photo, on a curve a dot travels. */}
-          <HeroFlow
-            id="factory-flow"
-            label={t("flow.label")}
-            promise={t("modules.items.getpack_jobs.title")}
-            steps={[
-              { key: "job", title: t("sources.getpack.title"), caption: t("modules.items.getpack_jobs.title") },
-              { key: "make", title: t("flow.make"), caption: t("floor.points.start.title") },
-              { key: "qc", title: t("board.columns.qc"), caption: t("floor.points.photos.title") },
-              { key: "ship", title: t("flow.ship"), caption: t("flow.shipCaption") },
-              { key: "bill", title: t("flow.bill"), caption: t("flow.billCaption") },
-            ].map((step, index) => ({ ...step, photo: photos[index]! }))}
-          />
+          <FactoryStory jobNames={types.slice(0, 4).map((type) => pick(locale, type.nameTh, type.nameEn))} />
         </div>
       </section>
 
@@ -201,7 +194,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                       "relative flex flex-col gap-1.5 p-4.5",
                       HIGHLIGHT.has(module.key) && "sm:col-span-2",
                       module.key === "getpack_jobs" && "bg-primary-subtle/50",
-                      module.key === "accounting" && "bg-instant-subtle/40",
+                      module.key === "accounting" && "bg-primary-subtle/40",
                     )}
                   >
                     <span
@@ -209,7 +202,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                         "rounded-control grid size-9.5 place-items-center",
                         module.key === "getpack_jobs"
                           ? "bg-primary-subtle text-primary"
-                          : "bg-instant-subtle text-instant-subtle-fg",
+                          : "bg-primary-subtle text-primary",
                       )}
                     >
                       <Icon name={MODULE_ICONS[module.key]!} size={20} aria-hidden="true" />
@@ -265,7 +258,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                   <th scope="col" className="border-border border-b p-3.5 text-left font-semibold">
                     {t("compare.cols.erp")}
                   </th>
-                  <th scope="col" className="border-border bg-instant-subtle/50 border-b p-3.5 text-left font-semibold">
+                  <th scope="col" className="border-border bg-primary-subtle/50 border-b p-3.5 text-left font-semibold">
                     {t("compare.cols.us")}
                   </th>
                 </tr>
@@ -284,7 +277,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                       <td className={cn("border-border text-muted p-3.5 align-top", last)}>
                         {t(`compare.rows.${row}.erp`)}
                       </td>
-                      <td className={cn("border-border bg-instant-subtle/30 p-3.5 align-top font-semibold", last)}>
+                      <td className={cn("border-border bg-primary-subtle/30 p-3.5 align-top font-semibold", last)}>
                         {t(`compare.rows.${row}.us`)}
                       </td>
                     </tr>

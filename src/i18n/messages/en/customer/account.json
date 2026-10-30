@@ -147,7 +147,11 @@
     "companyCatalogue": "Order from the company catalogue",
     "companyApprovals": "Approval requests ({count})",
     "companyCredit": "Company credit",
-    "companyOrders": "Company orders"
+    "companyOrders": "Company orders",
+    "companyCreditAvailable": "Credit available {amount}",
+    "businessTitle": "Order as a company, pay on credit terms",
+    "businessBody": "Open a free company account: one account for the team, tax invoices per branch, and a credit limit once you meet the terms",
+    "businessAction": "See company accounts"
   },
   "quotes": {
     "title": "Saved quotations",

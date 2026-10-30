@@ -188,7 +188,7 @@
     "failed": "Could not send the request",
     "routing": "Routed by the credit-limit approval policy; the approver depends on the amount",
     "limitHint": "THB",
-    "termHint": "The terms the settings allow; none chosen = the default",
+    "termHint": "An allowed term, or a custom one; none = the default",
     "termHidden": "Your role cannot read the credit-term setting",
     "chooseTerm": "Choose a term",
     "exposure": "Exposure",
@@ -222,7 +222,22 @@
       "overdue": "Overdue",
       "credit_blocked": "Credit orders blocked"
     },
-    "asOf": "As of"
+    "asOf": "As of",
+    "termCustom": "Custom (outside the list)",
+    "customDays": "Credit days",
+    "customDaysHint": "Within b2b.credit_custom_terms; customers cannot choose it",
+    "daysUnit": "days",
+    "needCustomDays": "Enter the credit days",
+    "customBadge": "Custom",
+    "temporary": "Temporary limit",
+    "temporaryHint": "For a peak season, say. When it ends the latest permanent limit applies again",
+    "validUntil": "Valid until",
+    "validUntilHint": "The limit holds until the end of this day (Bangkok time)",
+    "needValidUntil": "Choose when the temporary limit ends",
+    "permanent": "Permanent",
+    "temporaryInForce": "Temporary limit, valid until {date}",
+    "temporaryFallback": "Afterwards {limit} on {days} days applies again",
+    "temporaryNoFallback": "Afterwards the company has no limit until a new one is approved"
   },
   "statements": {
     "title": "Monthly figures",

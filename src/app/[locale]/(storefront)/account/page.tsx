@@ -89,6 +89,8 @@ export default async function Page() {
   const activeOrders = (active?.groups ?? []).flatMap((group) => group.orders);
   // A quotation is open while its price is locked (D-051) — the API says which.
   const openQuotes = quotes.filter((quote) => quote.priceLocked).slice(0, 3);
+  const companyCredit = company?.credit ?? company?.creditSummary ?? null;
+  const availableCredit = companyCredit?.creditStatus === "credit" ? (companyCredit.availableAmount ?? null) : null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -267,8 +269,17 @@ export default async function Page() {
                     },
                   ]
                 : []),
-              ...(company.can.viewFinance
-                ? [{ href: "/business/credit", icon: "wallet" as const, label: t("companyCredit") }]
+              // D-462: whoever may order sees the available credit; finance roles see the full page.
+              ...(company.can.viewFinance || company.can.order
+                ? [
+                    {
+                      href: "/business/credit",
+                      icon: "wallet" as const,
+                      label: availableCredit
+                        ? t("companyCreditAvailable", { amount: format.thb(availableCredit) })
+                        : t("companyCredit"),
+                    },
+                  ]
                 : []),
               { href: "/business", icon: "building" as const, label: t("companyOrders") },
             ].map((item) => (
@@ -286,7 +297,26 @@ export default async function Page() {
             ))}
           </ul>
         </Section>
-      ) : null}
+      ) : (
+        // D-462: without a company account a customer would never learn credit terms exist.
+        <section
+          aria-labelledby="account-business"
+          className="border-border bg-surface grid gap-4 rounded-2xl border p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-5"
+        >
+          <span className="bg-primary-subtle text-primary-subtle-fg grid size-11 place-items-center rounded-xl">
+            <Icon name="building" size={22} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 id="account-business" className="font-semibold">
+              {t("businessTitle")}
+            </h2>
+            <p className="text-muted mt-0.5 text-sm">{t("businessBody")}</p>
+          </div>
+          <Button asChild variant="secondary" className="justify-self-start sm:justify-self-end">
+            <Link href="/business">{t("businessAction")}</Link>
+          </Button>
+        </section>
+      )}
     </div>
   );
 }

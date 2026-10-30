@@ -182,13 +182,7 @@ export function FactoryApplyForm({
       <Field label={t("message")} className="sm:col-span-2">
         <Textarea rows={3} maxLength={3000} value={message} onChange={(event) => setMessage(event.target.value)} />
       </Field>
-      <Button
-        type="submit"
-        size="lg"
-        block
-        loading={busy}
-        className="bg-instant text-instant-fg hover:bg-instant/90 sm:col-span-2"
-      >
+      <Button type="submit" size="lg" block loading={busy} className="sm:col-span-2">
         {t("submit")}
       </Button>
       <p className="text-muted text-xs sm:col-span-2">

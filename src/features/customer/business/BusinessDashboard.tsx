@@ -46,7 +46,9 @@ export async function BusinessDashboard({
 }) {
   const [t, format] = await Promise.all([getTranslations("business.dashboard"), getFormat()]);
   const [roles, nav] = await Promise.all([getTranslations("business.members.roles"), getTranslations("business.nav")]);
-  const creditStatus = company.credit?.creditStatus ?? company.creditStatus;
+  const creditStatus = company.credit?.creditStatus ?? company.creditSummary?.creditStatus ?? company.creditStatus;
+  const summary = company.creditSummary;
+  const validUntil = company.credit?.validUntil ?? summary?.validUntil ?? null;
   const hasCredit = creditStatus === "credit" || creditStatus === "blocked_overdue";
 
   const owedOverdue = company.receivables ? company.receivables.overdueAmount !== "0.00" : false;
@@ -118,12 +120,35 @@ export async function BusinessDashboard({
               ? hasCredit
                 ? format.thb(company.credit.availableAmount)
                 : t(`creditStatus.${company.credit.creditStatus}`)
-              : t(`creditStatus.${company.creditStatus}`),
-            hint: company.credit
-              ? company.credit.termDays && company.credit.limitAmount
-                ? t("creditMeta", { limit: format.thb(company.credit.limitAmount), days: company.credit.termDays })
-                : t("prepaid")
-              : undefined,
+              : summary
+                ? // D-462: a buyer sees what is available and the term, not the limit.
+                  summary.availableAmount !== null
+                  ? format.thb(summary.availableAmount)
+                  : t(`creditStatus.${summary.creditStatus}`)
+                : t(`creditStatus.${company.creditStatus}`),
+            hint:
+              company.credit || summary || validUntil ? (
+                <>
+                  {company.credit
+                    ? company.credit.termDays && company.credit.limitAmount
+                      ? t("creditMeta", {
+                          limit: format.thb(company.credit.limitAmount),
+                          days: company.credit.termDays,
+                        })
+                      : t("prepaid")
+                    : summary
+                      ? summary.termDays !== null
+                        ? t("creditTerm", { days: summary.termDays })
+                        : t("prepaid")
+                      : null}
+                  {validUntil ? (
+                    <span className="mt-1 flex items-center gap-1.5">
+                      <Icon name="calendar" size={14} aria-hidden="true" />
+                      {t("creditUntil", { date: format.date(validUntil) })}
+                    </span>
+                  ) : null}
+                </>
+              ) : undefined,
             icon: "wallet",
             highlight: hasCredit,
             action:

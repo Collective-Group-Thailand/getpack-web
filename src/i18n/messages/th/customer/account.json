@@ -147,7 +147,11 @@
     "companyCatalogue": "สั่งจากแคตตาล็อกบริษัท",
     "companyApprovals": "คำขออนุมัติ ({count})",
     "companyCredit": "วงเงินบริษัท",
-    "companyOrders": "คำสั่งซื้อของบริษัท"
+    "companyOrders": "คำสั่งซื้อของบริษัท",
+    "companyCreditAvailable": "เครดิตคงเหลือ {amount}",
+    "businessTitle": "สั่งในนามบริษัท และจ่ายแบบเครดิตเทอม",
+    "businessBody": "เปิดบัญชีบริษัทฟรี ทั้งทีมใช้บัญชีเดียว ใบกำกับภาษีแยกสาขา และขอวงเงินเครดิตได้เมื่อสั่งครบตามเงื่อนไข",
+    "businessAction": "ดูบัญชีบริษัท"
   },
   "quotes": {
     "title": "ใบเสนอราคาที่บันทึกไว้",
