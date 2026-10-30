@@ -42,3 +42,5 @@ lighthouse/.port-*.json
 # Interim third-party home photos (dev-only fallback, HOME_PHOTOS_LOCAL_MANIFEST): copied from
 # getpack-api public/media/home, never committed — their per-asset source is unverified.
 /public/media/home/
+# ...set aside there by `pnpm build:local` / `pnpm start:local` while they run.
+/.home-photos-aside/
