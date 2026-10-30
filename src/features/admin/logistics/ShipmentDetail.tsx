@@ -11,11 +11,10 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Field } from "@/ui/components/Field";
 import { NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
@@ -120,6 +119,8 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
   const tList = useTranslations("logistics.shipments");
   const tStatus = useTranslations("status");
   const tProblems = useTranslations("problems");
+  const tConsole = useTranslations("console.actions");
+  const tCommon = useTranslations("console.common");
   const format = useFormat();
   const locale = useLocale();
   const queryClient = useQueryClient();
@@ -191,24 +192,44 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
       : []),
   ];
 
+  const facts = [
+    {
+      term: t("destination"),
+      description: (
+        <address className="not-italic">
+          <span className="block font-medium">{shipment.destination.recipientName}</span>
+          <span className="block tabular-nums">{shipment.destination.phone}</span>
+          <span className="text-muted block">
+            {[shipment.destination.line1, shipment.destination.line2, province, shipment.destination.postcode]
+              .filter(Boolean)
+              .join(" ")}
+          </span>
+        </address>
+      ),
+    },
+    {
+      term: tList("columns.carrier"),
+      description: (
+        <>
+          <span className="block">{tList(`carriers.${shipment.carrier}`)}</span>
+          {shipment.trackingNo ? <span className="text-muted block tabular-nums">{shipment.trackingNo}</span> : null}
+        </>
+      ),
+    },
+    ...costs,
+  ];
+  const nothingNext = actions.length === 0;
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("shipments"), href: "/shipments" }, { label: shipment.shipmentNo }]}
-          />
-        }
+        back={{ href: "/shipments", label: t("shipments") }}
         title={shipment.shipmentNo}
         meta={
           <>
             <StatusChip map={SHIPMENT_STATUS} value={shipment.status} size="md" />
-            <Badge tone={shipment.carrier === "factory_fleet" ? "neutral" : "info"}>
-              {tList(`carriers.${shipment.carrier}`)}
-            </Badge>
-            {shipment.trackingNo ? (
-              <span className="text-muted text-sm tabular-nums">{shipment.trackingNo}</span>
+            {shipment.podReview ? (
+              <StatusChip map={POD_REVIEW_STATUS} value={shipment.podReview.state} size="md" />
             ) : null}
           </>
         }
@@ -218,22 +239,6 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
           quantity: format.number(pieces),
           cartons: shipment.cartonsCount,
         })}
-        actions={
-          <>
-            <FileButton variant="ghost" iconStart="document" fileId={shipment.packingListFileId}>
-              {t("packingList")}
-            </FileButton>
-            <FileButton variant="secondary" iconStart="tag" fileId={shipment.labelFileId}>
-              {t("labels")}
-            </FileButton>
-            <NextActionBar
-              actions={actions}
-              supported={SUPPORTED}
-              labelOf={(verb) => (t.has(`verbs.${verb}`) ? t(`verbs.${verb}`) : undefined)}
-              onAction={(verb) => open(verb as Verb, verb === "review_pod" ? "accept" : undefined)}
-            />
-          </>
-        }
       />
 
       {shipment.blockedByPayment ? (
@@ -272,179 +277,210 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
         <Callout tone="warning" title={shipment.note} />
       ) : null}
       {shipment.cancelReason ? <Callout tone="neutral" title={shipment.cancelReason} /> : null}
-      {shipment.splitFrom ? (
-        <p className="text-sm">
-          {t("splitFromLabel")}{" "}
-          <Link href={`/shipments/${shipment.splitFrom.id}`} className="text-primary tabular-nums hover:underline">
-            {shipment.splitFrom.shipmentNo}
-          </Link>
-        </p>
-      ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="flex flex-col gap-5">
-          {pod ? (
-            <Section
-              title={
-                <>
-                  {t("pod")}
-                  {shipment.podReview ? <StatusChip map={POD_REVIEW_STATUS} value={shipment.podReview.state} /> : null}
-                </>
-              }
-              description={t("podNote")}
-              actions={
-                reviewable ? (
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => open("review_pod", "reject")}>
-                      {t("rejectPod")}
-                    </Button>
-                    <Button size="sm" onClick={() => open("review_pod", "accept")}>
-                      {t("acceptPod")}
-                    </Button>
-                  </div>
-                ) : null
+      <DetailLayout
+        aside={
+          <>
+            {/* The one place to act on the trip: the API's next steps (a POD to accept leads), then its paperwork. */}
+            <ActionPanel
+              id="shipment-next"
+              title={tConsole("nextTitle")}
+              tone={nothingNext ? "neutral" : "primary"}
+              description={
+                reviewable
+                  ? t("acceptBody", { no: shipment.shipmentNo, factory: shipment.factoryCode })
+                  : nothingNext
+                    ? tConsole("nothingNext")
+                    : undefined
               }
             >
-              <DescriptionList
-                columns={3}
-                items={[
-                  { term: t("receiver"), description: pod.receiverName },
-                  { term: t("deliveredQuantity"), description: format.number(pod.deliveredQuantity) },
-                  { term: t("capturedAt"), description: <When at={pod.capturedAt} /> },
-                  { term: t("podKind"), description: t(`podKinds.${pod.kind}`) },
-                  ...(pod.carrierPodRef ? [{ term: t("carrierPodRef"), description: pod.carrierPodRef }] : []),
-                  ...(shipment.podReview?.reviewedBy
-                    ? [
-                        {
-                          term: t("reviewedBy"),
-                          description: [
-                            shipment.podReview.reviewedBy.displayName,
-                            shipment.podReview.reviewedAt ? format.dateTime(shipment.podReview.reviewedAt) : null,
-                            shipment.podReview.note,
-                          ]
-                            .filter(Boolean)
-                            .join(" · "),
-                        },
-                      ]
-                    : []),
-                ]}
+              <NextActionBar
+                layout="panel"
+                actions={actions}
+                supported={SUPPORTED}
+                labelOf={(verb) =>
+                  verb === "review_pod" && reviewable
+                    ? t("acceptPod")
+                    : t.has(`verbs.${verb}`)
+                      ? t(`verbs.${verb}`)
+                      : undefined
+                }
+                onAction={(verb) => open(verb as Verb, verb === "review_pod" ? "accept" : undefined)}
+                secondary={
+                  reviewable ? (
+                    <Button
+                      size="lg"
+                      variant="secondary"
+                      iconStart="close"
+                      onClick={() => open("review_pod", "reject")}
+                    >
+                      {t("rejectPod")}
+                    </Button>
+                  ) : null
+                }
               />
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <FileList fileIds={pod.photoFileIds} label={t("podPhotos")} />
-                <FileList
-                  fileIds={pod.signatureFileId ? [pod.signatureFileId] : []}
-                  label={t("podSignature")}
-                  empty={t("noSignature")}
-                />
+              <div className="border-border flex flex-wrap gap-x-1 gap-y-1 border-t pt-3">
+                <FileButton size="sm" variant="ghost" iconStart="document" fileId={shipment.packingListFileId}>
+                  {t("packingList")}
+                </FileButton>
+                <FileButton size="sm" variant="ghost" iconStart="tag" fileId={shipment.labelFileId}>
+                  {t("labels")}
+                </FileButton>
               </div>
-            </Section>
-          ) : null}
-
-          {reconciliation.data && outcome ? (
-            <Section title={t("tolerance")} description={t("toleranceNote")}>
-              <Callout
-                tone={outcome === "exact" ? "success" : outcome.endsWith("outside") ? "danger" : "info"}
-                title={t(`outcomes.${outcome}`, {
-                  delivered: format.number(reconciliation.data.deliveredQuantity),
-                  ordered: format.number(reconciliation.data.orderedQuantity),
-                })}
-              >
-                {t("toleranceBand", {
-                  shortage: format.percent(reconciliation.data.toleranceShortagePct),
-                  overage: format.percent(reconciliation.data.toleranceOveragePct),
-                })}
-                {reconciliation.data.creditAmount
-                  ? ` · ${t("credit", { amount: format.thb(reconciliation.data.creditAmount) })}`
-                  : null}
-              </Callout>
-            </Section>
-          ) : null}
-
-          <Section title={t("events")}>
-            <Timeline
-              label={t("events")}
-              items={[...shipment.events].reverse().map((event, at) => ({
-                id: `${event.occurredAt}-${at}`,
-                title: tStatus(SHIPMENT_STATUS[event.status].labelKey),
-                time: <When at={event.occurredAt} />,
-                actor: t(`sources.${event.source}`),
-                description: [event.location, event.note].filter(Boolean).join(" · ") || undefined,
-                icon: SHIPMENT_STATUS[event.status].icon,
-                tone: event.status === "failed" ? "danger" : event.status === "delivered" ? "success" : "neutral",
-              }))}
-            />
-          </Section>
-        </div>
-
-        <div className="flex flex-col gap-5">
-          <HandoverPanel shipment={shipment} />
-          <Section title={t("destination")}>
-            <address className="text-sm not-italic">
-              <p className="font-medium">{shipment.destination.recipientName}</p>
-              <p>{shipment.destination.phone}</p>
-              <p className="text-muted">
-                {[shipment.destination.line1, shipment.destination.line2, province, shipment.destination.postcode]
-                  .filter(Boolean)
-                  .join(" ")}
-              </p>
-            </address>
-          </Section>
-          <Section title={t("contents")}>
-            <ul className="text-sm">
-              {shipment.items.map((item) => {
-                const orderId = itemOrders.get(item.jobId);
-                return (
-                  <li key={`${item.jobId}-${item.destinationId}`} className="flex justify-between gap-2 py-1">
-                    <span>
-                      {orderId ? (
-                        <Link href={`/orders/${orderId}`} className="text-primary tabular-nums hover:underline">
-                          {item.orderCode}
-                        </Link>
-                      ) : (
-                        <span className="tabular-nums">{item.orderCode}</span>
-                      )}
-                      <span className="text-muted block text-xs">{item.jobNo}</span>
-                    </span>
-                    <span className="text-end tabular-nums">
-                      {format.number(item.quantity)}
-                      {item.deliveredQuantity !== null ? (
-                        <span className="text-muted block text-xs">
-                          {t("deliveredOf", { quantity: format.number(item.deliveredQuantity) })}
-                        </span>
-                      ) : null}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="text-muted mt-2 text-xs">
-              {t("cartons", {
-                count: shipment.cartonsCount,
-                weight: format.number(Math.round(shipment.weightG / 1000)),
-              })}
+            </ActionPanel>
+            <HandoverPanel shipment={shipment} lead={nothingNext} />
+          </>
+        }
+      >
+        <Section title={tCommon("details")}>
+          <DescriptionList columns={3} items={facts} />
+          {shipment.splitFrom ? (
+            <p className="text-muted mt-3 text-sm">
+              {t("splitFromLabel")}{" "}
+              <Link href={`/shipments/${shipment.splitFrom.id}`} className="text-primary tabular-nums hover:underline">
+                {shipment.splitFrom.shipmentNo}
+              </Link>
             </p>
-            {shipment.cartons.length ? (
-              <ul className="mt-2 flex flex-col gap-1 text-xs">
-                {shipment.cartons.map((carton) => (
-                  <li key={carton.seq} className="flex justify-between gap-2">
-                    <span className="tabular-nums">{carton.labelCode}</span>
-                    {carton.weightG ? (
-                      <span className="text-muted tabular-nums">
-                        {t("cartonWeight", { kg: format.number(carton.weightG / 1000) })}
+          ) : null}
+        </Section>
+
+        {pod ? (
+          <Section title={t("pod")} description={t("podNote")}>
+            <DescriptionList
+              columns={3}
+              items={[
+                { term: t("receiver"), description: pod.receiverName },
+                { term: t("deliveredQuantity"), description: format.number(pod.deliveredQuantity) },
+                { term: t("capturedAt"), description: <When at={pod.capturedAt} /> },
+                { term: t("podKind"), description: t(`podKinds.${pod.kind}`) },
+                ...(pod.carrierPodRef ? [{ term: t("carrierPodRef"), description: pod.carrierPodRef }] : []),
+                ...(shipment.podReview?.reviewedBy
+                  ? [
+                      {
+                        term: t("reviewedBy"),
+                        description: [
+                          shipment.podReview.reviewedBy.displayName,
+                          shipment.podReview.reviewedAt ? format.dateTime(shipment.podReview.reviewedAt) : null,
+                          shipment.podReview.note,
+                        ]
+                          .filter(Boolean)
+                          .join(" · "),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <FileList fileIds={pod.photoFileIds} label={t("podPhotos")} />
+              <FileList
+                fileIds={pod.signatureFileId ? [pod.signatureFileId] : []}
+                label={t("podSignature")}
+                empty={t("noSignature")}
+              />
+            </div>
+          </Section>
+        ) : null}
+
+        {reconciliation.data && outcome ? (
+          <Section title={t("tolerance")} description={t("toleranceNote")}>
+            <Callout
+              tone={outcome === "exact" ? "success" : outcome.endsWith("outside") ? "danger" : "info"}
+              title={t(`outcomes.${outcome}`, {
+                delivered: format.number(reconciliation.data.deliveredQuantity),
+                ordered: format.number(reconciliation.data.orderedQuantity),
+              })}
+            >
+              {t("toleranceBand", {
+                shortage: format.percent(reconciliation.data.toleranceShortagePct),
+                overage: format.percent(reconciliation.data.toleranceOveragePct),
+              })}
+              {reconciliation.data.creditAmount
+                ? ` · ${t("credit", { amount: format.thb(reconciliation.data.creditAmount) })}`
+                : null}
+            </Callout>
+          </Section>
+        ) : null}
+
+        <Section
+          title={t("contents")}
+          description={t("cartons", {
+            count: shipment.cartonsCount,
+            weight: format.number(Math.round(shipment.weightG / 1000)),
+          })}
+        >
+          <ul className="divide-border border-border divide-y border-y text-sm">
+            {shipment.items.map((item) => {
+              const orderId = itemOrders.get(item.jobId);
+              return (
+                <li
+                  key={`${item.jobId}-${item.destinationId}`}
+                  className="flex items-start justify-between gap-3 py-2.5"
+                >
+                  <span className="min-w-0">
+                    {orderId ? (
+                      <Link
+                        href={`/orders/${orderId}`}
+                        className="text-primary font-medium tabular-nums hover:underline"
+                      >
+                        {item.orderCode}
+                      </Link>
+                    ) : (
+                      <span className="font-medium tabular-nums">{item.orderCode}</span>
+                    )}
+                    <span className="text-muted block text-xs tabular-nums">{item.jobNo}</span>
+                  </span>
+                  <span className="text-end tabular-nums">
+                    {t("pieces", { quantity: format.number(item.quantity) })}
+                    {item.deliveredQuantity !== null ? (
+                      <span className="text-muted block text-xs">
+                        {t("deliveredOf", { quantity: format.number(item.deliveredQuantity) })}
                       </span>
                     ) : null}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </Section>
-          {costs.length > 0 ? (
-            <Section title={t("economics")} description={t("economicsNote")}>
-              <DescriptionList items={costs} />
-            </Section>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          {shipment.cartons.length ? (
+            // The cartons as the driver's page shows them: one tile per box, its number and its label code.
+            <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+              {shipment.cartons.map((carton) => (
+                <li
+                  key={carton.seq}
+                  className="border-border bg-surface-subtle rounded-control flex min-w-0 flex-col border px-3 py-2"
+                >
+                  <span className="text-sm font-semibold tabular-nums">
+                    {t("cartonOf", { n: carton.seq, total: shipment.cartons.length })}
+                  </span>
+                  <span className="text-muted truncate text-xs tabular-nums" title={carton.labelCode}>
+                    {carton.labelCode}
+                  </span>
+                  {carton.weightG ? (
+                    <span className="text-muted text-xs tabular-nums">
+                      {t("cartonWeight", { kg: format.number(carton.weightG / 1000) })}
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
           ) : null}
-        </div>
-      </div>
+        </Section>
+
+        <Section title={t("events")}>
+          <Timeline
+            label={t("events")}
+            items={[...shipment.events].reverse().map((event, at) => ({
+              id: `${event.occurredAt}-${at}`,
+              title: tStatus(SHIPMENT_STATUS[event.status].labelKey),
+              time: <When at={event.occurredAt} />,
+              actor: t(`sources.${event.source}`),
+              description: [event.location, event.note].filter(Boolean).join(" · ") || undefined,
+              icon: SHIPMENT_STATUS[event.status].icon,
+              tone: event.status === "failed" ? "danger" : event.status === "delivered" ? "success" : "neutral",
+            }))}
+          />
+        </Section>
+      </DetailLayout>
 
       {dialog?.kind === "update_status" ? (
         <StatusDialog

@@ -1,37 +1,22 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
 import { STYLE_INTAKE_STATUS } from "@/domain/status";
 import { When } from "@/features/shared/format";
-import { queryKeys } from "@/lib/api/query-keys";
-import type { Schemas } from "@/lib/api/types";
-import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
-import { EmptyState } from "@/ui/components/EmptyState";
-import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { Button } from "@/ui/components/Button";
+import type { DataTableColumn } from "@/ui/components/DataTable";
 
-import { adminBrowserApis, QueryError, StatusChip } from "../console";
+import { QueueTabs, ResourceList, StatusChip } from "../console";
+import { ALL_INTAKES, INTAKE_QUEUE, styleIntakesList, type StyleIntake } from "./resources";
 
-type Row = Schemas["StyleIntakeDto"];
-const QUEUE = ["submitted", "matched", "approved_recipe", "approved_template", "rejected"] as const;
+type Row = StyleIntake;
 
 /** Dieline offers from factories (U3.6, D-272), newest first, by status: the ones to review first. */
 export function StyleIntakes() {
   const t = useTranslations("catalogue.intakes");
   const tStatus = useTranslations("status");
-  const [status, setStatus] = useState<string>("submitted");
-  const query = useQuery({
-    queryKey: queryKeys.list("admin", "style-intakes", { status }),
-    queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/style-intakes", {
-          params: { query: status === "all" ? {} : { status: status as Row["status"] } },
-        })
-      ).data!,
-  });
   const columns: DataTableColumn<Row>[] = [
     {
       id: "title",
@@ -55,28 +40,34 @@ export function StyleIntakes() {
     { id: "createdAt", header: t("columns.created"), cell: (row) => <When at={row.createdAt} /> },
   ];
   return (
-    <div className="flex flex-col gap-4">
-      <SegmentedControl
-        label={t("statusesLabel")}
-        value={status}
-        onValueChange={setStatus}
-        options={[
-          ...QUEUE.map((s) => ({ value: s, label: tStatus(STYLE_INTAKE_STATUS[s].labelKey) })),
-          { value: "all", label: t("all") },
-        ]}
-      />
-      {query.isError ? (
-        <QueryError error={query.error} onRetry={() => void query.refetch()} />
-      ) : (
-        <DataTable
-          caption={t("title")}
-          columns={columns}
-          rows={query.data ?? []}
-          getRowId={(row) => row.id}
-          loading={query.isPending}
-          empty={<EmptyState icon="inbox" title={t("empty")} />}
+    <ResourceList
+      views={
+        <QueueTabs
+          countFrom={styleIntakesList}
+          label={t("statusesLabel")}
+          param="status"
+          tabs={[
+            ...INTAKE_QUEUE.map((s, index) => ({
+              value: index === 0 ? null : s,
+              label: tStatus(STYLE_INTAKE_STATUS[s].labelKey),
+            })),
+            { value: ALL_INTAKES, label: t("all") },
+          ]}
         />
-      )}
-    </div>
+      }
+      resource={styleIntakesList}
+      columns={columns}
+      caption={t("title")}
+      savedViews={false}
+      rowHref={(row) => `/style-intakes/${row.id}`}
+      empty={{
+        title: t("empty"),
+        action: (
+          <Button asChild variant="secondary" iconEnd="arrow-right">
+            <Link href="/partners?status=active">{t("emptyAction")}</Link>
+          </Button>
+        ),
+      }}
+    />
   );
 }

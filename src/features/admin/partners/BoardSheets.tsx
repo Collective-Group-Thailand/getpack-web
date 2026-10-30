@@ -25,6 +25,12 @@ import { FileButton } from "../logistics/files";
 import { useFactoryOptions } from "../production/factories";
 
 type Sheet = Schemas["BoardStrengthSheetDto"];
+
+/** " · B" — the board's flute by its code (the API sends the flute as a record, which once printed "[object Object]"). */
+const fluteOf = (flute: unknown) => {
+  const code = typeof flute === "string" ? flute : (flute as { code?: string } | null)?.code;
+  return code ? ` · ${code}` : "";
+};
 type Draft = {
   factoryId: string;
   materialId: string;
@@ -57,6 +63,19 @@ export function BoardSheets() {
   const [currentOnly, setCurrentOnly] = useState(true);
   const [page, setPage] = useState(1);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const startDraft = () =>
+    setDraft({
+      factoryId,
+      materialId: "",
+      ectKnPerM: "",
+      caliperMm: "",
+      grammageGsm: "",
+      testMethod: "ISO 3037",
+      signedOn: today(),
+      effectiveFrom: "",
+      dataSheetFileId: "",
+      note: "",
+    });
   const query = useQuery({
     queryKey: queryKeys.list("admin", "board_strength_sheet", { factoryId, currentOnly, page }),
     placeholderData: keepPreviousData,
@@ -93,7 +112,7 @@ export function BoardSheets() {
           <p>{name(row.material)}</p>
           <p className="text-muted text-xs tabular-nums">
             {row.material.code}
-            {row.material.flute ? ` · ${row.material.flute}` : ""}
+            {fluteOf(row.material.flute)}
           </p>
         </div>
       ),
@@ -156,24 +175,7 @@ export function BoardSheets() {
           }}
         />
         {canManage ? (
-          <Button
-            className="ms-auto"
-            iconStart="plus"
-            onClick={() =>
-              setDraft({
-                factoryId,
-                materialId: "",
-                ectKnPerM: "",
-                caliperMm: "",
-                grammageGsm: "",
-                testMethod: "ISO 3037",
-                signedOn: today(),
-                effectiveFrom: "",
-                dataSheetFileId: "",
-                note: "",
-              })
-            }
-          >
+          <Button className="ms-auto" iconStart="plus" onClick={startDraft}>
             {t("add")}
           </Button>
         ) : null}
@@ -187,7 +189,20 @@ export function BoardSheets() {
           rows={data?.data ?? []}
           getRowId={(row) => row.id}
           loading={query.isPending}
-          empty={<EmptyState icon="layers" title={t("empty")} description={t("emptyHint")} />}
+          empty={
+            <EmptyState
+              icon="layers"
+              action={
+                canManage ? (
+                  <Button variant="secondary" iconStart="plus" onClick={startDraft}>
+                    {t("add")}
+                  </Button>
+                ) : undefined
+              }
+              title={t("empty")}
+              description={t("emptyHint")}
+            />
+          }
         />
       )}
       {data && data.meta.total > data.meta.perPage ? (

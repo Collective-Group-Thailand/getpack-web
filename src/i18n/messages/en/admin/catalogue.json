@@ -713,7 +713,9 @@
     "declineTitle": "Decline this request",
     "reason": "Reason (the customer sees it)",
     "reasonRequired": "Give a reason",
-    "declined": "Request closed"
+    "declined": "Request closed",
+    "emptyAction": "Open the style library",
+    "lede": "Structures customers asked for that the style library does not have yet, by step — from assigning a designer to approval and publishing."
   },
   "intakes": {
     "title": "Dielines from factories",
@@ -790,7 +792,8 @@
       "deviation": "Largest deviation {max} mm · mean {mean} mm (accepted ≤ {tolerance} mm)",
       "mirrored": "Drawn mirrored (seen from the inside)",
       "save": "Save the match"
-    }
+    },
+    "emptyAction": "View active factories"
   },
   "rowCount": "{count} rows",
   "cases": {

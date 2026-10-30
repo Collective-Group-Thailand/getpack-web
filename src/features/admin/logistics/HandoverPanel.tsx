@@ -12,7 +12,6 @@ import { browserBffUrl } from "@/lib/zones";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
-import { Input } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 import { Icon, type IconName } from "@/ui/icons";
 
@@ -31,6 +30,17 @@ const BADGE: Record<LinkState | "none", { tone: "success" | "neutral" | "warning
   revoked: { tone: "neutral", icon: "ban" },
   closed: { tone: "neutral", icon: "check" },
 };
+
+/** `https://getpack.co/l/d8f…` → `getpack.co/l/d••••••`: where the link leads, without the token that opens it. */
+export function maskLink(url: string): string {
+  try {
+    const { host, pathname } = new URL(url);
+    const [, prefix = "", token = ""] = /^(.*\/l\/)(.*)$/.exec(pathname) ?? [];
+    return `${host}${prefix}${token.slice(0, 1)}${"\u2022".repeat(6)}`;
+  } catch {
+    return "\u2022".repeat(8);
+  }
+}
 
 /** The waybill PDF through the BFF (`admin.shipments.waybill`, audited), saved under the API's file name. */
 async function downloadWaybill(shipment: Shipment) {
@@ -63,7 +73,7 @@ async function downloadWaybill(shipment: Shipment) {
  * a copy button; issuing again revokes the previous link, which is why that asks first. The factory learns only
  * that a waybill was issued.
  */
-export function HandoverPanel({ shipment }: { shipment: Shipment }) {
+export function HandoverPanel({ shipment, lead = true }: { shipment: Shipment; lead?: boolean }) {
   const t = useTranslations("logistics.shipment.handover");
   const queryClient = useQueryClient();
   const canManage = useCan("shipments.manage");
@@ -132,14 +142,15 @@ export function HandoverPanel({ shipment }: { shipment: Shipment }) {
         {issued ? (
           <div className="border-border bg-primary-subtle rounded-control flex flex-col gap-2 border p-3">
             <p className="text-primary-subtle-fg text-sm font-semibold">{t("issuedTitle")}</p>
-            <div className="flex gap-2">
-              <Input
-                readOnly
-                value={issued.url}
+            {/* The link is a key to the recipient's address: never printed on screen (or in a screenshot), only
+                copied — the field shows where it leads, the token masked. */}
+            <div className="flex items-center gap-2">
+              <span
+                className="border-border bg-surface rounded-control text-muted min-w-0 flex-1 truncate border px-3 py-2 font-mono text-xs"
                 aria-label={t("issuedTitle")}
-                className="min-w-0 flex-1 font-mono text-xs"
-                onFocus={(event) => event.currentTarget.select()}
-              />
+              >
+                {maskLink(issued.url)}
+              </span>
               <Button
                 size="md"
                 iconStart="copy"
@@ -169,6 +180,7 @@ export function HandoverPanel({ shipment }: { shipment: Shipment }) {
           <div className="flex flex-wrap gap-2">
             <Button
               size="md"
+              variant={lead && state === "none" ? "primary" : "secondary"}
               iconStart={state === "none" ? "link" : "refresh"}
               loading={issuing}
               disabled={!issuable}
@@ -178,7 +190,7 @@ export function HandoverPanel({ shipment }: { shipment: Shipment }) {
             </Button>
             <Button
               size="md"
-              variant="secondary"
+              variant={lead && state === "none" ? "secondary" : "ghost"}
               iconStart="download"
               loading={downloading}
               onClick={() => void waybill()}

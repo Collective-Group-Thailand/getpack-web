@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 /**
  * Zero dead ends in the admin console, group by group (CAPTURE-PLAN-ADMIN §3): every empty state offers the next
  * action. An empty state may leave out `action` only where the next step is right beside it on the same screen —
- * listed here with why. G1 (sales and service) and the console frame are covered; later groups join as they are
- * redesigned.
+ * listed here with why. G1 (sales and service), G2 (production and logistics) and the console frame are covered;
+ * later groups join as they are redesigned.
  */
 const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/admin/orders/OrderTabs.tsx":
@@ -20,6 +20,13 @@ const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/admin/companies/CompanyWorkspace.tsx":
     "a company's tabs: review KYC, set the credit limit and issue documents are the section's own actions",
   "src/features/admin/cs/CalculatorWorkspace.tsx": "the result's place beside the calculator form, which is the step",
+  // G2
+  "src/features/admin/shipping/RatesTable.tsx":
+    "a rate version's lines, drawn inside the version editor whose own controls add and import lines",
+  "src/features/admin/prepress/PrepressTabs.tsx":
+    "an order's prepress tabs: upload on the customer's behalf and the workspace's next-steps panel are the step",
+  "src/features/admin/partners/tabs/Processes.tsx":
+    "a factory's processes: adding a capability is the section's own action above the table",
 };
 
 const G1 = [
@@ -57,6 +64,28 @@ const G1 = [
   "src/features/admin/logistics/Claim*.tsx",
 ];
 
+/** G2 — production and logistics (CAPTURE-PLAN-ADMIN §1). */
+const G2 = [
+  ...[
+    "production",
+    "prepress",
+    "shipping",
+    "shipments",
+    "partners",
+    "style-intakes",
+    "structural-requests",
+    "ops",
+    "outbox",
+  ].map((area) => `src/app/admin/[(]console[)]/${area}/**/*.tsx`),
+  ...["production", "prepress", "shipping", "partners", "structural"].map(
+    (area) => `src/features/admin/${area}/**/*.tsx`,
+  ),
+  "src/features/admin/logistics/Ship*.tsx",
+  "src/features/admin/logistics/HandoverPanel.tsx",
+  "src/features/admin/platform/Outbox.tsx",
+  "src/features/admin/platform/OpsSignals.tsx",
+];
+
 function emptyStatesWithoutAction(file: string): number {
   const source = readFileSync(file, "utf8");
   let missing = 0;
@@ -66,13 +95,15 @@ function emptyStatesWithoutAction(file: string): number {
   return missing;
 }
 
-describe("zero dead ends in the admin console (frame + G1)", () => {
-  const files = [...new Set(G1.flatMap((pattern) => globSync(pattern)))].filter(
-    (file) => !/\.(test|stories)\.tsx$/.test(file),
-  );
+const filesOf = (patterns: readonly string[]) =>
+  [...new Set(patterns.flatMap((pattern) => globSync(pattern)))].filter((file) => !/\.(test|stories)\.tsx$/.test(file));
 
-  it("finds the group's files", () => {
-    expect(files.length).toBeGreaterThan(60);
+describe("zero dead ends in the admin console (frame + G1 + G2)", () => {
+  const files = filesOf([...G1, ...G2]);
+
+  it("finds the groups' files", () => {
+    expect(filesOf(G1).length).toBeGreaterThan(60);
+    expect(filesOf(G2).length).toBeGreaterThan(70);
   });
 
   it("gives every empty state a next action", () => {

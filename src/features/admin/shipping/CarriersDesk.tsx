@@ -118,6 +118,7 @@ export function CarriersDesk() {
                     </Button>
                     <Button
                       size="sm"
+                      variant="secondary"
                       iconStart="plus"
                       onClick={() => setAdding({ carrier, label: "", ref: "", sandbox: true })}
                     >

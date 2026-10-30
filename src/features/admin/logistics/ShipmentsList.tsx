@@ -19,12 +19,6 @@ export const piecesOf = (shipment: Pick<Shipment, "items">) =>
 
 const CARRIERS = ["factory_fleet", "flash_express", "deliveree"] as const;
 
-/** The dashboard queue each desk tab counts, where the dashboard has one. */
-const QUEUE_COUNTS: Partial<Record<(typeof SHIPMENT_QUEUES)[number], string>> = {
-  exceptions: "shipments.exceptions",
-  pod_review: "shipments.pod_review",
-};
-
 /**
  * The logistics desk (F2 2.8, D-013, D-114, D-229, D-230): shipments by queue — awaiting pick-up,
  * on the road, exceptions, POD to review — filtered by status, carrier and factory. A row shows
@@ -120,11 +114,6 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
         const last = row.events.at(-1);
         return (
           <span className="text-sm">
-            {row.podReview?.state === "pending" ? (
-              <Button asChild size="sm" variant="secondary" iconStart="file-check" className="mb-1">
-                <Link href={`/shipments/${row.id}`}>{t("reviewPod")}</Link>
-              </Button>
-            ) : null}
             {last ? <When at={last.occurredAt} /> : "–"}
             {last?.location ? <span className="text-muted block text-xs">{last.location}</span> : null}
             {row.exception?.note ? (
@@ -140,19 +129,18 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("queuesLabel")}
-        param="queue"
-        tabs={[
-          { value: null, label: t("all") },
-          ...SHIPMENT_QUEUES.map((queue) => ({
-            value: queue,
-            label: t(`queues.${queue}`),
-            countKey: QUEUE_COUNTS[queue],
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={shipmentsList}
+            label={t("queuesLabel")}
+            param="queue"
+            tabs={[
+              { value: null, label: t("all") },
+              ...SHIPMENT_QUEUES.map((queue) => ({ value: queue, label: t(`queues.${queue}`) })),
+            ]}
+          />
+        }
         resource={shipmentsList}
         exportResource="shipments"
         columns={columns}
@@ -183,7 +171,14 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
           row.status === "failed" || row.status === "returned" || row.exception ? "danger" : undefined
         }
         rowHref={(row) => `/shipments/${row.id}`}
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: (
+            <Button asChild variant="secondary" iconEnd="arrow-right">
+              <Link href="/production">{t("emptyAction")}</Link>
+            </Button>
+          ),
+        }}
       />
     </div>
   );

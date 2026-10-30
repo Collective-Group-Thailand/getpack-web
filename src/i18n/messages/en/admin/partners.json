@@ -202,6 +202,12 @@
       "passwordHint": "At least 12 characters; changed at first sign-in",
       "confirm": "Create account",
       "done": "Account created for {email}"
+    },
+    "groups": {
+      "profile": "Profile",
+      "capability": "Capability",
+      "commercial": "Commercial",
+      "oversight": "Oversight"
     }
   },
   "onboarding": {
@@ -938,7 +944,8 @@
     "response": "Message to the factory",
     "responseHint": "Required for done or declined",
     "responseRequired": "Write at least 3 characters to the factory.",
-    "answered": "Answer sent"
+    "answered": "Answer sent",
+    "emptyAction": "View partner factories"
   },
   "boards": {
     "title": "Board strength sheets",

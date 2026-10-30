@@ -26,6 +26,11 @@ export interface NextActionBarProps {
    * (default): the lead and a "⋯" side by side, for a header.
    */
   layout?: "row" | "panel";
+  /**
+   * `panel` only: this screen's own outlined steps, placed after the API's constructive ones and before anything
+   * destructive (a POD's "reject" under its "accept").
+   */
+  secondary?: React.ReactNode;
 }
 
 /**
@@ -35,7 +40,14 @@ export interface NextActionBarProps {
  * app's words when the problem code has them). An action key this version cannot perform is shown disabled rather than
  * hidden, so a new backend capability is visible, not lost.
  */
-export function NextActionBar({ actions, supported, labelOf, onAction, layout = "row" }: NextActionBarProps) {
+export function NextActionBar({
+  actions,
+  supported,
+  labelOf,
+  onAction,
+  layout = "row",
+  secondary,
+}: NextActionBarProps) {
   const t = useTranslations("status");
   const tConsole = useTranslations("console.actions");
   const tProblems = useTranslations("problems");
@@ -87,6 +99,7 @@ export function NextActionBar({ actions, supported, labelOf, onAction, layout = 
       <ActionStack>
         {lead ? button(lead, "primary") : null}
         {others.map((action) => button(action, "secondary"))}
+        {secondary}
         {destructive.map((action) => button(action, "destructive"))}
         {unsupported.length > 0 ? (
           <DropdownMenu

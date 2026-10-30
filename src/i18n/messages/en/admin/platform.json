@@ -346,16 +346,20 @@
     "replayed": "Replayed",
     "replayFailed": "Replay failed",
     "empty": "No events in this state",
-    "emptyBody": "Everything is being delivered."
+    "emptyBody": "Everything is being delivered.",
+    "statusesLabel": "Event status",
+    "all": "All",
+    "openOps": "Open system monitoring"
   },
   "ops": {
     "title": "Ops monitor",
-    "description": "The signals to watch after launch, each against its threshold in the ops.alert_thresholds setting. Admins are alerted when one is exceeded, at most once an hour per signal.",
+    "description": "The signals to watch after launch, each against its threshold in the system settings. Admins are alerted when one is exceeded, at most once an hour per signal.",
     "columns": {
       "signal": "Signal",
       "value": "Value",
       "threshold": "Threshold",
-      "status": "Status"
+      "status": "Status",
+      "desk": "Desk"
     },
     "unread": "Not read",
     "noThreshold": "Not set",
@@ -364,7 +368,7 @@
     "empty": "No signals yet",
     "signals": {
       "outbox_dead_letters": "Events dead-lettered after every retry",
-      "outbox_backlog_minutes": "Oldest undelivered event (minutes)",
+      "outbox_backlog_minutes": "Oldest undelivered event",
       "queue_depth": "Jobs waiting in the worker queues",
       "webhook_failures_24h": "Failed webhooks, last 24 hours",
       "payout_item_failures_7d": "Failed factory payout items, last 7 days",
@@ -373,11 +377,18 @@
       "production_at_risk": "Production jobs at risk of missing their date",
       "rfq_first_response_overdue": "RFQs past their first-response SLA",
       "approvals_overdue": "Overdue approval requests",
-      "slip_verification_wait_hours": "Longest wait for slip verification (hours)",
+      "slip_verification_wait_hours": "Longest wait for slip verification",
       "claim_response_overdue": "Claims past their response time",
       "claim_decision_overdue": "Claims past their decision time",
       "conversation_first_response_overdue": "Conversations past their first-response time",
       "journey_conversion_drops": "Drops in journey conversion"
-    }
+    },
+    "summary": "Signal summary",
+    "units": {
+      "minutes": "{value} min",
+      "hours": "{value} h"
+    },
+    "openDesk": "Open the desk for {signal}",
+    "openOutbox": "Open the event queue"
   }
 }

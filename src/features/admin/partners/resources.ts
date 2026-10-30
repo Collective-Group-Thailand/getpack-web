@@ -57,3 +57,24 @@ export const inspectionsList = defineList<Inspection>({
   defaults: { filterKeys: ["status", "factoryId"] },
   staleTime: STALE_TIME.live,
 });
+
+export type ChangeRequest = Schemas["FactoryChangeRequestDto"];
+/** The change-request tab that is every request; no `?status=` is the open ones, the work. */
+export const ALL_REQUESTS = "all";
+
+/** What factories asked the Partner team to change (`admin.factoryChangeRequests.list`), open ones first. */
+export const changeRequestsList = defineList<ChangeRequest>({
+  key: "factory_change_request",
+  fetch: async ({ contract }, { status, ...query }) => {
+    const chosen = !status ? "open" : status === ALL_REQUESTS ? null : status;
+    return (
+      await contract.GET("/v1/admin/factory-change-requests", {
+        params: { query: { ...query, ...(chosen ? { status: chosen } : {}) } as never },
+      })
+    ).data!;
+  },
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.factoryCode,
+  defaults: { filterKeys: ["status", "topic"] },
+  staleTime: STALE_TIME.live,
+});

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { ARTWORK_STATUS, PREFLIGHT_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import type { DataTableColumn } from "@/ui/components/DataTable";
+import { Button } from "@/ui/components/Button";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 
 import {
@@ -113,19 +114,18 @@ export function PrepressList({ initial }: { initial: InitialPage<PrepressQueueIt
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("queuesLabel")}
-        param="kind"
-        tabs={
-          // No `?kind=` is the first queue, so the desk opens on it.
-          PREPRESS_QUEUES.map((kind, index) => ({
-            value: index === 0 ? null : kind,
-            label: t(`queues.${kind}`),
-            countKey: `prepress.${kind}`,
-          }))
-        }
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={prepressList}
+            label={t("queuesLabel")}
+            param="kind"
+            tabs={
+              // No `?kind=` is the first queue, so the desk opens on it.
+              PREPRESS_QUEUES.map((kind, index) => ({ value: index === 0 ? null : kind, label: t(`queues.${kind}`) }))
+            }
+          />
+        }
         resource={prepressList}
         columns={columns}
         caption={t("title")}
@@ -160,7 +160,15 @@ export function PrepressList({ initial }: { initial: InitialPage<PrepressQueueIt
           },
         ]}
         rowTone={(row) => (row.kind !== "proofs_waiting" && row.overdue ? "danger" : undefined)}
-        empty={{ title: t("emptyTitle"), description: t("emptyBody") }}
+        empty={{
+          title: t("emptyTitle"),
+          description: t("emptyBody"),
+          action: (
+            <Button asChild variant="secondary" iconEnd="arrow-right">
+              <Link href="/orders?queue=artwork_review">{t("emptyAction")}</Link>
+            </Button>
+          ),
+        }}
       />
     </div>
   );

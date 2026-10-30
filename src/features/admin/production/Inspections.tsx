@@ -11,6 +11,8 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { IconButton } from "@/ui/components/IconButton";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
@@ -23,6 +25,7 @@ import {
   FormDialog,
   FormError,
   problemMessage,
+  QueueTabs,
   ResourceList,
   StatusChip,
   useCan,
@@ -144,26 +147,37 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
           {
             id: "record",
             header: <span className="sr-only">{t("record")}</span>,
+            className: "w-12 text-end",
             cell: (row: Inspection) =>
               ["planned", "in_progress"].includes(row.status) ? (
-                <span className="flex flex-wrap gap-1">
-                  {row.status === "planned" ? (
-                    <Button size="sm" variant="ghost" onClick={() => setScheduling({ row, at: "", inspectorId: "" })}>
-                      {t("schedule")}
-                    </Button>
-                  ) : null}
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => {
-                      setFound({ critical: "0", major: "0", minor: "0" });
-                      setNotes("");
-                      setRecording({ row, key: newIdempotencyKey() });
-                    }}
-                  >
-                    {t("recordFor", { job: row.jobNo })}
-                  </Button>
-                </span>
+                // One "⋯" per open inspection (was a ghost and an outlined button on every row).
+                <DropdownMenu
+                  label={t("record")}
+                  align="end"
+                  items={[
+                    ...(row.status === "planned"
+                      ? [
+                          {
+                            id: "schedule",
+                            label: t("schedule"),
+                            icon: "calendar" as const,
+                            onSelect: () => setScheduling({ row, at: "", inspectorId: "" }),
+                          },
+                        ]
+                      : []),
+                    {
+                      id: "record",
+                      label: t("recordFor", { job: row.jobNo }),
+                      icon: "clipboard-check" as const,
+                      onSelect: () => {
+                        setFound({ critical: "0", major: "0", minor: "0" });
+                        setNotes("");
+                        setRecording({ row, key: newIdempotencyKey() });
+                      },
+                    },
+                  ]}
+                  trigger={<IconButton name="more" size="sm" variant="ghost" label={t("record")} />}
+                />
               ) : null,
           },
         ]
@@ -209,25 +223,35 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
         </FormDialog>
       ) : null}
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={inspectionsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...Object.entries(INSPECTION_STATUS).map(([value, meta]) => ({ value, label: tStatus(meta.labelKey) })),
+            ]}
+          />
+        }
         resource={inspectionsList}
         columns={columns}
         caption={t("title")}
         initial={initial}
         filters={[
-          {
-            id: "status",
-            label: t("columns.status"),
-            kind: "select",
-            options: Object.entries(INSPECTION_STATUS).map(([value, meta]) => ({
-              value,
-              label: tStatus(meta.labelKey),
-            })),
-          },
           ...(factories.length
             ? [{ id: "factoryId", label: t("columns.factory"), kind: "select" as const, options: factories }]
             : []),
         ]}
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: (
+            <Button asChild variant="secondary" iconEnd="arrow-right">
+              <Link href="/production">{t("emptyAction")}</Link>
+            </Button>
+          ),
+        }}
       />
       <ConfirmAction
         open={recording !== null}

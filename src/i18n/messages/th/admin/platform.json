@@ -346,16 +346,20 @@
     "replayed": "ส่งซ้ำแล้ว",
     "replayFailed": "ส่งซ้ำไม่สำเร็จ",
     "empty": "ไม่มีเหตุการณ์ในสถานะนี้",
-    "emptyBody": "ทุกอย่างส่งได้ตามปกติ"
+    "emptyBody": "ทุกอย่างส่งได้ตามปกติ",
+    "statusesLabel": "สถานะเหตุการณ์",
+    "all": "ทั้งหมด",
+    "openOps": "ดูเฝ้าระวังระบบ"
   },
   "ops": {
     "title": "เฝ้าระวังระบบ",
-    "description": "สัญญาณที่ต้องจับตาหลังเปิดให้บริการ แต่ละค่าเทียบกับเกณฑ์ในการตั้งค่า ops.alert_thresholds ระบบแจ้งเตือนผู้ดูแลเมื่อเกินเกณฑ์ ไม่เกินชั่วโมงละครั้งต่อสัญญาณ",
+    "description": "สัญญาณที่ต้องจับตาหลังเปิดให้บริการ แต่ละค่าเทียบกับเกณฑ์ในการตั้งค่าระบบ ระบบแจ้งเตือนผู้ดูแลเมื่อเกินเกณฑ์ ไม่เกินชั่วโมงละครั้งต่อสัญญาณ",
     "columns": {
       "signal": "สัญญาณ",
       "value": "ค่าปัจจุบัน",
       "threshold": "เกณฑ์",
-      "status": "สถานะ"
+      "status": "สถานะ",
+      "desk": "งานที่เกี่ยวข้อง"
     },
     "unread": "อ่านไม่ได้",
     "noThreshold": "ไม่ได้ตั้ง",
@@ -364,7 +368,7 @@
     "empty": "ยังไม่มีสัญญาณ",
     "signals": {
       "outbox_dead_letters": "เหตุการณ์ที่ส่งไม่สำเร็จจนหมดรอบ (dead letter)",
-      "outbox_backlog_minutes": "เหตุการณ์ค้างส่งนานที่สุด (นาที)",
+      "outbox_backlog_minutes": "เหตุการณ์ค้างส่งนานที่สุด",
       "queue_depth": "งานค้างในคิวของ worker",
       "webhook_failures_24h": "webhook ที่ล้มเหลวใน 24 ชั่วโมง",
       "payout_item_failures_7d": "รายการจ่ายโรงงานที่ล้มเหลวใน 7 วัน",
@@ -373,11 +377,18 @@
       "production_at_risk": "งานผลิตที่เสี่ยงส่งไม่ทัน",
       "rfq_first_response_overdue": "RFQ ที่ยังไม่ตอบครั้งแรกเกิน SLA",
       "approvals_overdue": "คำขออนุมัติที่เกินกำหนด",
-      "slip_verification_wait_hours": "สลิปที่รอตรวจนานที่สุด (ชั่วโมง)",
+      "slip_verification_wait_hours": "สลิปที่รอตรวจนานที่สุด",
       "claim_response_overdue": "เคลมที่ยังไม่ตอบลูกค้าเกินกำหนด",
       "claim_decision_overdue": "เคลมที่ยังไม่ตัดสินเกินกำหนด",
       "conversation_first_response_overdue": "บทสนทนาที่ยังไม่ตอบครั้งแรกเกินกำหนด",
       "journey_conversion_drops": "อัตราการซื้อในเส้นทางลูกค้าลดลง"
-    }
+    },
+    "summary": "สรุปสัญญาณ",
+    "units": {
+      "minutes": "{value} นาที",
+      "hours": "{value} ชม."
+    },
+    "openDesk": "เปิดงานของ {signal}",
+    "openOutbox": "เปิดคิวเหตุการณ์ระบบ"
   }
 }

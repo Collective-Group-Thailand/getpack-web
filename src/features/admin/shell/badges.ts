@@ -3,8 +3,12 @@ import type { TabCountSource } from "../console/queues";
 import type { ListResource } from "../console/resource";
 import { companiesList } from "../companies/resources";
 import { inboxList } from "../inbox/resources";
-import { claimsList } from "../logistics/resources";
+import { claimsList, shipmentsList } from "../logistics/resources";
 import { ordersList } from "../orders/resources";
+import { factoriesList } from "../partners/resources";
+import { prepressList } from "../prepress/resources";
+import { productionBoardCount } from "../production/resources";
+import { structuralRequestsList, styleIntakesList } from "../structural/resources";
 import { rfqList } from "../rfq/resources";
 import { samplesList } from "../samples/resources";
 
@@ -17,6 +21,12 @@ const LISTS_AT: Readonly<Record<string, ListResource<any>>> = {
   "/claims": claimsList,
   "/samples": samplesList,
   "/companies": companiesList,
+  "/prepress": prepressList,
+  "/production": productionBoardCount,
+  "/shipments": shipmentsList,
+  "/partners": factoriesList,
+  "/style-intakes": styleIntakesList,
+  "/structural-requests": structuralRequestsList,
 };
 
 /**
@@ -53,4 +63,11 @@ export const MENU_BADGES: Readonly<Record<string, MenuBadge>> = {
   claims: badge("/claims"),
   samples: badge("/samples", "?status=requested"),
   companies: badge("/companies", "?status=kyc_review"),
+  // G2 — production and logistics.
+  prepress: badge("/prepress"),
+  production: badge("/production", "?atRisk=true"),
+  shipments: badge("/shipments", "?queue=pod_review"),
+  partners: badge("/partners", "?status=applied"),
+  style_intakes: badge("/style-intakes"),
+  structural_requests: badge("/structural-requests", "?status=submitted"),
 };

@@ -11,7 +11,6 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
@@ -236,16 +235,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[
-              { label: t("partners"), href: "/partners" },
-              { label: t("proposals"), href: "/partners/proposals" },
-              { label: `${item.factoryCode} · ${labelOf(item.productTypeCode)}` },
-            ]}
-          />
-        }
+        back={{ href: "/partners/proposals", label: t("proposals") }}
         title={t("title", { factory: item.factoryCode, type: labelOf(item.productTypeCode) })}
         meta={
           <>

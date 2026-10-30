@@ -39,9 +39,11 @@ export type PrepressOwner = { id: string; displayName: string } | null;
 export function PrepressActionBar({
   actions,
   onAction,
+  layout,
 }: {
   actions: AdminPrepressAction[];
   onAction: (key: PrepressActionKey) => void;
+  layout?: "row" | "panel";
 }) {
   const t = useTranslations("prepress.actions");
   return (
@@ -50,6 +52,7 @@ export function PrepressActionBar({
       supported={SUPPORTED}
       labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
       onAction={(key) => onAction(key as PrepressActionKey)}
+      layout={layout}
     />
   );
 }

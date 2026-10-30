@@ -154,7 +154,23 @@ export function ZonesDesk() {
           getRowId={(row) => row.id}
           loading={zones.isPending}
           rowTone={(row) => (row.postcodeCount === 0 ? "warning" : undefined)}
-          empty={<EmptyState icon="map" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="map"
+              action={
+                canManage && current ? (
+                  <Button
+                    variant="secondary"
+                    iconStart="plus"
+                    onClick={() => setDraft({ id: null, code: "", nameTh: "", nameEn: "" })}
+                  >
+                    {t("addZone")}
+                  </Button>
+                ) : undefined
+              }
+              title={t("empty")}
+            />
+          }
         />
       )}
 

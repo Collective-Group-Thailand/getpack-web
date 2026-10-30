@@ -14,7 +14,7 @@ export default async function Page() {
   const t = await getTranslations("catalogue.structural");
   return (
     <ConsolePage width="full" className="max-w-[96rem]">
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader title={t("title")} description={t("lede")} />
       <StructuralRequests />
     </ConsolePage>
   );

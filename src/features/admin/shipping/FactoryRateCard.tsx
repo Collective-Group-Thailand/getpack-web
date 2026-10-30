@@ -280,7 +280,26 @@ export function FactoryRateCard({ factoryId }: { factoryId: string }) {
           getRowId={(row) => row.id}
           loading={versions.isPending}
           rowTone={(row) => (row.id === shownId ? "info" : undefined)}
-          empty={<EmptyState icon="truck" title={t("noVersions")} description={t("noVersionsHint")} />}
+          empty={
+            <EmptyState
+              icon="truck"
+              action={
+                canManage && !card.data?.open ? (
+                  <Button
+                    variant="secondary"
+                    iconStart="plus"
+                    onClick={() =>
+                      setCreating({ effectiveFrom: today(), reason: "", copy: Boolean(card.data?.current) })
+                    }
+                  >
+                    {t("newVersion")}
+                  </Button>
+                ) : undefined
+              }
+              title={t("noVersions")}
+              description={t("noVersionsHint")}
+            />
+          }
         />
       </Section>
 

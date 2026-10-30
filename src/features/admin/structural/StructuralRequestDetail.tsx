@@ -9,9 +9,10 @@ import { useFormat, When } from "@/features/shared/format";
 import { uploadFile } from "@/features/shared/files/upload";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
@@ -19,7 +20,7 @@ import { PageHeader } from "@/ui/components/PageHeader";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, FormDialog, QueryError, Section, StatusChip } from "../console";
+import { adminBrowserApis, FormDialog, QueryError, Section, StatusChip, useProductTypes } from "../console";
 import { useCan } from "../console/actor";
 import { useFileDownload } from "../logistics/files";
 
@@ -38,6 +39,8 @@ const BASE_CODE = /^PK-[A-Z]{2}-\d{2,3}$/;
  */
 export function StructuralRequestDetail({ requestId }: { requestId: string }) {
   const t = useTranslations("catalogue.structural");
+  const tConsole = useTranslations("console.actions");
+  const productTypes = useProductTypes();
   const format = useFormat();
   const queryClient = useQueryClient();
   const canManage = useCan("structural_requests.manage");
@@ -84,88 +87,112 @@ export function StructuralRequestDetail({ requestId }: { requestId: string }) {
         .join(" × ")
     : "—";
 
-  const actions = (
-    <div className="flex flex-wrap gap-2">
-      {canManage && OPEN.includes(r.status) ? (
-        <Button onClick={() => setDialog("assign")}>{r.assignedTo ? t("reassign") : t("assign")}</Button>
-      ) : null}
-      {canManage && r.status === "assigned" ? (
-        <Button variant="secondary" onClick={() => setDialog("rfq")}>
-          {t("linkRfq")}
-        </Button>
-      ) : null}
-      {canDesign && (r.status === "assigned" || r.status === "quoted") ? (
-        <Button onClick={() => setDialog("deliver")}>{t("deliver")}</Button>
-      ) : null}
-      {canApprove && r.status === "delivered" ? (
-        <Button onClick={() => setDialog("approve")}>{t("approve")}</Button>
-      ) : null}
-      {canApprove && r.status === "approved" ? (
-        <Button onClick={() => setDialog("publish")}>{t("publish")}</Button>
-      ) : null}
-      {canManage && OPEN.includes(r.status) ? (
-        <Button variant="ghost" className="text-danger" onClick={() => setDialog("decline")}>
-          {t("decline")}
-        </Button>
-      ) : null}
-    </div>
-  );
-
+  // The steps open to this person, in the order the request moves; the first leads (filled), decline comes last.
+  const steps = [
+    ...(canManage && OPEN.includes(r.status)
+      ? [{ key: "assign" as const, label: r.assignedTo ? t("reassign") : t("assign"), icon: "user-plus" as const }]
+      : []),
+    ...(canDesign && (r.status === "assigned" || r.status === "quoted")
+      ? [{ key: "deliver" as const, label: t("deliver"), icon: "upload" as const }]
+      : []),
+    ...(canApprove && r.status === "delivered"
+      ? [{ key: "approve" as const, label: t("approve"), icon: "check" as const }]
+      : []),
+    ...(canApprove && r.status === "approved"
+      ? [{ key: "publish" as const, label: t("publish"), icon: "send" as const }]
+      : []),
+    ...(canManage && r.status === "assigned"
+      ? [{ key: "rfq" as const, label: t("linkRfq"), icon: "link" as const }]
+      : []),
+  ];
+  const declinable = canManage && OPEN.includes(r.status);
+  const typeLabel = productTypes.labelOf(r.productTypeCode);
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/structural-requests" }, { label: t("detailCrumb") }]}
-          />
-        }
-        title={t("detailTitle", { type: r.productTypeCode })}
+        back={{ href: "/structural-requests", label: t("title") }}
+        title={t("detailTitle", { type: typeLabel })}
         meta={<StatusChip map={STRUCTURAL_REQUEST_STATUS} value={r.status} size="md" />}
-        actions={actions}
+        description={r.customer.displayName}
       />
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="structural-next"
+            title={tConsole("nextTitle")}
+            tone={steps.length ? "primary" : "neutral"}
+            description={steps.length || declinable ? undefined : tConsole("nothingNext")}
+          >
+            {steps.length || declinable ? (
+              <ActionStack>
+                {steps.map((step, index) => (
+                  <Button
+                    key={step.key}
+                    size="lg"
+                    variant={index === 0 ? "primary" : "secondary"}
+                    iconStart={step.icon}
+                    onClick={() => setDialog(step.key)}
+                  >
+                    {step.label}
+                  </Button>
+                ))}
+                {declinable ? (
+                  <Button size="lg" variant="destructive" iconStart="close" onClick={() => setDialog("decline")}>
+                    {t("decline")}
+                  </Button>
+                ) : null}
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        <Section title={t("request")}>
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: t("customer"), description: r.customer.displayName },
+              { term: t("productType"), description: typeLabel },
+              { term: t("description"), description: <span className="whitespace-pre-line">{r.description}</span> },
+              {
+                term: t("sizes"),
+                description: r.sizes ? t("sizesValue", { sizes, basis: t(`bases.${r.sizes.measurementBasis}`) }) : "—",
+              },
+              { term: t("quantity"), description: r.quantity === null ? "—" : format.number(r.quantity) },
+              { term: t("asked"), description: <When at={r.createdAt} /> },
+              { term: t("assignee"), description: r.assignedTo?.displayName ?? "—" },
+              { term: t("rfq"), description: r.serviceRfqId ?? "—" },
+              ...(r.publishedBaseCode ? [{ term: t("publishedBase"), description: r.publishedBaseCode }] : []),
+              ...(r.closedReason ? [{ term: t("closedReason"), description: r.closedReason }] : []),
+            ]}
+          />
+        </Section>
 
-      <Section title={t("request")}>
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: t("customer"), description: r.customer.displayName },
-            { term: t("productType"), description: r.productTypeCode },
-            { term: t("description"), description: <span className="whitespace-pre-line">{r.description}</span> },
-            {
-              term: t("sizes"),
-              description: r.sizes ? t("sizesValue", { sizes, basis: t(`bases.${r.sizes.measurementBasis}`) }) : "—",
-            },
-            { term: t("quantity"), description: r.quantity === null ? "—" : format.number(r.quantity) },
-            { term: t("asked"), description: <When at={r.createdAt} /> },
-            { term: t("assignee"), description: r.assignedTo?.displayName ?? "—" },
-            { term: t("rfq"), description: r.serviceRfqId ?? "—" },
-            ...(r.publishedBaseCode ? [{ term: t("publishedBase"), description: r.publishedBaseCode }] : []),
-            ...(r.closedReason ? [{ term: t("closedReason"), description: r.closedReason }] : []),
-          ]}
-        />
-      </Section>
-
-      <Section title={t("files")}>
-        <ul className="flex flex-wrap gap-2">
-          {r.files.length === 0 ? <li className="text-muted text-sm">{t("noFiles")}</li> : null}
-          {r.files.map((f) => (
-            <li key={f.id}>
-              <Button size="sm" variant="secondary" iconStart="download" onClick={() => file.mutate(f.id)}>
-                {f.originalName}
+        <Section title={t("files")}>
+          <ul className="flex flex-wrap gap-2">
+            {r.files.length === 0 ? <li className="text-muted text-sm">{t("noFiles")}</li> : null}
+            {r.files.map((f) => (
+              <li key={f.id}>
+                <Button size="sm" variant="secondary" iconStart="download" onClick={() => file.mutate(f.id)}>
+                  {f.originalName}
+                </Button>
+              </li>
+            ))}
+          </ul>
+          {r.deliveredFile ? (
+            <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted">{t("delivered")}</span>
+              <Button
+                size="sm"
+                variant="secondary"
+                iconStart="download"
+                onClick={() => file.mutate(r.deliveredFile!.id)}
+              >
+                {r.deliveredFile.originalName}
               </Button>
-            </li>
-          ))}
-        </ul>
-        {r.deliveredFile ? (
-          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-muted">{t("delivered")}</span>
-            <Button size="sm" iconStart="download" onClick={() => file.mutate(r.deliveredFile!.id)}>
-              {r.deliveredFile.originalName}
-            </Button>
-          </p>
-        ) : null}
-      </Section>
+            </p>
+          ) : null}
+        </Section>
+      </DetailLayout>
 
       {dialog === "assign" ? (
         <FormDialog

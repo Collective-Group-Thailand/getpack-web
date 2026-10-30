@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -11,7 +12,6 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
-import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
@@ -20,6 +20,7 @@ import { Input, NumberInput } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
 
 import {
   adminBrowserApis,
@@ -103,51 +104,90 @@ export function MilestoneRoutes() {
           </Button>
         ) : null}
       </div>
-      {routes.data.length === 0 ? <EmptyState icon="route" title={t("empty")} /> : null}
-      {routes.data.map((route) => {
-        const current = inForce(route);
-        const later = route.versions.filter(
-          (version) => version !== current && version.versionNo > (current?.versionNo ?? 0),
-        );
-        return (
-          <Card key={route.id} padding="lg">
-            <CardHeader className="flex flex-wrap items-start justify-between gap-2">
-              <div className="flex min-w-0 flex-col gap-1">
-                <CardTitle className="flex flex-wrap items-center gap-2">
-                  {route.name}
-                  <Badge size="sm">{types.labelOf(route.productTypeCode)}</Badge>
-                  <span className="text-muted text-xs tabular-nums">{route.variant}</span>
-                </CardTitle>
-                <p className="text-muted text-sm">
-                  {current
-                    ? t("current", {
-                        no: current.versionNo,
-                        date: format.date(current.effectiveFrom),
-                        reason: current.reason,
-                      })
-                    : t("noneInForce")}
-                </p>
-              </div>
-              {canManage ? (
-                <Button size="sm" variant="secondary" iconStart="edit" onClick={() => setPublishing(route)}>
-                  {t("publish")}
-                </Button>
-              ) : null}
-            </CardHeader>
-            {current ? <StepsTable steps={current.steps} locale={locale} /> : null}
-            {later.map((version) => (
-              <p key={version.versionNo} className="text-muted mt-3 flex flex-wrap items-center gap-2 text-sm">
-                <StatusChip map={SETTING_VERSION_STATUS} value={version.status} />
-                {t("later", {
-                  no: version.versionNo,
-                  date: format.dateTime(version.effectiveFrom),
-                  steps: version.steps.length,
-                })}
-              </p>
-            ))}
-          </Card>
-        );
-      })}
+      {routes.data.length === 0 ? (
+        <EmptyState
+          icon="route"
+          action={
+            canManage ? (
+              <Button variant="secondary" iconStart="plus" onClick={() => setCreating(true)}>
+                {t("create")}
+              </Button>
+            ) : (
+              <Button asChild variant="secondary" iconEnd="arrow-right">
+                <Link href="/production">{t("openBoard")}</Link>
+              </Button>
+            )
+          }
+          title={t("empty")}
+        />
+      ) : null}
+      {/* One line per route (name, product, version in force, steps); its steps open under it — the page was every
+          route's table in full, eleven thousand pixels tall. */}
+      {routes.data.length > 0 ? (
+        <ul className="border-border bg-surface divide-border rounded-card divide-y border">
+          {routes.data.map((route, index) => {
+            const current = inForce(route);
+            const later = route.versions.filter(
+              (version) => version !== current && version.versionNo > (current?.versionNo ?? 0),
+            );
+            return (
+              <li key={route.id}>
+                <details className="group" open={index === 0}>
+                  <summary className="hover:bg-surface-subtle focus-visible:ring-focus-ring flex cursor-pointer list-none items-center gap-3 px-4 py-3 outline-none focus-visible:ring-2 sm:px-5 [&::-webkit-details-marker]:hidden">
+                    <Icon
+                      name="chevron-right"
+                      size={18}
+                      className="text-muted shrink-0 transition-transform group-open:rotate-90 motion-reduce:transition-none"
+                      aria-hidden="true"
+                    />
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="flex flex-wrap items-center gap-2 font-semibold">
+                        {route.name}
+                        <Badge size="sm">{types.labelOf(route.productTypeCode)}</Badge>
+                        <span className="text-muted text-xs font-normal tabular-nums">{route.variant}</span>
+                      </span>
+                      <span className="text-muted text-sm">
+                        {current
+                          ? t("current", {
+                              no: current.versionNo,
+                              date: format.date(current.effectiveFrom),
+                              reason: current.reason,
+                            })
+                          : t("noneInForce")}
+                      </span>
+                    </span>
+                    {current ? (
+                      <span className="text-muted shrink-0 text-sm tabular-nums">
+                        {t("stepCount", { count: current.steps.length })}
+                      </span>
+                    ) : null}
+                  </summary>
+                  <div className="flex flex-col gap-3 px-4 pb-4 sm:px-5">
+                    {current ? <StepsTable steps={current.steps} locale={locale} /> : null}
+                    {later.map((version) => (
+                      <p key={version.versionNo} className="text-muted flex flex-wrap items-center gap-2 text-sm">
+                        <StatusChip map={SETTING_VERSION_STATUS} value={version.status} />
+                        {t("later", {
+                          no: version.versionNo,
+                          date: format.dateTime(version.effectiveFrom),
+                          steps: version.steps.length,
+                        })}
+                      </p>
+                    ))}
+                    {canManage ? (
+                      <div>
+                        <Button size="sm" variant="secondary" iconStart="edit" onClick={() => setPublishing(route)}>
+                          {t("publish")}
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </details>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
       {creating ? <CreateRouteDialog onClose={() => setCreating(false)} onDone={() => void routes.refetch()} /> : null}
       {publishing ? (
         <PublishDialog

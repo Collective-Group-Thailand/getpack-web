@@ -162,19 +162,19 @@ export function FactoriesList({ initial }: { initial: InitialPage<Factory> | nul
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...FACTORY_STATUSES.map((status) => ({
-            value: status,
-            label: tStatus(FACTORY_STATUS[status].labelKey),
-            ...(status === "applied" ? { countKey: "partners.onboarding" } : {}),
-          })),
-        ]}
-      />
       <CrudList
+        views={
+          <QueueTabs
+            countFrom={factoriesList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...FACTORY_STATUSES.map((status) => ({ value: status, label: tStatus(FACTORY_STATUS[status].labelKey) })),
+            ]}
+          />
+        }
         config={config}
         columns={columns}
         caption={t("title")}

@@ -216,7 +216,25 @@ export function CustomerRateCard() {
             getRowId={(row) => row.id}
             loading={versions.isPending}
             rowTone={(row) => (row.id === shownId ? "info" : undefined)}
-            empty={<EmptyState icon="truck" title={t("noVersions")} />}
+            empty={
+              <EmptyState
+                icon="truck"
+                action={
+                  canManage && card.data ? (
+                    <Button
+                      variant="secondary"
+                      iconStart="plus"
+                      onClick={() =>
+                        setCreating({ effectiveFrom: today(), reason: "", from: card.data?.current?.id ?? "empty" })
+                      }
+                    >
+                      {t("newVersion")}
+                    </Button>
+                  ) : undefined
+                }
+                title={t("noVersions")}
+              />
+            }
           />
         )}
       </Section>
