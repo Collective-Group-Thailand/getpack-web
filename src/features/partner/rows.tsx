@@ -92,49 +92,54 @@ export function Code({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The views of one list (jobs, shipments, payouts): a row of links, the current one filled in the
- * action colour, each with its count when the page knows it. Scrolls sideways on a phone rather
- * than wrapping into a second row of buttons.
+ * The views of one list (jobs, shipments, claims): the product family's segmented tab row (the
+ * account pages' `TabBar`) — bordered, the current view on the pale tint with its count. Scrolls
+ * sideways inside itself on a phone rather than wrapping or cutting a label; 44 px tall there for
+ * a thumb, 36 px on a desk.
  */
 export function ViewTabs({
   label,
   items,
   current,
+  className,
 }: {
   label: string;
-  items: { key: string; href: string; label: React.ReactNode; count?: number }[];
+  items: { key: string; href: string; label: React.ReactNode; count?: number | null }[];
   current: string;
+  className?: string;
 }) {
   return (
-    // A phone scrolls the tabs sideways; a wider screen wraps them so none hides past the edge.
-    <nav aria-label={label} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:overflow-visible md:px-0">
-      <ul className="flex gap-1.5 md:flex-wrap">
-        {items.map((item) => (
-          <li key={item.key} className="shrink-0">
-            <Link
-              href={item.href}
-              aria-current={item.key === current ? "page" : undefined}
-              className={cn(
-                "rounded-control inline-flex min-h-11 items-center gap-2 border px-4 text-sm font-medium transition-colors md:min-h-9 md:px-3",
-                item.key === current
-                  ? "bg-primary text-primary-fg border-primary"
-                  : "border-border bg-surface text-fg hover:border-border-strong",
-              )}
-            >
-              {item.label}
-              {item.count !== undefined ? (
-                <span
-                  className={cn(
-                    "rounded-control min-w-6 px-1.5 text-center text-xs tabular-nums",
-                    item.key === current ? "bg-primary-fg/20" : "bg-surface-subtle text-muted",
-                  )}
-                >
-                  {item.count}
-                </span>
-              ) : null}
-            </Link>
-          </li>
-        ))}
+    <nav aria-label={label} className={cn("max-w-full", className)}>
+      <ul className="border-border bg-surface inline-flex max-w-full [scrollbar-width:none] gap-0.5 overflow-x-auto overscroll-x-contain rounded-xl border p-[3px] [&::-webkit-scrollbar]:hidden">
+        {items.map((item) => {
+          const selected = item.key === current;
+          return (
+            <li key={item.key} className="shrink-0">
+              <Link
+                href={item.href}
+                aria-current={selected ? "page" : undefined}
+                className={cn(
+                  "focus-visible:ring-focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-sm whitespace-nowrap outline-none focus-visible:ring-2 md:min-h-9 md:px-3",
+                  selected
+                    ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                    : "text-muted hover:bg-surface-subtle hover:text-fg font-medium",
+                )}
+              >
+                {item.label}
+                {item.count !== undefined && item.count !== null ? (
+                  <span
+                    className={cn(
+                      "text-xs font-semibold tabular-nums",
+                      selected ? "text-primary-subtle-fg" : "text-muted",
+                    )}
+                  >
+                    {item.count}
+                  </span>
+                ) : null}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

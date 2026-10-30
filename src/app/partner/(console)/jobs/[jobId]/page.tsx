@@ -4,10 +4,17 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { ERP_PRODUCTION_STATUS, INSPECTION_STATUS, JOB_ISSUE_STATUS, JOB_STATUS, QC_RESULT } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { destinationCode, destinationPlace } from "@/features/partner/ship/destination";
+import { codeOf, placeOf } from "@/features/partner/ship/destination";
 import { ViewFile } from "@/features/partner/viewer";
 import { termsFrom, TermsHelp } from "@/features/partner/terms";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import {
+  ActionPanel,
+  PageError,
+  PartnerDetail,
+  PartnerPage,
+  PartnerSection,
+  PartnerStats,
+} from "@/features/partner/frame";
 import {
   AcceptJob,
   CompleteMilestone,
@@ -26,6 +33,7 @@ import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
+import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { StageStepper, type StageState } from "@/ui/components/StageStepper";
@@ -137,59 +145,43 @@ export default async function JobPage({ params }: Props) {
   const openIssues = (issues.data ?? []).filter((issue) => issue.status === "open");
   const spec = specLines(job.spec, (n) => format.number(n));
 
-  return (
-    <PartnerPage
-      title={job.jobNo}
-      back={back}
-      meta={
-        <span className="flex flex-wrap items-center gap-2">
-          <StatusChip map={JOB_STATUS} value={job.status} size="md" />
-          {job.kind !== "production" ? <Badge tone="info">{tTable(`kinds.${job.kind}`)}</Badge> : null}
-        </span>
-      }
-      description={
-        job.promisedShipDate
-          ? t("summary", {
-              title: jobName(job),
-              quantity: format.number(job.quantityOrdered),
-              date: format.date(job.promisedShipDate),
-            })
-          : t("summaryNoDate", { title: jobName(job), quantity: format.number(job.quantityOrdered) })
-      }
-      wide
-    >
-      {job.kind !== "production" ? (
-        <Callout tone="info">{t(`kindNote.${job.kind}`, { quantity: format.number(job.quantityOrdered) })}</Callout>
-      ) : null}
-      {canAt(context, "factory_planning.read") && job.status !== "released" && job.kind !== "mockup" ? (
-        <Card padding="md" className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-semibold">{t("erpTitle")}</h2>
-            {mo ? (
-              <Link
-                href={`/planning/orders/${mo.id}`}
-                className="text-primary text-sm font-medium underline underline-offset-2"
-              >
-                {t("erpOpen", { no: mo.moNo })}
-              </Link>
-            ) : null}
-          </div>
-          {mo ? (
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <StatusChip map={ERP_PRODUCTION_STATUS} value={mo.status} />
-              <Badge tone={mo.short ? "warning" : "success"}>{mo.short ? t("erpShort") : t("erpReady")}</Badge>
-              <span className="text-muted">{t("erpProgress", { pct: Math.round(Number(mo.progressPct)) })}</span>
-              {mo.dueOn ? <span className="text-muted">{t("erpDue", { date: format.date(mo.dueOn) })}</span> : null}
-            </div>
+  const done = job.milestones.filter((milestone) => ["completed", "skipped"].includes(milestone.status)).length;
+  const currentName = current ? stepName(current, locale) : null;
+  // The current step's action — what the floor opens this page for — lives in the panel, not in the list.
+  const stepAction =
+    current && ["accepted", "in_progress", "on_hold"].includes(job.status) && !offered.has("job.ship") ? (
+      current.status === "pending" ? (
+        mayRun(current) ? (
+          simple(current) ? (
+            <QuickCompleteMilestone job={job} milestone={current} name={currentName!} />
           ) : (
-            <p className="text-muted text-sm">{t("erpNone")}</p>
+            <StartMilestone job={job} milestone={current} name={currentName!} />
+          )
+        ) : (
+          <p className="text-muted">{blocked}</p>
+        )
+      ) : needsQcForm(current) && !passedQc ? (
+        <>
+          <p>{t("qcFirst")}</p>
+          {offered.has("job.record_qc") ? (
+            <Button asChild size="xl" iconStart="clipboard-check" className="w-full">
+              <a href="#qc">{tQc("submit")}</a>
+            </Button>
+          ) : (
+            <p className="text-muted">{tQc("qcOnly")}</p>
           )}
-          <p className="text-muted text-xs">{t("erpBody")}</p>
-        </Card>
-      ) : null}
+        </>
+      ) : mayRun(current) ? (
+        <CompleteMilestone job={job} milestone={current} name={currentName!} />
+      ) : (
+        <p className="text-muted">{blocked}</p>
+      )
+    ) : null;
+
+  const aside = (
+    <>
       {job.status === "released" ? (
-        <Card padding="md" className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">{t("acceptTitle")}</h2>
+        <ActionPanel id="next" tone="neutral" title={t("acceptTitle")}>
           <Countdown dueAt={job.acceptDueAt} large />
           {/* What the owner is saying yes to, before he says it — not three sections further down. */}
           <DescriptionList
@@ -215,24 +207,40 @@ export default async function JobPage({ params }: Props) {
               {t("acceptSummary.seeSpec")}
             </a>
           ) : null}
-          {offered.has("job.accept") ? (
-            <AcceptJob job={job} poAmount={po?.netAmount ?? null} />
-          ) : (
-            <p className="text-muted">{t("plannerOnly")}</p>
-          )}
-          {offered.has("job.reject") ? <RejectJob job={job} /> : null}
-        </Card>
+          {/* Accept on top, reject under it: both the panel's full width and the same height. */}
+          <div data-fill="" className="flex flex-col gap-2 [&>button]:min-h-16 [&>button]:w-full">
+            {offered.has("job.accept") ? (
+              <AcceptJob job={job} poAmount={po?.netAmount ?? null} />
+            ) : (
+              <p className="text-muted">{t("plannerOnly")}</p>
+            )}
+            {offered.has("job.reject") ? <RejectJob job={job} /> : null}
+          </div>
+        </ActionPanel>
       ) : null}
-      {job.status === "rejected" ? (
-        <Callout tone="neutral" title={t("rejectedTitle")}>
-          {job.rejectReasonCode
-            ? t.has(`rejectReasons.${job.rejectReasonCode}`)
-              ? t(`rejectReasons.${job.rejectReasonCode}`)
-              : job.rejectReasonCode
-            : null}
-          {job.rejectNote ? ` · ${job.rejectNote}` : null}
-        </Callout>
+
+      {offered.has("job.ship") ? (
+        <Link
+          href={`/ship#job-${job.id}`}
+          data-big
+          className="bg-primary text-primary-fg hover:bg-primary-hover focus-visible:ring-focus-ring inline-flex min-h-14 items-center justify-center gap-2 rounded-xl px-6 text-lg font-semibold outline-none focus-visible:ring-2"
+        >
+          <Icon name="truck" size={22} aria-hidden="true" />
+          {t("toShip")}
+        </Link>
       ) : null}
+
+      {stepAction && current ? (
+        <ActionPanel
+          id="next"
+          tone="neutral"
+          title={currentName}
+          description={current.dueAt ? t("due", { date: format.date(current.dueAt) }) : tStages("current")}
+        >
+          {stepAction}
+        </ActionPanel>
+      ) : null}
+
       {openIssues.length ? (
         <Callout tone="warning" icon="flag" title={t("openIssues", { count: openIssues.length })}>
           <ul className="flex flex-col gap-1">
@@ -251,307 +259,366 @@ export default async function JobPage({ params }: Props) {
         </Callout>
       ) : null}
 
-      {job.milestones.length ? (
-        <PartnerSection title={t("milestones")} id="milestones">
-          <StageStepper
-            label={t("milestones")}
-            stateLabels={{
-              done: tStages("done"),
-              current: tStages("current"),
-              upcoming: tStages("upcoming"),
-              skipped: tStages("skipped"),
-            }}
-            stages={job.milestones.map((milestone) => {
-              const isCurrent = milestone.id === current?.id;
-              const name = stepName(milestone, locale);
-              const qcFirst = needsQcForm(milestone) && !passedQc;
-              return {
-                key: milestone.key,
-                title: name,
-                state: stateOf(milestone.status, isCurrent),
-                meta:
-                  milestone.status === "completed" ? (
-                    <span>
-                      {milestone.quantityOut !== null
-                        ? t("stepDone", {
-                            good: format.number(milestone.quantityOut),
-                            scrap: format.number(milestone.quantityScrap ?? 0),
-                          })
-                        : t("stepDoneNoQty")}
-                      {milestone.photoFileIds.length
-                        ? ` · ${t("photos", { count: milestone.photoFileIds.length })}`
-                        : ""}
-                      {milestone.completedAt ? ` · ${format.dateTime(milestone.completedAt)}` : ""}
-                    </span>
-                  ) : isCurrent && job.status === "released" && job.acceptDueAt ? (
-                    // Before acceptance the step's deadline is the acceptance deadline, not the plan's.
-                    t("due", { date: format.dateTime(job.acceptDueAt) })
-                  ) : milestone.dueAt ? (
-                    // The plan splits the lead time evenly, so its clock times (02:24, 04:48) mean nothing on
-                    // the floor; the day is what the factory plans by.
-                    t("due", { date: format.date(milestone.dueAt) })
-                  ) : null,
-                children: isCurrent ? (
-                  milestone.status === "pending" ? (
-                    mayRun(milestone) ? (
-                      simple(milestone) ? (
-                        <QuickCompleteMilestone job={job} milestone={milestone} name={name} />
-                      ) : (
-                        <StartMilestone job={job} milestone={milestone} name={name} />
-                      )
-                    ) : (
-                      <p className="text-muted">{blocked}</p>
-                    )
-                  ) : (
-                    <>
-                      {qcFirst ? (
-                        offered.has("job.record_qc") ? (
-                          <div id="qc" className="flex scroll-mt-24 flex-col gap-4">
-                            <QcForm job={job} />
-                            {/* The guide that applies here (U2.F7): the knowledge base's QC photo standard. */}
-                            <Link
-                              href="/knowledge?category=qc-photo-standard"
-                              className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
-                            >
-                              {tQc("photoStandard")}
-                            </Link>
-                          </div>
-                        ) : (
-                          <p className="text-muted">{tQc("qcOnly")}</p>
-                        )
-                      ) : null}
-                      {qcFirst ? (
-                        <p className="text-muted">{t("qcFirst")}</p>
-                      ) : mayRun(milestone) ? (
-                        <CompleteMilestone job={job} milestone={milestone} name={name} />
-                      ) : (
-                        <p className="text-muted">{blocked}</p>
-                      )}
-                    </>
-                  )
-                ) : undefined,
-              };
-            })}
-          />
-        </PartnerSection>
-      ) : null}
-
-      {offered.has("job.ship") ? (
-        <Link
-          href={`/ship#job-${job.id}`}
-          data-big
-          className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-6 text-lg font-semibold md:min-h-10"
-        >
-          <Icon name="truck" size={22} />
-          {t("toShip")}
-        </Link>
-      ) : null}
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {spec.length ? (
-          <PartnerSection title={t("spec")} id="spec">
-            <Card padding="md">
-              <DescriptionList
-                columns={2}
-                items={spec.map((line) => ({
-                  term: tSpec(`${line.key}.term`),
-                  description: tSpec(`${line.key}.value`, line.values ?? {}),
-                }))}
-              />
-            </Card>
-          </PartnerSection>
-        ) : null}
-
-        <PartnerSection title={t("artwork")}>
-          {job.artwork ? (
-            <Card padding="md" className="flex flex-col gap-3">
-              <div className="bg-surface-subtle relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg">
-                <Icon name="document" size={48} className="text-muted" />
-                {/* The approval reads as a stamp in the corner, in the colour of "approved" — not a red warning across the file. */}
-                <span
-                  aria-hidden
-                  className="border-success text-success absolute end-3 top-3 rotate-[-6deg] rounded-md border-2 px-2.5 py-0.5 text-sm font-semibold"
-                >
-                  {t("watermark", { version: job.artwork.versionNo })}
-                </span>
+      {canAt(context, "factory_planning.read") && job.status !== "released" && job.kind !== "mockup" ? (
+        <section aria-labelledby="erp" className="border-border bg-surface rounded-card flex flex-col gap-2 border p-4">
+          <h2 id="erp" className="font-semibold">
+            {t("erpTitle")}
+          </h2>
+          {mo ? (
+            <>
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <StatusChip map={ERP_PRODUCTION_STATUS} value={mo.status} />
+                <Badge tone={mo.short ? "warning" : "success"}>{mo.short ? t("erpShort") : t("erpReady")}</Badge>
               </div>
-              <p className="text-sm">
-                {job.artwork.approvedAt
-                  ? t("approvedOn", {
-                      version: job.artwork.versionNo,
-                      date: format.dateTime(job.artwork.approvedAt),
-                    })
-                  : t("approvedVersion", { version: job.artwork.versionNo })}
+              <p className="text-muted text-sm">
+                {t("erpProgress", { pct: Math.round(Number(mo.progressPct)) })}
+                {mo.dueOn ? ` · ${t("erpDue", { date: format.date(mo.dueOn) })}` : ""}
               </p>
-              <div className="flex flex-wrap gap-3">
-                {proofUrl ? (
-                  <ViewFile src={proofUrl} title={t("openProof")}>
-                    {t("openProof")}
-                  </ViewFile>
-                ) : null}
-                {dielineUrl ? (
-                  <ViewFile src={dielineUrl} title={t("openDieline")}>
-                    {t("openDieline")}
-                  </ViewFile>
-                ) : null}
-              </div>
-            </Card>
+              <Link
+                href={`/planning/orders/${mo.id}`}
+                className="text-primary inline-flex min-h-11 items-center self-start text-sm font-medium underline underline-offset-2 md:min-h-8"
+              >
+                {t("erpOpen", { no: mo.moNo })}
+              </Link>
+            </>
           ) : (
-            <p className="text-muted">{t("noArtwork")}</p>
+            <p className="text-muted text-sm">{t("erpNone")}</p>
           )}
-        </PartnerSection>
+          <p className="text-muted text-xs">{t("erpBody")}</p>
+        </section>
+      ) : null}
+    </>
+  );
 
-        {po || job.tolerance ? (
-          <PartnerSection title={t("po")}>
-            <Card padding="md">
-              <DescriptionList
-                columns={2}
-                items={[
-                  ...(po
-                    ? [
-                        { term: t("poNumber"), description: <span className="tabular-nums">{po.poNumber}</span> },
-                        { term: t("poIssued"), description: format.dateTime(po.issuedAt) },
-                        {
-                          term: t("poAmount"),
-                          description: <span className="tabular-nums">{format.thb(po.netAmount)}</span>,
-                        },
-                      ]
-                    : []),
-                  ...(job.tolerance
-                    ? [
-                        {
-                          term: t("tolerance"),
-                          description: t("toleranceValue", {
-                            shortage: format.percent(job.tolerance.shortagePct),
-                            overage: format.percent(job.tolerance.overagePct),
-                          }),
-                        },
-                      ]
-                    : []),
-                ]}
-              />
-            </Card>
+  return (
+    <PartnerPage
+      title={job.jobNo}
+      back={back}
+      status={
+        <span className="flex flex-wrap items-center gap-2">
+          <StatusChip map={JOB_STATUS} value={job.status} size="md" />
+          {job.kind !== "production" ? <Badge tone="info">{tTable(`kinds.${job.kind}`)}</Badge> : null}
+        </span>
+      }
+      description={
+        job.promisedShipDate
+          ? t("summary", {
+              title: jobName(job),
+              quantity: format.number(job.quantityOrdered),
+              date: format.date(job.promisedShipDate),
+            })
+          : t("summaryNoDate", { title: jobName(job), quantity: format.number(job.quantityOrdered) })
+      }
+      wide
+    >
+      <PartnerStats
+        label={t("metaTitle")}
+        items={[
+          {
+            key: "quantity",
+            icon: "box",
+            label: t("acceptSummary.quantity"),
+            value: format.number(job.quantityOrdered),
+          },
+          ...(job.promisedShipDate
+            ? [
+                {
+                  key: "ship",
+                  icon: "calendar" as const,
+                  label: t("acceptSummary.ship"),
+                  value: format.date(job.promisedShipDate, { style: "dayMonth" }),
+                  tone: job.atRisk ? ("danger" as const) : undefined,
+                  hint: job.atRisk ? t("atRisk") : undefined,
+                },
+              ]
+            : []),
+          ...(job.milestones.length
+            ? [
+                {
+                  key: "steps",
+                  icon: "checklist" as const,
+                  label: t("milestones"),
+                  value: `${format.number(done)}/${format.number(job.milestones.length)}`,
+                  hint: currentName ?? undefined,
+                },
+              ]
+            : []),
+        ]}
+      />
+      <PartnerDetail aside={aside}>
+        {job.kind !== "production" ? (
+          <Callout tone="info">{t(`kindNote.${job.kind}`, { quantity: format.number(job.quantityOrdered) })}</Callout>
+        ) : null}
+        {job.status === "rejected" ? (
+          <Callout tone="neutral" title={t("rejectedTitle")}>
+            {job.rejectReasonCode
+              ? t.has(`rejectReasons.${job.rejectReasonCode}`)
+                ? t(`rejectReasons.${job.rejectReasonCode}`)
+                : job.rejectReasonCode
+              : null}
+            {job.rejectNote ? ` · ${job.rejectNote}` : null}
+          </Callout>
+        ) : null}
+
+        {job.milestones.length ? (
+          <PartnerSection title={t("milestones")} id="milestones">
+            <StageStepper
+              label={t("milestones")}
+              stateLabels={{
+                done: tStages("done"),
+                current: tStages("current"),
+                upcoming: tStages("upcoming"),
+                skipped: tStages("skipped"),
+              }}
+              stages={job.milestones.map((milestone) => {
+                const isCurrent = milestone.id === current?.id;
+                const qcHere = isCurrent && milestone.status !== "pending" && needsQcForm(milestone) && !passedQc;
+                return {
+                  key: milestone.key,
+                  title: stepName(milestone, locale),
+                  state: stateOf(milestone.status, isCurrent),
+                  meta:
+                    milestone.status === "completed" ? (
+                      <span>
+                        {milestone.quantityOut !== null
+                          ? t("stepDone", {
+                              good: format.number(milestone.quantityOut),
+                              scrap: format.number(milestone.quantityScrap ?? 0),
+                            })
+                          : t("stepDoneNoQty")}
+                        {milestone.photoFileIds.length
+                          ? ` · ${t("photos", { count: milestone.photoFileIds.length })}`
+                          : ""}
+                        {milestone.completedAt ? ` · ${format.dateTime(milestone.completedAt)}` : ""}
+                      </span>
+                    ) : isCurrent && job.status === "released" && job.acceptDueAt ? (
+                      // Before acceptance the step's deadline is the acceptance deadline, not the plan's.
+                      t("due", { date: format.dateTime(job.acceptDueAt) })
+                    ) : milestone.dueAt ? (
+                      // The plan splits the lead time evenly, so its clock times (02:24, 04:48) mean nothing on
+                      // the floor; the day is what the factory plans by.
+                      t("due", { date: format.date(milestone.dueAt) })
+                    ) : null,
+                  // The QC form is long (checklist, photos): it opens in place at its step, the panel links to it.
+                  children:
+                    qcHere && offered.has("job.record_qc") ? (
+                      <div id="qc" className="flex scroll-mt-24 flex-col gap-4">
+                        <QcForm job={job} />
+                        {/* The guide that applies here (U2.F7): the knowledge base's QC photo standard. */}
+                        <Link
+                          href="/knowledge?category=qc-photo-standard"
+                          className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
+                        >
+                          {tQc("photoStandard")}
+                        </Link>
+                      </div>
+                    ) : undefined,
+                };
+              })}
+            />
           </PartnerSection>
         ) : null}
 
-        <PartnerSection title={t("destinations")} description={t("destinationsNote")}>
-          <ul className="flex flex-col gap-2">
-            {job.destinations.map((destination, index) => (
-              <li key={destination.id}>
-                {/* P4-01: the destination's code, province and postcode prefix — getpack keeps the recipient. */}
-                <Card padding="md">
-                  <p className="font-medium">{tDest("code", { code: destinationCode(index) })}</p>
-                  <p className="text-muted text-sm">
-                    {destinationPlace(
-                      locale === "en" ? destination.provinceNameEn : destination.provinceNameTh,
-                      destination.postcode,
-                    )}
-                  </p>
-                  <p className="text-muted mt-1 text-sm">
-                    {t("destinationQty", {
-                      quantity: format.number(destination.quantity),
-                      shipped: format.number(destination.shippedQuantity),
-                    })}
-                  </p>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </PartnerSection>
-      </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {spec.length ? (
+            <PartnerSection title={t("spec")} id="spec">
+              <Card padding="md">
+                <DescriptionList
+                  columns={2}
+                  items={spec.map((line) => ({
+                    term: tSpec(`${line.key}.term`),
+                    description: tSpec(`${line.key}.value`, line.values ?? {}),
+                  }))}
+                />
+              </Card>
+            </PartnerSection>
+          ) : null}
 
-      {checks.length || job.inspection ? (
-        <PartnerSection title={t("quality")}>
-          <ul className="flex flex-col gap-2">
-            {checks.map((check) => (
-              <li key={check.id}>
-                <Card padding="md" className="flex flex-col gap-1">
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">
-                      {check.performedBy ? t("qcBy", { name: check.performedBy.displayName }) : t("qcRecorded")}
-                    </span>
-                    <StatusChip map={QC_RESULT} value={check.result} />
-                  </span>
-                  <span className="text-muted text-sm">
-                    {format.dateTime(check.performedAt)} · {t("photos", { count: check.photoFileIds.length })}
-                    {check.defects.length
-                      ? ` · ${check.defects
-                          .map((defect) =>
-                            t("defect", {
-                              item: tQc.has(`items.${defect.code}`) ? tQc(`items.${defect.code}`) : defect.code,
-                              severity: tQc(`severity.${defect.severity}`),
-                              count: format.number(defect.count),
-                            }),
-                          )
-                          .join(", ")}`
-                      : ""}
-                  </span>
-                </Card>
-              </li>
-            ))}
-            {job.inspection ? (
-              <li>
-                <Callout tone="info" icon="shield" title={t("inspection")}>
-                  <span className="flex flex-wrap items-center gap-2">
-                    <StatusChip map={INSPECTION_STATUS} value={job.inspection.status} />
-                    {job.inspection.scheduledAt
-                      ? t("inspectionOn", { date: format.date(job.inspection.scheduledAt) })
-                      : null}
-                  </span>
-                  <span className="mt-1 block text-sm">
-                    {t("inspectionSample", { count: format.number(job.inspection.sampleSize) })}
-                  </span>
-                </Callout>
-              </li>
-            ) : null}
-          </ul>
-        </PartnerSection>
-      ) : null}
-
-      <TermsHelp title={tTerms("title")} terms={termsFrom(tTerms.raw, ["po", "tolerance", "proof"])} />
-      <PartnerSection title={t("issues")} id="issues">
-        {issues.data?.length ? (
-          <ul className="flex flex-col gap-2">
-            {issues.data.map((issue) => (
-              <li key={issue.id}>
-                <Card padding="md" className="flex flex-wrap items-center gap-2">
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-medium">{issue.description}</span>
-                    <span className="text-muted text-sm">
-                      {tIssue.has(`kinds.${issue.kind}`) ? tIssue(`kinds.${issue.kind}`) : issue.kind}
-                      {issue.raisedBy ? ` · ${issue.raisedBy.displayName}` : ""} · {format.dateTime(issue.createdAt)}
-                    </span>
-                    {issue.resolutionNote ? (
-                      <span className="text-muted block text-sm">
-                        {t("issueResolved", {
-                          note: issue.resolutionNote,
-                          name: issue.resolvedBy?.displayName ?? "",
-                        })}
-                      </span>
-                    ) : null}
-                  </span>
-                  <StatusChip map={JOB_ISSUE_STATUS} value={issue.status} />
-                  {issue.status === "open" && offered.has("job.raise_issue") ? (
-                    <ResolveIssue jobId={job.id} issueId={issue.id} description={issue.description} />
+          <PartnerSection title={t("artwork")}>
+            {job.artwork ? (
+              <Card padding="md" className="flex flex-col gap-3">
+                <div className="bg-surface-subtle relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg">
+                  <Icon name="document" size={48} className="text-muted" />
+                  {/* The approval as a flat status badge in the corner, in the colour of "approved". */}
+                  <Badge tone="success" icon="check" className="absolute start-3 top-3">
+                    {t("watermark", { version: job.artwork.versionNo })}
+                  </Badge>
+                </div>
+                <p className="text-sm">
+                  {job.artwork.approvedAt
+                    ? t("approvedOn", {
+                        version: job.artwork.versionNo,
+                        date: format.dateTime(job.artwork.approvedAt),
+                      })
+                    : t("approvedVersion", { version: job.artwork.versionNo })}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {proofUrl ? (
+                    <ViewFile src={proofUrl} title={t("openProof")}>
+                      {t("openProof")}
+                    </ViewFile>
                   ) : null}
-                </Card>
-              </li>
-            ))}
-          </ul>
+                  {dielineUrl ? (
+                    <ViewFile src={dielineUrl} title={t("openDieline")}>
+                      {t("openDieline")}
+                    </ViewFile>
+                  ) : null}
+                </div>
+              </Card>
+            ) : (
+              <p className="text-muted">{t("noArtwork")}</p>
+            )}
+          </PartnerSection>
+
+          {po || job.tolerance ? (
+            <PartnerSection title={t("po")}>
+              <Card padding="md">
+                <DescriptionList
+                  columns={2}
+                  items={[
+                    ...(po
+                      ? [
+                          { term: t("poNumber"), description: <span className="tabular-nums">{po.poNumber}</span> },
+                          { term: t("poIssued"), description: format.dateTime(po.issuedAt) },
+                          {
+                            term: t("poAmount"),
+                            description: <span className="tabular-nums">{format.thb(po.netAmount)}</span>,
+                          },
+                        ]
+                      : []),
+                    ...(job.tolerance
+                      ? [
+                          {
+                            term: t("tolerance"),
+                            description: t("toleranceValue", {
+                              shortage: format.percent(job.tolerance.shortagePct),
+                              overage: format.percent(job.tolerance.overagePct),
+                            }),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </Card>
+            </PartnerSection>
+          ) : null}
+
+          <PartnerSection title={t("destinations")} description={t("destinationsNote")}>
+            <ul className="flex flex-col gap-2">
+              {job.destinations.map((destination, index) => (
+                <li key={destination.id}>
+                  {/* P4-01: the destination's code, province and postcode prefix — getpack keeps the recipient. */}
+                  <Card padding="md">
+                    <p className="font-medium">{tDest("code", { code: codeOf(destination, index)! })}</p>
+                    <p className="text-muted text-sm">
+                      {placeOf(locale === "en" ? destination.provinceNameEn : destination.provinceNameTh, destination)}
+                    </p>
+                    <p className="text-muted mt-1 text-sm">
+                      {t("destinationQty", {
+                        quantity: format.number(destination.quantity),
+                        shipped: format.number(destination.shippedQuantity),
+                      })}
+                    </p>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </PartnerSection>
+        </div>
+
+        {checks.length || job.inspection ? (
+          <PartnerSection title={t("quality")}>
+            <ul className="flex flex-col gap-2">
+              {checks.map((check) => (
+                <li key={check.id}>
+                  <Card padding="md" className="flex flex-col gap-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">
+                        {check.performedBy ? t("qcBy", { name: check.performedBy.displayName }) : t("qcRecorded")}
+                      </span>
+                      <StatusChip map={QC_RESULT} value={check.result} />
+                    </span>
+                    <span className="text-muted text-sm">
+                      {format.dateTime(check.performedAt)} · {t("photos", { count: check.photoFileIds.length })}
+                      {check.defects.length
+                        ? ` · ${check.defects
+                            .map((defect) =>
+                              t("defect", {
+                                item: tQc.has(`items.${defect.code}`) ? tQc(`items.${defect.code}`) : defect.code,
+                                severity: tQc(`severity.${defect.severity}`),
+                                count: format.number(defect.count),
+                              }),
+                            )
+                            .join(", ")}`
+                        : ""}
+                    </span>
+                  </Card>
+                </li>
+              ))}
+              {job.inspection ? (
+                <li>
+                  <Callout tone="info" icon="shield" title={t("inspection")}>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <StatusChip map={INSPECTION_STATUS} value={job.inspection.status} />
+                      {job.inspection.scheduledAt
+                        ? t("inspectionOn", { date: format.date(job.inspection.scheduledAt) })
+                        : null}
+                    </span>
+                    <span className="mt-1 block text-sm">
+                      {t("inspectionSample", { count: format.number(job.inspection.sampleSize) })}
+                    </span>
+                  </Callout>
+                </li>
+              ) : null}
+            </ul>
+          </PartnerSection>
         ) : null}
-        {offered.has("job.raise_issue") ? (
-          // Folded until needed: most visits to a job never raise one.
-          <details className="border-border bg-surface group rounded-xl border">
-            <summary className="hover:bg-surface-subtle flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium md:min-h-10">
-              <Icon name="flag" size={18} />
-              {t("raiseIssueToggle")}
-            </summary>
-            <div className="border-border border-t p-4">
-              <RaiseIssue job={job} />
-            </div>
-          </details>
-        ) : null}
-      </PartnerSection>
+
+        <TermsHelp title={tTerms("title")} terms={termsFrom(tTerms.raw, ["po", "tolerance", "proof"])} />
+        <PartnerSection title={t("issues")} id="issues">
+          {issues.data?.length ? (
+            <ul className="flex flex-col gap-2">
+              {issues.data.map((issue) => (
+                <li key={issue.id}>
+                  <Card padding="md" className="flex flex-wrap items-center gap-2">
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-medium">{issue.description}</span>
+                      <span className="text-muted text-sm">
+                        {tIssue.has(`kinds.${issue.kind}`) ? tIssue(`kinds.${issue.kind}`) : issue.kind}
+                        {issue.raisedBy ? ` · ${issue.raisedBy.displayName}` : ""} · {format.dateTime(issue.createdAt)}
+                      </span>
+                      {issue.resolutionNote ? (
+                        <span className="text-muted block text-sm">
+                          {t("issueResolved", {
+                            note: issue.resolutionNote,
+                            name: issue.resolvedBy?.displayName ?? "",
+                          })}
+                        </span>
+                      ) : null}
+                    </span>
+                    <StatusChip map={JOB_ISSUE_STATUS} value={issue.status} />
+                    {issue.status === "open" && offered.has("job.raise_issue") ? (
+                      <ResolveIssue jobId={job.id} issueId={issue.id} description={issue.description} />
+                    ) : null}
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {offered.has("job.raise_issue") ? (
+            // Folded until needed: most visits to a job never raise one.
+            <details className="border-border bg-surface group rounded-xl border">
+              <summary className="hover:bg-surface-subtle flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 font-medium md:min-h-10">
+                <Icon name="flag" size={18} />
+                {t("raiseIssueToggle")}
+              </summary>
+              <div className="border-border border-t p-4">
+                <RaiseIssue job={job} />
+              </div>
+            </details>
+          ) : null}
+        </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

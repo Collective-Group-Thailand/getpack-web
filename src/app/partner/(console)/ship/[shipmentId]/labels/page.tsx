@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { destinationPlace } from "@/features/partner/ship/destination";
+import { placeOf, shipmentCodeOf } from "@/features/partner/ship/destination";
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { PrintButton } from "@/features/partner/ship/actions";
 import { getFormat } from "@/features/shared/format/server";
@@ -60,7 +60,9 @@ export default async function LabelsPage({ params }: Props) {
               {/* P4-01 / P4-D1: the job, where it goes as province and postcode prefix, the carton — no recipient. */}
               <p className="text-[9pt] font-semibold">{t("to")}</p>
               <p className="text-[14pt] font-bold">
-                {destinationPlace(destination.province.nameTh, destination.postcode)}
+                {[shipmentCodeOf(shipment), placeOf(destination.province.nameTh, destination)]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
               {carton.weightG ? (
                 <p className="text-[9pt]">{t("weight", { kg: format.number(carton.weightG / 1000) })}</p>

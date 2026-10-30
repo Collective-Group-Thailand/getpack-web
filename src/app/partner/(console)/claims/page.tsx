@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { CLAIM_STATUS } from "@/domain/status";
 import { offered } from "@/features/partner/account/offered";
 import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
+import { ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,18 +22,61 @@ export async function generateMetadata(): Promise<Metadata> {
  * Claims that name the factory (D-082, D-083, `partner.claims.list`, token-scoped — D-044), the ones
  * the API asks the factory to answer (`claim.respond`) first.
  */
-export default async function ClaimsPage() {
-  const t = await getTranslations("partnerAccount.claims");
-  const format = await getFormat();
+export default async function ClaimsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  const [{ status: wanted }, t, tStatus, tNav, format] = await Promise.all([
+    searchParams,
+    getTranslations("partnerAccount.claims"),
+    getTranslations("status"),
+    getTranslations("partner.sidebar.items"),
+    getFormat(),
+  ]);
+  const [tFactory, tAll] = await Promise.all([getTranslations("partner.status"), getTranslations("partnerJobs.views")]);
   const { contract } = await partnerServerApis();
   const list = await attempt(
     async () => (await contract.GET("/v1/partner/claims", { params: { query: { perPage: 50 } } })).data!,
   );
   const waiting = (claim: Schemas["PartnerClaimDto"]) => Boolean(offered(claim.nextActions, "claim.respond"));
-  const rows = [...(list.data?.data ?? [])].sort((a, b) => Number(waiting(b)) - Number(waiting(a)));
+  const all = [...(list.data?.data ?? [])].sort((a, b) => Number(waiting(b)) - Number(waiting(a)));
+  // Tabs by what the claim asks of the factory, then by the statuses present — each with its count.
+  const present = (Object.keys(CLAIM_STATUS) as (keyof typeof CLAIM_STATUS)[]).filter((status) =>
+    all.some((claim) => claim.status === status),
+  );
+  const toAnswer = all.filter(waiting);
+  const current =
+    wanted === "awaiting" && toAnswer.length
+      ? "awaiting"
+      : wanted && present.includes(wanted as (typeof present)[number])
+        ? wanted
+        : "all";
+  const rows =
+    current === "awaiting" ? toAnswer : current === "all" ? all : all.filter((claim) => claim.status === current);
+  const statusLabel = (status: string) => {
+    const key = CLAIM_STATUS[status as keyof typeof CLAIM_STATUS].labelKey;
+    return tFactory.has(key) ? tFactory(key) : tStatus(key);
+  };
 
   return (
     <PartnerPage wide title={t("title")} description={t("body")}>
+      {list.data && all.length ? (
+        <ViewTabs
+          label={t("title")}
+          current={current}
+          items={[
+            { key: "all", href: "/claims", label: tAll("all"), count: all.length },
+            ...(toAnswer.length
+              ? [{ key: "awaiting", href: "/claims?status=awaiting", label: t("awaitingYou"), count: toAnswer.length }]
+              : []),
+            ...(present.length > 1
+              ? present.map((status) => ({
+                  key: status,
+                  href: `/claims?status=${status}`,
+                  label: statusLabel(status),
+                  count: all.filter((claim) => claim.status === status).length,
+                }))
+              : []),
+          ]}
+        />
+      ) : null}
       {list.data ? (
         rows.length ? (
           <PartnerTable
@@ -84,7 +130,15 @@ export default async function ClaimsPage() {
             ]}
           />
         ) : (
-          <EmptyState icon="shield" title={t("empty")} />
+          <EmptyState
+            icon="shield"
+            title={t("empty")}
+            action={
+              <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+                <Link href="/jobs">{tNav("jobs")}</Link>
+              </Button>
+            }
+          />
         )
       ) : (
         <PageError error={list.error} />

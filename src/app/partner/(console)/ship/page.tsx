@@ -4,17 +4,19 @@ import { getTranslations } from "next-intl/server";
 
 import { SHIPMENT_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
+import { ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { CreateShipment } from "@/features/partner/ship/actions";
-import { destinationCode, destinationPlace } from "@/features/partner/ship/destination";
+import { codeOf, placeOf, shipmentCodeOf } from "@/features/partner/ship/destination";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Meter } from "@/ui/components/Meter";
+import { Icon } from "@/ui/icons";
 
 /** `partner.shipments.list?view`, and everything. */
 const VIEWS = ["open", "in_transit", "delivered", "exceptions", "all"] as const;
@@ -36,9 +38,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ShipPage({ searchParams }: Props) {
   const query = await searchParams;
   const view: View = (VIEWS as readonly string[]).includes(query.view ?? "") ? (query.view as View) : "open";
-  const [t, tDest, format] = await Promise.all([
+  const [t, tDest, tJobs, format] = await Promise.all([
     getTranslations("partnerShip"),
     getTranslations("partnerShip.destination"),
+    getTranslations("partnerJobs"),
     getFormat(),
   ]);
   const context = await factoryContext();
@@ -68,6 +71,26 @@ export default async function ShipPage({ searchParams }: Props) {
     // Today at a glance (round 2, Phase 1): what waits at the gate, what is on the road, which POD is due.
     attempt(async () => (await contract.GET("/v1/partner/shipments", { params: { query: { perPage: 100 } } })).data!),
   ]);
+  // Each tab's count, read for its total only.
+  const counts = Object.fromEntries(
+    await Promise.all(
+      VIEWS.map((key) =>
+        attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/shipments", {
+                params: {
+                  query: {
+                    perPage: 1,
+                    ...(key === "all" ? {} : { view: key satisfies Schemas["PartnerShipmentView"] }),
+                  },
+                },
+              })
+            ).data!.meta.total,
+        ).then((result) => [key, result.data ?? null] as const),
+      ),
+    ),
+  ) as Record<View, number | null>;
   const manage = canAt(context, "factory_shipments.manage");
   const trips = every.data?.data ?? [];
   const moving = ["picked_up", "in_transit", "out_for_delivery"];
@@ -88,100 +111,146 @@ export default async function ShipPage({ searchParams }: Props) {
     !shipment.proofOfDelivery &&
     ["picked_up", "in_transit", "out_for_delivery"].includes(shipment.status);
 
+  const planSection = waiting?.length ? (
+    <PartnerSection id="plan" title={t("plan.title")} description={t("plan.body")}>
+      <ul className="flex flex-col gap-4">
+        {waiting.map((job) => (
+          <li key={job.jobId} id={`job-${job.jobId}`} className="scroll-mt-20">
+            <article className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 md:p-5">
+              <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <Link
+                    href={`/jobs/${job.jobId}`}
+                    className="text-lg font-semibold tabular-nums underline-offset-4 hover:underline"
+                  >
+                    {job.jobNo}
+                  </Link>
+                  <span className="text-muted text-sm tabular-nums">{job.orderCode}</span>
+                </span>
+                <span className="text-sm tabular-nums">
+                  {job.quantityGood !== null
+                    ? t("plan.meta", {
+                        good: format.number(job.quantityGood),
+                        ordered: format.number(job.quantityOrdered),
+                      })
+                    : t("plan.metaOrdered", { ordered: format.number(job.quantityOrdered) })}
+                </span>
+              </header>
+              {job.blockedReason ? (
+                <Callout tone="warning" icon="warning">
+                  {t(`plan.blocked.${job.blockedReason}`)}
+                </Callout>
+              ) : null}
+              {/* One tile per destination still to send: its code, where it goes, how many are left, the trip to create. */}
+              <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {job.destinations
+                  // The code is the destination's place in the job's list (P4-01), counted before filtering.
+                  .map((destination, index) => ({ destination, code: codeOf(destination, index)! }))
+                  .filter(({ destination }) => destination.remainingQuantity > 0)
+                  .map(({ destination, code }) => {
+                    const sent = destination.quantity - destination.remainingQuantity;
+                    return (
+                      <li
+                        key={destination.destinationId}
+                        className="border-border bg-surface rounded-control flex flex-col gap-3 border p-4"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span
+                            aria-hidden="true"
+                            className="bg-surface-subtle border-border-strong grid size-11 shrink-0 place-items-center rounded-lg border text-base font-semibold"
+                          >
+                            {code}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-semibold">{tDest("code", { code })}</span>
+                            <span className="text-muted block text-sm">
+                              {placeOf(destination.provinceNameTh, destination)}
+                            </span>
+                          </span>
+                        </div>
+                        <p className="-mb-1 text-sm font-medium tabular-nums">
+                          {t("plan.left", {
+                            left: format.number(destination.remainingQuantity),
+                            total: format.number(destination.quantity),
+                          })}
+                        </p>
+                        <Meter
+                          label={t("plan.left", {
+                            left: format.number(destination.remainingQuantity),
+                            total: format.number(destination.quantity),
+                          })}
+                          value={destination.quantity ? (sent / destination.quantity) * 100 : 0}
+                          valueText={t("plan.left", {
+                            left: format.number(destination.remainingQuantity),
+                            total: format.number(destination.quantity),
+                          })}
+                        />
+                        {manage && job.blockedReason !== "inspection_pending" ? (
+                          <div className="mt-auto">
+                            <CreateShipment
+                              jobId={job.jobId}
+                              jobNo={job.jobNo}
+                              destination={{
+                                id: destination.destinationId,
+                                label: tDest("code", { code }),
+                                place: placeOf(destination.provinceNameTh, destination),
+                                left: destination.remainingQuantity,
+                              }}
+                            />
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+              </ul>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </PartnerSection>
+  ) : null;
+
   return (
-    <PartnerPage title={t("title")} wide>
+    <PartnerPage title={t("title")} description={tDest("confidential")} wide>
       {every.data ? (
-        <StatStrip
+        <PartnerStats
           label={t("glance.label")}
           items={(
             [
-              ["gate", "open"],
-              ["road", "in_transit"],
-              ["pod", "in_transit"],
+              ["gate", "open", "truck"],
+              ["road", "in_transit", "route"],
+              ["pod", "in_transit", "signature"],
             ] as const
-          ).map(([key, target]) => ({
+          ).map(([key, target, icon]) => ({
             key,
             href: `/ship?view=${target}`,
+            icon,
             label: t(`glance.${key}`),
             value: format.number(glance[key]),
+            highlight: key === "gate" && glance.gate > 0,
+            tone: key === "pod" && glance.pod > 0 ? ("warning" as const) : undefined,
           }))}
         />
       ) : null}
-      <PartnerSection title={t("plan.title")} description={t("plan.body")}>
-        {waiting ? (
-          waiting.length ? (
-            <ul className="flex flex-col gap-3">
-              {waiting.map((job) => (
-                <li key={job.jobId} id={`job-${job.jobId}`}>
-                  <Card padding="md" className="flex flex-col gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/jobs/${job.jobId}`} className="font-semibold tabular-nums underline">
-                        {job.jobNo}
-                      </Link>
-                      <span className="text-muted flex-1 text-sm tabular-nums">{job.orderCode}</span>
-                      <span className="text-muted text-sm">
-                        {job.quantityGood !== null
-                          ? t("plan.meta", {
-                              good: format.number(job.quantityGood),
-                              ordered: format.number(job.quantityOrdered),
-                            })
-                          : t("plan.metaOrdered", { ordered: format.number(job.quantityOrdered) })}
-                      </span>
-                    </div>
-                    {job.blockedReason ? (
-                      <Callout tone="warning" icon="warning">
-                        {t(`plan.blocked.${job.blockedReason}`)}
-                      </Callout>
-                    ) : null}
-                    <ul className="grid gap-3 md:grid-cols-2">
-                      {job.destinations
-                        // The code is the destination's place in the job's list (P4-01), counted before filtering.
-                        .map((destination, index) => ({ destination, code: destinationCode(index) }))
-                        .filter(({ destination }) => destination.remainingQuantity > 0)
-                        .map(({ destination, code }) => (
-                          <li key={destination.destinationId} className="border-border rounded-lg border p-3">
-                            <p className="font-medium">{tDest("code", { code })}</p>
-                            <p className="text-muted text-sm">
-                              {destinationPlace(destination.provinceNameTh, destination.postcode)}
-                            </p>
-                            <p className="mb-3 text-sm">
-                              {t("plan.left", {
-                                left: format.number(destination.remainingQuantity),
-                                total: format.number(destination.quantity),
-                              })}
-                            </p>
-                            {manage && job.blockedReason !== "inspection_pending" ? (
-                              <CreateShipment
-                                jobId={job.jobId}
-                                jobNo={job.jobNo}
-                                destination={{
-                                  id: destination.destinationId,
-                                  label: tDest("code", { code }),
-                                  place: destinationPlace(destination.provinceNameTh, destination.postcode),
-                                  left: destination.remainingQuantity,
-                                }}
-                              />
-                            ) : null}
-                          </li>
-                        ))}
-                    </ul>
-                  </Card>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState icon="package" title={t("plan.empty")} />
-          )
-        ) : (
-          <PageError error={plan.error} />
-        )}
-      </PartnerSection>
+      {plan.error ? <PageError error={plan.error} /> : null}
+      {planSection}
+      {waiting && !waiting.length ? (
+        <p className="text-muted -mt-2 flex items-start gap-2 text-sm">
+          <Icon name="check" size={16} className="text-success mt-0.5 shrink-0" aria-hidden="true" />
+          {t("plan.empty")}
+        </p>
+      ) : null}
 
-      <PartnerSection title={t("list.title")}>
+      <PartnerSection id="trips" title={t("list.title")}>
         <ViewTabs
           label={t("list.viewsLabel")}
           current={view}
-          items={VIEWS.map((key) => ({ key, href: `/ship?view=${key}`, label: t(`list.views.${key}`) }))}
+          items={VIEWS.map((key) => ({
+            key,
+            href: `/ship?view=${key}`,
+            label: t(`list.views.${key}`),
+            count: counts[key],
+          }))}
         />
         {list.data ? (
           list.data.data.length ? (
@@ -202,7 +271,11 @@ export default async function ShipPage({ searchParams }: Props) {
                   key: "to",
                   header: t("list.table.to"),
                   cell: (shipment) => (
-                    <span>{destinationPlace(shipment.destination.province.nameTh, shipment.destination.postcode)}</span>
+                    <span>
+                      {[shipmentCodeOf(shipment), placeOf(shipment.destination.province.nameTh, shipment.destination)]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
                   ),
                 },
                 {
@@ -241,7 +314,19 @@ export default async function ShipPage({ searchParams }: Props) {
               ]}
             />
           ) : (
-            <EmptyState icon="truck" title={t(`list.empty.${view}`)} />
+            <EmptyState
+              icon="truck"
+              title={t(`list.empty.${view}`)}
+              action={
+                <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+                  {view === "all" ? (
+                    <Link href="/jobs?view=ready_to_ship">{tJobs("views.ready_to_ship")}</Link>
+                  ) : (
+                    <Link href="/ship?view=all">{t("list.views.all")}</Link>
+                  )}
+                </Button>
+              }
+            />
           )
         ) : (
           <PageError error={list.error} />

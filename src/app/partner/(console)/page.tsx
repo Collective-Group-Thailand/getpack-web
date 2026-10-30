@@ -3,16 +3,16 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
 import { JobsTable } from "@/features/partner/jobs/JobsTable";
 import { awaitsSignOff } from "@/features/partner/onboarding/steps";
 import { loadPrices } from "@/features/partner/prices/server";
 import { getFormat } from "@/features/shared/format/server";
-import { Card } from "@/ui/components/Card";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { Meter } from "@/ui/components/Meter";
 import { Icon, type IconName } from "@/ui/icons";
 import { Button } from "@/ui/components/Button";
-import { Row, RowList, StatStrip } from "@/features/partner/rows";
+import { Row, RowList } from "@/features/partner/rows";
 import { inboxHref, inboxIcon } from "@/features/partner/today/inbox";
 
 /**
@@ -106,7 +106,11 @@ export default async function PartnerHomePage() {
     (sample) => !sample.evidence.recordedAt && ["paid", "in_production"].includes(sample.status),
   ).length;
   const claimsToAnswer = claims?.data?.data.length ?? 0;
-  const [tFloor, format] = await Promise.all([getTranslations("partnerToday.floor"), getFormat()]);
+  const [tFloor, tNav, format] = await Promise.all([
+    getTranslations("partnerToday.floor"),
+    getTranslations("partner.sidebar.items"),
+    getFormat(),
+  ]);
 
   type Section = "approve" | "overdue" | "today" | "soon";
   const tasks: {
@@ -241,143 +245,158 @@ export default async function PartnerHomePage() {
       ...(item.amount ? { aside: format.thb(item.amount) } : {}),
     });
   }
-  const SECTIONS: Section[] = ["approve", "overdue", "today", "soon"];
+  // What needs the reader now leads: overdue first, then what waits for their yes; today and soon after.
   const bySection = (section: Section) => tasks.filter((task) => task.section === section);
+  const section = (key: Section) =>
+    bySection(key).length ? (
+      <PartnerSection key={key} id={key} title={ti(`sections.${key}`)} description={ti(`sectionHints.${key}`)}>
+        <RowList label={ti(`sections.${key}`)}>
+          {bySection(key).map((task) => (
+            <Row
+              key={task.key}
+              href={task.href}
+              icon={task.icon}
+              tone={task.tone ?? "neutral"}
+              title={task.title}
+              meta={task.body || undefined}
+              aside={task.aside}
+            />
+          ))}
+        </RowList>
+      </PartnerSection>
+    ) : null;
+  // Two lists side by side on a desk; one alone takes the whole row.
+  const pair = "grid items-start gap-6 lg:grid-cols-2 [&>*:only-child]:lg:col-span-2";
+
+  const counters = floor?.data
+    ? ([
+        ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],
+        ["atRisk", "/jobs?view=late", "warning", floor.data.counters.atRisk],
+        ["dueToday", "/jobs?view=in_production", "calendar", floor.data.counters.milestonesDueToday],
+        ["inspections", "/qc", "shield", floor.data.counters.inspectionsPlanned],
+        ["samples", "/samples", "package-check", samplesToRecord],
+        ["claims", "/claims", "shield-alert", claimsToAnswer],
+        ["onHold", "/jobs?view=in_production", "pause", floor.data.counters.onHold],
+      ] as const)
+    : [];
+  const busy = counters.filter(([, , , value]) => value > 0);
+  const clear = counters.filter(([, , , value]) => value === 0);
+  const acceptanceOverdue = floor?.data?.counters.acceptanceOverdue ?? 0;
 
   return (
     <PartnerPage
       wide
       title={t("title")}
-      // The factory's name is in the sidebar and the bar already; the page says whose day and which day.
       // The date only: the factory's name and status are in the sidebar, the user's name in the bar.
       description={format.date(new Date().toISOString(), { style: "long" })}
+      actions={
+        floor?.data ? (
+          <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+            <Link href="/jobs">{tFloor("allJobs")}</Link>
+          </Button>
+        ) : undefined
+      }
     >
       {onboarding && factory ? (
-        <Card padding="md" className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">{t(`stage.${factory.status}`)}</h2>
+        <ActionPanel id="onboarding-stage" title={t(`stage.${factory.status}`)}>
           <Meter
             label={t("progressLabel")}
             value={factory.onboarding.total ? (factory.onboarding.done / factory.onboarding.total) * 100 : 0}
             valueText={t("progress", { done: factory.onboarding.done, total: factory.onboarding.total })}
           />
-          <Link
-            href="/onboarding"
-            className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-5 font-semibold md:min-h-10"
-          >
-            {t("continue")}
-            <Icon name="arrow-right" size={20} />
-          </Link>
-        </Card>
+          <Button asChild size="lg" iconEnd="arrow-right" className="self-start">
+            <Link href="/onboarding">{t("continue")}</Link>
+          </Button>
+        </ActionPanel>
+      ) : null}
+
+      {/* The getpack work by the floor's counters: each card opens the list it counts. */}
+      {busy.length ? (
+        <PartnerStats
+          label={tFloor("countersLabel")}
+          items={busy.map(([key, href, icon, value]) => ({
+            key,
+            href,
+            icon,
+            label: tFloor(`counters.${key}`),
+            value: format.number(value),
+            highlight: key === "toAccept",
+            hint:
+              key === "toAccept" && acceptanceOverdue > 0
+                ? tFloor("acceptanceOverdue", { count: acceptanceOverdue })
+                : undefined,
+            tone: key === "atRisk" || key === "claims" ? "danger" : key === "toAccept" ? undefined : "neutral",
+          }))}
+        />
+      ) : null}
+      {clear.length ? (
+        <p className="text-muted -mt-2 flex items-start gap-2 text-sm">
+          <Icon name="check" size={16} className="text-success mt-0.5 shrink-0" aria-hidden="true" />
+          <span>
+            {tFloor("clear", {
+              // "ครบกำหนดวันนี้, เสี่ยงล่าช้า หรือ พักงาน" — a sentence, not a list of labels.
+              list: new Intl.ListFormat(locale, { type: "disjunction" }).format(
+                clear.map(([key]) => tFloor(`counters.${key}`)),
+              ),
+            })}
+          </span>
+        </p>
       ) : null}
 
       {tasks.length ? (
-        <StatStrip
-          label={ti("summary")}
-          items={SECTIONS.filter((section) => bySection(section).length).map((section) => ({
-            key: section,
-            href: `#${section}`,
-            label: ti(`sections.${section}`),
-            value: bySection(section).length,
-            tone: section === "overdue" ? "danger" : section === "approve" ? "warning" : "neutral",
-          }))}
-        />
-      ) : (
-        <p className="border-border text-muted flex items-center gap-2 rounded-xl border border-dashed p-4">
-          <Icon name="success" size={20} className="text-success shrink-0" aria-hidden />
-          {ti("allClear")}
-        </p>
-      )}
-      {SECTIONS.filter((section) => bySection(section).length).map((section) => (
-        <PartnerSection
-          key={section}
-          id={section}
-          title={ti(`sections.${section}`)}
-          description={ti(`sectionHints.${section}`)}
-        >
-          <RowList label={ti(`sections.${section}`)}>
-            {bySection(section).map((task) => (
-              <Row
-                key={task.key}
-                href={task.href}
-                icon={task.icon}
-                tone={task.tone ?? "neutral"}
-                title={task.title}
-                meta={task.body || undefined}
-                aside={task.aside}
-              />
-            ))}
-          </RowList>
-        </PartnerSection>
-      ))}
-
-      {floor?.data ? (
         <>
-          <h2 className="mt-2 text-lg font-semibold">{ti("getpackWork")}</h2>
-          {(() => {
-            const counters = [
-              ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],
-              ["dueToday", "/jobs?view=in_production", "calendar", floor.data.counters.milestonesDueToday],
-              ["atRisk", "/jobs?view=late", "warning", floor.data.counters.atRisk],
-              ["onHold", "/jobs?view=all", "pause", floor.data.counters.onHold],
-              ["inspections", "/jobs?view=all", "shield", floor.data.counters.inspectionsPlanned],
-              ["samples", "/samples", "package-check", samplesToRecord],
-              ["claims", "/claims", "shield-alert", claimsToAnswer],
-            ] as const;
-            const busy = counters.filter(([, , , value]) => value > 0);
-            const clear = counters.filter(([, , , value]) => value === 0);
-            return (
-              <section aria-label={tFloor("countersLabel")} className="flex flex-col gap-2">
-                {busy.length ? (
-                  <StatStrip
-                    label={tFloor("countersLabel")}
-                    items={busy.map(([key, href, , value]) => {
-                      const overdue = key === "toAccept" ? floor.data!.counters.acceptanceOverdue : 0;
-                      return {
-                        key,
-                        href,
-                        label: tFloor(`counters.${key}`),
-                        value,
-                        hint: overdue > 0 ? tFloor("acceptanceOverdue", { count: overdue }) : undefined,
-                        tone:
-                          (key === "atRisk" && value > 0) || overdue > 0 || (key === "claims" && value > 0)
-                            ? "danger"
-                            : "neutral",
-                      };
-                    })}
-                  />
-                ) : null}
-                {clear.length ? (
-                  <p className="text-muted flex items-start gap-2 text-sm">
-                    <Icon name="check" size={16} className="text-success mt-0.5 shrink-0" aria-hidden="true" />
-                    <span>
-                      {tFloor("clear", {
-                        // "ครบกำหนดวันนี้, เสี่ยงล่าช้า หรือ พักงาน" — a sentence, not a list of labels.
-                        list: new Intl.ListFormat(locale, { type: "disjunction" }).format(
-                          clear.map(([key]) => tFloor(`counters.${key}`)),
-                        ),
-                      })}
-                    </span>
-                  </p>
-                ) : null}
-              </section>
-            );
-          })()}
-
-          <PartnerSection
-            title={tFloor("queue")}
-            actions={
-              <Button asChild variant="link" size="sm" iconEnd="arrow-right">
+          <div className={pair}>
+            {section("overdue")}
+            {section("approve")}
+          </div>
+          <div className={pair}>
+            {section("today")}
+            {section("soon")}
+          </div>
+        </>
+      ) : (
+        <EmptyState
+          icon="success"
+          title={ti("allClear")}
+          action={
+            floor?.data ? (
+              <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
                 <Link href="/jobs">{tFloor("allJobs")}</Link>
               </Button>
-            }
-          >
-            {floor.data.queue.length ? (
-              <JobsTable jobs={floor.data.queue} caption={tFloor("queue")} />
             ) : (
-              <p className="text-muted">{tFloor("queueEmpty")}</p>
-            )}
-          </PartnerSection>
-        </>
+              <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+                <Link href="/alerts">{tNav("alerts")}</Link>
+              </Button>
+            )
+          }
+        />
+      )}
+
+      {floor?.data ? (
+        <PartnerSection
+          id="queue"
+          title={tFloor("queue")}
+          description={ti("getpackWork")}
+          actions={
+            <Button asChild variant="link" size="sm" iconEnd="arrow-right">
+              <Link href="/jobs">{tFloor("allJobs")}</Link>
+            </Button>
+          }
+        >
+          {floor.data.queue.length ? (
+            <JobsTable jobs={floor.data.queue} caption={tFloor("queue")} />
+          ) : (
+            <EmptyState
+              icon="factory"
+              title={tFloor("queueEmpty")}
+              action={
+                <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+                  <Link href="/jobs?view=all">{tFloor("allJobs")}</Link>
+                </Button>
+              }
+            />
+          )}
+        </PartnerSection>
       ) : null}
     </PartnerPage>
   );

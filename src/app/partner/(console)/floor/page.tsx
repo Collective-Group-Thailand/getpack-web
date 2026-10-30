@@ -7,13 +7,15 @@ import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/pa
 import { formatQty } from "@/features/partner/erp/format";
 import { OperationButtons } from "@/features/partner/erp/MoActions";
 import { queryOf } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage } from "@/features/partner/frame";
+import { PageError, PartnerPage, PartnerStats } from "@/features/partner/frame";
 import { ViewTabs } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerFactory.floor"))("title") };
@@ -42,11 +44,8 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
     ),
     attempt(
       async () =>
-        (
-          await contract.GET("/v1/partner/factories/{factoryId}/erp/planning/queue", {
-            params: { path, query: machine ? { machineId: machine } : {} },
-          })
-        ).data!,
+        // The whole floor, filtered here by machine: the tabs' counts are then the rows each tab lists.
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/planning/queue", { params: { path } })).data!,
     ),
   ]);
   const canRecord = canAt(context, "factory_production.record");
@@ -54,7 +53,8 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
   // under it in order — an operator should not be offered "ready to ship" before "print".
   type Entry = NonNullable<typeof queue.data>[number];
   const groups: { order: Entry["order"]; operations: Entry[] }[] = [];
-  for (const entry of queue.data ?? []) {
+  const onMachine = (entry: Entry) => !machine || entry.operation.machine?.id === machine;
+  for (const entry of (queue.data ?? []).filter(onMachine)) {
     const group = groups.find((g) => g.order.id === entry.order.id);
     if (group) group.operations.push(entry);
     else groups.push({ order: entry.order, operations: [entry] });
@@ -66,98 +66,149 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
     );
     if (running > 0) group.operations.unshift(...group.operations.splice(running, 1));
   }
-  const tKiosk = await getTranslations("partnerOps.kiosk");
+  const [tKiosk, tStatus] = await Promise.all([getTranslations("partnerOps.kiosk"), getTranslations("status")]);
+  const unitOf = (unit: string) => (tCommon.has(`units.${unit}` as never) ? tCommon(`units.${unit}` as never) : unit);
+  const entries = (queue.data ?? []).filter(onMachine);
+  // Each machine's count is the operations this list shows for it — not the overview's own tally, which can differ.
+  const perMachine = (id: string) => (queue.data ?? []).filter((entry) => entry.operation.machine?.id === id).length;
+  const countOf = (status: string) => entries.filter((entry) => entry.operation.status === status).length;
+  const late = groups.filter((group) => group.order.late).length;
+  const short = groups.filter((group) => group.order.short).length;
 
   return (
     <PartnerPage
+      wide
       title={t("title")}
       description={t("body")}
       actions={
         canRecord ? (
-          <Button asChild variant="secondary" iconStart="tablet">
+          <Button asChild variant="secondary" size="nav" iconStart="tablet">
             <Link href="/floor/kiosk">{tKiosk("title")}</Link>
           </Button>
         ) : undefined
       }
     >
+      {queue.data && entries.length ? (
+        // Counts of what is on the list below — nothing added up but the rows.
+        <PartnerStats
+          label={t("title")}
+          items={[
+            {
+              key: "running",
+              icon: "play",
+              label: tStatus("erpOperation.inProgress"),
+              value: format.number(countOf("in_progress")),
+              highlight: countOf("in_progress") > 0,
+            },
+            {
+              key: "pending",
+              icon: "clock",
+              label: tStatus("erpOperation.pending"),
+              value: format.number(countOf("pending")),
+            },
+            {
+              key: "late",
+              icon: "warning",
+              label: tPlan("late"),
+              value: format.number(late),
+              tone: late ? "danger" : "neutral",
+            },
+            {
+              key: "short",
+              icon: "package",
+              label: tPlan("short"),
+              value: format.number(short),
+              tone: short ? "warning" : "neutral",
+            },
+          ]}
+        />
+      ) : null}
       {overview.data?.machines.length ? (
         <ViewTabs
           label={t("machines")}
           current={machine ?? "all"}
           items={[
-            { key: "all", href: "/floor", label: t("allMachines") },
+            { key: "all", href: "/floor", label: t("allMachines"), count: queue.data?.length },
             ...overview.data.machines
-              .filter((m) => m.operations > 0 || m.machine.id === machine)
+              .filter((m) => perMachine(m.machine.id) > 0 || m.machine.id === machine)
               .map((m) => ({
                 key: m.machine.id,
                 href: `/floor${queryOf({ machine: m.machine.id })}`,
                 label: m.machine.name,
-                count: m.operations,
+                count: queue.data ? perMachine(m.machine.id) : undefined,
               })),
           ]}
         />
       ) : null}
       {queue.data ? (
-        queue.data.length ? (
-          <ol className="flex flex-col gap-3">
+        entries.length ? (
+          <ol className="grid gap-3 xl:grid-cols-2">
             {groups.map(({ order, operations }) => {
               const [now, ...later] = operations;
               const card = now!;
+              const running = card.operation.status === "in_progress";
               return (
-                <li key={order.id} className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-muted text-sm">
-                        <Link
-                          href={`/planning/orders/${order.id}`}
-                          className="tabular-nums underline-offset-4 hover:underline"
-                        >
-                          {order.moNo}
-                        </Link>{" "}
-                        · {order.title}
-                      </p>
-                      <p className="text-lg font-semibold">
-                        {card.operation.seq}. {card.operation.name}
-                      </p>
-                      <p className="text-muted text-sm">
-                        {[
-                          tCommon("inUnit", {
-                            qty: formatQty(order.quantity, locale),
-                            unit: tCommon.has(`units.${order.unit}` as never)
-                              ? tCommon(`units.${order.unit}` as never)
-                              : order.unit,
-                          }),
-                          order.dueOn ? t("due", { date: format.date(order.dueOn) }) : null,
-                          card.operation.machine?.name ?? null,
-                          card.operation.plannedMinutes > 0
-                            ? tPlan("detail.minutes", { n: card.operation.plannedMinutes })
-                            : null,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
+                <li
+                  key={order.id}
+                  className={cn(
+                    "bg-surface rounded-card flex min-w-0 flex-col gap-4 border border-s-4 p-4 md:p-5",
+                    order.late
+                      ? "border-border border-s-danger"
+                      : running
+                        ? "border-border border-s-primary"
+                        : "border-border border-s-border-strong",
+                  )}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Link
+                        href={`/planning/orders/${order.id}`}
+                        className="text-muted inline-flex min-h-11 items-center text-sm tabular-nums underline-offset-4 hover:underline md:min-h-8"
+                      >
+                        {order.moNo}
+                      </Link>
+                      <span className="flex flex-wrap gap-1">
+                        {order.late ? <Badge tone="danger">{tPlan("late")}</Badge> : null}
+                        {order.short ? <Badge tone="warning">{tPlan("short")}</Badge> : null}
+                        <StatusChip map={ERP_OPERATION_STATUS} value={card.operation.status} size="md" />
+                      </span>
                     </div>
-                    <span className="flex flex-wrap gap-1">
-                      {order.late ? <Badge tone="danger">{tPlan("late")}</Badge> : null}
-                      {order.short ? <Badge tone="warning">{tPlan("short")}</Badge> : null}
-                      <StatusChip map={ERP_OPERATION_STATUS} value={card.operation.status} />
-                    </span>
+                    {/* The step is what the operator looks for, so it is the largest line; the order says what it is for. */}
+                    <p className="text-xl leading-snug font-semibold [overflow-wrap:anywhere] break-keep">
+                      {card.operation.seq}. {card.operation.name}
+                    </p>
+                    <p className="[overflow-wrap:anywhere] break-keep">{order.title}</p>
+                    <p className="text-muted text-sm">
+                      {[
+                        tCommon("inUnit", { qty: formatQty(order.quantity, locale), unit: unitOf(order.unit) }),
+                        order.dueOn ? t("due", { date: format.date(order.dueOn) }) : null,
+                        card.operation.machine?.name ?? null,
+                        card.operation.plannedMinutes > 0
+                          ? tPlan("detail.minutes", { n: card.operation.plannedMinutes })
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
                   </div>
                   {canRecord ? (
                     <OperationButtons
                       orderId={order.id}
                       operation={card.operation}
-                      unit={
-                        tCommon.has(`units.${order.unit}` as never)
-                          ? tCommon(`units.${order.unit}` as never)
-                          : order.unit
-                      }
+                      unit={unitOf(order.unit)}
                       defaultGood={order.quantity}
+                      size="xl"
                     />
                   ) : null}
                   {later.length ? (
-                    <details className="text-sm">
-                      <summary className="text-muted cursor-pointer select-none">
+                    <details className="border-border group border-t pt-1">
+                      <summary className="text-muted hover:text-fg flex min-h-12 cursor-pointer items-center gap-2 text-sm select-none">
+                        <Icon
+                          name="chevron-down"
+                          size={16}
+                          aria-hidden="true"
+                          className="shrink-0 transition-transform group-open:rotate-180"
+                        />
                         {t("nextSteps", {
                           list: later
                             .slice(0, 3)
@@ -170,7 +221,7 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
                         {later.map((item) => (
                           <li
                             key={item.operation.id}
-                            className="border-border flex flex-col gap-2 rounded-lg border p-3"
+                            className="border-border bg-surface-subtle flex flex-col gap-2 rounded-lg border p-3"
                           >
                             <p className="font-medium">
                               {item.operation.seq}. {item.operation.name}
@@ -182,11 +233,7 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
                               <OperationButtons
                                 orderId={order.id}
                                 operation={item.operation}
-                                unit={
-                                  tCommon.has(`units.${order.unit}` as never)
-                                    ? tCommon(`units.${order.unit}` as never)
-                                    : order.unit
-                                }
+                                unit={unitOf(order.unit)}
                                 defaultGood={order.quantity}
                               />
                             ) : null}
@@ -200,7 +247,22 @@ export default async function FloorPage({ searchParams }: { searchParams: Promis
             })}
           </ol>
         ) : (
-          <EmptyState icon="check" title={t("empty")} description={t("emptyBody")} />
+          <EmptyState
+            icon="check"
+            title={t("empty")}
+            description={t("emptyBody")}
+            action={
+              machine ? (
+                <Button asChild variant="secondary" size="nav">
+                  <Link href="/floor">{t("allMachines")}</Link>
+                </Button>
+              ) : (
+                <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+                  <Link href="/planning">{tPlan("title")}</Link>
+                </Button>
+              )
+            }
+          />
         )
       ) : (
         <PageError error={queue.error} />
