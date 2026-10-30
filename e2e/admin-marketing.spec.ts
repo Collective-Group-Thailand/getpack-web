@@ -316,7 +316,8 @@ test.describe("B2B companies (D-120…D-125)", () => {
     await expect(page.getByText(/^ขอเครดิตได้: /)).toBeVisible();
     await page.getByRole("button", { name: "ขอวงเงิน" }).click();
     const dialog = page.getByRole("dialog", { name: "ขอวงเงินเครดิต" });
-    await dialog.getByLabel(/^วงเงิน/).fill("80000");
+    // The amount, not the "วงเงินชั่วคราว" switch next to it (D-462).
+    await dialog.getByRole("spinbutton", { name: "วงเงิน" }).fill("80000");
     await choose(page, /^ระยะเครดิต/, "30 วัน (ค่าเริ่มต้น)");
     await dialog.getByLabel(/^เหตุผล/).fill("สั่งซื้อสม่ำเสมอ ชำระตรงเวลา");
     await dialog.getByRole("button", { name: "ส่งขออนุมัติ" }).click();

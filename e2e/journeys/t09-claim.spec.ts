@@ -10,8 +10,8 @@ test("T9 report off-colour goods", async ({ page, journey }) => {
   await j.startHere();
   j.expectEvents("claim_started", "claim_submitted");
 
-  // The orders list is a card per order since the account redesign (C6); each card carries its own actions.
-  const row = page.getByRole("article").filter({ hasText: DELIVERED.code });
+  // The orders list is a table row per order since the customer redesign; each row carries its own actions.
+  const row = page.getByRole("row").filter({ hasText: DELIVERED.code });
   await j.screen(
     "claim form",
     () => row.getByRole("link", { name: /แจ้งปัญหา/ }).click(),

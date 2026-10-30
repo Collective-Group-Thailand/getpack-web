@@ -25,18 +25,16 @@ test.describe("the products hub", () => {
     await expect(page.getByRole("heading", { level: 1, name: "สินค้าและราคา" })).toBeVisible();
     await expect(page.getByText(/\d+ รายการ · \d+ หมวด/)).toBeVisible();
 
-    const modes = page.getByRole("group", { name: "วิธีซื้อ" });
-    await modes.getByRole("button", { name: /^สั่งผลิตตามสเปก/ }).click();
-    await expect(page).toHaveURL(/\/products\?mode=quote/);
-    await expect(modes.getByRole("button", { name: /^สั่งผลิตตามสเปก/ })).toHaveAttribute("aria-pressed", "true");
+    // The buying modes are the catalogue's tabs since the customer redesign.
     const catalogue = page.locator("#catalog");
+    const modes = catalogue.getByRole("navigation", { name: "วิธีซื้อ" });
+    await modes.getByRole("link", { name: /^สั่งผลิตตามสเปก/ }).click();
+    await expect(page).toHaveURL(/\/products\?mode=quote/);
+    await expect(modes.getByRole("link", { name: /^สั่งผลิตตามสเปก/ })).toHaveAttribute("aria-current", "page");
     await expect(catalogue.getByRole("link", { name: "กล่องแข็งฝาแม่เหล็ก" })).toBeVisible();
     await expect(catalogue.getByRole("link", { name: "กล่องไปรษณีย์" })).toHaveCount(0);
 
-    await catalogue
-      .getByRole("navigation", { name: "วิธีซื้อ" })
-      .getByRole("link", { name: /ทั้งหมด/ })
-      .click();
+    await modes.getByRole("link", { name: /ทั้งหมด/ }).click();
     await expect(page).toHaveURL(`${HOSTS.customer}/products`);
     await catalogue.getByRole("link", { name: "ตารางราคา" }).click();
     await expect(page).toHaveURL(/view=table/);
@@ -57,7 +55,7 @@ test.describe("the products hub", () => {
     await calc.scrollIntoViewIfNeeded();
     await calc.getByRole("button", { name: "กล่องไปรษณีย์" }).click();
     await expect(calc.getByText("ราคาก่อน VAT")).toBeVisible({ timeout: 30_000 });
-    await calc.getByRole("button", { name: "2,000", exact: true }).click();
+    await calc.getByRole("button", { name: /^2,000 ชิ้น/ }).click();
     await expect(calc.getByText(/ราคาต่อชิ้น · 2,000 ชิ้น · รวม VAT/)).toBeVisible({ timeout: 30_000 });
     const cta = calc.getByRole("link", { name: "ปรับขนาดและสั่งซื้อ" });
     await expect(cta).toHaveAttribute("href", /\/configure\/mailer-box\?(.*&)?qty=2000/);

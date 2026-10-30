@@ -10,12 +10,12 @@ test("T8 reorder the previous job, 2,000 pcs", async ({ page, journey }) => {
   await j.startHere();
   j.expectEvents("reorder_started", "reorder_added_to_cart");
 
-  // A card per order since the account redesign (C6): a delivered order's card offers receipt and a claim, so
+  // A table row per order since the customer redesign: a delivered order's row offers receipt and a claim, so
   // reordering is on the order's page (scorecard §5 exception).
-  const card = page.getByRole("article").filter({ hasText: DELIVERED.code });
+  const row = page.getByRole("row").filter({ hasText: DELIVERED.code });
   await j.screen(
     "order",
-    () => card.getByRole("heading").getByRole("link").click(),
+    () => row.getByRole("cell").first().getByRole("link").click(),
     () => expect(page.getByRole("heading", { level: 2, name: "สั่งซ้ำ" })).toBeVisible(),
   );
   const reorder = page.locator("section").filter({ has: page.getByRole("heading", { level: 2, name: "สั่งซ้ำ" }) });

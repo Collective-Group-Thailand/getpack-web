@@ -189,7 +189,9 @@ test("an ordered design is a product: reorder, another quantity, a new size fitt
   );
 
   // A new size: a copy opened on ②; the artwork follows the box.
-  await card.getByRole("button", { name: /ขนาดใหม่$/ }).click();
+  // In the card's "⋯" menu since the customer redesign.
+  await card.getByRole("button", { name: /^ตัวเลือกเพิ่มเติมของ / }).click();
+  await page.getByRole("menuitem", { name: /ขนาดใหม่$/ }).click();
   await expect(page).toHaveURL(/\/studio\/[0-9a-f-]{36}\?step=box/, { timeout: 15_000 });
   const copyId = /\/studio\/([0-9a-f-]{36})/.exec(page.url())![1]!;
   expect(copyId).not.toBe(id);

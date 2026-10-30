@@ -197,17 +197,28 @@ test.describe("the partner zone's permissions", () => {
     // Everyone at the factory reads the answers; only the owner asks (`factory_profile.manage`).
     await signInAsPartner(page, "planner");
     await gotoHydrated(page, `${HOSTS.partner}/requests`);
+    // A list, then the opened request on its own screen on a phone; only the owner gets "ส่งคำขอใหม่".
+    await expect(page.getByRole("link", { name: "ส่งคำขอใหม่" })).toHaveCount(0);
+    await page.getByRole("link", { name: /เพิ่มเครื่องพิมพ์อีกหนึ่งเครื่อง/ }).click();
     await expect(page.getByText("ปรับกำลังผลิตให้แล้ว มีผลตั้งแต่สัปดาห์หน้า")).toBeVisible();
-    await expect(page.getByText("เจ้าของโรงงานเป็นผู้ส่งคำขอถึงทีมดูแลโรงงาน")).toBeVisible();
 
     await signInAsPartner(page, "owner");
     await gotoHydrated(page, `${HOSTS.partner}/requests`);
+    await page.getByRole("link", { name: /เพิ่มเครื่องพิมพ์อีกหนึ่งเครื่อง/ }).click();
     await expect(page.getByText(/^ตอบโดย /).first()).toBeVisible();
+    await gotoHydrated(page, `${HOSTS.partner}/requests`);
+    await page.getByRole("link", { name: "ส่งคำขอใหม่" }).first().click();
     await choose(page, "เรื่อง", "กำลังผลิต");
     await page.getByLabel(/^รายละเอียด/).fill("ปิดซ่อมเครื่องพิมพ์ 2 วันสัปดาห์หน้า");
     await page.getByRole("button", { name: "ส่งคำขอ" }).click();
     await expect(page.getByText("ส่งคำขอแล้ว ทีมดูแลโรงงานจะตอบกลับ")).toBeVisible();
-    await expect(page.getByText("ปิดซ่อมเครื่องพิมพ์ 2 วันสัปดาห์หน้า")).toBeVisible();
+    await gotoHydrated(page, `${HOSTS.partner}/requests`);
+    await expect(
+      page
+        .getByRole("region", { name: "คำขอที่ส่งแล้ว" })
+        .getByText(/ปิดซ่อมเครื่องพิมพ์ 2 วันสัปดาห์หน้า/)
+        .first(),
+    ).toBeVisible();
     await expectAxeClean(page);
   });
 });

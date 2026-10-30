@@ -40,9 +40,17 @@ test.describe("the style library", () => {
       .getByRole("link", { name: /กล่องลูกฟูก/ })
       .click();
     await expect(page).toHaveURL(/cat=corrugated/);
-    // One filter system: an option facet's values sit under their axis, the prefix said once.
-    await page.getByRole("group", { name: "ช่องมือจับ" }).getByRole("checkbox", { name: "ด้านข้าง" }).click();
+    // One filter system: an option facet's values sit under their axis, the prefix said once — in the "ตัวกรอง"
+    // panel since the customer redesign.
+    await page.getByRole("button", { name: "ตัวกรอง" }).click();
+    const filters = page.getByRole("dialog").filter({ has: page.getByRole("heading", { name: "ตัวกรอง" }) });
+    await filters
+      .getByRole("group")
+      .filter({ has: page.getByText("ช่องมือจับ", { exact: true }) })
+      .getByRole("checkbox", { name: "ด้านข้าง" })
+      .click();
     await expect(page).toHaveURL(/feat=hand_holes:/);
+    await page.keyboard.press("Escape");
     await expect(page.getByRole("link", { name: /^เอาตัวกรอง “ช่องมือจับ: ด้านข้าง” ออก$/ })).toBeVisible();
     await expect(grid(page).getByRole("listitem").first()).toBeVisible();
 
@@ -122,11 +130,12 @@ test.describe("the style library", () => {
 
   test("compares up to three styles side by side", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/styles`);
-    const boxes = grid(page).getByRole("checkbox", { name: /^เปรียบเทียบ: / });
+    // A toggle button on each card (aria-pressed) since the customer redesign.
+    const boxes = grid(page).getByRole("button", { name: /^เปรียบเทียบ: / });
     for (let i = 0; i < 3; i++) await boxes.nth(i).click();
     // The limit (D-246, staff's setting) refuses a fourth and says so.
     await boxes.nth(3).click();
-    await expect(boxes.nth(3)).toHaveAttribute("aria-checked", "false");
+    await expect(boxes.nth(3)).toHaveAttribute("aria-pressed", "false");
     await expect(page.getByText("เปรียบเทียบได้สูงสุด 3 แบบ")).toBeVisible();
     const tray = page.getByRole("region", { name: "แบบที่เลือกเปรียบเทียบ" });
     await expect(tray.getByText("เลือกแล้ว 3/3")).toBeVisible();

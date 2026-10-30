@@ -55,9 +55,9 @@ test.describe("the account", () => {
       .getByRole("link", { name: /กำลังผลิต/ })
       .click();
     await expect(page).toHaveURL(/tab=in_production/);
-    // The list's cards (C6); "ต้องทำตอนนี้" above them still lists what is due on any order.
-    await expect(page.getByRole("article").filter({ hasText: "PK-2569-00124" })).toBeVisible();
-    await expect(page.getByRole("article").filter({ hasText: "PK-2569-00100" })).toHaveCount(0);
+    // The list's table rows; "ต้องทำตอนนี้" above them still lists what is due on any order.
+    await expect(page.getByRole("row").filter({ hasText: "PK-2569-00124" })).toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: "PK-2569-00100" })).toHaveCount(0);
     await expectNoViolations(page);
   });
 
@@ -136,7 +136,8 @@ test.describe("the account", () => {
 
   test("addresses and tax profiles are added from the postcode, and removed", async ({ page }) => {
     await signInAsCustomer(page, "/account/addresses");
-    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
+    // The header button; the dashed "add" tile in the grid opens the same form.
+    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).first().click();
     await page.getByLabel(/^ชื่อที่อยู่/).fill("โกดัง e2e");
     await page.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับ e2e");
     await page.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
@@ -205,7 +206,9 @@ test.describe("the account", () => {
 
     await page.getByRole("button", { name: "ขอสำเนาข้อมูล" }).click();
     await page.getByRole("alertdialog", { name: "ขอสำเนาข้อมูล" }).getByRole("button", { name: "ส่งคำขอ" }).click();
-    await expect(page.getByText(/ขอสำเนาข้อมูล · ได้รับคำขอแล้ว/)).toBeVisible();
+    await expect(
+      page.getByRole("listitem").filter({ hasText: "ขอสำเนาข้อมูล" }).filter({ hasText: "ได้รับคำขอแล้ว" }).first(),
+    ).toBeVisible();
     await expectNoViolations(page);
   });
 
@@ -220,11 +223,13 @@ test.describe("the account", () => {
     await expect(page.getByText("PK1000", { exact: true })).toBeVisible();
     // The share link is the API's (`store.referral.get`), and the friends are counts by status.
     await expect(page.getByText(/\/r\/PK1000$/)).toBeVisible();
-    await expect(page.getByRole("list").getByText("1 คน").first()).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "เพื่อนที่ชวน" }).getByRole("definition").getByText("1 คน").first(),
+    ).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/account/wallet`);
     await expect(page.getByText("เครดิตจากสินค้าขาดตามเกณฑ์")).toBeVisible();
-    await expect(page.getByText("CN-2569-00007")).toBeVisible();
+    await expect(page.getByText("CN-2569-00007").first()).toBeVisible();
     await expectNoViolations(page);
   });
 
@@ -238,7 +243,7 @@ test.describe("the account", () => {
   test("the referral page names each friend it brought, with the rules and the monthly cap", async ({ page }) => {
     await signInAsCustomer(page, "/account/referral");
     // The masked name the API gives (PDPA), never a phone or an e-mail.
-    await expect(page.getByRole("cell", { name: "ม***า ร." })).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "ม***า ร." })).toBeVisible();
     await expect(page.getByText(/ได้รางวัลสูงสุด \d+ ครั้งต่อเดือน/)).toBeVisible();
   });
 });

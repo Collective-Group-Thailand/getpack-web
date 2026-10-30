@@ -56,7 +56,7 @@ export async function FactoryStory({ jobNames }: { jobNames: string[] }) {
           </div>
           <ul className="flex flex-col gap-2.5 px-5 py-4">
             {(["checked", "spec", "price"] as const).map((point, index) => (
-              <Up key={point} delay={0.9 + index * 0.3} className="flex items-center gap-2.5 text-sm">
+              <Up as="li" key={point} delay={0.9 + index * 0.3} className="flex items-center gap-2.5 text-sm">
                 <Tick delay={1.1 + index * 0.3} />
                 {t(`job.points.${point}`)}
               </Up>
@@ -81,6 +81,7 @@ export async function FactoryStory({ jobNames }: { jobNames: string[] }) {
           <ul className="px-5 py-1">
             {BOARD.map((entry, index) => (
               <Up
+                as="li"
                 key={index}
                 delay={0.9 + index * 0.3}
                 className="border-border flex items-center gap-3 border-b py-2.5 text-sm last:border-b-0"

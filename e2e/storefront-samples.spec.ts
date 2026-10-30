@@ -46,10 +46,12 @@ test("the customer asks for a sample from a saved quotation", async ({ page }) =
   await expect(page.getByText(/บันทึกใบเสนอราคาแล้ว/)).toBeVisible();
 
   await gotoHydrated(page, `${HOSTS.customer}/account/quotes`);
+  // In each saved quotation's "⋯" menu since the customer redesign.
   await page
-    .getByRole("button", { name: /^ขอตัวอย่างก่อนสั่งผลิต/ })
+    .getByRole("button", { name: /^ตัวเลือกเพิ่มเติมของ / })
     .first()
     .click();
+  await page.getByRole("menuitem", { name: /^ขอตัวอย่างก่อนสั่งผลิต/ }).click();
   const dialog = page.getByRole("dialog", { name: "ขอตัวอย่างก่อนสั่งผลิต" });
   await dialog.getByRole("radio", { name: /ไม่พิมพ์/ }).click();
   await dialog.getByRole("textbox", { name: "รหัสไปรษณีย์ที่จะส่งตัวอย่าง" }).fill("10110");
@@ -109,7 +111,7 @@ test("the factory records a sample's evidence on a phone", async ({ page }) => {
   });
   await expectNoViolations(page);
   await job.getByRole("button", { name: "บันทึกหลักฐาน" }).click();
-  await expect(page.getByText("บันทึกหลักฐานแล้ว").first()).toBeVisible();
+  await expect(page.getByText("บันทึกหลักฐานแล้ว").filter({ visible: true }).first()).toBeVisible();
 });
 
 test("the customer checks a delivered sample, approves it and orders the bulk", async ({ page }) => {
