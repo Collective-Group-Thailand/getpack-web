@@ -22,9 +22,11 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Textarea } from "@/ui/components/Input";
+import { MobileActionBar } from "@/ui/components/MobileActionBar";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { loadArtwork, placeOf, threadsOf, type Artwork, type Proof, type Thread } from "./artwork";
@@ -71,6 +73,8 @@ function Page({
 }) {
   const t = useTranslations("proof");
   const imageUrl = useFileUrl(isImage(proof) ? proof.proofFile.id : null);
+  // A PDF proof's file, signed as a download (the file host serves it as an attachment, so it cannot show inline).
+  const fileUrl = useFileUrl(isImage(proof) ? null : proof.proofFile.id);
   const overlayUrl = useFileUrl(overlay ? proof.dielineFileId : null);
   const [overlayBroken, setOverlayBroken] = useState(false);
   const layer = useRef<HTMLDivElement>(null);
@@ -84,18 +88,36 @@ function Page({
   };
 
   if (!isImage(proof)) {
-    // CONTRACT-GAP store.proofs — no rasterised pages are published; a PDF proof is opened as a file.
+    // CONTRACT-GAP store.proofs — no rasterised pages are published, and the file host serves the PDF as an
+    // attachment (no inline view): a document card — the file, one primary download, and what to do next.
     return (
-      <Callout tone="info" title={t("fileProof", { name: proof.proofFile.originalName })}>
-        <div className="mt-2">
+      <section className="border-border bg-surface rounded-panel flex min-h-80 flex-col items-center justify-center gap-4 border px-6 py-12 text-center">
+        <span
+          aria-hidden="true"
+          className="border-border bg-surface-subtle text-primary grid size-20 place-items-center rounded-xl border"
+        >
+          <Icon name="document" size={40} />
+        </span>
+        <p className="m-0 max-w-[44ch] font-semibold break-words">
+          {t("fileProof", { name: proof.proofFile.originalName })}
+        </p>
+        <p className="text-muted m-0 max-w-[48ch] text-sm">{t("fileReviewHint")}</p>
+        {fileUrl ? (
+          <Button asChild size="lg" iconStart="download">
+            <a href={fileUrl} download={proof.proofFile.originalName}>
+              {t("fileDownload")}
+            </a>
+          </Button>
+        ) : (
           <FileLink
             fileId={proof.proofFile.id}
             label={t("fileDownload")}
             openLabel={t("fileOpen")}
             failed={t("failed")}
+            size="md"
           />
-        </div>
-      </Callout>
+        )}
+      </section>
     );
   }
   if (!imageUrl) return <p className="text-muted text-sm">{t("loadingPage")}</p>;
@@ -407,8 +429,24 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        {proofs.length > 1 ? (
+      {/* One tool bar: the version, its status, the view, the zoom and the layers. */}
+      <div className="border-border bg-surface rounded-panel flex flex-wrap items-center gap-3 border p-2.5">
+        {proofs.length > 1 && proofs.length <= 5 ? (
+          // A few versions: every one in view, the current one chosen (a clear switch, not a hidden list).
+          <SegmentedControl
+            label={t("version")}
+            value={String(proof.versionNo)}
+            onValueChange={(value) => {
+              setVersionNo(Number(value));
+              setDraft(null);
+              setSelected(null);
+            }}
+            options={proofs.map((candidate) => ({
+              value: String(candidate.versionNo),
+              label: t("versionLabel", { version: candidate.versionNo }),
+            }))}
+          />
+        ) : proofs.length > 5 ? (
           <div className="w-48">
             <SearchableSelect
               aria-label={t("version")}
@@ -485,7 +523,8 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
         ) : null}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      {/* The proof takes the room; the panel stays beside it while it scrolls (Project B). */}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex min-w-0 flex-col gap-3">
           {view === "proof" ? (
             <>
@@ -616,7 +655,10 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
           ) : null}
         </div>
 
-        <aside aria-label={t("panel")} className="flex flex-col gap-6">
+        <aside
+          aria-label={t("panel")}
+          className="flex flex-col gap-6 lg:sticky lg:top-[calc(var(--site-sticky-top)+1.25rem)] lg:max-h-[calc(100dvh-var(--site-sticky-top)-2.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pe-1"
+        >
           {draft ? (
             <section aria-labelledby="proof-draft" className="border-primary rounded-xl border-2 p-3">
               <h2 id="proof-draft" className="text-sm font-semibold">
@@ -644,6 +686,84 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 </Button>
               </div>
             </section>
+          ) : null}
+
+          {/* Project B: the decision first in the panel — approve or ask for changes — then the comments. */}
+          {open ? (
+            <section
+              aria-labelledby="proof-decision"
+              className="border-primary/30 bg-primary-subtle flex scroll-mt-28 flex-col gap-3 rounded-xl border p-4"
+            >
+              <h2 id="proof-decision" className="text-[1.0625rem] font-semibold">
+                {t("decide")}
+              </h2>
+              <p className="text-muted text-sm">{t("approveIntro")}</p>
+              {checklist.length > 0 ? (
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="mb-1 text-sm font-medium">{t("checklist")}</legend>
+                  {checklist.map((item) => (
+                    <Checkbox
+                      key={item.key}
+                      checked={checked.includes(item.key)}
+                      onCheckedChange={(value) =>
+                        setChecked((current) =>
+                          value === true ? [...current, item.key] : current.filter((key) => key !== item.key),
+                        )
+                      }
+                      label={pick(locale, item.labelTh, item.labelEn)}
+                    />
+                  ))}
+                </fieldset>
+              ) : null}
+              <Field label={t("approvalNote")}>
+                <Textarea
+                  rows={2}
+                  maxLength={2000}
+                  value={approvalNote}
+                  onChange={(event) => setApprovalNote(event.target.value)}
+                />
+              </Field>
+              <Button size="lg" onClick={() => setConfirming(true)} iconStart="check" disabled={!complete}>
+                {t("approve")}
+              </Button>
+              {!complete ? <p className="text-muted text-xs">{t("checklistHint")}</p> : null}
+              <Field label={t("changesLabel")} hint={t("changesHint")}>
+                <Textarea
+                  rows={3}
+                  maxLength={2000}
+                  value={changes}
+                  onChange={(event) => setChanges(event.target.value)}
+                />
+              </Field>
+              <Button
+                variant="secondary"
+                loading={busy}
+                disabled={changes.trim().length < 3}
+                onClick={() => void decide("changes")}
+              >
+                {t("requestChanges")}
+              </Button>
+            </section>
+          ) : decided && proof.decidedAt ? (
+            <Callout tone={decided === "approved" ? "success" : "warning"} title={t(`decision.${decided}`)}>
+              {proof.decidedByName
+                ? t("decisionBy", { date: format.dateTime(proof.decidedAt), name: proof.decidedByName })
+                : t("decisionAt", { date: format.dateTime(proof.decidedAt) })}
+              {proof.decisionChecklist.length > 0 ? (
+                <ul className="mt-1 list-disc ps-5 text-xs">
+                  {proof.decisionChecklist.map((key) => {
+                    const item = checklist.find((entry) => entry.key === key);
+                    return <li key={key}>{item ? pick(locale, item.labelTh, item.labelEn) : key}</li>;
+                  })}
+                </ul>
+              ) : null}
+              {proof.decisionComment ? <span className="mt-1 block">{proof.decisionComment}</span> : null}
+              {proof.approvedFileSha256 ? (
+                <span className="mt-1 block text-xs break-all tabular-nums">
+                  {t("hash", { hash: proof.approvedFileSha256.slice(0, 16) })}
+                </span>
+              ) : null}
+            </Callout>
           ) : null}
 
           <section aria-labelledby="proof-threads">
@@ -707,85 +827,17 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
               })}
             </ol>
           </section>
-
-          {open ? (
-            <section
-              aria-labelledby="proof-decision"
-              className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
-            >
-              <h2 id="proof-decision" className="font-semibold">
-                {t("decide")}
-              </h2>
-              <p className="text-muted text-sm">{t("approveIntro")}</p>
-              {checklist.length > 0 ? (
-                <fieldset className="flex flex-col gap-2">
-                  <legend className="mb-1 text-sm font-medium">{t("checklist")}</legend>
-                  {checklist.map((item) => (
-                    <Checkbox
-                      key={item.key}
-                      checked={checked.includes(item.key)}
-                      onCheckedChange={(value) =>
-                        setChecked((current) =>
-                          value === true ? [...current, item.key] : current.filter((key) => key !== item.key),
-                        )
-                      }
-                      label={pick(locale, item.labelTh, item.labelEn)}
-                    />
-                  ))}
-                </fieldset>
-              ) : null}
-              <Field label={t("approvalNote")}>
-                <Textarea
-                  rows={2}
-                  maxLength={2000}
-                  value={approvalNote}
-                  onChange={(event) => setApprovalNote(event.target.value)}
-                />
-              </Field>
-              <Button onClick={() => setConfirming(true)} iconStart="check" disabled={!complete}>
-                {t("approve")}
-              </Button>
-              {!complete ? <p className="text-muted text-xs">{t("checklistHint")}</p> : null}
-              <Field label={t("changesLabel")} hint={t("changesHint")}>
-                <Textarea
-                  rows={3}
-                  maxLength={2000}
-                  value={changes}
-                  onChange={(event) => setChanges(event.target.value)}
-                />
-              </Field>
-              <Button
-                variant="secondary"
-                loading={busy}
-                disabled={changes.trim().length < 3}
-                onClick={() => void decide("changes")}
-              >
-                {t("requestChanges")}
-              </Button>
-            </section>
-          ) : decided && proof.decidedAt ? (
-            <Callout tone={decided === "approved" ? "success" : "warning"} title={t(`decision.${decided}`)}>
-              {proof.decidedByName
-                ? t("decisionBy", { date: format.dateTime(proof.decidedAt), name: proof.decidedByName })
-                : t("decisionAt", { date: format.dateTime(proof.decidedAt) })}
-              {proof.decisionChecklist.length > 0 ? (
-                <ul className="mt-1 list-disc ps-5 text-xs">
-                  {proof.decisionChecklist.map((key) => {
-                    const item = checklist.find((entry) => entry.key === key);
-                    return <li key={key}>{item ? pick(locale, item.labelTh, item.labelEn) : key}</li>;
-                  })}
-                </ul>
-              ) : null}
-              {proof.decisionComment ? <span className="mt-1 block">{proof.decisionComment}</span> : null}
-              {proof.approvedFileSha256 ? (
-                <span className="mt-1 block text-xs break-all tabular-nums">
-                  {t("hash", { hash: proof.approvedFileSha256.slice(0, 16) })}
-                </span>
-              ) : null}
-            </Callout>
-          ) : null}
         </aside>
       </div>
+
+      {open ? (
+        // A phone keeps the way to the decision at the foot of the screen.
+        <MobileActionBar className="lg:hidden">
+          <Button asChild iconStart="check">
+            <a href="#proof-decision">{t("decide")}</a>
+          </Button>
+        </MobileActionBar>
+      ) : null}
 
       <AlertDialog
         open={confirming}

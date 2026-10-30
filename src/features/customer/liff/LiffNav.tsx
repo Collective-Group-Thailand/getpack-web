@@ -31,11 +31,17 @@ export function LiffNav() {
                 href={item.href}
                 aria-current={current ? "page" : undefined}
                 className={cn(
-                  "flex h-14 flex-col items-center justify-center gap-0.5 text-xs",
-                  current ? "text-primary font-medium" : "text-muted",
+                  "focus-visible:ring-focus-ring flex h-14 flex-col items-center justify-center gap-0.5 text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                  current ? "text-primary-subtle-fg font-semibold" : "text-muted font-medium",
                 )}
               >
-                <Icon name={item.icon} size={20} aria-hidden="true" />
+                {/* Project D: the current tab's icon on a pale plate, as a phone's own tab bar marks it. */}
+                <span
+                  aria-hidden="true"
+                  className={cn("rounded-control grid h-7 w-12 place-items-center", current && "bg-primary-subtle")}
+                >
+                  <Icon name={item.icon} size={20} />
+                </span>
                 {t(item.key)}
               </Link>
             </li>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -7,7 +8,6 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getClaimForm } from "@/features/customer/fulfilment/api.server";
 import { ClaimForm } from "@/features/customer/fulfilment/ClaimForm";
 import { getMyOrder } from "@/features/customer/orders/api.server";
-import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 
 type Params = { orderId: string };
@@ -35,12 +35,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline-offset-4 hover:underline">
-          {t("back", { code: order.orderCode })}
-        </Link>
-        <h1 className="text-title leading-tight">{t("title")}</h1>
-      </header>
+      <AccountHeader
+        back={{ href: `/account/orders/${order.id}`, label: t("back", { code: order.orderCode }) }}
+        title={t("title")}
+      />
       {form?.open ? (
         <>
           <TrackOnView name="claim_started" properties={{ route: "/account/orders/[orderId]/claim" }} />

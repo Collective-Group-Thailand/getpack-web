@@ -31,14 +31,13 @@ import {
   HowPricing,
   HubFaq,
   HubSection,
+  HubSectionStack,
   MaterialsTable,
-  materialRows,
   ProcessSteps,
   ServiceLinks,
 } from "@/features/customer/products/HubSections";
 import { HubTracker } from "@/features/customer/products/HubTracker";
 import { HubVatSwitch } from "@/features/customer/products/HubVatSwitch";
-import { ModeCards } from "@/features/customer/products/ModeCards";
 import { DEFAULT_PARAMS, hubHref, isFilteredHub, readHubParams } from "@/features/customer/products/query";
 import { QuickCalcLazy } from "@/features/customer/products/QuickCalcLazy";
 import { QuoteTrayProvider } from "@/features/customer/products/quote-tray";
@@ -52,7 +51,6 @@ import { clientEnv } from "@/lib/env";
 import { featureFlags } from "@/lib/env/server";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
 import { breadcrumbSchema, faqPageSchema, productSchema } from "@/lib/seo/structured-data";
-import { AnchorNav } from "@/ui/components/AnchorNav";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -80,11 +78,12 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
 
 /**
  * "สินค้าและราคา" — the hub of everything a customer can buy (products redesign Phase 1,
- * `docs/design/products-redesign/`): the head with live search and totals, the four buying modes, a
- * sticky section bar, the quick calculator, every product (filtered, sorted and paged on the server
- * from the URL), how pricing works, the corrugated materials, the process, add-on services, FAQ and a
- * closing band — plus the RFQ tray and the LINE button. Rendered on the server from the URL; every
- * figure is the API's, and a part without data is left out.
+ * `docs/design/products-redesign/`; reordered by Project A): a short head with the totals, then the
+ * catalogue first under one sticky toolbar — search, the buying modes as tabs with their key figures,
+ * category chips, sort and the grid/table toggle — then the quick calculator, the reference sections
+ * (how pricing works, the corrugated materials, the process, add-on services) folded to their headings,
+ * the FAQ and a light closing band — plus the RFQ tray and the LINE button. Rendered on the server from
+ * the URL; every figure is the API's, and a part without data is left out.
  */
 export default async function ProductsPage({
   params,
@@ -124,7 +123,6 @@ export default async function ProductsPage({
   const calcProducts = instant
     .filter((item) => configurators.some((configurator) => configurator.slug === item.key))
     .map((item) => ({ slug: item.key, nameTh: item.nameTh, nameEn: item.nameEn, imageUrl: item.imageUrl }));
-  const hasMaterials = materialRows(configurators, locale).length > 0;
 
   // D-447 §10.3: staff's chosen services (≤ 3, their order), else the first three of the list; details for those only.
   const serviceList = featuredServices(
@@ -175,20 +173,6 @@ export default async function ProductsPage({
     stock: summary.stock ? t.rich("modes.stock.line", { min: summary.stock.min, b: bold }) : undefined,
     service: all.some((item) => item.mode === "service") ? t("modes.service.line") : undefined,
   };
-  const presentModes = (["instant", "quote", "stock", "service"] as const).filter((mode) =>
-    all.some((item) => item.mode === mode),
-  );
-
-  const sections = [
-    ...(calcProducts.length ? [{ id: "calc", label: t("sections.calc") }] : []),
-    { id: "catalog", label: t("sections.catalog") },
-    { id: "how", label: t("sections.how") },
-    ...(hasMaterials ? [{ id: "materials", label: t("sections.materials") }] : []),
-    { id: "process", label: t("sections.process") },
-    ...(services.length ? [{ id: "services", label: t("sections.services") }] : []),
-    { id: "faq", label: t("sections.faq") },
-  ];
-
   // The same order as the floating button (`LineFloat.resolveLineOaId`, a client module): the build's id, else staff's.
   const lineOaId = clientEnv.NEXT_PUBLIC_LINE_OA_ID?.trim() || support?.lineOaId?.trim() || null;
   // "ขอใบเสนอราคา": the made-to-spec items, where each goes into the one quotation request (the tray).
@@ -247,60 +231,73 @@ export default async function ProductsPage({
           items={[{ label: t("head.home"), href: "/" }, { label: t("head.breadcrumb") }]}
           className="mb-3"
         />
-        <header className="grid gap-x-12 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,32.5rem)] lg:items-end">
+        <header className="flex flex-wrap items-end justify-between gap-x-12 gap-y-3">
           <div>
-            <h1 className="text-[1.875rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.625rem]">
+            <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
               {t("head.title")}
             </h1>
-            <p className="text-muted mt-2.5 max-w-[60ch] text-pretty">{t("head.lede")}</p>
+            <p className="text-muted mt-2 max-w-[60ch] text-pretty">{t("head.lede")}</p>
           </div>
-          <div>
-            <HubSearch params={query} base={BASE} action={getPathname({ href: BASE, locale: locale as Locale })} />
-            <div className="text-muted mt-2.5 flex flex-wrap items-center justify-between gap-3 text-[0.8125rem]">
-              <span aria-live="polite">{t("head.totals", { items: items.length, categories: categories.size })}</span>
-              {/* D-447 §10.6: "ราคารวม VAT / ไม่รวม VAT" only when the API sent both figures for every price
-                  listed (`vatSwitchAvailable`); otherwise every price says it includes VAT. */}
-              {vatSwitch ? (
-                <HubVatSwitch label={t("head.vatLabel")} incl={t("head.vatIncl")} excl={t("head.vatExcl")} />
-              ) : (
-                <span className="text-muted">{t("head.vatIncludedNote")}</span>
-              )}
-            </div>
+          <div className="text-muted flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem]">
+            <span aria-live="polite">{t("head.totals", { items: items.length, categories: categories.size })}</span>
+            {/* D-447 §10.6: "ราคารวม VAT / ไม่รวม VAT" only when the API sent both figures for every price
+                listed (`vatSwitchAvailable`); otherwise every price says it includes VAT. */}
+            {vatSwitch ? (
+              <HubVatSwitch label={t("head.vatLabel")} incl={t("head.vatIncl")} excl={t("head.vatExcl")} />
+            ) : (
+              <span>{t("head.vatIncludedNote")}</span>
+            )}
           </div>
         </header>
-        <ModeCards
-          label={t("modes.label")}
-          cards={presentModes.map((mode) => ({
-            mode,
-            name: t(`modes.${mode}.name`),
-            description: t(`modes.${mode}.description`),
-            line: lines[mode],
-            href: hubHref(BASE, query, { mode: query.mode === mode ? null : mode }),
-            pressed: query.mode === mode,
-          }))}
-        />
       </div>
 
-      <AnchorNav aria-label={t("sections.label")} items={sections} className="mt-8" innerClassName={container} />
+      <div className={`${container} pb-16 md:pb-20`}>
+        {/* Project A: the catalogue comes first, under one sticky toolbar; the buying modes are its tabs. */}
+        <section
+          id="catalog"
+          tabIndex={-1}
+          aria-labelledby="catalog-title"
+          className="mt-5 scroll-mt-[var(--site-sticky-top)] outline-none md:mt-6"
+        >
+          <h2 id="catalog-title" className="sr-only">
+            {t("catalogue.title")}
+          </h2>
+          <HubCatalogue
+            items={items}
+            params={query}
+            base={BASE}
+            tree={tree}
+            categoryPage={categoryHref}
+            sticky
+            modeLines={lines}
+            search={
+              <HubSearch
+                params={query}
+                base={BASE}
+                action={getPathname({ href: BASE, locale: locale as Locale })}
+                compact
+              />
+            }
+          />
+        </section>
 
-      <div className={`${container} pb-28`}>
         {calcProducts.length ? (
           <HubSection id="calc" title={t("calc.title")} lede={t("calc.lede")}>
             <QuickCalcLazy products={calcProducts} guaranteeHref="/guarantee" />
           </HubSection>
         ) : null}
 
-        <HubSection id="catalog" title={t("catalogue.title")} lede={t("catalogue.lede")}>
-          <HubCatalogue items={items} params={query} base={BASE} tree={tree} categoryPage={categoryHref} />
-        </HubSection>
-
-        <HowPricing />
-        <MaterialsTable configurators={configurators} />
-        <ProcessSteps leadBand={instantLeadBand(all)} />
-        <ServiceLinks
-          services={services}
-          allHref={serviceList.more ? `${hubHref(BASE, DEFAULT_PARAMS, { mode: "service" })}#catalog` : null}
-        />
+        {/* The reference sections, folded to their headings: the catalogue and the calculator lead. */}
+        <HubSectionStack className="mt-14">
+          <HowPricing collapsible />
+          <MaterialsTable configurators={configurators} collapsible />
+          <ProcessSteps leadBand={instantLeadBand(all)} collapsible />
+          <ServiceLinks
+            services={services}
+            allHref={serviceList.more ? `${hubHref(BASE, DEFAULT_PARAMS, { mode: "service" })}#catalog` : null}
+            collapsible
+          />
+        </HubSectionStack>
         <HubFaq company={company} />
         <CtaBand quoteHref={quoteHref} lineOaId={lineOaId} hours={support?.hours ?? null} />
       </div>

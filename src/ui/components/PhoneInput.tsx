@@ -81,6 +81,8 @@ export function PhoneInput({
     <div className={cn("flex items-stretch gap-2", className)}>
       <span
         aria-hidden
+        data-field-part
+        data-size={size === "lg" ? "lg" : "md"}
         className={cn(
           "border-border-strong rounded-control flex items-center border",
           size === "lg"
@@ -102,6 +104,7 @@ export function PhoneInput({
         onChange={(event) => onChange(normaliseThaiMobile(event.target.value))}
         onBlur={onBlur}
         disabled={isDisabled}
+        data-size={size === "lg" ? "lg" : "md"}
         className={cn(
           controlVariants({ inputSize: size === "lg" ? "lg" : "md" }),
           "flex-1 tabular-nums",

@@ -18,7 +18,18 @@ export const SEARCH_DEBOUNCE_MS = 250;
  * `router.replace` (the server renders the result; Back does not step through every letter), and the
  * page scrolls to the catalogue once there is something to show. Without JavaScript it is a GET form.
  */
-export function HubSearch({ params, base, action }: { params: HubParams; base: string; action: string }) {
+export function HubSearch({
+  params,
+  base,
+  action,
+  compact = false,
+}: {
+  params: HubParams;
+  base: string;
+  action: string;
+  /** The toolbar's size (44 px, a control's radius) rather than the page head's 54 px field. */
+  compact?: boolean;
+}) {
   const t = useTranslations("products.head");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -86,7 +97,8 @@ export function HubSearch({ params, base, action }: { params: HubParams; base: s
           timer.current = setTimeout(() => search(next), SEARCH_DEBOUNCE_MS);
         }}
         className={cn(
-          "border-border bg-surface text-fg placeholder:text-subtle rounded-card h-13.5 w-full border ps-12 pe-12 text-base shadow-sm outline-none",
+          "border-border bg-surface text-fg placeholder:text-muted w-full border ps-12 pe-12 text-base outline-none",
+          compact ? "rounded-control border-border-strong h-11" : "rounded-card h-13.5 shadow-sm",
           "focus-visible:border-primary focus-visible:ring-focus-ring focus-visible:ring-2",
           "[&::-webkit-search-cancel-button]:hidden",
         )}

@@ -21,6 +21,8 @@ import { featureFlags } from "@/lib/env/server";
 import { alternateUrls, breadcrumbSchema, publicOrigin } from "@/lib/seo";
 import { faqPageSchema, productSchema } from "@/lib/seo/structured-data";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
+import { DisclosureList } from "@/ui/components/DisclosureList";
+import { Icon } from "@/ui/icons";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -79,7 +81,7 @@ export default async function PackagingLandingPage({ params }: { params: Params 
   const absolute = (path: string) => `${origin}${getPathname({ href: path, locale: locale as Locale })}`;
 
   return (
-    <div className="max-w-content mx-auto px-5 py-8 pb-28 md:px-8 md:py-12">
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <JsonLd
         data={[
           breadcrumbSchema([
@@ -116,32 +118,65 @@ export default async function PackagingLandingPage({ params }: { params: Params 
         label={t("breadcrumbs.library")}
         items={[{ label: t("breadcrumbs.library"), href: STYLES_HREF }, { label: title }]}
       />
-      <header className="mt-4 max-w-3xl">
-        <h1 className="text-3xl font-bold md:text-4xl">{title}</h1>
-        <p className="text-muted mt-2">{t(`useCasePages.${found.landing.useCase}.intro`)}</p>
+      <header className="mt-3 max-w-3xl">
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+          {title}
+        </h1>
+        <p className="text-muted mt-2 text-pretty">{t(`useCasePages.${found.landing.useCase}.intro`)}</p>
       </header>
-      {copy.intro ? (
-        <section className="prose mt-6 max-w-3xl whitespace-pre-line" data-landing-intro="">
-          {copy.intro}
-        </section>
-      ) : null}
-      <section aria-label={title} className="mt-8">
+      {/* Project A: the styles first, under the toolbar; the long intro and the FAQ below the grid. */}
+      <section aria-label={title} className="mt-6">
         <StyleCardGrid styles={found.styles} label={title} />
       </section>
-      {copy.faq.length ? (
-        <section aria-labelledby="landing-faq" className="mt-12 max-w-3xl">
-          <h2 id="landing-faq" className="mb-4 text-xl font-semibold">
-            {t("library.landingFaq")}
-          </h2>
-          <dl className="flex flex-col gap-4">
-            {copy.faq.map((entry) => (
-              <div key={entry.question}>
-                <dt className="font-semibold">{entry.question}</dt>
-                <dd className="text-muted mt-1">{entry.answer}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
+      {copy.intro || copy.faq.length ? (
+        <div className="mt-14 grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
+          {copy.intro ? (
+            <section data-landing-intro="" className="min-w-0">
+              {(() => {
+                // The first paragraph stays in view; the rest folds behind its own disclosure, still in the HTML.
+                const [first, ...rest] = copy.intro.split(/\n\s*\n/);
+                return (
+                  <>
+                    <p className="text-fg leading-relaxed whitespace-pre-line">{first}</p>
+                    {rest.length ? (
+                      <details className="group/intro mt-3">
+                        <summary className="text-primary focus-visible:ring-focus-ring inline-flex cursor-pointer list-none items-center gap-1.5 rounded-sm text-sm font-medium outline-none focus-visible:ring-2 [&::-webkit-details-marker]:hidden">
+                          {t("library.landingIntroMore")}
+                          <Icon
+                            name="chevron-down"
+                            size={16}
+                            aria-hidden="true"
+                            className="transition-transform group-open/intro:rotate-180 motion-reduce:transition-none"
+                          />
+                        </summary>
+                        <div className="text-muted mt-3 flex flex-col gap-3 leading-relaxed whitespace-pre-line">
+                          {rest.map((paragraph, index) => (
+                            <p key={index}>{paragraph}</p>
+                          ))}
+                        </div>
+                      </details>
+                    ) : null}
+                  </>
+                );
+              })()}
+            </section>
+          ) : null}
+          {copy.faq.length ? (
+            <section aria-labelledby="landing-faq" className="min-w-0">
+              <h2 id="landing-faq" className="mb-4 text-xl font-semibold">
+                {t("library.landingFaq")}
+              </h2>
+              <DisclosureList
+                headingLevel="h3"
+                items={copy.faq.map((entry, index) => ({
+                  id: `faq-${index + 1}`,
+                  summary: entry.question,
+                  content: entry.answer,
+                }))}
+              />
+            </section>
+          ) : null}
+        </div>
       ) : null}
       <LibraryLinks />
     </div>

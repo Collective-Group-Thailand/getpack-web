@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { getMyPayment } from "@/features/customer/checkout/api.server";
 import { PaymentPanel } from "@/features/customer/checkout/PaymentPanel";
+import { LiffHeader } from "@/features/customer/liff/LiffHeader";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
 
@@ -20,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ paymentId: st
   if (!payment) notFound();
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">{t("title")}</h1>
+      <LiffHeader title={t("title")} />
       <PaymentPanel initial={payment} />
     </div>
   );

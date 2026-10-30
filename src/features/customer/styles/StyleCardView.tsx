@@ -5,6 +5,9 @@ import { useLocale, useTranslations } from "next-intl";
 import type { StyleCard } from "@/features/customer/catalog/api.server";
 import { useFormat } from "@/features/shared/format/useFormat";
 
+import { storeImageSrc } from "@/features/customer/catalog/images";
+
+import { illustrationOf } from "./illustration";
 import { CompareToggle, FavouriteToggle } from "./StyleCardActions";
 import { cardWords, StyleCardFace } from "./StyleCardFace";
 
@@ -27,7 +30,14 @@ export default function StyleCardView({
       style={style}
       words={words}
       favourite={<FavouriteToggle code={style.code} name={words.name} signedIn={signedIn} signInHref={signInHref} />}
-      compare={<CompareToggle code={style.code} name={words.name} />}
+      compare={
+        <CompareToggle
+          code={style.code}
+          name={words.name}
+          image={storeImageSrc(style.thumbnailUrl, "thumb")}
+          family={illustrationOf(style)}
+        />
+      }
     />
   );
 }

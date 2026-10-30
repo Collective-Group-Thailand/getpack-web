@@ -64,7 +64,7 @@ export function Toolbox({
               onClick={() => onTool(item.tool)}
               className={cn(
                 "focus-visible:ring-focus-ring grid size-[34px] shrink-0 place-items-center rounded-lg outline-none focus-visible:ring-2",
-                tool === item.tool ? "bg-fg text-bg" : "text-muted hover:bg-surface-subtle hover:text-fg",
+                tool === item.tool ? "bg-primary text-primary-fg" : "text-muted hover:bg-surface-subtle hover:text-fg",
               )}
             >
               <Icon name={item.icon} size={18} aria-hidden="true" />

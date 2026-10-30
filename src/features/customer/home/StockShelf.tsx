@@ -142,7 +142,7 @@ export function StockShelf({
               title={<Link href={item.href}>{item.name}</Link>}
               topLine={item.type}
               image={item.image ? { src: item.image, alt: item.name } : null}
-              fallback={{ family: "stock", tone: "paper" }}
+              fallback={{ family: "stock" }}
               price={
                 step?.grossAmount ? (
                   <span className="flex flex-col">

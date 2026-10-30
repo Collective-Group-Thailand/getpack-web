@@ -21,7 +21,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 import { cn } from "@/ui/lib/cn";
 
@@ -138,7 +138,7 @@ export function SalesForm({ applyHref }: { applyHref: string }) {
         <PhoneInput value={phone} onChange={setPhone} />
       </Field>
       <Field label={t("volume")} className="sm:col-span-2">
-        <NativeSelect
+        <SearchableSelect
           value={volume}
           onValueChange={setVolume}
           options={VOLUMES.map((value) => ({ value, label: t(`volumes.${value}`) }))}

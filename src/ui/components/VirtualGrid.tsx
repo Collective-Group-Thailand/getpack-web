@@ -27,6 +27,12 @@ export interface VirtualGridProps<T> {
   initialItems?: number;
   /** Rows kept rendered beyond the viewport, each way. */
   overscan?: number;
+  /**
+   * A list this long or shorter is not virtualised: every cell is in the document, rendered on the server too —
+   * a page of 24 or 48 cards gains nothing from it, and a virtual list there showed "แสดง 24 จาก 122" over 16
+   * drawn cards and a blank band to anything that does not scroll (a full-page capture, find-in-page, print).
+   */
+  virtualizeAfter?: number;
   /** The list's accessible name. */
   label: string;
   className?: string;
@@ -56,6 +62,7 @@ export function VirtualGrid<T>({
   estimatedRowHeight,
   initialItems = 12,
   overscan = 3,
+  virtualizeAfter = 120,
   label,
   className,
 }: VirtualGridProps<T>) {
@@ -126,7 +133,8 @@ export function VirtualGrid<T>({
     </div>
   );
 
-  if (!measured)
+  const plain = items.length <= virtualizeAfter;
+  if (!measured || plain)
     return (
       <div
         ref={ref}
@@ -138,7 +146,7 @@ export function VirtualGrid<T>({
           gap,
         }}
       >
-        {items.slice(0, initialItems).map(cell)}
+        {(plain ? items : items.slice(0, initialItems)).map(cell)}
       </div>
     );
 

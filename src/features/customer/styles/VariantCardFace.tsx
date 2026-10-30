@@ -2,7 +2,10 @@ import type { StyleVariantCard } from "@/features/customer/catalog/api.server";
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
+import { CardImage } from "@/ui/components/CardImage";
 import { ProductCard } from "@/ui/components/ProductCard";
+import { LINE_PLATE, ProductIllustration } from "@/ui/components/ProductIllustration";
+import { Icon } from "@/ui/icons";
 
 import { illustrationOf } from "./illustration";
 import { axisLabel, valueLabel, type StylesT } from "./labels";
@@ -33,11 +36,69 @@ export function VariantCardFace({
   card,
   words,
   priority = false,
+  layout = "card",
 }: {
   card: StyleVariantCard;
   words: VariantCardWords;
   priority?: boolean;
+  /**
+   * `row`: one line of a list (Project A, a style's feature page) — a small drawing, the code and name, the options
+   * as chips and the way to a price, the whole row one link — instead of a grid of near-identical pictures.
+   */
+  layout?: "card" | "row";
 }) {
+  if (layout === "row") {
+    const photo = storeImageSrc(card.thumbnailUrl, "thumb");
+    const drawing = (
+      <span className={`${LINE_PLATE} grid size-full place-items-center`} aria-hidden="true">
+        <ProductIllustration family={illustrationOf(card)} className="max-w-10" />
+      </span>
+    );
+    const chips = words.summary ? words.summary.split(" · ") : [];
+    return (
+      <article className="group focus-within:ring-focus-ring hover:bg-surface-subtle relative flex items-start gap-3.5 px-4 py-3.5 focus-within:ring-2 focus-within:ring-inset md:items-center md:px-5">
+        <span className="border-border bg-surface-subtle grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg border md:size-16">
+          <CardImage
+            src={photo ?? previewSrc(card.baseCode, card.options)}
+            alt=""
+            width={128}
+            height={128}
+            loading={priority ? "eager" : "lazy"}
+            className={photo ? "size-full object-cover" : "bg-surface size-full object-contain p-1.5"}
+            fallback={drawing}
+          />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-muted text-xs">
+            {words.category} · <span className="text-fg font-medium tabular-nums">{card.code}</span>
+          </p>
+          <h3 className="mt-0.5 text-[0.9375rem] leading-snug font-semibold">
+            <Link
+              href={variantHref(card, words.name)}
+              className="outline-none after:absolute after:inset-0 after:content-['']"
+            >
+              {words.name}
+            </Link>
+          </h3>
+          {chips.length ? (
+            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={words.summary}>
+              {chips.map((chip) => (
+                <li key={chip}>
+                  <Badge size="sm">{chip}</Badge>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+        <span className="flex shrink-0 items-center gap-2 self-center">
+          <Badge tone={card.pricePath === "instant" ? "success" : "info"} className="max-sm:hidden">
+            {words.pricePath}
+          </Badge>
+          <Icon name="chevron-right" size={18} aria-hidden="true" className="text-muted group-hover:text-primary" />
+        </span>
+      </article>
+    );
+  }
   return (
     <ProductCard
       as="article"

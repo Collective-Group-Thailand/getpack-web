@@ -236,30 +236,42 @@ export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?
 
   if (cart.items.length === 0) {
     return (
+      // Project A: a centred card — one primary step ("browse"), undo beside it when there is something to
+      // restore, and the saved routes back (a quotation to accept, an earlier job to order again) as quiet links.
       <EmptyState
-        className="mt-8"
+        className="mx-auto mt-8 max-w-xl py-14"
         icon="cart"
         title={t("emptyTitle")}
         description={t("emptyBody")}
         action={
-          // A returning customer's cart is often empty because what they want is already saved:
-          // a quotation to accept, or an earlier job to order again.
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button asChild>
+          <>
+            <Button asChild size="lg">
               <Link href="/products">{t("browse")}</Link>
             </Button>
             {lastRemoved ? (
-              <Button variant="secondary" iconStart="undo" onClick={() => void restore(lastRemoved)}>
+              <Button variant="secondary" size="lg" iconStart="undo" onClick={() => void restore(lastRemoved)}>
                 {t("undo")}
               </Button>
             ) : null}
-            <Button asChild variant="secondary" iconStart="receipt">
-              <Link href="/account/quotes">{t("emptyQuotes")}</Link>
-            </Button>
-            <Button asChild variant="secondary" iconStart="refresh">
-              <Link href="/account/orders?view=completed">{t("emptyReorder")}</Link>
-            </Button>
-          </div>
+          </>
+        }
+        secondary={
+          <span className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <Link
+              href="/account/quotes"
+              className="text-primary inline-flex items-center gap-1.5 font-medium underline-offset-4 hover:underline"
+            >
+              <Icon name="receipt" size={14} aria-hidden="true" />
+              {t("emptyQuotes")}
+            </Link>
+            <Link
+              href="/account/orders?view=completed"
+              className="text-primary inline-flex items-center gap-1.5 font-medium underline-offset-4 hover:underline"
+            >
+              <Icon name="refresh" size={14} aria-hidden="true" />
+              {t("emptyReorder")}
+            </Link>
+          </span>
         }
       />
     );
@@ -293,7 +305,7 @@ export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?
   return (
     <>
       <CheckoutStepper current="cart" reachable={blockers.length > 0 ? "cart" : "address"} />
-      <div className="grid items-start gap-8 pt-4 pb-28 min-[1100px]:grid-cols-[minmax(0,1fr)_23.75rem] sm:pb-24">
+      <div className="grid items-start gap-8 pt-4 pb-28 min-[1100px]:grid-cols-[minmax(0,1fr)_23.75rem] sm:pb-16">
         <div ref={itemsRef} className="flex min-w-0 flex-col gap-4">
           <section
             aria-labelledby="cart-title"

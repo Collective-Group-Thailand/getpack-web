@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { DOCUMENT_CORRECTION_STATUS, ETAX_STATUS } from "@/domain/status";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { TabBar } from "@/features/customer/account/AccountTabs";
 import { PortalTable } from "@/features/customer/account/PortalTable";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -81,51 +82,66 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
 
   return (
     <div>
-      <h1 className="text-title leading-tight">{t("title")}</h1>
-      <p className="text-muted mt-1">{t("intro")}</p>
-
-      {/* The kinds of document as tabs (account pack Phase 1: เอกสาร — ใบกำกับภาษี ใบเสร็จ ใบลดหนี้ …). */}
-      <TabBar
-        className="mt-5"
-        label={t("filters.type")}
-        items={[
-          { key: "all", href: "/account/documents", label: t("filters.allTypes"), current: !docType },
-          ...DOC_TYPES.map((type) => ({
-            key: type,
-            href: `/account/documents?docType=${type}`,
-            label: tTypes(type),
-            current: docType === type,
-          })),
-        ]}
-      />
-      <form method="get" action="" className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_auto]">
-        {docType ? <input type="hidden" name="docType" value={docType} /> : null}
-        <Field label={t("filters.from")}>
-          <Input type="date" name="from" defaultValue={from ?? ""} />
-        </Field>
-        <Field label={t("filters.to")}>
-          <Input type="date" name="to" defaultValue={to ?? ""} />
-        </Field>
-        <Field label={t("filters.q")}>
-          <Input
-            type="search"
-            name="q"
-            defaultValue={q ?? ""}
-            placeholder={t("filters.qPlaceholder")}
-            maxLength={200}
-          />
-        </Field>
-        <div className="flex items-end gap-2">
-          <Button type="submit" iconStart="search">
-            {t("filters.apply")}
+      <AccountHeader
+        title={t("title")}
+        lede={t("intro")}
+        actions={
+          <Button asChild variant="secondary" iconStart="box">
+            <Link href="/account/orders">{t("toOrders")}</Link>
           </Button>
-          {filtered ? (
-            <Button asChild variant="ghost">
-              <Link href="/account/documents">{t("filters.clear")}</Link>
-            </Button>
-          ) : null}
+        }
+      />
+
+      {/* Project B2: one toolbar card — the kinds of document as tabs on top, the date range and number search
+          under a divider — over the table. */}
+      <div className="border-border bg-surface rounded-card mt-6 border">
+        <div className="p-3">
+          <TabBar
+            label={t("filters.type")}
+            items={[
+              { key: "all", href: "/account/documents", label: t("filters.allTypes"), current: !docType },
+              ...DOC_TYPES.map((type) => ({
+                key: type,
+                href: `/account/documents?docType=${type}`,
+                label: tTypes(type),
+                current: docType === type,
+              })),
+            ]}
+          />
         </div>
-      </form>
+        <form
+          method="get"
+          action=""
+          className="border-border grid gap-3 border-t p-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_auto]"
+        >
+          {docType ? <input type="hidden" name="docType" value={docType} /> : null}
+          <Field label={t("filters.from")}>
+            <Input type="date" name="from" defaultValue={from ?? ""} />
+          </Field>
+          <Field label={t("filters.to")}>
+            <Input type="date" name="to" defaultValue={to ?? ""} />
+          </Field>
+          <Field label={t("filters.q")}>
+            <Input
+              type="search"
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder={t("filters.qPlaceholder")}
+              maxLength={200}
+            />
+          </Field>
+          <div className="flex items-end gap-2">
+            <Button type="submit" iconStart="search">
+              {t("filters.apply")}
+            </Button>
+            {filtered ? (
+              <Button asChild variant="ghost">
+                <Link href="/account/documents">{t("filters.clear")}</Link>
+              </Button>
+            ) : null}
+          </div>
+        </form>
+      </div>
 
       {documents.length === 0 ? (
         <EmptyState
@@ -143,7 +159,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         />
       ) : (
         <PortalTable
-          className="mt-6"
+          className="mt-4"
           caption={t("table.caption")}
           columns={[
             { key: "document", label: t("table.document"), className: "md:min-w-[13rem]" },

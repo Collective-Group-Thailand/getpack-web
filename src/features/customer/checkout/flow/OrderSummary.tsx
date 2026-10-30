@@ -161,7 +161,7 @@ export function MobileBar({
   return (
     <div className="border-border bg-surface fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t px-4 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] sm:hidden">
       <div className="min-w-0 flex-1 leading-tight">
-        <b className="block text-lg font-semibold tabular-nums">{total}</b>
+        <b className="text-primary block text-lg font-semibold tabular-nums">{total}</b>
         <small className="text-muted block text-xs">{note}</small>
       </div>
       <PrimaryAction action={action} blocked={blocked} onBlocked={onBlocked} className="w-auto shrink-0" />

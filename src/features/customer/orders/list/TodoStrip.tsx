@@ -39,7 +39,19 @@ const TONES: Record<Todo["tone"], string> = {
  * past it with "ตรวจราคาใหม่และชำระ", D-436) · ส่งไฟล์งาน while the customer owns the artwork step — or, when the
  * team owes the dieline, what happens next and no upload button (D-438) · ยืนยันรับของ · เคลมกำลังตรวจ.
  */
-export function TodoStrip({ orders, className }: { orders: Order[]; className?: string }) {
+export function TodoStrip({
+  orders,
+  className,
+  layout = "cards",
+  empty = null,
+}: {
+  orders: Order[];
+  className?: string;
+  /** `list`: one card headed "ต้องทำตอนนี้", a row per item with its action at the end (the account overview). */
+  layout?: "cards" | "list";
+  /** What shows when nothing waits for the customer (the overview's calm line); nothing by default. */
+  empty?: React.ReactNode;
+}) {
   const t = useTranslations("myOrders.list.todo");
   const format = useFormat();
   const report = (action: string, status: string) => () => trackAccount("orders_action", { action, status });
@@ -174,7 +186,45 @@ export function TodoStrip({ orders, className }: { orders: Order[]; className?: 
     });
   }
 
-  if (todos.length === 0) return null;
+  if (todos.length === 0) return <>{empty}</>;
+  if (layout === "list")
+    return (
+      <section
+        aria-labelledby="todo-now"
+        className={cn("border-primary/30 bg-primary-subtle rounded-panel border p-1.5 sm:p-2", className)}
+      >
+        <h2 id="todo-now" className="flex items-center gap-2 px-3 pt-2.5 pb-2 text-[1.0625rem] font-semibold">
+          {t("title")}
+          <span className="bg-primary text-primary-fg grid size-6 place-items-center rounded-full text-xs tabular-nums">
+            {todos.length}
+          </span>
+        </h2>
+        <ul className="bg-surface border-border divide-border divide-y rounded-xl border">
+          {todos.map((todo) => (
+            <li
+              key={todo.key}
+              className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2.5 p-3.5 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:p-4"
+            >
+              <span className={cn("rounded-control grid size-10 place-items-center", TONES[todo.tone])}>
+                <Icon name={todo.icon} size={20} aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[0.9375rem] font-semibold tabular-nums">{todo.title}</p>
+                <p className="text-muted mt-0.5 text-[0.8125rem]">
+                  {todo.detail}
+                  {todo.late ? (
+                    <Badge size="sm" tone="danger" icon="clock" className="ms-1.5 align-middle">
+                      {t("late")}
+                    </Badge>
+                  ) : null}
+                </p>
+              </div>
+              <div className="col-span-2 flex flex-wrap gap-2 sm:col-span-1 sm:justify-end">{todo.action}</div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
   return (
     <section aria-labelledby="todo-now" className={className}>
       <h2 id="todo-now" className="sr-only">

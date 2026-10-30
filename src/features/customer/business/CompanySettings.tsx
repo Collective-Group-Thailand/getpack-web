@@ -63,9 +63,10 @@ export function CompanySettings({
   }
 
   return (
-    <form noValidate onSubmit={(event) => void save(event)} className="flex max-w-xl flex-col gap-6">
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 font-semibold">{t("approvalTitle")}</legend>
+    // Project C: each setting its own card; the save button closes the last one.
+    <form noValidate onSubmit={(event) => void save(event)} className="flex max-w-3xl flex-col gap-4">
+      <fieldset className="border-border bg-surface rounded-card flex flex-col gap-3 border p-4 sm:p-5">
+        <legend className="float-left mb-2 w-full text-lg font-semibold">{t("approvalTitle")}</legend>
         <Checkbox
           checked={enabled}
           onCheckedChange={(value) => setEnabled(value === true)}
@@ -83,20 +84,24 @@ export function CompanySettings({
           </Field>
         ) : null}
       </fieldset>
-      <Field label={t("poTitle")}>
-        <RadioCards
-          value={policy}
-          onValueChange={setPolicy}
-          options={(["required", "optional", "none"] as const).map((value) => ({
-            value,
-            label: t(`po.${value}`),
-            description: t(`poHints.${value}`),
-          }))}
-        />
-      </Field>
-      <Button type="submit" className="self-start" loading={busy}>
-        {t("save")}
-      </Button>
+      <div className="border-border bg-surface rounded-card border p-4 sm:p-5">
+        <Field label={t("poTitle")}>
+          <RadioCards
+            value={policy}
+            onValueChange={setPolicy}
+            options={(["required", "optional", "none"] as const).map((value) => ({
+              value,
+              label: t(`po.${value}`),
+              description: t(`poHints.${value}`),
+            }))}
+          />
+        </Field>
+        <div className="border-border mt-5 flex justify-end border-t pt-4">
+          <Button type="submit" loading={busy}>
+            {t("save")}
+          </Button>
+        </div>
+      </div>
     </form>
   );
 }

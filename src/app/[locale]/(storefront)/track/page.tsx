@@ -31,21 +31,21 @@ export default async function Page({
   const code = (Array.isArray(query.code) ? query.code[0] : query.code)?.trim() ?? "";
   if (/^[A-Za-z0-9_-]{6,64}$/.test(code)) redirect({ href: `/track/${code}`, locale });
   return (
-    <div className="max-w-content mx-auto flex w-full flex-col gap-8 px-5 py-10 md:px-8 md:py-14">
+    <div className="max-w-nav mx-auto flex w-full flex-col gap-6 px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <header className="max-w-2xl">
-        <h1 className="text-title leading-tight">{t("title")}</h1>
-        <p className="text-muted mt-2">{t("intro")}</p>
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight md:text-[2.25rem]">{t("title")}</h1>
+        <p className="text-muted mt-2 text-pretty">{t("intro")}</p>
       </header>
-      <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <div className="border-border bg-surface rounded-card border p-6">
+      <div className="grid items-start gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div className="border-border bg-surface rounded-panel border p-5 md:p-7">
           <TrackForm initial={code} />
         </div>
-        {/* The board's dark card: everything you ordered, one sign-in away. */}
-        <aside className="rounded-card flex flex-col items-start gap-3 bg-[#1e1b18] p-6 text-white">
+        {/* Everything you ordered, one sign-in away — on the pale brand tint (Project A: no dark card). */}
+        <aside className="bg-primary-subtle rounded-panel flex flex-col items-start gap-3 p-5 md:p-7">
           {/* Signed in already: the orders themselves, not a sign-in prompt. */}
           <p className="serif text-xl">{me ? t("mineTitle") : t("signInTitle")}</p>
-          <p className="text-sm text-white/75">{me ? t("mineBody") : t("signInBody")}</p>
-          <Button asChild variant="secondary" className="border-white bg-white text-[#1e1b18]">
+          <p className="text-muted text-sm">{me ? t("mineBody") : t("signInBody")}</p>
+          <Button asChild variant="secondary">
             <Link href={me ? "/account/orders" : "/sign-in?returnTo=%2Faccount%2Forders"}>
               {me ? t("mineCta") : t("signInCta")}
             </Link>

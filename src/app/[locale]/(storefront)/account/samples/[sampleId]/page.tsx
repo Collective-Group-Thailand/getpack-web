@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getMySample } from "@/features/customer/samples/api.server";
 import { SampleView } from "@/features/customer/samples/SampleView";
@@ -10,6 +11,7 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { SAMPLE_KIND, SAMPLE_STATUS } from "@/domain/status";
 import type { SampleStatus } from "@/domain/status/contract";
 import { Link } from "@/i18n/navigation";
+import { Callout } from "@/ui/components/Callout";
 import { ProgressTracker, type ProgressState } from "@/ui/components/ProgressTracker";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -53,42 +55,46 @@ export default async function Page({ params }: { params: Promise<{ sampleId: str
   }));
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <Link href="/account/samples" className="text-primary text-sm underline-offset-4 hover:underline">
-          {t("back")}
-        </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-title leading-tight">{t("detailTitle")}</h1>
-          <StatusChip map={SAMPLE_STATUS} value={sample.status} size="md" />
-          <StatusChip map={SAMPLE_KIND} value={sample.kind} />
-        </div>
-        <p className="text-muted text-sm">
-          {t("asked", { date: format.date(sample.createdAt) })}
-          {sample.orderId && sample.orderCode ? (
-            <>
-              {" · "}
-              <Link href={`/account/orders/${sample.orderId}`} className="text-primary underline underline-offset-4">
-                {t("forOrder", { code: sample.orderCode })}
-              </Link>
-            </>
-          ) : null}
-        </p>
-        {sample.kind === "attached" && sample.status !== "approved" ? (
-          <p className="text-sm">{t("attachedHold")}</p>
-        ) : null}
-      </header>
+    <div className="flex flex-col gap-6">
+      <AccountHeader
+        back={{ href: "/account/samples", label: t("back") }}
+        title={t("detailTitle")}
+        status={
+          <>
+            <StatusChip map={SAMPLE_STATUS} value={sample.status} size="md" />
+            <StatusChip map={SAMPLE_KIND} value={sample.kind} />
+          </>
+        }
+        lede={
+          <>
+            {t("asked", { date: format.date(sample.createdAt) })}
+            {sample.orderId && sample.orderCode ? (
+              <>
+                {" · "}
+                <Link href={`/account/orders/${sample.orderId}`} className="text-primary underline underline-offset-4">
+                  {t("forOrder", { code: sample.orderCode })}
+                </Link>
+              </>
+            ) : null}
+          </>
+        }
+      />
+      {sample.kind === "attached" && sample.status !== "approved" ? (
+        <Callout tone="info">{t("attachedHold")}</Callout>
+      ) : null}
       {sample.status === "cancelled" || sample.status === "expired" ? null : (
-        <ProgressTracker
-          label={t("arc")}
-          stages={stages}
-          stateLabels={{
-            done: t("state.done"),
-            current: t("state.current"),
-            upcoming: t("state.upcoming"),
-            skipped: t("state.skipped"),
-          }}
-        />
+        <div className="border-border bg-surface rounded-card border p-4 sm:p-5">
+          <ProgressTracker
+            label={t("arc")}
+            stages={stages}
+            stateLabels={{
+              done: t("state.done"),
+              current: t("state.current"),
+              upcoming: t("state.upcoming"),
+              skipped: t("state.skipped"),
+            }}
+          />
+        </div>
       )}
       <SampleView sample={sample} />
     </div>

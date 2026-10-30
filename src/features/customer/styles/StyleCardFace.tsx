@@ -90,7 +90,9 @@ export function StyleCardFace({
   className?: string;
 }) {
   const thumb = storeImageSrc(style.thumbnailUrl, "thumb");
-  const instant = style.pricePath === "instant";
+  // "ราคาทันที" only with a price to show (owner decision, Project A review): an instant style the API sent
+  // without a starting price shows no badge and keeps the quotation call to action.
+  const instant = style.pricePath === "instant" && Boolean(words.price);
   return (
     <ProductCard
       as="article"
@@ -142,7 +144,15 @@ export function StyleCardFace({
           </span>
         ) : undefined
       }
-      imageActions={favourite}
+      // Owner redesign 2026-10-30: compare beside the heart over the picture (no longer a checkbox in the footer).
+      imageActions={
+        compare || favourite ? (
+          <>
+            {compare}
+            {favourite}
+          </>
+        ) : undefined
+      }
       facts={
         words.specs.length || words.meta ? (
           <>
@@ -206,7 +216,6 @@ export function StyleCardFace({
               <span className="text-muted block text-[0.6875rem]">{words.quoteHint}</span>
             </p>
           )}
-          {compare ?? null}
         </>
       }
     />

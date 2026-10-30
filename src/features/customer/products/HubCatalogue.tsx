@@ -37,6 +37,9 @@ export async function HubCatalogue({
   categoryPage,
   columns = 4,
   eager = 4,
+  search,
+  sticky = false,
+  modeLines,
 }: {
   /** Every item (after the search), before the mode and category filters. */
   items: readonly HubItem[];
@@ -52,10 +55,17 @@ export async function HubCatalogue({
   /** Columns on a wide screen: 3 beside a sidebar (a category page), 4 across the page. */
   columns?: 3 | 4;
   eager?: number;
+  /** The page's search field, drawn in the toolbar (the hub). */
+  search?: React.ReactNode;
+  /** The toolbar sticks under the header while the catalogue scrolls (the hub, Project A). */
+  sticky?: boolean;
+  /** Each buying mode's key figure from the API, shown in its tab (the role the hub's mode cards had). */
+  modeLines?: Partial<Record<HubItem["mode"], React.ReactNode>>;
 }) {
-  const [t, tCatalog, locale] = await Promise.all([
+  const [t, tCatalog, tCommon, locale] = await Promise.all([
     getTranslations("products"),
     getTranslations("catalog"),
+    getTranslations("common"),
     getLocale(),
   ]);
   const counts = modeCounts(items);
@@ -82,7 +92,11 @@ export async function HubCatalogue({
         count: mode ? counts[mode] : counts.all,
         href: hubHref(base, params, { mode }, fixed),
         current: params.mode === mode,
+        line: mode ? modeLines?.[mode] : undefined,
       }))}
+      search={search}
+      sticky={sticky}
+      closeLabel={sticky ? tCommon("actions.close") : undefined}
       chipsLabel={t("catalogue.categories")}
       chips={
         showCategories
@@ -136,6 +150,10 @@ export async function HubCatalogue({
   return (
     <div className="flex flex-col gap-5">
       {toolbar}
+      {/* What the chosen buying mode means — the explanation the hub's mode cards carried. */}
+      {modeLines && params.mode ? (
+        <p className="text-muted -mt-1 text-[0.84375rem]">{t(`modes.${params.mode}.description`)}</p>
+      ) : null}
       {cat && categoryPage ? (
         <p className="-mt-2 text-sm">
           <Link

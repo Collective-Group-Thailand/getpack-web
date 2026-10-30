@@ -40,10 +40,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (!tracking) notFound();
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10">
-      <header className="flex flex-col gap-2">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20">
+      {/* Project A: the status as one card — title, status chip and the dates that matter — then the stages and
+          each shipment's timeline as cards. */}
+      <header className="border-border bg-surface rounded-panel flex flex-col gap-2 border p-5 md:p-7">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-title leading-tight">{t("title")}</h1>
+          <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight md:text-[2.25rem]">{t("title")}</h1>
           {ORDER_STATUSES.has(tracking.status) ? (
             <StatusChip map={ORDER_STATUS} value={tracking.status as keyof typeof ORDER_STATUS} size="md" />
           ) : null}
@@ -58,7 +60,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         ) : null}
       </header>
 
-      <section aria-labelledby="track-stages">
+      <section aria-labelledby="track-stages" className="border-border bg-surface rounded-panel border p-5 md:p-7">
         <h2 id="track-stages" className="sr-only">
           {t("stages")}
         </h2>
@@ -71,7 +73,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             {t("shipments")}
           </h2>
           {tracking.shipments.map((shipment) => (
-            <article key={shipment.shipmentNo} className="bg-surface border-border rounded-lg border p-4">
+            <article key={shipment.shipmentNo} className="bg-surface border-border rounded-panel border p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-medium">{t("shipmentNo", { shipment: shipment.shipmentNo })}</h3>
                 <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
@@ -94,13 +96,24 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   {shipmentT("carrierPage")}
                 </a>
               ) : null}
-              <ol className="mt-3 flex flex-col gap-1 text-sm">
-                {[...shipment.steps].reverse().map((step) => (
-                  <li key={`${step.occurredAt}-${step.status}`} className="flex flex-wrap gap-x-3">
-                    <time dateTime={step.occurredAt} className="text-muted tabular-nums">
+              {/* A timeline, newest first: a dot on a rule, the newest in green. */}
+              <ol className="border-border ms-1.5 mt-4 flex flex-col gap-3 border-s ps-5 text-sm">
+                {[...shipment.steps].reverse().map((step, index) => (
+                  <li key={`${step.occurredAt}-${step.status}`} className="relative flex flex-col gap-0.5">
+                    <span
+                      aria-hidden="true"
+                      className={
+                        index === 0
+                          ? "bg-primary absolute -start-[1.6875rem] top-1 size-3 rounded-full"
+                          : "bg-border-strong absolute -start-[1.625rem] top-1.5 size-2 rounded-full"
+                      }
+                    />
+                    <span className={index === 0 ? "font-semibold" : undefined}>
+                      {shipmentT(`eventStatus.${step.status}`)}
+                    </span>
+                    <time dateTime={step.occurredAt} className="text-muted text-xs tabular-nums">
                       {format.dateTime(step.occurredAt)}
                     </time>
-                    <span>{shipmentT(`eventStatus.${step.status}`)}</span>
                   </li>
                 ))}
               </ol>

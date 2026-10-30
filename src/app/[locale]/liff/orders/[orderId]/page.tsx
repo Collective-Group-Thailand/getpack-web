@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { OrderStages } from "@/features/customer/fulfilment/OrderStages";
+import { LiffHeader } from "@/features/customer/liff/LiffHeader";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { pick } from "@/features/customer/catalog/localize";
@@ -14,7 +15,10 @@ import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ARTWORK_STATUS, CUSTOMER_ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
+import { MobileActionBar } from "@/ui/components/MobileActionBar";
+import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("liff.order");
@@ -48,13 +52,29 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
       }
     : null;
 
+  // The bar holds at most two buttons (the payment counts as one); any further action sits in the page.
+  const barCount = due ? 1 : 2;
+  const facts = [
+    {
+      term: t("quantity"),
+      description: `${format.number(order.quantityOrdered)} ${tCatalog(`stock.units.${order.summary.unit}`)}`,
+    },
+    { term: t("total"), description: format.thb(order.totals.grossAmount), price: true },
+    ...(order.deliveryDateBasis === "after_payment"
+      ? [{ term: t("shipBy"), description: t("afterPayment") }]
+      : [
+          ...(order.promisedShipDate ? [{ term: t("shipBy"), description: format.date(order.promisedShipDate) }] : []),
+          ...(order.estimatedDeliveryDate
+            ? [{ term: t("eta"), description: format.date(order.estimatedDeliveryDate) }]
+            : []),
+        ]),
+  ];
+
+  // Project D: the order's facts as a 2×2 card, its stages in a card, and what to do now in the sticky bar above
+  // the tabs — the thumb's reach in LINE — with the full order on the web as the last, quiet way on.
   return (
-    <div className="flex flex-col gap-5">
-      <Link href="/liff/orders" className="text-primary text-sm">
-        {t("back")}
-      </Link>
-      <header className="flex flex-col gap-2">
-        <h1 className="text-xl font-bold">{productNameOf(locale, order.summary)}</h1>
+    <div className="flex flex-col gap-4">
+      <LiffHeader back={{ href: "/liff/orders", label: t("back") }} title={productNameOf(locale, order.summary)}>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted text-sm tabular-nums">{order.orderCode}</span>
           <StatusChip map={CUSTOMER_ORDER_STATUS} value={order.customerStatus} />
@@ -63,43 +83,56 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
         {artworkNoteTextOf(locale, order) ? (
           <p className="text-muted text-sm">{artworkNoteTextOf(locale, order)}</p>
         ) : null}
-      </header>
+      </LiffHeader>
       {overdue ? (
-        <p role="status" className="border-warning/40 bg-warning-subtle rounded-xl border p-3 text-sm">
+        <Callout tone="warning" role="status">
           {t("overdue")}
-        </p>
+        </Callout>
       ) : null}
+      <dl className="border-border bg-surface rounded-card grid grid-cols-2 gap-x-4 gap-y-3 border p-4">
+        {facts.map((fact) => (
+          <div key={fact.term} className="min-w-0">
+            <dt className="text-muted text-xs">{fact.term}</dt>
+            <dd className={cn("font-semibold tabular-nums", "price" in fact && fact.price && "text-primary")}>
+              {fact.description}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {detail.progress && detail.progress.steps.length > 0 ? (
+        <section aria-labelledby="liff-stages" className="border-border bg-surface rounded-card border p-4">
+          <h2 id="liff-stages" className="mb-3 font-semibold">
+            {t("stages")}
+          </h2>
+          <OrderStages steps={detail.progress.steps} />
+        </section>
+      ) : null}
+      {actions.length > barCount ? (
+        <div className="[&_a]:min-h-12 [&_a]:w-full [&_button]:min-h-12 [&_button]:w-full [&>div]:flex-col [&>div]:items-stretch">
+          <OrderActions
+            orderId={order.id}
+            orderCode={order.orderCode}
+            actions={actions.slice(barCount)}
+            size="md"
+            surface="liff"
+          />
+        </div>
+      ) : null}
+      <Button asChild variant="secondary" size="lg" iconEnd="external">
+        <Link href={`/account/orders/${order.id}`}>{t("full")}</Link>
+      </Button>
       {actions.length > 0 || due ? (
-        <OrderActions orderId={order.id} orderCode={order.orderCode} actions={actions} payable={due} surface="liff" />
+        <MobileActionBar className="[&_a]:min-h-12 [&_button]:min-h-12 [&>div]:flex-col [&>div]:items-stretch">
+          <OrderActions
+            orderId={order.id}
+            orderCode={order.orderCode}
+            actions={actions.slice(0, barCount)}
+            payable={due}
+            size="md"
+            surface="liff"
+          />
+        </MobileActionBar>
       ) : null}
-      <section aria-labelledby="liff-stages">
-        <h2 id="liff-stages" className="sr-only">
-          {t("stages")}
-        </h2>
-        {detail.progress ? <OrderStages steps={detail.progress.steps} /> : null}
-      </section>
-      <DescriptionList
-        items={[
-          {
-            term: t("quantity"),
-            description: `${format.number(order.quantityOrdered)} ${tCatalog(`stock.units.${order.summary.unit}`)}`,
-          },
-          { term: t("total"), description: format.thb(order.totals.grossAmount) },
-          ...(order.deliveryDateBasis === "after_payment"
-            ? [{ term: t("shipBy"), description: t("afterPayment") }]
-            : [
-                ...(order.promisedShipDate
-                  ? [{ term: t("shipBy"), description: format.date(order.promisedShipDate) }]
-                  : []),
-                ...(order.estimatedDeliveryDate
-                  ? [{ term: t("eta"), description: format.date(order.estimatedDeliveryDate) }]
-                  : []),
-              ]),
-        ]}
-      />
-      <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline underline-offset-4">
-        {t("full")}
-      </Link>
     </div>
   );
 }

@@ -11,9 +11,11 @@ export default async function StorefrontNotFound() {
   const t = await getTranslations("common.errors");
 
   return (
-    <main id="main" className="mx-auto flex min-h-[60dvh] max-w-2xl flex-col justify-center px-5 py-16 md:px-8">
+    // Inside the shell's own <main>: a section, one centred card (Project A) — drawing, title, one sentence, the
+    // ways on (also what an invalid quote or tracking link shows).
+    <section className="mx-auto flex min-h-[60dvh] w-full max-w-xl flex-col justify-center px-5 py-14 md:py-20">
       <EmptyState
-        className="border-none"
+        className="py-14"
         titleAs="h1"
         title={t("notFoundTitle")}
         description={t("notFoundBody")}
@@ -24,8 +26,8 @@ export default async function StorefrontNotFound() {
             <NextStep to="help" variant="ghost" />
           </div>
         }
-        illustration={<OpenBoxIllustration />}
+        illustration={<OpenBoxIllustration className="mb-2 max-w-28" />}
       />
-    </main>
+    </section>
   );
 }

@@ -3,8 +3,9 @@ import { getTranslations } from "next-intl/server";
 
 import { getApprovals } from "@/features/customer/business/api.server";
 import { ApprovalsList } from "@/features/customer/business/ApprovalsList";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
+import { TabBar } from "@/features/customer/account/AccountTabs";
 import { requireMember } from "@/features/customer/business/guard.server";
-import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,26 +33,17 @@ export default async function Page({
   ] as const;
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t("pageTitle")}</h1>
-          <p className="text-muted mt-1">{company.can.approveOrders ? t("introApprover") : t("introBuyer")}</p>
-        </div>
-        <nav aria-label={t("views")} className="bg-surface-subtle flex gap-1 rounded-xl p-1">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.key}
-              href={tab.href}
-              aria-current={tab.key === current ? "page" : undefined}
-              className="text-muted aria-[current=page]:bg-surface aria-[current=page]:text-fg rounded-lg px-3 py-1.5 text-sm font-medium aria-[current=page]:shadow-sm"
-            >
-              {tab.key === "pending" && current === "pending" && approvals?.length
-                ? `${tab.label} · ${approvals.length}`
-                : tab.label}
-            </Link>
-          ))}
-        </nav>
-      </header>
+      <AccountHeader title={t("pageTitle")} lede={company.can.approveOrders ? t("introApprover") : t("introBuyer")} />
+      <TabBar
+        label={t("views")}
+        items={tabs.map((tab) => ({
+          key: tab.key,
+          href: tab.href,
+          label: tab.label,
+          current: tab.key === current,
+          count: tab.key === "pending" && current === "pending" && approvals?.length ? approvals.length : null,
+        }))}
+      />
       {sent ? (
         <Callout tone="success" role="status" title={t("sentTitle", { request: sent })}>
           {t("sent")}

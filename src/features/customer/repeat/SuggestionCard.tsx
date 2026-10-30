@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { pick } from "@/features/customer/catalog/localize";
+import { unitLabel } from "@/features/customer/catalog/unit-label";
 import { formatDate, formatNumber } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
@@ -20,6 +21,7 @@ import { toast } from "@/ui/components/Toast";
  */
 export function SuggestionCard({ suggestion }: { suggestion: Schemas["ReorderSuggestionDto"] }) {
   const t = useTranslations("account.replenishment");
+  const tCatalog = useTranslations("catalog");
   const locale = useLocale() as "th" | "en";
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -47,7 +49,7 @@ export function SuggestionCard({ suggestion }: { suggestion: Schemas["ReorderSug
           {t("suggest", {
             date: formatDate(suggestion.suggestedOn, locale),
             quantity: formatNumber(suggestion.suggestedQuantity, locale),
-            unit: lastOrder.unit,
+            unit: unitLabel(tCatalog, lastOrder.unit),
           })}
         </p>
       </div>

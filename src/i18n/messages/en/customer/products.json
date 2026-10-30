@@ -119,7 +119,9 @@
     "emptyReset": "See all products",
     "searchEmptyTitle": "No products match “{q}”",
     "uncategorised": "Other",
-    "categoryPage": "See the whole {name} category"
+    "categoryPage": "See the whole {name} category",
+    "moreCategories": "{count, number} more",
+    "fewerCategories": "Show fewer"
   },
   "card": {
     "instantBadge": "Instant price",

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -44,12 +45,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const canClaim = detail.actions.some((action) => action.key === "order.open_claim");
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline-offset-4 hover:underline">
-          {t("back", { code: order.orderCode })}
-        </Link>
-        <h1 className="text-title leading-tight">{t("title")}</h1>
-      </header>
+      <AccountHeader
+        back={{ href: `/account/orders/${order.id}`, label: t("back", { code: order.orderCode }) }}
+        title={t("title")}
+      />
       {detail.shipments.length === 0 ? (
         <Callout tone="info">{t("notShipped")}</Callout>
       ) : (

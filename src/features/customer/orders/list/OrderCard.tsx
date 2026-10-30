@@ -132,7 +132,7 @@ export function OrderCard({
         </div>
       </div>
       <div className="col-span-2 flex flex-wrap items-center justify-between gap-2 sm:col-span-1 sm:flex-col sm:items-end sm:justify-start sm:text-end">
-        <span className="text-lg font-bold tabular-nums">{format.thb(order.totals.grossAmount)}</span>
+        <span className="text-primary text-lg font-semibold tabular-nums">{format.thb(order.totals.grossAmount)}</span>
         <OrderCardActions
           orderId={order.id}
           orderCode={order.orderCode}

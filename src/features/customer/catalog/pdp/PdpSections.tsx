@@ -53,7 +53,14 @@ export async function PdpPrintNotes({ configurator }: { configurator: Configurat
  * Advisor's optional step left out), in its order and with its names; the steps this page already sets
  * read "ตั้งจากหน้านี้".
  */
-export async function PdpOrderFlow({ configurator }: { configurator: Configurator }) {
+export async function PdpOrderFlow({
+  configurator,
+  collapsible = false,
+}: {
+  configurator: Configurator;
+  /** Folded to its heading among the page's reference rows (`HubSectionStack`). */
+  collapsible?: boolean;
+}) {
   const [t, tSteps] = await Promise.all([getTranslations("catalog.pdp.flow"), getTranslations("configurator.steps")]);
   const steps = stepsOf(configurator).filter((step) => step !== "logistics");
   const setHere: Partial<Record<StepKey, boolean>> = {
@@ -70,7 +77,7 @@ export async function PdpOrderFlow({ configurator }: { configurator: Configurato
     return t("inConfigurator");
   };
   return (
-    <HubSection id="how" title={t("title")} lede={t("lede", { count: steps.length })}>
+    <HubSection id="how" title={t("title")} lede={t("lede", { count: steps.length })} collapsible={collapsible}>
       <ol
         className="border-border bg-surface rounded-card m-0 grid list-none grid-cols-2 overflow-hidden border p-0 min-[1040px]:grid-cols-[repeat(var(--flow-steps),minmax(0,1fr))]"
         style={{ "--flow-steps": steps.length } as React.CSSProperties}

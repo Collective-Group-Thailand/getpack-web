@@ -22,8 +22,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   const [t, payment] = await Promise.all([getTranslations("payment"), getMyPayment(paymentId)]);
   if (!payment) notFound();
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-title leading-tight">{t("returnTitle")}</h1>
+    <div className="mx-auto max-w-2xl px-5 pt-6 pb-16 md:pt-8 md:pb-20">
+      <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight md:text-[2.25rem]">
+        {t("returnTitle")}
+      </h1>
       <div className="mt-6">
         <PaymentPanel initial={payment} />
       </div>

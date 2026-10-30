@@ -81,12 +81,13 @@ export async function StudioHub(props: StudioHubProps) {
 
   return (
     <>
-      {/* The stage band: one deliberate dark look in both themes (hard rule 5) — the dark token set, scoped. */}
-      <section data-theme="dark" aria-labelledby="studio-hero" className="bg-bg text-fg">
+      {/* The stage band (Project A): light in the light theme like the rest of the storefront — the page's own
+          surface with a hairline under it, the mini editor as the one picture; dark mode follows the tokens. */}
+      <section aria-labelledby="studio-hero" className="bg-surface border-border text-fg border-b">
         <div
           className={cn(
             HOME_WRAP,
-            "grid items-center gap-10 py-12 md:py-16 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12",
+            "grid items-center gap-8 py-10 md:py-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12",
           )}
         >
           <div>
@@ -123,7 +124,7 @@ export async function StudioHub(props: StudioHubProps) {
         </div>
       </section>
 
-      <div className={cn(HOME_WRAP, "pb-24")}>
+      <div className={cn(HOME_WRAP, "pb-16 md:pb-20")}>
         <section id="paths" aria-labelledby="studio-paths" className={SECTION}>
           <div className="mb-5">
             <h2 id="studio-paths" className="text-[1.625rem] leading-tight font-semibold">

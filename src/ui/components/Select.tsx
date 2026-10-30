@@ -6,6 +6,7 @@ import { Icon } from "../icons";
 import { cn } from "../lib/cn";
 import { useFieldProps } from "./Field";
 import { controlVariants } from "./Input";
+import { MENU_ITEM, POPOVER_SURFACE } from "./menu-surface";
 
 export interface SelectOption<T extends string = string> {
   value: T;
@@ -63,6 +64,7 @@ export function Select<T extends string = string>({
         aria-describedby={fieldProps["aria-describedby"]}
         aria-invalid={fieldProps["aria-invalid"]}
         aria-label={props["aria-label"]}
+        data-size="md"
         className={cn(controlVariants(), "flex items-center justify-between gap-2 text-start", className)}
       >
         <SelectPrimitive.Value placeholder={placeholder} />
@@ -76,8 +78,9 @@ export function Select<T extends string = string>({
           position="popper"
           sideOffset={4}
           className={cn(
-            "z-modal max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width)",
-            "border-border bg-surface-raised shadow-overlay overflow-y-auto rounded-lg border p-1",
+            "max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width)",
+            POPOVER_SURFACE,
+            "overflow-y-auto p-1",
           )}
         >
           <SelectPrimitive.Viewport>
@@ -87,8 +90,8 @@ export function Select<T extends string = string>({
                 value={option.value}
                 disabled={option.disabled}
                 className={cn(
-                  "flex cursor-default items-center gap-2 rounded-md px-2 py-2 text-sm outline-none",
-                  "data-highlighted:bg-primary-subtle data-highlighted:text-primary-subtle-fg",
+                  MENU_ITEM,
+                  "data-highlighted:bg-primary-subtle data-highlighted:text-primary-subtle-fg items-center",
                   "data-disabled:pointer-events-none data-disabled:opacity-50",
                 )}
               >

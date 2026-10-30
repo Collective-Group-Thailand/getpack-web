@@ -129,14 +129,18 @@ export function PdpBuyBox({
   const b = (chunks: React.ReactNode) => <b className="font-semibold">{chunks}</b>;
 
   return (
-    <div className="border-border bg-surface rounded-card flex flex-col gap-4 border p-5">
+    <div className="border-border bg-surface rounded-card flex flex-col gap-5 border p-4 md:p-5">
       {/* The price, its quantity line and the spec line (D-441): their height is kept while the first price
-          loads, so the pickers below do not move (CLS). */}
-      <div aria-live="polite" aria-busy={loading || price.pending} className="min-h-[7rem]">
+          loads, so the pickers below do not move (CLS). Project A: on the pale brand tint, the figure in green. */}
+      <div
+        aria-live="polite"
+        aria-busy={loading || price.pending}
+        className="bg-primary-subtle min-h-[7.5rem] rounded-xl p-4 md:p-5"
+      >
         {current?.unitPrice ? (
           <>
             <p className={cn("m-0 flex flex-wrap items-baseline gap-x-2.5", price.pending && "opacity-60")}>
-              <b className="text-[2.125rem] leading-none font-semibold tracking-tight tabular-nums md:text-[2.625rem]">
+              <b className="text-primary text-[2.125rem] leading-none font-semibold tracking-tight tabular-nums md:text-[2.625rem]">
                 {format.thb(current.unitPrice)}
               </b>
               <span className="text-muted tabular-nums">
@@ -154,8 +158,8 @@ export function PdpBuyBox({
           </>
         ) : loading ? (
           <div>
-            <Skeleton className="h-10 w-56" />
-            <Skeleton className="mt-3 h-3.5 w-72 max-w-full" />
+            <Skeleton className="bg-surface h-10 w-56" />
+            <Skeleton className="bg-surface mt-3 h-3.5 w-72 max-w-full" />
             <span className="sr-only">{t("price.loading")}</span>
           </div>
         ) : failed ? (
@@ -202,7 +206,7 @@ export function PdpBuyBox({
                 className={cn(
                   choice,
                   "h-9.5 min-w-11.5 px-2.5 text-[0.84375rem] font-medium tabular-nums",
-                  "aria-pressed:border-fg aria-pressed:bg-fg aria-pressed:text-bg",
+                  "aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-fg",
                 )}
               >
                 {entry.code}
@@ -334,46 +338,50 @@ export function PdpBuyBox({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <Button asChild size="lg" block className="sm:col-span-3">
+      {/* One primary action; the rest are quiet ghost actions in one wrapping row (Project A), never clipped. */}
+      <div className="flex flex-col gap-2">
+        <Button asChild size="lg" block iconEnd="arrow-right">
           <Link href={configureLink} onClick={() => trackPdp("pdp_cta", { product: slug, cta: "configure" })}>
             {t("cta.configure")}
           </Link>
         </Button>
-        <Button
-          variant="secondary"
-          iconStart="save"
-          className="px-2.5 text-[0.84375rem]"
-          disabled={actions.busy === "save" || !current}
-          onClick={() => {
-            trackPdp("pdp_cta", { product: slug, cta: "save_quote" });
-            actions.run("save");
-          }}
-        >
-          {t("cta.saveQuote")}
-        </Button>
-        {dielineHref || !studioHref ? (
-          <Button asChild variant="secondary" iconStart="download" className="px-2.5 text-[0.84375rem]">
-            <Link
-              href={dielineHref ?? dielineFallback}
-              onClick={() => trackPdp("pdp_cta", { product: slug, cta: "dieline" })}
-            >
-              {size && dielineHref ? t("cta.dieline", { size: size.code }) : t("cta.dielineAny")}
+        <div className="border-border flex flex-wrap justify-center gap-x-1 gap-y-0.5 border-b pb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            iconStart="save"
+            className="text-[0.84375rem]"
+            disabled={actions.busy === "save" || !current}
+            onClick={() => {
+              trackPdp("pdp_cta", { product: slug, cta: "save_quote" });
+              actions.run("save");
+            }}
+          >
+            {t("cta.saveQuote")}
+          </Button>
+          {dielineHref || !studioHref ? (
+            <Button asChild variant="ghost" size="sm" iconStart="download" className="text-[0.84375rem]">
+              <Link
+                href={dielineHref ?? dielineFallback}
+                onClick={() => trackPdp("pdp_cta", { product: slug, cta: "dieline" })}
+              >
+                {size && dielineHref ? t("cta.dieline", { size: size.code }) : t("cta.dielineAny")}
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild variant="ghost" size="sm" iconStart="pen-tool" className="text-[0.84375rem]">
+              <Link href={studioHref}>{t("cta.designOnline")}</Link>
+            </Button>
+          )}
+          <Button asChild variant="ghost" size="sm" iconStart="chat" className="text-[0.84375rem]">
+            <Link href="/help/chat" onClick={() => trackPdp("pdp_cta", { product: slug, cta: "ask" })}>
+              {t("cta.ask")}
             </Link>
           </Button>
-        ) : (
-          <Button asChild variant="secondary" iconStart="pen-tool" className="px-2.5 text-[0.84375rem]">
-            <Link href={studioHref}>{t("cta.designOnline")}</Link>
-          </Button>
-        )}
-        <Button asChild variant="secondary" iconStart="chat" className="px-2.5 text-[0.84375rem]">
-          <Link href="/help/chat" onClick={() => trackPdp("pdp_cta", { product: slug, cta: "ask" })}>
-            {t("cta.ask")}
-          </Link>
-        </Button>
+        </div>
       </div>
 
-      <ul className="m-0 flex list-none flex-col gap-2.5 p-0 text-[0.84375rem]">
+      <ul className="bg-surface-subtle m-0 flex list-none flex-col gap-2.5 rounded-xl p-4 text-[0.84375rem]">
         {current?.earliestShipDate ? (
           <li className="flex items-start gap-2.5">
             <Icon name="truck" size={18} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />

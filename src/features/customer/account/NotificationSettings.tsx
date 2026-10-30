@@ -12,6 +12,8 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
+import { Icon, type IconName } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 import { linkLine } from "../auth/actions";
 import { lineConfigured } from "../auth/providers";
@@ -22,6 +24,12 @@ type Category = "transactional" | "marketing";
 const CHANNELS: Channel[] = ["email", "sms", "line", "web_push"];
 const CATEGORIES: Category[] = ["transactional", "marketing"];
 const PROVIDERS: Schemas["IdentityProvider"][] = ["phone_otp", "line", "firebase_google", "firebase_apple"];
+const PROVIDER_ICON: Record<string, IconName> = {
+  phone_otp: "phone",
+  line: "chat",
+  firebase_google: "mail",
+  firebase_apple: "lock",
+};
 
 /**
  * Which messages arrive where (D-143, D-144): order and payment messages on every channel the
@@ -108,8 +116,12 @@ export function NotificationSettings({
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <section aria-labelledby="notify-matrix">
+    // Project B4: the channel matrix as the main card, the linked sign-ins as a side card beside it on a wide screen.
+    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <section
+        aria-labelledby="notify-matrix"
+        className="border-border bg-surface rounded-card min-w-0 border p-4 sm:p-5"
+      >
         <h2 id="notify-matrix" className="text-lg font-semibold">
           {t("matrix")}
         </h2>
@@ -117,7 +129,7 @@ export function NotificationSettings({
             fit 390 px and made the page scroll sideways (customer walk, round 8); from md the matrix. */}
         <ul className="mt-4 flex flex-col gap-3 md:hidden" aria-busy={saving || undefined}>
           {CATEGORIES.map((category) => (
-            <li key={category} className="bg-surface border-border rounded-xl border p-4">
+            <li key={category} className="border-border rounded-lg border p-4">
               <h3 className="font-medium">{t(`categories.${category}.label`)}</h3>
               <p className="text-muted text-xs">{t(`categories.${category}.hint`)}</p>
               <ul className="divide-border mt-3 divide-y">
@@ -143,12 +155,12 @@ export function NotificationSettings({
           ))}
         </ul>
         <div
-          className="bg-surface border-border mt-4 hidden overflow-x-auto rounded-xl border md:block"
+          className="border-border mt-4 hidden overflow-x-auto rounded-lg border md:block"
           aria-busy={saving || undefined}
         >
           <table className="w-full text-sm">
             <caption className="sr-only">{t("matrix")}</caption>
-            <thead className="bg-bg-subtle text-muted text-xs">
+            <thead className="bg-surface-subtle text-muted text-xs">
               <tr>
                 <th scope="col" className="px-4 py-2 text-start font-medium">
                   {t("category")}
@@ -194,31 +206,45 @@ export function NotificationSettings({
             </tbody>
           </table>
         </div>
-        <ul className="text-muted mt-3 flex list-disc flex-col gap-1 ps-5 text-xs">
-          <li>{t("noteTransactional")}</li>
-          <li>{t("noteSms")}</li>
-          <li>{t("noteHours")}</li>
-          {!lineMarketingConsent ? <li>{t("noteConsent")}</li> : null}
-        </ul>
+        <div className="bg-surface-subtle text-muted rounded-control mt-4 flex gap-2.5 p-3 text-xs">
+          <Icon name="info" size={16} aria-hidden="true" className="mt-px shrink-0" />
+          <ul className="flex flex-col gap-1">
+            <li>{t("noteTransactional")}</li>
+            <li>{t("noteSms")}</li>
+            <li>{t("noteHours")}</li>
+            {!lineMarketingConsent ? <li>{t("noteConsent")}</li> : null}
+          </ul>
+        </div>
       </section>
 
-      <section aria-labelledby="linked-accounts">
+      <section
+        aria-labelledby="linked-accounts"
+        className="border-border bg-surface rounded-card border p-4 sm:p-5 xl:sticky xl:top-[calc(var(--site-sticky-top,0px)+1rem)]"
+      >
         <h2 id="linked-accounts" className="text-lg font-semibold">
           {t("linked")}
         </h2>
-        <ul className="mt-4 flex flex-col gap-2">
+        <ul className="divide-border mt-3 flex flex-col divide-y">
           {PROVIDERS.map((provider) => {
             const identity = identities.find((entry) => entry.provider === provider);
             return (
-              <li
-                key={provider}
-                className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
-              >
-                <div>
-                  <p className="font-medium">{t(`providers.${provider}`)}</p>
-                  <p className="text-muted text-xs">
-                    {identity ? t("linkedAt", { date: format.date(identity.linkedAt) }) : t("notLinked")}
-                  </p>
+              <li key={provider} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "grid size-9 shrink-0 place-items-center rounded-lg",
+                      identity ? "bg-primary-subtle text-primary-subtle-fg" : "bg-surface-subtle text-muted",
+                    )}
+                  >
+                    <Icon name={PROVIDER_ICON[provider]} size={16} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-medium">{t(`providers.${provider}`)}</p>
+                    <p className="text-muted text-xs">
+                      {identity ? t("linkedAt", { date: format.date(identity.linkedAt) }) : t("notLinked")}
+                    </p>
+                  </div>
                 </div>
                 {identity ? (
                   provider !== "phone_otp" && identities.length > 1 ? (

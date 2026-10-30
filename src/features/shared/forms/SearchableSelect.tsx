@@ -22,7 +22,7 @@ export function SearchableSelect<T extends string = string>({
   value,
   onValueChange,
   ...props
-}: SelectProps<T> & { searchFrom?: number }) {
+}: SelectProps<T> & { searchFrom?: number; size?: "sm" | "md" }) {
   const t = useTranslations("common.select");
   const [own, setOwn] = useState<T | null>(defaultValue ?? null);
   // `value={x || undefined}` is the controlled "nothing chosen yet"; only `defaultValue` without

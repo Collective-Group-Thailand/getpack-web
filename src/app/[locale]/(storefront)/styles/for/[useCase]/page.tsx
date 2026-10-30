@@ -60,7 +60,7 @@ export default async function UseCasePage({ params }: { params: Params }) {
   const absolute = (path: string) => `${origin}${getPathname({ href: path, locale: locale as Locale })}`;
 
   return (
-    <div className="max-w-content mx-auto px-5 py-8 pb-28 md:px-8 md:py-12">
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <JsonLd
         data={[
           breadcrumbSchema([{ name: t("breadcrumbs.library"), url: absolute(STYLES_HREF) }, { name: title }]),
@@ -85,14 +85,18 @@ export default async function UseCasePage({ params }: { params: Params }) {
         label={t("breadcrumbs.library")}
         items={[{ label: t("breadcrumbs.library"), href: STYLES_HREF }, { label: title }]}
       />
-      <header className="mt-4 max-w-3xl">
-        <h1 className="text-3xl font-bold md:text-4xl">{title}</h1>
-        <p className="text-primary mt-2 text-lg font-semibold">
-          {t("useCasePage.count", { styles: found.styles.length, count: found.count })}
+      <header className="mt-3 max-w-3xl">
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+          {title}
+        </h1>
+        <p className="text-muted mt-2 text-pretty">
+          <b className="text-fg font-semibold tabular-nums">
+            {t("useCasePage.count", { styles: found.styles.length, count: found.count })}
+          </b>{" "}
+          {t(`useCasePages.${found.useCase}.intro`)}
         </p>
-        <p className="text-muted mt-2">{t(`useCasePages.${found.useCase}.intro`)}</p>
       </header>
-      <section aria-label={title} className="mt-8">
+      <section aria-label={title} className="mt-6">
         <StyleCardGrid styles={found.styles} label={title} />
       </section>
       <LibraryLinks except={{ useCase: found.useCase }} />

@@ -8,7 +8,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { productFamilyOf, ProductThumb } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
 
@@ -72,12 +72,15 @@ export function CartItemCard({
       aria-labelledby={`cart-item-${item.id}`}
       className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3.5 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-5"
     >
-      <div className="bg-bg-subtle grid size-18 place-items-center overflow-hidden rounded-xl sm:size-30">
+      <div className="bg-surface-subtle border-border grid size-18 place-items-center overflow-hidden rounded-xl border sm:size-30">
         {item.summary.product?.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- catalogue image from the API
           <img src={item.summary.product.imageUrl} alt="" className="size-full object-cover" />
         ) : (
-          <ProductThumb family={productFamilyOf(slug ?? item.productTypeCode)} className="size-full rounded-none" />
+          <ProductThumb
+            family={productFamilyOf(slug ?? item.productTypeCode)}
+            className="size-full rounded-none border-0"
+          />
         )}
       </div>
       <div className="min-w-0">
@@ -164,7 +167,7 @@ export function CartItemCard({
               label={t("designOption")}
               className="[&>label]:text-muted min-w-44 [&>label]:text-[12.5px] [&>label]:font-normal"
             >
-              <NativeSelect
+              <SearchableSelect
                 value={item.designOption as Schemas["DesignOption"]}
                 disabled={pending}
                 onValueChange={onDesign}
@@ -179,7 +182,9 @@ export function CartItemCard({
           )}
           <p className="m-0 ms-auto text-end leading-tight">
             <span className="sr-only">{t("lineTotal")} </span>
-            <b className="block text-[22px] font-semibold tabular-nums">{format.thb(item.productGrossAmount)}</b>
+            <b className="text-primary block text-[22px] font-semibold tabular-nums">
+              {format.thb(item.productGrossAmount)}
+            </b>
             <small className="text-muted text-[12.5px] tabular-nums">
               {t("perUnit", {
                 price: format.thb(item.unitPrice),

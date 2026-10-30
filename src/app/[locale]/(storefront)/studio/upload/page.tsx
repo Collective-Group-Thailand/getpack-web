@@ -6,10 +6,12 @@ import { listProducts, publicApi } from "@/features/customer/catalog/api.server"
 import { pick } from "@/features/customer/catalog/localize";
 import { HOME_WRAP } from "@/features/customer/home/parts";
 import { UploadApp } from "@/features/customer/upload/UploadApp";
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { UploadSections } from "@/features/customer/upload/UploadSections";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { readAccessToken } from "@/lib/auth/session";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -54,7 +56,7 @@ export default async function StudioUpload({
     }));
 
   return (
-    <div className={cn(HOME_WRAP, "pt-8")}>
+    <div className={cn(HOME_WRAP, "pt-6 pb-16 md:pt-8 md:pb-20")}>
       <nav aria-label={t("crumbsLabel")} className="text-muted mb-3 flex gap-2 text-[0.8125rem]">
         <Link href="/studio" className="hover:text-fg">
           {t("crumbStudio")}
@@ -62,7 +64,7 @@ export default async function StudioUpload({
         <Icon name="chevron-right" size={14} aria-hidden="true" className="self-center" />
         <span aria-current="page">{t("crumbUpload")}</span>
       </nav>
-      <h1 className="text-[2rem] leading-[1.08] font-bold tracking-tight text-balance md:text-[3.25rem]">
+      <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
         {t("title")}
       </h1>
       <p className="text-muted mt-2.5 max-w-[60ch] text-[1.03125rem] text-pretty">{t("lead")}</p>
@@ -84,7 +86,14 @@ export default async function StudioUpload({
       {ownFile.length ? (
         <UploadApp products={ownFile} signedIn={signedIn} handedFileName={fileName} />
       ) : (
-        <p className="text-muted border-border mt-6 border-y py-5">{t("none")}</p>
+        // No product takes an own file yet: a calm card with the way on, not a bare line between rules.
+        <EmptyState
+          className="mt-6"
+          icon="upload"
+          title={t("none")}
+          action={<NextStep to="chat" />}
+          secondary={<NextStep to="products" variant="ghost" />}
+        />
       )}
       <p className="text-muted mt-4 text-[0.8125rem]">
         {t.rich("others", {

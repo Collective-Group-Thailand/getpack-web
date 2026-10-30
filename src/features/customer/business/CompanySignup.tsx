@@ -183,7 +183,7 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
   const messages = Object.values(errors);
 
   return (
-    <form noValidate onSubmit={(event) => void submit(event)} className="flex max-w-3xl flex-col gap-8">
+    <form noValidate onSubmit={(event) => void submit(event)} className="flex max-w-3xl flex-col gap-4">
       {messages.length > 0 ? (
         <div id="apply-errors" tabIndex={-1} role="alert" className="outline-none">
           <Callout tone="danger" title={t("errors.title", { count: messages.length })}>
@@ -201,7 +201,7 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
         </Callout>
       ) : null}
 
-      <FormSection title={t("company")}>
+      <FormSection title={t("company")} card step={1}>
         <Field
           label={t("legalName")}
           hint={t("legalNameHint")}
@@ -226,7 +226,7 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
         <Checkbox checked={vat} onCheckedChange={(value) => setVat(value === true)} label={t("vat")} />
       </FormSection>
 
-      <FormSection title={t("address")} description={t("addressIntro")}>
+      <FormSection title={t("address")} description={t("addressIntro")} card step={2}>
         <PostcodeAreaField
           postcode={postcode}
           subdistrictId={area?.subdistrictId ?? ""}
@@ -252,7 +252,7 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
         </Field>
       </FormSection>
 
-      <FormSection title={t("signatoryTitle")} description={t("signatoryIntro")}>
+      <FormSection title={t("signatoryTitle")} description={t("signatoryIntro")} card step={3}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("signatory")} required requiredLabel={t("required")} error={errors.signatory}>
             <Input
@@ -270,7 +270,7 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
         </Field>
       </FormSection>
 
-      <FormSection title={t("kyc")} description={t("kycIntro")}>
+      <FormSection title={t("kyc")} description={t("kycIntro")} card step={4}>
         {documentField(
           "company_certificate",
           <Field
@@ -292,9 +292,12 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
         {documentField("signatory_id")}
       </FormSection>
 
-      <Button type="submit" className="self-start" loading={busy}>
-        {t("submit")}
-      </Button>
+      {/* Project C: the four numbered cards end in one bar with the submit, as checkout does. */}
+      <div className="border-border bg-surface rounded-card flex justify-end border p-4">
+        <Button type="submit" size="lg" loading={busy}>
+          {t("submit")}
+        </Button>
+      </div>
     </form>
   );
 }

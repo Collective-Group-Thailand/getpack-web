@@ -18,7 +18,15 @@ import {
   styleTopicHref,
   topicHubHref,
 } from "@/features/customer/styles/paths";
-import { shortName, topicById, topicFilter, topicsOf, variantIn, type Topic } from "@/features/customer/styles/topics";
+import {
+  shortName,
+  topicById,
+  topicFilter,
+  topicHeading,
+  topicsOf,
+  variantIn,
+  type Topic,
+} from "@/features/customer/styles/topics";
 import { VariantCardFace, variantWords } from "@/features/customer/styles/VariantCardFace";
 import { VariantResults } from "@/features/customer/styles/VariantResults";
 import { getPathname, Link, redirect } from "@/i18n/navigation";
@@ -26,6 +34,7 @@ import { routing, type Locale } from "@/i18n/routing";
 import { breadcrumbSchema, localePath, publicOrigin } from "@/lib/seo";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
+import { MobileActionBar } from "@/ui/components/MobileActionBar";
 import { ProductPlate } from "@/ui/components/ProductIllustration";
 
 type Params = Promise<{ locale: string; slug: string; topic: string }>;
@@ -45,7 +54,7 @@ async function load(slug: string, id: string): Promise<{ style: StyleDetail; top
 
 /** "กล่องฝาเสียบมีหน้าต่าง" / "Tuck-end carton with a window". */
 function headingOf(t: (key: string) => string, locale: string, name: string, topic: Topic) {
-  return `${shortName(name)}${locale === "en" ? " " : ""}${t(`topics.${topic.id}.phrase`)}`;
+  return topicHeading(name, t(`topics.${topic.id}.phrase`), locale);
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -103,7 +112,7 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
   const absolute = (path: string) => `${origin}${getPathname({ href: path, locale: locale as Locale })}`;
 
   return (
-    <div className="max-w-content mx-auto px-5 py-8 pb-28 md:px-8 md:py-12">
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <JsonLd
         data={[
           breadcrumbSchema([
@@ -138,8 +147,10 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
         ]}
       />
 
-      <header className="mt-4 grid items-center gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <div className="bg-bg-subtle rounded-card overflow-hidden">
+      {/* Project A: a compact head — the picture (5 of 12) beside the name, the count, what the feature is and ONE
+          primary way on; the feature's own page is a quiet link. */}
+      <header className="mt-4 grid items-center gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-10">
+        <div className="border-border bg-surface rounded-panel overflow-hidden border">
           {thumb ? (
             // eslint-disable-next-line @next/next/no-img-element -- a signed URL on the API's file host (ProductCard)
             <img
@@ -166,7 +177,9 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
           <p className="text-muted text-sm">
             <span className="tabular-nums">{style.code}</span> · {t(`topics.${topic.id}.chip`)}
           </p>
-          <h1 className="text-3xl font-bold md:text-4xl">{heading}</h1>
+          <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+            {heading}
+          </h1>
           <p className="text-primary text-lg font-semibold">
             {t("topicPage.variants", { count: list.meta.total, title: t(`topics.${topic.id}.phrase`) })}
           </p>
@@ -174,22 +187,35 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
           {style.descriptionTh || style.descriptionEn ? (
             <p className="text-muted text-sm">{pick(locale, style.descriptionTh ?? "", style.descriptionEn ?? "")}</p>
           ) : null}
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Button asChild>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1">
+            <Button asChild size="lg" iconEnd="arrow-right">
               <Link href={styleHref(style.code, name)}>{t("topicPage.seeStyle", { name: shortName(name) })}</Link>
             </Button>
-            <Button asChild variant="secondary">
-              <Link href={topicHubHref(topic.id)}>{t(`topics.${topic.id}.title`)}</Link>
-            </Button>
+            <Link
+              href={topicHubHref(topic.id)}
+              className="text-primary focus-visible:ring-focus-ring rounded-sm text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2"
+            >
+              {t(`topics.${topic.id}.title`)}
+            </Link>
           </div>
         </div>
       </header>
 
+      {/* The variants as one list (Project A): code, name, the options as chips, the way on — not a wall of
+          near-identical pictures. */}
       <section aria-label={heading} className="mt-10">
         <VariantResults
+          layout="row"
           initial={list.data.map((card, index) => ({
             code: card.code,
-            node: <VariantCardFace card={card} words={variantWords(card, locale, words)} priority={index < 2} />,
+            node: (
+              <VariantCardFace
+                card={card}
+                words={variantWords(card, locale, words)}
+                priority={index < 2}
+                layout="row"
+              />
+            ),
           }))}
           nextCursor={list.meta.nextCursor}
           query={{ style: style.code, option, limit: PER_PAGE }}
@@ -207,7 +233,7 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
               <li key={x.id}>
                 <Link
                   href={styleTopicHref(style.code, name, x.id)}
-                  className="border-border hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-control inline-block border px-3 py-1.5 text-sm outline-none focus-visible:ring-2"
+                  className="border-border bg-surface hover:border-primary focus-visible:ring-focus-ring rounded-control inline-flex min-h-10 items-center border px-3.5 text-sm outline-none focus-visible:ring-2"
                 >
                   {headingOf(t, locale, name, x)}
                 </Link>
@@ -229,7 +255,7 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
                 <li key={s.code}>
                   <Link
                     href={styleTopicHref(s.code, other, topic.id)}
-                    className="border-border hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-control inline-block border px-3 py-1.5 text-sm outline-none focus-visible:ring-2"
+                    className="border-border bg-surface hover:border-primary focus-visible:ring-focus-ring rounded-control inline-flex min-h-10 items-center border px-3.5 text-sm outline-none focus-visible:ring-2"
                   >
                     {headingOf(t, locale, other, topic)}
                   </Link>
@@ -241,6 +267,13 @@ export default async function StyleTopicPage({ params }: { params: Params }) {
       ) : null}
 
       <LibraryLinks except={{ topic: topic.id }} />
+
+      {/* The page's one primary action, in reach at the foot of a phone's screen. */}
+      <MobileActionBar>
+        <Button asChild iconEnd="arrow-right">
+          <Link href={styleHref(style.code, name)}>{t("topicPage.seeStyle", { name: shortName(name) })}</Link>
+        </Button>
+      </MobileActionBar>
     </div>
   );
 }

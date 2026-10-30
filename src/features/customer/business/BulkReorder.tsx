@@ -100,7 +100,8 @@ export function BulkReorder({ companyId }: { companyId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* Project C: the two ways in (a file, or pasted lines) side by side in one card. */}
+      <div className="border-border bg-surface rounded-card grid gap-4 border p-4 sm:p-5 lg:grid-cols-2">
         <FileDropzone
           accept=".csv,text/csv,text/plain"
           maxBytes={1_000_000}
@@ -156,14 +157,17 @@ export function BulkReorder({ companyId }: { companyId: string }) {
       ) : null}
 
       {preview ? (
-        <section aria-labelledby="reorder-result" className="flex flex-col gap-3">
+        <section
+          aria-labelledby="reorder-result"
+          className="border-border bg-surface rounded-card flex flex-col gap-3 border p-4 sm:p-5"
+        >
           <h2 id="reorder-result" className="text-lg font-semibold">
             {t("result", { ok: preview.okCount, error: preview.refusedCount })}
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[36rem] text-sm">
               <caption className="sr-only">{t("tableCaption")}</caption>
-              <thead className="text-muted text-start text-xs">
+              <thead className="bg-surface-subtle text-muted text-start text-xs">
                 <tr>
                   <th scope="col" className="py-2 text-start font-medium">
                     {t("columns.line")}

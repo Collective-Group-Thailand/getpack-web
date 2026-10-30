@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { RegisterLead, WithdrawLead } from "@/features/customer/agent/AgentActions";
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { AgentFrame, AgentPager, pageOf } from "@/features/customer/agent/AgentPieces";
 import { getAgent, getMyLeads, requireAgent } from "@/features/customer/agent/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -25,8 +26,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   await requireCustomer();
   const programme = await requireAgent();
   const page = pageOf((await searchParams).page);
-  const [t, format, list, agent] = await Promise.all([
+  const [t, tt, format, list, agent] = await Promise.all([
     getTranslations("agent.leads"),
+    getTranslations("agent.table"),
     getFormat(),
     getMyLeads(page),
     getAgent(),
@@ -53,32 +55,48 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
           }
         />
       ) : (
-        <ul className="divide-border border-border bg-surface divide-y rounded-2xl border">
-          {list.data.map((lead) => (
-            <li key={lead.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div className="min-w-0">
-                <p className="font-medium">
-                  {lead.contactName}
-                  {lead.organisationName ? <span className="text-muted"> · {lead.organisationName}</span> : null}
-                </p>
-                <p className="text-muted text-xs">
-                  {t(`kinds.${lead.kind}`)} · {[lead.phone, lead.email, lead.taxId].filter(Boolean).join(" · ")}
-                </p>
-                <p className="text-muted text-xs">
+        <PortalTable
+          caption={t("title")}
+          columns={[
+            { key: "lead", label: tt("lead"), className: "md:w-[30%]" },
+            { key: "kind", label: tt("kind"), className: "md:whitespace-nowrap" },
+            { key: "contact", label: tt("contact") },
+            { key: "protection", label: tt("protection"), className: "md:whitespace-nowrap" },
+            { key: "status", label: tt("status"), className: "md:whitespace-nowrap" },
+            { key: "actions", label: tt("actions"), srOnly: true, className: "text-end md:w-px md:whitespace-nowrap" },
+          ]}
+          rows={list.data.map((lead) => ({
+            id: lead.id,
+            phoneSubtitle: lead.organisationName,
+            cells: {
+              lead: (
+                <span className="block min-w-0">
+                  <span className="block font-semibold">{lead.contactName}</span>
+                  {lead.organisationName ? (
+                    <span className="text-muted hidden text-xs font-normal md:block">{lead.organisationName}</span>
+                  ) : null}
+                </span>
+              ),
+              kind: t(`kinds.${lead.kind}`),
+              contact: (
+                <span className="text-sm break-all tabular-nums">
+                  {[lead.phone, lead.email, lead.taxId].filter(Boolean).join(" · ")}
+                </span>
+              ),
+              protection: (
+                <span className="text-sm">
                   {lead.status === "registered"
                     ? t("protectedUntil", { date: format.date(lead.protectedUntil) })
                     : lead.status === "converted"
                       ? t("convertedAt", { date: format.date(lead.convertedAt) })
-                      : (lead.closedReason ?? "")}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <StatusChip map={AGENT_LEAD_STATUS} value={lead.status} />
-                {lead.status === "registered" ? <WithdrawLead leadId={lead.id} name={lead.contactName} /> : null}
-              </div>
-            </li>
-          ))}
-        </ul>
+                      : (lead.closedReason ?? "—")}
+                </span>
+              ),
+              status: <StatusChip map={AGENT_LEAD_STATUS} value={lead.status} />,
+              actions: lead.status === "registered" ? <WithdrawLead leadId={lead.id} name={lead.contactName} /> : null,
+            },
+          }))}
+        />
       )}
       <AgentPager page={page} total={list.meta.total} perPage={list.meta.perPage} path="/account/agent/leads" />
     </AgentFrame>

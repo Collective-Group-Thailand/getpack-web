@@ -29,7 +29,7 @@ import { trackUpload } from "@/lib/analytics";
 import { isApiError } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Button } from "@/ui/components/Button";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -203,9 +203,9 @@ export function SummaryCard({
       <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1.5 text-[0.84375rem]">
         <dt className="text-muted">{t("product")}</dt>
         <dd className="m-0 min-w-0 text-end">
-          <NativeSelect
+          <SearchableSelect
             aria-label={t("product")}
-            className="h-8 text-[0.8125rem]"
+            size="sm"
             value={check.spec.productSlug ?? ""}
             onValueChange={(value) => void setSpec({ productSlug: value || null })}
             options={[

@@ -192,7 +192,7 @@
     "keep": "Keep it",
     "discarded": "Basket discarded",
     "failed": "That did not work. Try again.",
-    "back": "← All quote requests",
+    "back": "All quote requests",
     "sentTitle": "Basket {code}",
     "sentAt": "Sent {at}",
     "deliverTo": "Deliver to postcode {postcode}",

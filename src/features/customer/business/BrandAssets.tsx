@@ -16,6 +16,8 @@ import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 type Asset = Schemas["CompanyAssetDto"];
 type Kind = Asset["kind"];
@@ -71,55 +73,72 @@ export function BrandAssets({
     }
   }
 
+  // Project C: the files as cards in a grid (an icon plate by kind, the name, its kind and who added it, the
+  // download), and adding one as a side card beside them on a wide screen.
   return (
-    <div className="flex flex-col gap-8">
-      {assets.length === 0 ? <p className="text-muted">{t("empty")}</p> : null}
-      <ul className="flex flex-col gap-2">
-        {assets.map((asset) => (
-          <li
-            key={asset.id}
-            className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
-          >
-            <div className="min-w-0">
-              <p className="font-medium">
-                {asset.name} <Badge tone="neutral">{t(`kinds.${asset.kind}`)}</Badge>
-              </p>
-              <p className="text-muted text-xs">
-                {t("meta", {
-                  file: asset.fileName,
-                  by: asset.addedBy.displayName,
-                  date: format.date(asset.addedAt),
-                })}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {asset.url ? (
-                <Button asChild size="sm" variant="secondary" iconStart="download">
-                  <a href={asset.url} target="_blank" rel="noopener noreferrer">
-                    {t("download")}
+    <div className={cn("grid items-start gap-6", canManage && "lg:grid-cols-[minmax(0,1fr)_20rem]")}>
+      <div className="min-w-0">
+        {assets.length === 0 ? (
+          <div className="border-border bg-surface rounded-card text-muted flex flex-col items-center gap-2 border px-6 py-12 text-center">
+            <Icon name="image" size={26} aria-hidden="true" />
+            <p>{t("empty")}</p>
+          </div>
+        ) : null}
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {assets.map((asset) => (
+            <li key={asset.id} className="bg-surface border-border rounded-card flex min-w-0 flex-col gap-3 border p-4">
+              <div className="flex min-w-0 items-start gap-3">
+                <span
+                  aria-hidden="true"
+                  className="bg-surface-subtle text-muted grid size-10 shrink-0 place-items-center rounded-lg"
+                >
+                  <Icon name={asset.kind === "logo" ? "image" : "document"} size={18} />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-semibold [overflow-wrap:break-word] break-keep">{asset.name}</p>
+                  <p className="mt-0.5">
+                    <Badge tone="neutral" size="sm">
+                      {t(`kinds.${asset.kind}`)}
+                    </Badge>
+                  </p>
+                  <p className="text-muted text-xs">
+                    {t("meta", {
+                      file: asset.fileName,
+                      by: asset.addedBy.displayName,
+                      date: format.date(asset.addedAt),
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="border-border mt-auto flex gap-2 border-t pt-3">
+                {asset.url ? (
+                  <Button asChild size="sm" variant="secondary" iconStart="download">
+                    <a href={asset.url} target="_blank" rel="noopener noreferrer">
+                      {t("download")}
+                      <span className="sr-only"> {asset.name}</span>
+                    </a>
+                  </Button>
+                ) : null}
+                {canManage ? (
+                  <Button size="sm" variant="ghost" onClick={() => void remove(asset)}>
+                    {t("remove")}
                     <span className="sr-only"> {asset.name}</span>
-                  </a>
-                </Button>
-              ) : null}
-              {canManage ? (
-                <Button size="sm" variant="ghost" onClick={() => void remove(asset)}>
-                  {t("remove")}
-                  <span className="sr-only"> {asset.name}</span>
-                </Button>
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ul>
+                  </Button>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
       {canManage ? (
         <section
           aria-labelledby="asset-add"
-          className="bg-surface border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
+          className="bg-surface border-border rounded-card flex flex-col gap-4 border p-4 sm:p-5 lg:sticky lg:top-[calc(var(--site-sticky-top,0px)+1rem)]"
         >
           <h2 id="asset-add" className="text-lg font-semibold">
             {t("addTitle")}
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4">
             <Field label={t("kind")}>
               <SearchableSelect
                 value={kind}

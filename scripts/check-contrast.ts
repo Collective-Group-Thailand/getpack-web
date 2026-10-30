@@ -79,6 +79,13 @@ export const PAIRS: Pair[] = [
   { fg: "fg-inverse", bg: "sage", min: 4.5, why: "text on the sage band" },
   { fg: "fg", bg: "sage-subtle", min: 4.5, why: "text on a sage well" },
   { fg: "muted", bg: "sage-subtle", min: 4.5, why: "secondary text on a sage well" },
+  // Project A: the light storefront highlights a block with the pale brand tint instead of a solid green or
+  // dark panel (the quick calculator's price, the closing bands), so ink, prices and focus must hold on it.
+  { fg: "fg", bg: "primary-subtle", min: 4.5, why: "text on a highlighted (brand-tint) panel" },
+  { fg: "muted", bg: "primary-subtle", min: 4.5, why: "secondary text on a highlighted panel" },
+  { fg: "primary", bg: "primary-subtle", min: 4.5, why: "price and link on a highlighted panel" },
+  { fg: "focus-ring", bg: "primary-subtle", min: 3, why: "focus indicator on a highlighted panel" },
+  { fg: "border-strong", bg: "primary-subtle", min: 3, why: "input outline on a highlighted panel" },
 ];
 
 /**

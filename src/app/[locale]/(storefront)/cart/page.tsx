@@ -20,8 +20,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const [actor, t] = await Promise.all([getActor("customer"), getTranslations("cart"), params]);
   if (!actor) {
     return (
-      <div className="max-w-content mx-auto px-5 py-8 md:px-8">
-        <h1 className="text-title leading-tight">{t("title")}</h1>
+      <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight md:text-[2.25rem]">{t("title")}</h1>
         <GuestCartView signInHref={`/sign-in?returnTo=${encodeURIComponent("/cart")}`} />
       </div>
     );
@@ -29,8 +29,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { cart } = await getCartAndBook();
   // Step 1 of 4 (checkout redesign Phase 1): the stepper, then the cart box, whose heading is the page's h1.
   return (
-    <div className="max-w-nav mx-auto px-4 pt-1 pb-8 md:px-5 min-[65rem]:px-6">
-      {cart.items.length === 0 ? <h1 className="text-title mt-7 leading-tight">{t("title")}</h1> : null}
+    <div className="max-w-nav mx-auto px-5 pt-1 pb-8 md:px-8 xl:px-12">
+      {cart.items.length === 0 ? (
+        <h1 className="mt-7 text-[1.75rem] leading-[1.15] font-semibold tracking-tight md:text-[2.25rem]">
+          {t("title")}
+        </h1>
+      ) : null}
       <CartView initialCart={cart} />
     </div>
   );

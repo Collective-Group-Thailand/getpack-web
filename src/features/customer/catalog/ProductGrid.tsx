@@ -69,7 +69,7 @@ export async function ProductGrid({
             title={<Link href={productHref(product.slug)}>{name}</Link>}
             topLine={type ? pick(locale, type.nameTh, type.nameEn) : undefined}
             image={src ? { src, alt: name } : null}
-            fallback={{ family: productFamilyOf(`${product.productTypeCode} ${product.slug}`), tone: "kraft" }}
+            fallback={{ family: productFamilyOf(`${product.productTypeCode} ${product.slug}`) }}
             price={facts.price}
             meta={facts.meta}
             badges={facts.badges}
@@ -92,7 +92,7 @@ export async function ProductGrid({
           topLine={t("card.stock")}
           image={src ? { src, alt: name } : null}
           aspect={stockAspect}
-          fallback={{ family: "stock", tone: index % 2 ? "kraft" : "paper" }}
+          fallback={{ family: "stock" }}
           badges={
             <Badge tone={product.inStock ? "primary" : "neutral"}>
               {t(product.inStock ? "stock.inStock" : "stock.outOfStock")}

@@ -8,7 +8,8 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { trackUpload } from "@/lib/analytics";
 import { Button } from "@/ui/components/Button";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
+import { LINE_PLATE, ProductIllustration, productFamilyOf } from "@/ui/components/ProductIllustration";
 import { Skeleton } from "@/ui/components/Skeleton";
 
 import { useConfigurator } from "./api";
@@ -72,7 +73,7 @@ export function TemplateBox({ products, bleedMm }: { products: UploadProduct[]; 
       <p className="text-muted -mt-1.5 text-sm">{t("body")}</p>
       <label className="text-muted grid gap-1.5 text-[0.8125rem] font-medium">
         {t("product")}
-        <NativeSelect
+        <SearchableSelect
           value={slug ?? undefined}
           onValueChange={(value) => {
             setSlug(value);
@@ -87,7 +88,7 @@ export function TemplateBox({ products, bleedMm }: { products: UploadProduct[]; 
       <label className="text-muted grid gap-1.5 text-[0.8125rem] font-medium">
         {t("size")}
         {sizes.length ? (
-          <NativeSelect
+          <SearchableSelect
             value={size?.code}
             onValueChange={setSizeCode}
             options={sizes.map((s) => ({
@@ -96,10 +97,12 @@ export function TemplateBox({ products, bleedMm }: { products: UploadProduct[]; 
             }))}
           />
         ) : (
-          <NativeSelect disabled options={[{ value: "-", label: t("sizeFromProduct") }]} value="-" />
+          <SearchableSelect disabled options={[{ value: "-", label: t("sizeFromProduct") }]} value="-" />
         )}
       </label>
-      <div className="bg-bg-subtle rounded-control grid h-40 place-items-center overflow-hidden p-2">
+      {/* The drawing on a neutral bordered plate; without one, the product's line drawing beside a short note —
+          never an empty grey box (Project A). */}
+      <div className="border-border bg-surface-subtle rounded-control grid min-h-40 place-items-center overflow-hidden border p-2">
         {configurator.isPending ? (
           <Skeleton className="size-full" />
         ) : drawable && styleId && size && cfg ? (
@@ -111,7 +114,12 @@ export function TemplateBox({ products, bleedMm }: { products: UploadProduct[]; 
             label={t("previewLabel", { name: product?.name ?? "", code: size.code })}
           />
         ) : (
-          <p className="text-muted max-w-[30ch] text-center text-sm">{t("notDrawable")}</p>
+          <div className="flex flex-col items-center gap-2 py-3">
+            <span className={`${LINE_PLATE} grid w-28 place-items-center`} aria-hidden="true">
+              <ProductIllustration family={productFamilyOf(product?.slug)} className="max-w-24" />
+            </span>
+            <p className="text-muted m-0 max-w-[30ch] text-center text-sm">{t("notDrawable")}</p>
+          </div>
         )}
       </div>
       {drawable && bleedMm !== null ? (

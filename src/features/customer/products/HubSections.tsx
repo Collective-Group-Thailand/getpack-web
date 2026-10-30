@@ -14,7 +14,13 @@ import { FAQ_KEYS, faqAnswer } from "./content";
 
 export { fluteOf };
 
-/** One section of the hub: an anchor target under the sticky bars, with its heading and lede. */
+/**
+ * One section of the hub: an anchor target under the sticky bars, with its heading and lede.
+ *
+ * `collapsible` (Project A): the reference sections below the catalogue fold to their heading — a native
+ * `<details>` row, closed until asked for, so the page leads with the products and the explanations stay
+ * one click (or Enter) away. Meant to sit in a `HubSectionStack`, which draws the rows' frame.
+ */
 export function HubSection({
   id,
   title,
@@ -22,6 +28,7 @@ export function HubSection({
   aside,
   children,
   className,
+  collapsible = false,
 }: {
   id: string;
   title: string;
@@ -29,7 +36,38 @@ export function HubSection({
   aside?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  collapsible?: boolean;
 }) {
+  if (collapsible)
+    return (
+      <section
+        id={id}
+        tabIndex={-1}
+        aria-labelledby={`${id}-title`}
+        className={cn("scroll-mt-[calc(var(--site-sticky-top)+1rem)] outline-none", className)}
+      >
+        <details className="group/section">
+          <summary className="focus-visible:ring-focus-ring hover:bg-surface-subtle flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-4 outline-none focus-visible:ring-2 focus-visible:ring-inset md:px-6 md:py-5 [&::-webkit-details-marker]:hidden">
+            <span className="min-w-0">
+              <h2 id={`${id}-title`} className="text-lg leading-snug font-semibold md:text-xl">
+                {title}
+              </h2>
+              {lede ? <p className="text-muted mt-1 max-w-[62ch] text-[0.84375rem]">{lede}</p> : null}
+            </span>
+            <Icon
+              name="chevron-down"
+              size={20}
+              aria-hidden="true"
+              className="text-muted mt-1 shrink-0 transition-transform group-open/section:rotate-180 motion-reduce:transition-none"
+            />
+          </summary>
+          <div className="px-4 pb-6 md:px-6">
+            {aside ? <div className="mb-4 flex flex-wrap gap-2">{aside}</div> : null}
+            {children}
+          </div>
+        </details>
+      </section>
+    );
   return (
     <section
       id={id}
@@ -48,6 +86,15 @@ export function HubSection({
       </div>
       {children}
     </section>
+  );
+}
+
+/** The frame of the folded reference sections: one card, a hairline between rows. */
+export function HubSectionStack({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("border-border bg-surface rounded-card divide-border divide-y border", className)}>
+      {children}
+    </div>
   );
 }
 
@@ -114,7 +161,7 @@ function FactorFigure({ factor }: { factor: (typeof FACTORS)[number] }) {
  * "ราคาคิดอย่างไร" (prompt item 9): four factor cards with simple figures, then what the price includes and
  * leaves out — draft content in `products.how` (BUSINESS-REVIEW, `content.ts`).
  */
-export async function HowPricing() {
+export async function HowPricing({ collapsible = false }: { collapsible?: boolean } = {}) {
   const t = await getTranslations("products.how");
   const included: { key: string; yes: boolean }[] = [
     { key: "includes.vat", yes: true },
@@ -123,7 +170,7 @@ export async function HowPricing() {
     { key: "excludes.shipping", yes: false },
   ];
   return (
-    <HubSection id="how" title={t("title")} lede={t("lede")}>
+    <HubSection id="how" title={t("title")} lede={t("lede")} collapsible={collapsible}>
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {FACTORS.map((factor) => (
           <li key={factor} className="border-border bg-surface rounded-card flex flex-col gap-2 border p-5">
@@ -232,8 +279,11 @@ export async function MaterialsTable({
   configurators,
   section,
   after,
+  collapsible = false,
 }: {
   configurators: readonly Configurator[];
+  /** Folded to its heading (the hub's reference rows, `HubSection`). */
+  collapsible?: boolean;
   /**
    * The product page's own section (pdp redesign item 7): its id, heading and lede, and every board the
    * product offers whatever its calculator; the hub's "วัสดุกล่องลูกฟูก" otherwise.
@@ -244,7 +294,12 @@ export async function MaterialsTable({
 }) {
   const [t, locale] = await Promise.all([getTranslations("products.materials"), getLocale()]);
   const rows = materialRows(configurators, locale, { anyCalculator: section !== undefined });
-  if (rows.length === 0) return after && section ? <HubSection {...section}>{after}</HubSection> : null;
+  if (rows.length === 0)
+    return after && section ? (
+      <HubSection {...section} collapsible={collapsible}>
+        {after}
+      </HubSection>
+    ) : null;
   const notes = rows.some((row) => row.use);
   // A product page's non-corrugated boards have no flute: the column goes when no row has one.
   const flutes = rows.some((row) => row.flute);
@@ -254,6 +309,7 @@ export async function MaterialsTable({
       id={section?.id ?? "materials"}
       title={section?.title ?? t("title")}
       lede={section ? section.lede : t("lede")}
+      collapsible={collapsible}
       aside={
         <Button asChild variant="secondary">
           <Link href="/materials">{t("compare")}</Link>
@@ -321,7 +377,13 @@ const PAYMENTS = ["transfer", "promptpay", "card"] as const;
  * lead times, and the payment methods (content `products.process.paymentMethods`; "ผ่อนชำระ" stays hidden
  * until it is live — DECISIONS-STAGE-A §3).
  */
-export async function ProcessSteps({ leadBand }: { leadBand: { min: number; max: number } | null }) {
+export async function ProcessSteps({
+  leadBand,
+  collapsible = false,
+}: {
+  leadBand: { min: number; max: number } | null;
+  collapsible?: boolean;
+}) {
   const t = await getTranslations("products.process");
   const tagOf = (step: (typeof STEPS)[number]) => {
     if (step !== "produce") return t(`steps.${step}.tag`);
@@ -331,7 +393,7 @@ export async function ProcessSteps({ leadBand }: { leadBand: { min: number; max:
       : t("steps.produce.tagRange", { min: leadBand.min, max: leadBand.max });
   };
   return (
-    <HubSection id="process" title={t("title")} lede={t("lede")}>
+    <HubSection id="process" title={t("title")} lede={t("lede")} collapsible={collapsible}>
       <ol className="border-border bg-surface rounded-card grid grid-cols-1 overflow-hidden border sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((step, index) => {
           const tag = tagOf(step);
@@ -389,9 +451,11 @@ const SERVICE_ICONS: IconName[] = ["palette", "box", "layers", "pen-tool", "wren
 export async function ServiceLinks({
   services,
   allHref,
+  collapsible = false,
 }: {
   services: readonly ServiceLink[];
   allHref: string | null;
+  collapsible?: boolean;
 }) {
   const t = await getTranslations("products.services");
   if (services.length === 0) return null;
@@ -400,6 +464,7 @@ export async function ServiceLinks({
       id="services"
       title={t("title")}
       lede={t("lede")}
+      collapsible={collapsible}
       aside={
         allHref ? (
           <Button asChild variant="secondary">
@@ -474,18 +539,19 @@ export async function CtaBand({
 }) {
   const t = await getTranslations("products.cta");
   const body = !lineOaId ? t("bodyNoLine") : hours ? t("bodyHours", { hours }) : t("body");
+  // Project A: a pale brand tint, not a solid green block — the green stays on the button.
   return (
-    <div className="bg-primary text-primary-fg rounded-panel mt-16 mb-24 grid grid-cols-1 items-center gap-5 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:p-8">
+    <div className="bg-primary-subtle text-fg rounded-panel mt-12 grid grid-cols-1 items-center gap-5 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:p-8">
       <div>
         <h2 className="text-2xl font-semibold">{t("title")}</h2>
-        <p className="mt-1.5 opacity-85">{body}</p>
+        <p className="text-muted mt-1.5">{body}</p>
       </div>
       <div className="flex flex-wrap gap-2.5">
-        <Button asChild className="bg-primary-fg text-primary hover:bg-primary-fg/90">
+        <Button asChild>
           <Link href={quoteHref}>{t("quote")}</Link>
         </Button>
         {lineOaId ? (
-          <Button asChild variant="secondary" className="border-primary-fg/50 text-primary-fg hover:bg-primary-fg/10">
+          <Button asChild variant="secondary">
             <a
               href={`https://line.me/R/ti/p/${encodeURIComponent(lineOaId)}`}
               target="_blank"

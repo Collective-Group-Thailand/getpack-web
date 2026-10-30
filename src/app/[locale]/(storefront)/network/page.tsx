@@ -41,15 +41,17 @@ export default async function NetworkPage({ params }: { params: Promise<{ locale
   }));
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 md:py-12">
+    <div className="mx-auto max-w-5xl px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20">
       <JsonLd data={page.breadcrumb} />
       <JsonLd
         data={webPageSchema({ name: t("title"), description: t("intro"), url: page.url, locale: page.language })}
       />
       <JsonLd data={faqPageSchema(faq)} />
       <header>
-        <h1 className="text-3xl font-bold md:text-4xl">{t("title")}</h1>
-        <p className="text-muted mt-2">{t("intro")}</p>
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+          {t("title")}
+        </h1>
+        <p className="text-muted mt-2 max-w-[62ch] text-pretty">{t("intro")}</p>
       </header>
 
       <div className="mt-8 flex flex-col gap-10">
@@ -60,7 +62,10 @@ export default async function NetworkPage({ params }: { params: Promise<{ locale
           <ol className="grid gap-3 sm:grid-cols-2">
             {STEPS.map((step, index) => (
               <Card key={step} as="li" className="flex flex-col gap-1">
-                <span className="text-muted text-sm" aria-hidden="true">
+                <span
+                  aria-hidden="true"
+                  className="bg-primary-subtle text-primary-subtle-fg mb-1 grid size-7 place-items-center rounded-lg text-[0.8125rem] font-semibold tabular-nums"
+                >
                   {index + 1}
                 </span>
                 <h3 className="font-semibold">{t(`quality.steps.${step}.title`)}</h3>
@@ -78,7 +83,9 @@ export default async function NetworkPage({ params }: { params: Promise<{ locale
             {CRITERIA.map((item) => (
               <Card key={item} as="li" className="flex flex-col gap-1">
                 <span className="text-muted text-sm">{t(`criteria.items.${item}.label`)}</span>
-                <span className="text-xl font-semibold">{t(`criteria.items.${item}.value`)}</span>
+                <span className="text-primary text-xl font-semibold tabular-nums">
+                  {t(`criteria.items.${item}.value`)}
+                </span>
                 <span className="text-muted text-sm">{t(`criteria.items.${item}.note`)}</span>
               </Card>
             ))}
@@ -123,7 +130,9 @@ export default async function NetworkPage({ params }: { params: Promise<{ locale
           />
         </section>
 
-        <div>
+        {/* The way on, as a closing band on the pale tint. */}
+        <div className="bg-primary-subtle rounded-panel flex flex-wrap items-center justify-between gap-4 p-5 md:p-7">
+          <p className="m-0 font-semibold">{t("title")}</p>
           <NextStep to="products" />
         </div>
       </div>

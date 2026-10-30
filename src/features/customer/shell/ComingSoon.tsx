@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { OpenBoxIllustration } from "@/ui/components/ProductIllustration";
 
 import { NextStep } from "./NextStep";
 
@@ -23,12 +24,14 @@ export async function ComingSoon({ titleKey }: { titleKey: string }) {
   const t = await getTranslations("storefront");
   const tCommon = await getTranslations("common");
 
+  const illustration = <OpenBoxIllustration className="mb-2 max-w-28" />;
   return (
-    <div className="mx-auto max-w-2xl px-4 py-20">
-      {/* One h1 per page, and it names the destination rather than saying "coming soon". */}
-      <h1 className="sr-only">{t(titleKey)}</h1>
+    <div className="mx-auto max-w-xl px-5 py-14 md:py-20">
+      {/* One h1 per page, and it names the destination rather than saying "coming soon" — the card's own title. */}
       <EmptyState
-        icon="box"
+        illustration={illustration}
+        className="py-14"
+        titleAs="h1"
         title={t(titleKey)}
         description={t("comingSoon.body")}
         action={

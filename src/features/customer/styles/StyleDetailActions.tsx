@@ -24,10 +24,13 @@ export function StyleDetailActions({
   const compare = useCompare();
   const saved = favourites.has(code);
   return (
-    <div className="flex flex-wrap gap-2">
+    // Two quiet actions (Project A review): a list on a phone — each its own line, never one wrapped alone — and
+    // one row from `sm`, both ghost buttons of the same size, aligned with the text above.
+    <div className="-ms-3 flex flex-col items-start gap-0.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1">
       {signedIn ? (
         <Button
           variant={saved ? "secondary" : "ghost"}
+          size="sm"
           iconStart="star"
           aria-pressed={saved}
           loading={favourites.pending(code)}
@@ -36,12 +39,13 @@ export function StyleDetailActions({
           {saved ? t("favourites.remove") : t("favourites.add")}
         </Button>
       ) : (
-        <Button asChild variant="ghost" iconStart="star">
+        <Button asChild variant="ghost" size="sm" iconStart="star">
           <Link href={signInHref}>{t("favourites.signIn")}</Link>
         </Button>
       )}
       <Button
         variant={compare.has(code) ? "secondary" : "ghost"}
+        size="sm"
         iconStart="columns"
         aria-pressed={compare.has(code)}
         disabled={!compare.has(code) && compare.full}

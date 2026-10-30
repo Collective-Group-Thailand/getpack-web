@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 /** "เรียงตาม": the phone's own picker; choosing one replaces the URL (the server sorts). */
 export function SortMenu<T extends string>({
@@ -21,11 +21,11 @@ export function SortMenu<T extends string>({
   return (
     <label className="text-muted flex items-center gap-2 text-sm">
       {label}
-      <NativeSelect
+      <SearchableSelect
         value={value}
         options={options}
         onValueChange={(next) => router.replace(hrefFor[next], { scroll: false })}
-        className="h-10 w-auto min-w-36"
+        className="w-auto min-w-36"
       />
     </label>
   );

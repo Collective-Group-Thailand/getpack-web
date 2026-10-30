@@ -339,7 +339,9 @@
       "price": "Price",
       "leadTime": "Lead time",
       "options": "Structural options"
-    }
+    },
+    "viewStyle": "View this style",
+    "addMore": "Add a style"
   },
   "detail": {
     "code": "Style code",
@@ -917,6 +919,7 @@
     "trustLogos": "Brands that trust us",
     "trustDocument": "View document",
     "landingFaq": "Frequently asked questions",
+    "landingIntroMore": "Read more",
     "landingTitle": "Choose by use",
     "landingBody": "Styles that suit each kind of product",
     "work": {

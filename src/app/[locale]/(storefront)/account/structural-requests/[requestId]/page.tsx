@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { STRUCTURAL_REQUEST_STATUS } from "@/domain/status";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
+import { Panel } from "@/features/customer/account/Panel";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { FileLink } from "@/features/customer/files/FileLink";
@@ -11,7 +13,9 @@ import { getMyStructuralRequest } from "@/features/customer/structural/api.serve
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Link } from "@/i18n/navigation";
+import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("styles.request");
@@ -48,79 +52,99 @@ export default async function Page({ params }: Props) {
         .join(" × ")
     : null;
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link href="/account/structural-requests" className="text-primary text-sm underline">
-            {t("back")}
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold">{t("detailTitle")}</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <StatusChip map={STRUCTURAL_REQUEST_STATUS} value={r.status} size="md" />
-          {["submitted", "assigned", "quoted"].includes(r.status) ? <CancelRequest requestId={r.id} /> : null}
-        </div>
-      </div>
-      <p className="text-muted">{t(`explain.${r.status}`)}</p>
-      <DescriptionList
-        columns={2}
-        items={[
-          { term: t("productType"), description: types[r.productTypeCode] ?? r.productTypeCode },
-          { term: t("description"), description: <span className="whitespace-pre-line">{r.description}</span> },
-          {
-            term: t("sizes"),
-            description: sizes ? t("sizesValue", { sizes, basis: t(`bases.${r.sizes!.measurementBasis}`) }) : "—",
-          },
-          { term: t("quantity"), description: r.quantity === null ? "—" : format.number(r.quantity) },
-          ...(r.closedReason && r.status === "declined"
-            ? [{ term: t("declinedBecause"), description: r.closedReason }]
-            : []),
-          ...(r.publishedBaseCode
-            ? [
-                {
-                  term: t("publishedAs"),
-                  description: (
-                    <Link
-                      href={`/styles?q=${encodeURIComponent(r.publishedBaseCode)}`}
-                      className="text-primary underline"
-                    >
-                      {r.publishedBaseCode}
-                    </Link>
-                  ),
-                },
-              ]
-            : []),
-        ]}
+    <div>
+      <AccountHeader
+        back={{ href: "/account/structural-requests", label: t("back") }}
+        title={t("detailTitle")}
+        status={<StatusChip map={STRUCTURAL_REQUEST_STATUS} value={r.status} size="md" />}
+        lede={t(`explain.${r.status}`)}
+        actions={["submitted", "assigned", "quoted"].includes(r.status) ? <CancelRequest requestId={r.id} /> : null}
       />
-      {r.deliveredFile && (r.status === "approved" || r.status === "published") ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted text-sm">{t("delivered")}</span>
-          <FileLink
-            fileId={r.deliveredFile.id}
-            label={r.deliveredFile.originalName}
-            openLabel={t("open")}
-            failed={t("failed")}
-          />
+      {/* Project B3: what was asked in a card, what the customer acts on (the fee to confirm, the die-line to
+          download) as tinted cards under it, and the progress so far as a timeline beside them. */}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="flex min-w-0 flex-col gap-4">
+          {r.serviceRfqId ? (
+            <div className="bg-primary-subtle text-primary-subtle-fg rounded-card flex flex-wrap items-center justify-between gap-3 p-4">
+              <p className="text-sm font-medium">{t("feeQuoted")}</p>
+              <Button asChild size="sm">
+                <Link href="/account/rfqs">{t("toQuoteRequests")}</Link>
+              </Button>
+            </div>
+          ) : null}
+          {r.deliveredFile && (r.status === "approved" || r.status === "published") ? (
+            <div className="bg-primary-subtle text-primary-subtle-fg rounded-card flex flex-wrap items-center gap-4 p-4">
+              <span
+                aria-hidden="true"
+                className="border-border bg-surface text-muted grid size-12 shrink-0 place-items-center rounded-lg border"
+              >
+                <Icon name="document" size={22} />
+              </span>
+              <span className="min-w-0 flex-1 text-sm font-medium">{t("delivered")}</span>
+              <FileLink
+                fileId={r.deliveredFile.id}
+                label={r.deliveredFile.originalName}
+                openLabel={t("open")}
+                failed={t("failed")}
+              />
+            </div>
+          ) : null}
+          <div className="border-border bg-surface rounded-card border p-4 sm:p-5">
+            <DescriptionList
+              columns={2}
+              items={[
+                { term: t("productType"), description: types[r.productTypeCode] ?? r.productTypeCode },
+                { term: t("description"), description: <span className="whitespace-pre-line">{r.description}</span> },
+                {
+                  term: t("sizes"),
+                  description: sizes ? t("sizesValue", { sizes, basis: t(`bases.${r.sizes!.measurementBasis}`) }) : "—",
+                },
+                { term: t("quantity"), description: r.quantity === null ? "—" : format.number(r.quantity) },
+                ...(r.closedReason && r.status === "declined"
+                  ? [{ term: t("declinedBecause"), description: r.closedReason }]
+                  : []),
+                ...(r.publishedBaseCode
+                  ? [
+                      {
+                        term: t("publishedAs"),
+                        description: (
+                          <Link
+                            href={`/styles?q=${encodeURIComponent(r.publishedBaseCode)}`}
+                            className="text-primary underline"
+                          >
+                            {r.publishedBaseCode}
+                          </Link>
+                        ),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          </div>
         </div>
-      ) : null}
-      {r.serviceRfqId ? (
-        <p className="text-sm">
-          {t("feeQuoted")}{" "}
-          <Link href="/account/rfqs" className="text-primary underline">
-            {t("toQuoteRequests")}
-          </Link>
-        </p>
-      ) : null}
-      <section aria-labelledby="request-steps">
-        <h2 id="request-steps" className="mb-2 font-semibold">
-          {t("stepsTitle")}
-        </h2>
-        <ol className="flex flex-col gap-1 text-sm">
-          {steps.map((s) => (
-            <li key={s.label}>{t("step", { label: s.label, date: format.dateTime(s.at!) })}</li>
-          ))}
-        </ol>
-      </section>
+        <Panel
+          id="request-steps"
+          title={t("stepsTitle")}
+          className="lg:sticky lg:top-[calc(var(--site-sticky-top,0px)+1rem)]"
+        >
+          <ol className="flex flex-col">
+            {steps.map((step, index) => (
+              <li key={step.label} className="relative flex gap-3 pb-4 last:pb-0">
+                {index < steps.length - 1 ? (
+                  <span aria-hidden="true" className="bg-border absolute start-[0.6875rem] top-6 bottom-0 w-px" />
+                ) : null}
+                <span
+                  aria-hidden="true"
+                  className="bg-primary-subtle text-primary-subtle-fg grid size-6 shrink-0 place-items-center rounded-full"
+                >
+                  <Icon name="check" size={14} />
+                </span>
+                <span className="text-sm">{t("step", { label: step.label, date: format.dateTime(step.at!) })}</span>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+      </div>
     </div>
   );
 }

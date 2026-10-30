@@ -17,6 +17,7 @@ import { Field } from "@/ui/components/Field";
 import { Switch } from "@/ui/components/Switch";
 import { Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
 
 import { FileLink } from "../files/FileLink";
 
@@ -81,15 +82,18 @@ export function PrivacySettings({
     }
   }
 
+  const statusTone = { submitted: "info", completed: "success", rejected: "neutral" } as const;
   return (
-    <div className="flex flex-col gap-10">
-      <section aria-labelledby="privacy-consents">
+    // Project B4: the consents as one card of switches; the two rights as cards side by side — the copy and, in
+    // the danger tone, the deletion — each with what happens next; the requests so far as a list under them.
+    <div className="flex flex-col gap-6">
+      <section aria-labelledby="privacy-consents" className="border-border bg-surface rounded-card border p-4 sm:p-5">
         <h2 id="privacy-consents" className="text-lg font-semibold">
           {t("consents")}
         </h2>
-        <ul className="mt-4 flex flex-col gap-3">
+        <ul className="divide-border mt-2 flex flex-col divide-y">
           {consents.map((consent) => (
-            <li key={consent.purpose} className="bg-surface border-border flex flex-col gap-2 rounded-lg border p-4">
+            <li key={consent.purpose} className="flex flex-col gap-2 py-4 last:pb-1">
               {consent.required ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -114,7 +118,7 @@ export function PrivacySettings({
             </li>
           ))}
         </ul>
-        <p className="text-muted mt-3 text-xs">{t("requiredNote")}</p>
+        <p className="text-muted bg-surface-subtle rounded-control mt-3 p-3 text-xs">{t("requiredNote")}</p>
       </section>
 
       <section aria-labelledby="privacy-requests">
@@ -122,34 +126,71 @@ export function PrivacySettings({
           {t("rights")}
         </h2>
         <p className="text-muted mt-1 text-sm">{t("rightsIntro")}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button variant="secondary" iconStart="download" onClick={() => setAsking("export")}>
-            {t("export")}
-          </Button>
-          <Button variant="ghost" iconStart="trash" onClick={() => setAsking("deletion")}>
-            {t("delete")}
-          </Button>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="border-border bg-surface rounded-card flex flex-col gap-3 border p-4 sm:p-5">
+            <span
+              aria-hidden="true"
+              className="bg-primary-subtle text-primary-subtle-fg grid size-10 place-items-center rounded-lg"
+            >
+              <Icon name="download" size={18} />
+            </span>
+            <div>
+              <h3 className="font-semibold">{t("export")}</h3>
+              <p className="text-muted mt-1 text-sm">{t("exportBody")}</p>
+            </div>
+            <Button
+              className="mt-auto self-start"
+              variant="secondary"
+              iconStart="download"
+              onClick={() => setAsking("export")}
+            >
+              {t("export")}
+            </Button>
+          </div>
+          <div className="border-border bg-surface rounded-card flex flex-col gap-3 border p-4 sm:p-5">
+            <span
+              aria-hidden="true"
+              className="bg-danger-subtle text-danger-subtle-fg grid size-10 place-items-center rounded-lg"
+            >
+              <Icon name="trash" size={18} />
+            </span>
+            <div>
+              <h3 className="font-semibold">{t("delete")}</h3>
+              <p className="text-muted mt-1 text-sm">{t("deleteBody")}</p>
+            </div>
+            <Button
+              className="mt-auto self-start"
+              variant="destructive"
+              iconStart="trash"
+              onClick={() => setAsking("deletion")}
+            >
+              {t("delete")}
+            </Button>
+          </div>
         </div>
         {requests.length > 0 ? (
-          <ul className="mt-4 flex flex-col gap-2">
+          <ul className="border-border bg-surface rounded-card divide-border mt-4 flex flex-col divide-y border">
             {requests.map((request) => (
-              <li key={request.id} className="bg-surface border-border rounded-lg border p-3 text-sm">
-                <p className="font-medium">
-                  {t(`kinds.${request.kind}`)} · {t(`statuses.${request.status}`)}
+              <li key={request.id} className="flex flex-col gap-1 p-4 text-sm">
+                <p className="flex flex-wrap items-center gap-2 font-medium">
+                  {t(`kinds.${request.kind}`)}
+                  <Badge tone={statusTone[request.status as keyof typeof statusTone] ?? "neutral"} size="sm">
+                    {t(`statuses.${request.status}`)}
+                  </Badge>
                 </p>
                 <p className="text-muted text-xs">
                   {t("requestedAt", { date: format.date(request.requestedAt), due: format.date(request.dueAt) })}
                 </p>
-                {request.note ? <p className="text-muted mt-1">{t("yourNote", { note: request.note })}</p> : null}
+                {request.note ? <p className="text-muted">{t("yourNote", { note: request.note })}</p> : null}
                 {request.answer ? (
-                  <p className="mt-1">
+                  <p>
                     {request.decidedAt
                       ? t("answeredAt", { date: format.date(request.decidedAt), answer: request.answer })
                       : request.answer}
                   </p>
                 ) : null}
                 {request.export ? (
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
                     <FileLink
                       fileId={request.export.fileId}
                       label={t("downloadExport")}

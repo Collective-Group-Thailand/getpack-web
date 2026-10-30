@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getThread } from "@/features/customer/messages/api.server";
 import { ConversationPanel } from "@/features/customer/messages/ConversationPanel";
 import { storeCardHref } from "@/features/customer/messages/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
+import { Button } from "@/ui/components/Button";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.messages");
@@ -29,31 +31,30 @@ export default async function Page({ params }: { params: Promise<{ conversationI
   const subjectHref = thread.subject ? storeCardHref(thread.subject) : null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <Link href="/account/messages" className="text-primary text-sm underline-offset-4 hover:underline">
-        {t("back")}
-      </Link>
-      <div>
-        <h1 className="text-title leading-tight">
-          {thread.subject
+    <div className="flex flex-col gap-6">
+      <AccountHeader
+        back={{ href: "/account/messages", label: t("back") }}
+        title={
+          thread.subject
             ? t("about", { label: thread.subject.label, kind: t(`kinds.${thread.subjectType}`) })
-            : t("kinds.support")}
-        </h1>
-        <p className="text-muted mt-1 text-sm">
-          {thread.readByGetpackAt
+            : t("kinds.support")
+        }
+        lede={
+          thread.readByGetpackAt
             ? t("readByGetpack", { at: format.dateTime(thread.readByGetpackAt) })
-            : t("responseTarget")}
-          {subjectHref ? (
-            <>
-              {" · "}
-              <Link href={subjectHref} className="text-primary underline-offset-4 hover:underline">
-                {t("openSubject")}
-              </Link>
-            </>
-          ) : null}
-        </p>
+            : t("responseTarget")
+        }
+        actions={
+          subjectHref ? (
+            <Button asChild variant="secondary" iconEnd="chevron-right">
+              <Link href={subjectHref}>{t("openSubject")}</Link>
+            </Button>
+          ) : null
+        }
+      />
+      <div className="border-border bg-surface rounded-card border p-4 sm:p-5">
+        <ConversationPanel thread={thread} quickReplies={QUICK.map((key) => t(key))} />
       </div>
-      <ConversationPanel thread={thread} quickReplies={QUICK.map((key) => t(key))} />
     </div>
   );
 }

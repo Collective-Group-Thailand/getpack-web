@@ -64,7 +64,8 @@ export function OrdersToolbar({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    // One toolbar card: the status tabs (with counts) and the search (Project B).
+    <div className="border-border bg-surface rounded-panel flex flex-wrap items-center gap-2.5 border p-2.5">
       <TabBar
         label={t("tabsLabel")}
         items={tabs.map((item) => ({

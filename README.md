@@ -30,6 +30,7 @@ pnpm dev           # http://localhost:3000
 | ---------------------------------------------- | ------------------------------------------------------------------------ |
 | `pnpm dev`                                     | Next dev server (all three hosts once F1 lands the zones)                |
 | `pnpm build` / `pnpm start`                    | production build and server                                              |
+| `pnpm build:local` / `pnpm start:local`        | the same, with the dev-only interim home photos and flag set aside       |
 | `pnpm lint` · `pnpm typecheck` · `pnpm format` | ESLint flat config, `tsc --noEmit`, Prettier                             |
 | `pnpm test`                                    | unit tests: the app (`test:app`) and `@getpack/dieline` (`test:dieline`) |
 | `pnpm e2e`                                     | Playwright, on its own port (`E2E_PORT`, default 3100)                   |

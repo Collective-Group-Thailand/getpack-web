@@ -120,23 +120,20 @@
   }
 
   /* Placeholders are decorative text: the token is gated at 3:1, not 4.5:1. */
+  /* A hint, not a value: the field's own size (never larger), normal weight and spacing, in the muted ink —
+   * a field's bold or tracking (a phone number) never carries over to its example (owner feedback 2026-10-30). */
   ::placeholder {
-    color: var(--color-subtle);
+    color: var(--color-muted);
     opacity: 1;
-    /* A hint, not a value: a step below the control's own text, which Thai in Anuphan
-     * otherwise matches in weight and reads as already filled in (owner feedback 2026-10-14). */
-    font-size: 0.9375em;
+    font-size: 1em;
+    font-weight: 400;
+    letter-spacing: normal;
   }
 
   /*
    * Storefront controls at 15 px on a desktop: 16 px Thai in a 40-px control crowds its box.
    * A phone keeps 16 px — iOS Safari zooms into any smaller control on focus.
    */
-  @media (min-width: 768px) {
-    [data-zone="customer"] :is(input, textarea, select)[data-size="md"] {
-      font-size: 0.9375rem;
-    }
-  }
 
   ::selection {
     background-color: var(--color-primary-subtle);
@@ -364,9 +361,11 @@
   }
 }
 
-/* The product page's phone buy bar (pdp redesign, `PdpMobileBar`): the page ends above it, so it covers nothing. */
+/* The product page's phone buy bar (pdp redesign, `PdpMobileBar`) and the other pages' bottom action bar
+   (`MobileActionBar`): the page ends above it, so it covers nothing. */
 @media (max-width: 47.999rem) {
-  body:has([data-pdp-bar]) {
+  body:has([data-pdp-bar]),
+  body:has([data-mobile-bar]) {
     padding-bottom: 4.5rem;
   }
 }
@@ -569,4 +568,372 @@
 }
 :root[data-vat-basis="excl"] [data-vat-figure="excl"] {
   display: contents;
+}
+
+/*
+ * One text size for every storefront field (owner feedback 2026-10-30): 16 px on a phone — iOS Safari zooms into
+ * any smaller control on focus — and 15 px from md, whatever utility the field carries (`text-base` on the product
+ * and styles searches, `text-lg` on the sign-in phone). The placeholder follows at 1em. Unlayered on purpose, so
+ * it wins over the utilities layer. Number steppers and one-time-code boxes keep their own sizes.
+ */
+[data-zone="customer"]
+  :is(
+    input:is(
+      [type="text"],
+      [type="search"],
+      [type="email"],
+      [type="tel"],
+      [type="url"],
+      [type="password"],
+      [type="date"],
+      :not([type])
+    ),
+    textarea,
+    select,
+    button[aria-haspopup="listbox"]
+  ):not([autocomplete="one-time-code"]) {
+  font-size: 1rem;
+}
+/* Every standard field — a text input, a select (native or the listbox button) — is 44 px tall in the storefront. */
+[data-zone="customer"] :is(input, select, button[aria-haspopup="listbox"], [data-field-part])[data-size="md"] {
+  height: 2.75rem;
+}
+@media (width >= 48rem) {
+  [data-zone="customer"]
+    :is(
+      input:is(
+        [type="text"],
+        [type="search"],
+        [type="email"],
+        [type="tel"],
+        [type="url"],
+        [type="password"],
+        [type="date"],
+        :not([type])
+      ),
+      textarea,
+      select,
+      button[aria-haspopup="listbox"]
+    ):not([autocomplete="one-time-code"]) {
+    font-size: 0.9375rem;
+  }
+}
+
+/*
+ * FlowPath (owner direction 2026-10-30): a dot travels each step's hairline in turn — 1.6 s per step, one slice
+ * of the loop each — down the line on a phone, across from md. HeroShowcase's chips float 4 px on a 6 s loop.
+ * Both keep still under reduced motion (no dot at all; the chips where they are).
+ */
+@layer components {
+  .flow-path .flow-dot {
+    opacity: 0;
+    animation-duration: calc(var(--flow-n) * 1.6s);
+    animation-delay: calc(var(--i) * 1.6s);
+    animation-iteration-count: infinite;
+    animation-timing-function: var(--ease-standard);
+  }
+  .flow-path[data-flow="3"] {
+    --flow-n: 3;
+  }
+  .flow-path[data-flow="4"] {
+    --flow-n: 4;
+  }
+  .flow-path[data-flow="5"] {
+    --flow-n: 5;
+  }
+  .flow-path[data-flow="6"] {
+    --flow-n: 6;
+  }
+  .flow-path[data-flow="3"] .flow-dot {
+    animation-name: flow-dot-v-3;
+  }
+  .flow-path[data-flow="4"] .flow-dot {
+    animation-name: flow-dot-v-4;
+  }
+  .flow-path[data-flow="5"] .flow-dot {
+    animation-name: flow-dot-v-5;
+  }
+  .flow-path[data-flow="6"] .flow-dot {
+    animation-name: flow-dot-v-6;
+  }
+  @media (width >= 48rem) {
+    .flow-path[data-flow="3"] .flow-dot {
+      animation-name: flow-dot-h-3;
+    }
+    .flow-path[data-flow="4"] .flow-dot {
+      animation-name: flow-dot-h-4;
+    }
+    .flow-path[data-flow="5"] .flow-dot {
+      animation-name: flow-dot-h-5;
+    }
+    .flow-path[data-flow="6"] .flow-dot {
+      animation-name: flow-dot-h-6;
+    }
+  }
+  .hero-float {
+    animation: hero-float 6s var(--ease-standard) infinite alternate;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-path .flow-dot,
+  .hero-float {
+    animation: none !important;
+  }
+}
+@keyframes hero-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-4px);
+  }
+}
+@keyframes flow-dot-h-3 {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  2.67% {
+    opacity: 1;
+  }
+  30.67% {
+    opacity: 1;
+  }
+  33.33%,
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-dot-v-3 {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  2.67% {
+    opacity: 1;
+  }
+  30.67% {
+    opacity: 1;
+  }
+  33.33%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-dot-h-4 {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  2.0% {
+    opacity: 1;
+  }
+  23.0% {
+    opacity: 1;
+  }
+  25.0%,
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-dot-v-4 {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  2.0% {
+    opacity: 1;
+  }
+  23.0% {
+    opacity: 1;
+  }
+  25.0%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-dot-h-5 {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  1.6% {
+    opacity: 1;
+  }
+  18.4% {
+    opacity: 1;
+  }
+  20.0%,
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-dot-v-5 {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  1.6% {
+    opacity: 1;
+  }
+  18.4% {
+    opacity: 1;
+  }
+  20.0%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-dot-h-6 {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  1.33% {
+    opacity: 1;
+  }
+  15.33% {
+    opacity: 1;
+  }
+  16.67%,
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-dot-v-6 {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  1.33% {
+    opacity: 1;
+  }
+  15.33% {
+    opacity: 1;
+  }
+  16.67%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/*
+ * HeroFlow (owner direction 2026-10-30): the card the dot rests on lifts with a green hairline ring — 2 s per step,
+ * the first second of each step's slot. On a phone a dot runs down the line. Under reduced motion nothing moves, the
+ * curve's dots are hidden and the first card stays lifted.
+ */
+@layer components {
+  .hero-flow-card {
+    --rest: 0 1px 2px rgb(30 27 24 / 0.06), 0 12px 28px -12px rgb(30 27 24 / 0.18);
+    --lift: 0 0 0 1px var(--color-primary), 0 18px 36px -14px rgb(30 27 24 / 0.28);
+    animation-duration: calc(var(--flow-n) * 2s);
+    animation-delay: calc(var(--i) * 2s);
+    animation-iteration-count: infinite;
+    animation-timing-function: var(--ease-standard);
+  }
+  [data-hero-flow="3"] {
+    --flow-n: 3;
+  }
+  [data-hero-flow="4"] {
+    --flow-n: 4;
+  }
+  [data-hero-flow="5"] {
+    --flow-n: 5;
+  }
+  [data-hero-flow="6"] {
+    --flow-n: 6;
+  }
+  [data-hero-flow="3"] .hero-flow-card {
+    animation-name: hero-card-3;
+  }
+  [data-hero-flow="4"] .hero-flow-card {
+    animation-name: hero-card-4;
+  }
+  [data-hero-flow="5"] .hero-flow-card {
+    animation-name: hero-card-5;
+  }
+  [data-hero-flow="6"] .hero-flow-card {
+    animation-name: hero-card-6;
+  }
+  .hero-flow-run {
+    animation: hero-flow-run calc(var(--flow-n) * 2s) linear infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-flow-card,
+  .hero-flow-run {
+    animation: none !important;
+  }
+  .hero-flow-run,
+  .hero-flow-dot {
+    display: none;
+  }
+  .hero-flow-card:first-of-type {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+}
+@keyframes hero-flow-run {
+  from {
+    top: 0%;
+  }
+  to {
+    top: 100%;
+  }
+}
+@keyframes hero-card-3 {
+  0%,
+  16.07% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  16.67%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
+}
+@keyframes hero-card-4 {
+  0%,
+  11.9% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  12.5%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
+}
+@keyframes hero-card-5 {
+  0%,
+  9.4% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  10.0%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
+}
+@keyframes hero-card-6 {
+  0%,
+  7.73% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  8.33%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
 }

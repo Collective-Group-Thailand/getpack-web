@@ -21,11 +21,14 @@ export function VariantResults({
   nextCursor,
   query,
   total,
+  layout = "card",
 }: {
   initial: { code: string; node: React.ReactNode }[];
   nextCursor: string | null;
   query: StyleVariantListQuery;
   total: number;
+  /** `row`: a list of variant rows (a style's feature page) instead of the grid of cards. */
+  layout?: "card" | "row";
 }) {
   const t = useTranslations("styles.list");
   const [items, setItems] = useState<Item[]>(initial);
@@ -56,17 +59,28 @@ export function VariantResults({
 
   return (
     <div className="flex flex-col gap-6">
-      <VirtualGrid
-        items={items}
-        itemKey={(item) => item.code}
-        label={t("variantGrid")}
-        minColumnWidth={190}
-        minColumns={2}
-        gap={14}
-        estimatedRowHeight={280}
-        initialItems={12}
-        renderItem={(item) => ("node" in item ? item.node : <VariantCardView card={item.card} />)}
-      />
+      {layout === "row" ? (
+        <ul
+          aria-label={t("variantGrid")}
+          className="border-border bg-surface rounded-panel divide-border divide-y overflow-hidden border"
+        >
+          {items.map((item) => (
+            <li key={item.code}>{"node" in item ? item.node : <VariantCardView card={item.card} layout="row" />}</li>
+          ))}
+        </ul>
+      ) : (
+        <VirtualGrid
+          items={items}
+          itemKey={(item) => item.code}
+          label={t("variantGrid")}
+          minColumnWidth={190}
+          minColumns={2}
+          gap={14}
+          estimatedRowHeight={280}
+          initialItems={12}
+          renderItem={(item) => ("node" in item ? item.node : <VariantCardView card={item.card} />)}
+        />
+      )}
       <div className="flex flex-col items-center gap-2">
         <p className="text-muted text-sm" aria-live="polite">
           {t("shown", { shown: items.length, total })}

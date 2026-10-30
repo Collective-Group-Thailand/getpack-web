@@ -764,7 +764,7 @@ export function Configurator({
             />
           }
         />
-        <StepChips aria-label={t("stepsLabel")} chips={chips} className="-mx-5 px-5 md:mx-0 md:px-0" />
+        <StepChips aria-label={t("stepsLabel")} chips={chips} className="-mx-5 md:mx-0" />
         {steps.map((step, index) => (
           <StepCard
             key={step}

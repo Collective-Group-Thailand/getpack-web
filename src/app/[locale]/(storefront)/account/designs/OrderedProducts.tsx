@@ -7,11 +7,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { studioHref } from "@/features/customer/studio/paths";
 import { storeDesigns, type StoreDesign } from "@/features/designer/data/api";
 import { formatDateTime } from "@/i18n/format";
+import { DesignThumb } from "@/features/customer/account/DesignThumb";
 import { Link } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
-import { Card } from "@/ui/components/Card";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { IconButton } from "@/ui/components/IconButton";
 import { toast } from "@/ui/components/Toast";
 
 /**
@@ -23,6 +25,7 @@ import { toast } from "@/ui/components/Toast";
  */
 export function OrderedProducts({ designs }: { designs: StoreDesign[] }) {
   const t = useTranslations("designs.products");
+  const tDesigns = useTranslations("designs");
   const locale = useLocale() as "th" | "en";
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -41,14 +44,14 @@ export function OrderedProducts({ designs }: { designs: StoreDesign[] }) {
   };
 
   return (
-    <section aria-labelledby="my-products" className="mb-10 space-y-4">
+    <section aria-labelledby="my-products" className="mb-8 space-y-4">
       <div>
         <h2 id="my-products" className="text-lg font-semibold">
           {t("title")}
         </h2>
         <p className="text-muted text-sm">{t("body")}</p>
       </div>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {ordered.map((design) => {
           const lock = design.lock!;
           const product = locale === "en" ? design.product.nameEn : design.product.nameTh;
@@ -57,62 +60,95 @@ export function OrderedProducts({ designs }: { designs: StoreDesign[] }) {
               ? t("size", { l: design.lengthMm, w: design.widthMm, h: design.heightMm })
               : null;
           return (
-            <Card as="li" key={design.id} className="space-y-3">
-              <div>
-                <p className="font-medium">{design.title}</p>
-                <p className="text-muted text-xs">{[product, size].filter(Boolean).join(" · ")}</p>
-              </div>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-                {design.styleVariantCode ? (
-                  <>
-                    <dt className="text-muted">{t("styleCode")}</dt>
-                    <dd className="tabular-nums">{design.styleVariantCode}</dd>
-                  </>
+            <li
+              key={design.id}
+              className="border-border bg-surface rounded-card flex h-full min-w-0 flex-col overflow-hidden border"
+            >
+              <Link
+                href={studioHref({ designId: design.id })}
+                className="bg-surface-subtle border-border block aspect-[4/3] border-b"
+                tabIndex={-1}
+                aria-hidden={Boolean(design.thumbnailUrl || design.thumbnailFileId)}
+              >
+                <DesignThumb
+                  url={design.thumbnailUrl}
+                  fileId={design.thumbnailFileId}
+                  empty={tDesigns("card.noThumbnail")}
+                />
+              </Link>
+              <div className="flex flex-1 flex-col gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="line-clamp-2 font-semibold [overflow-wrap:break-word] break-keep">{design.title}</p>
+                  <p className="text-muted text-xs">{[product, size].filter(Boolean).join(" · ")}</p>
+                </div>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+                  {design.styleVariantCode ? (
+                    <>
+                      <dt className="text-muted">{t("styleCode")}</dt>
+                      <dd className="tabular-nums">{design.styleVariantCode}</dd>
+                    </>
+                  ) : null}
+                  <dt className="text-muted">{t("artwork")}</dt>
+                  <dd>{t("version", { version: lock.versionNo })}</dd>
+                  <dt className="text-muted">{t("lastOrder")}</dt>
+                  <dd>
+                    <Link
+                      href={`/account/orders/${lock.orderId}`}
+                      className="text-primary tabular-nums underline-offset-4 hover:underline"
+                    >
+                      {lock.orderCode}
+                    </Link>
+                    <span className="text-muted block">{formatDateTime(lock.lockedAt, locale)}</span>
+                  </dd>
+                </dl>
+                {design.lock && design.versionNo && design.versionNo > lock.versionNo ? (
+                  <p>
+                    <Badge tone="neutral">{t("editedSince", { version: design.versionNo })}</Badge>
+                  </p>
                 ) : null}
-                <dt className="text-muted">{t("artwork")}</dt>
-                <dd>{t("version", { version: lock.versionNo })}</dd>
-                <dt className="text-muted">{t("lastOrder")}</dt>
-                <dd>
-                  <Link
-                    href={`/account/orders/${lock.orderId}`}
-                    className="text-primary underline-offset-4 hover:underline"
-                  >
-                    {lock.orderCode}
-                  </Link>{" "}
-                  <span className="text-muted">{formatDateTime(lock.lockedAt, locale)}</span>
-                </dd>
-              </dl>
-              <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" iconStart="refresh">
-                  <Link
-                    href={`/account/orders/${lock.orderId}/reorder`}
-                    aria-label={t("reorderLabel", { name: design.title })}
-                  >
-                    {t("reorder")}
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="secondary">
-                  <Link
-                    href={studioHref({ designId: design.id, step: "order" })}
-                    aria-label={t("quantityLabel", { name: design.title })}
-                  >
-                    {t("quantity")}
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  loading={busy === design.id}
-                  aria-label={t("newSizeLabel", { name: design.title })}
-                  onClick={() => void newSize(design)}
-                >
-                  {t("newSize")}
-                </Button>
+                <div className="mt-auto flex items-center gap-2 pt-1">
+                  <Button asChild size="sm" iconStart="refresh">
+                    <Link
+                      href={`/account/orders/${lock.orderId}/reorder`}
+                      aria-label={t("reorderLabel", { name: design.title })}
+                    >
+                      {t("reorder")}
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="secondary">
+                    <Link
+                      href={studioHref({ designId: design.id, step: "order" })}
+                      aria-label={t("quantityLabel", { name: design.title })}
+                    >
+                      {t("quantity")}
+                    </Link>
+                  </Button>
+                  <span className="ms-auto">
+                    <DropdownMenu
+                      label={tDesigns("moreActions", { name: design.title })}
+                      items={[
+                        {
+                          id: "new-size",
+                          label: t("newSize"),
+                          icon: "ruler",
+                          disabled: busy === design.id,
+                          onSelect: () => void newSize(design),
+                        },
+                      ]}
+                      trigger={
+                        <IconButton
+                          name="more"
+                          size="sm"
+                          variant="ghost"
+                          loading={busy === design.id}
+                          label={tDesigns("moreActions", { name: design.title })}
+                        />
+                      }
+                    />
+                  </span>
+                </div>
               </div>
-              {design.lock && design.versionNo && design.versionNo > lock.versionNo ? (
-                <Badge tone="neutral">{t("editedSince", { version: design.versionNo })}</Badge>
-              ) : null}
-            </Card>
+            </li>
           );
         })}
       </ul>

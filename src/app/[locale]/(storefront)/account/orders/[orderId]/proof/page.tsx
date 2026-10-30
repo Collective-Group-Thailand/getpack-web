@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -46,19 +47,12 @@ export default async function Page({
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-3">
-        <Link
-          href={`/account/orders/${orderId}/artwork`}
-          className="text-primary text-sm underline-offset-4 hover:underline"
-        >
-          {t("back")}
-        </Link>
-        <h1 className="text-title leading-tight">{t("titleFor", { code: artwork.order.orderCode })}</h1>
-        {artwork.rules?.dieline?.styleCode ? (
-          // D-184: the style code rides on the proof, as on the quote, order and job.
-          <p className="text-muted text-sm">{t("styleCode", { code: artwork.rules.dieline.styleCode })}</p>
-        ) : null}
-      </header>
+      <AccountHeader
+        back={{ href: `/account/orders/${orderId}/artwork`, label: t("back") }}
+        title={t("titleFor", { code: artwork.order.orderCode })}
+        // D-184: the style code rides on the proof, as on the quote, order and job.
+        lede={artwork.rules?.dieline?.styleCode ? t("styleCode", { code: artwork.rules.dieline.styleCode }) : undefined}
+      />
       {locked && design ? (
         <section aria-labelledby="studio-version" className="flex flex-col gap-2">
           <h2 id="studio-version" className="font-semibold">

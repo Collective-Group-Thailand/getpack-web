@@ -8,8 +8,10 @@ import type { DesignContent } from "@/features/designer/types";
 import { formatDateTime } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { BrandLogo } from "@/ui/brand";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Icon } from "@/ui/icons";
 
 import { pick } from "../catalog/localize";
 import type { SharedDesignData } from "./api.server";
@@ -43,25 +45,57 @@ export async function SharedDesign({ shared, token }: { shared: SharedDesignData
   const product = pick(locale, shared.product.nameTh, shared.product.nameEn);
   const collaborative = shared.scope === "comment" || shared.scope === "edit";
 
+  const startHref = studioHref({ product: shared.product.slug || null, step: "start" });
+  const scopeIcon = shared.scope === "edit" ? "edit" : shared.scope === "comment" ? "chat" : "eye";
+  // What this link lets the holder do, as one quiet note under the viewer (the scope's own words).
+  const note =
+    shared.scope === "edit"
+      ? { title: t("canEdit"), body: t("canEditBody") }
+      : shared.scope === "comment"
+        ? { title: t("canComment"), body: t("canCommentBody") }
+        : { title: t("viewOnly"), body: t("viewOnlyBody") };
+
   return (
-    <div className="bg-canvas text-fg flex min-h-dvh flex-col">
-      <header className="bg-neutral text-neutral-fg flex h-14 items-center gap-3 px-4">
-        <Link href="/" aria-label={t("home")}>
-          <BrandLogo height={22} tone="mono" />
+    // Project A: the viewer dominates under a compact light bar — the wordmark and the link's one main action
+    // (edit for an edit link, else "start your own"); the title, the scope and the dates in one block above it.
+    <div className="bg-bg text-fg flex min-h-dvh flex-col">
+      <header className="border-border bg-surface flex h-14 shrink-0 items-center gap-3 border-b px-4 md:px-6">
+        <Link href="/" aria-label={t("home")} className="shrink-0">
+          <BrandLogo height={22} />
         </Link>
-        <span className="text-sm">{t(`badges.${shared.scope}`)}</span>
+        <span className="ms-auto">
+          {shared.scope === "edit" ? (
+            <Button asChild size="sm" iconStart="edit">
+              <Link href={`/design/shared/${token}/edit`}>{t("edit")}</Link>
+            </Button>
+          ) : (
+            <Button asChild size="sm" variant={collaborative ? "secondary" : "primary"}>
+              <Link href={startHref}>{t("start")}</Link>
+            </Button>
+          )}
+        </span>
       </header>
-      <main id="main" className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-6">
-        <div>
-          <h1 className="text-xl font-semibold">{shared.title}</h1>
-          <p className="text-muted text-sm">
-            {read && isStyleId(read.spec.styleId)
-              ? `${getStyle(read.spec.styleId).name[locale]} · ${sizeOf(read.spec).text} ${t("mm")} · `
-              : ""}
-            {product ? `${product} · ` : ""}
-            {t("sharedAt", { time: formatDateTime(shared.sharedAt, locale) })}
+      <main id="main" className="mx-auto flex w-full max-w-[82.5rem] flex-1 flex-col gap-4 px-4 py-5 md:px-6 md:py-6">
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+          <div className="min-w-0">
+            <Badge tone="primary" icon={scopeIcon} className="mb-2">
+              {t(`badges.${shared.scope}`)}
+            </Badge>
+            <h1 className="text-[1.5rem] leading-tight font-semibold tracking-tight md:text-[1.875rem]">
+              {shared.title}
+            </h1>
+            <p className="text-muted mt-1 text-sm">
+              {read && isStyleId(read.spec.styleId)
+                ? `${getStyle(read.spec.styleId).name[locale]} · ${sizeOf(read.spec).text} ${t("mm")} · `
+                : ""}
+              {product ? `${product} · ` : ""}
+              {t("sharedAt", { time: formatDateTime(shared.sharedAt, locale) })}
+            </p>
+          </div>
+          <p className="border-border bg-surface text-muted rounded-control inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs">
+            <Icon name="clock" size={14} aria-hidden="true" />
+            {t("expiresAt", { time: formatDateTime(shared.expiresAt, locale) })}
           </p>
-          <p className="text-muted text-xs">{t("expiresAt", { time: formatDateTime(shared.expiresAt, locale) })}</p>
         </div>
         {read && collaborative ? (
           <SharedComments
@@ -81,7 +115,7 @@ export async function SharedDesign({ shared, token }: { shared: SharedDesignData
             />
           </SharedComments>
         ) : read ? (
-          <div className="bg-surface border-border aspect-[4/3] w-full rounded-xl border p-4">
+          <div className="bg-surface border-border rounded-panel aspect-[4/3] w-full border p-4 md:aspect-auto md:h-[min(68dvh,48rem)] md:p-8">
             <DesignViewer
               spec={read.spec}
               content={withAssets(read.content, shared.assets)}
@@ -92,26 +126,11 @@ export async function SharedDesign({ shared, token }: { shared: SharedDesignData
         ) : (
           <Callout tone="warning" title={t("unreadable")} />
         )}
-        {shared.scope === "edit" ? (
-          <Callout tone="info" title={t("canEdit")}>
-            <p className="mb-2">{t("canEditBody")}</p>
-            <Button asChild size="sm">
-              <Link href={`/design/shared/${token}/edit`}>{t("edit")}</Link>
-            </Button>
-          </Callout>
-        ) : shared.scope === "comment" ? (
-          <Callout tone="info" title={t("canComment")}>
-            {t("canCommentBody")}
-          </Callout>
-        ) : (
-          <Callout tone="info" title={t("viewOnly")}>
-            {t("viewOnlyBody")}
-          </Callout>
-        )}
-        <div>
-          <Button asChild>
-            <Link href={studioHref({ product: shared.product.slug || null, step: "start" })}>{t("start")}</Link>
-          </Button>
+        <div className="bg-primary-subtle flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm">
+          <Icon name="info" size={18} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
+          <p className="m-0">
+            <b className="font-semibold">{note.title}</b> <span className="text-muted">· {note.body}</span>
+          </p>
         </div>
       </main>
     </div>

@@ -3,7 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { TabBar } from "@/features/customer/account/AccountTabs";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
@@ -15,7 +16,6 @@ import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
-import { cn } from "@/ui/lib/cn";
 
 const TABS = [
   { key: "home", href: "/account/agent" },
@@ -30,24 +30,16 @@ export function AgentNav() {
   const t = useTranslations("agent.nav");
   const pathname = usePathname();
   return (
-    <nav aria-label={t("label")} className="border-border -mx-1 flex gap-1 overflow-x-auto border-b">
-      {TABS.map((tab) => {
-        const current = tab.key === "home" ? pathname === tab.href : pathname.startsWith(tab.href);
-        return (
-          <Link
-            key={tab.key}
-            href={tab.href}
-            aria-current={current ? "page" : undefined}
-            className={cn(
-              "border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap",
-              current ? "border-primary text-fg" : "text-muted hover:text-fg border-transparent",
-            )}
-          >
-            {t(tab.key)}
-          </Link>
-        );
-      })}
-    </nav>
+    // Project B4: the programme's pages as the same segmented tab row as every account section.
+    <TabBar
+      label={t("label")}
+      items={TABS.map((tab) => ({
+        key: tab.key,
+        href: tab.href,
+        label: t(tab.key),
+        current: tab.key === "home" ? pathname === tab.href : pathname.startsWith(tab.href),
+      }))}
+    />
   );
 }
 

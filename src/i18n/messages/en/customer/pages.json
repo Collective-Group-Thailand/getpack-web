@@ -398,7 +398,16 @@
           "a": "Yes. Start with jobs from getpack and switch other modules on when you are ready."
         }
       }
-    }
+    },
+    "flow": {
+      "label": "A getpack job from start to billing",
+      "make": "Produce",
+      "ship": "Ship",
+      "shipCaption": "Update the status in the system",
+      "bill": "Bill",
+      "billCaption": "Track payment"
+    },
+    "showcaseLabel": "Packaging produced through getpack"
   },
   "legal": {
     "terms": {

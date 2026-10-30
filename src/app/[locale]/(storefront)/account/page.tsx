@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import {
@@ -14,11 +15,13 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getApprovals, getMyCompany } from "@/features/customer/business/api.server";
 import { listOrderPage } from "@/features/customer/orders/api.server";
 import { OrderCard } from "@/features/customer/orders/list/OrderCard";
+import { OrderTable } from "@/features/customer/orders/list/OrderTable";
 import { TodoStrip } from "@/features/customer/orders/list/TodoStrip";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -65,8 +68,9 @@ function Section({
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, format, latest, active, points, credit, launchpad, defaults, quotes, company] = await Promise.all([
+  const [t, tNav, format, latest, active, points, credit, launchpad, defaults, quotes, company] = await Promise.all([
     getTranslations("account.home"),
+    getTranslations("account.nav"),
     getFormat(),
     listOrderPage("active", "", 1, 3).catch(() => null),
     listOrderPage("active", "", 1, 100).catch(() => null),
@@ -88,12 +92,7 @@ export default async function Page() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-[clamp(1.75rem,3vw,2.25rem)] leading-[1.1] font-bold tracking-[-0.02em]">
-          {t("greeting", { name: me.displayName })}
-        </h1>
-        <p className="text-muted mt-1.5">{t("intro")}</p>
-      </div>
+      <AccountHeader title={t("greeting", { name: me.displayName })} lede={t("intro")} />
 
       {forMe.length > 0 ? (
         <Link
@@ -110,23 +109,87 @@ export default async function Page() {
         </Link>
       ) : null}
 
-      <TodoStrip orders={activeOrders} />
+      {/* Project B: the overview as a dashboard — what waits for the customer first (one list, each row with its
+          action), then the orders in progress, the account's shortcuts, and the designs to continue. */}
+      <TodoStrip
+        orders={activeOrders}
+        layout="list"
+        empty={
+          <p className="border-border bg-surface rounded-panel text-muted flex items-center gap-3 border p-4 text-sm">
+            <span className="bg-success-subtle text-success-subtle-fg grid size-9 shrink-0 place-items-center rounded-full">
+              <Icon name="check" size={18} aria-hidden="true" />
+            </span>
+            {t("nothingToDo")}
+          </p>
+        }
+      />
 
       <Section id="account-latest" title={t("latest")} more={{ href: "/account/orders", label: t("allOrders") }}>
         {latestOrders.length === 0 ? (
-          <div className="border-border-strong text-muted rounded-panel border border-dashed p-8 text-center">
-            <p>{t("noOrders")}</p>
-            <Button asChild className="mt-4">
-              <Link href="/products">{t("browse")}</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon="package"
+            title={t("noOrders")}
+            action={
+              <Button asChild>
+                <Link href="/products">{t("browse")}</Link>
+              </Button>
+            }
+          />
         ) : (
-          <div className="flex flex-col gap-3">
-            {latestOrders.map(({ order, group }) => (
-              <OrderCard key={order.id} order={order} placedAt={group.placedAt} />
-            ))}
-          </div>
+          <>
+            <OrderTable
+              className="hidden md:block"
+              groups={latestOrders.map(({ order, group }) => ({
+                id: order.id,
+                placedAt: group.placedAt,
+                framed: false,
+                orders: [order],
+              }))}
+            />
+            <div className="flex flex-col gap-3 md:hidden">
+              {latestOrders.map(({ order, group }) => (
+                <OrderCard key={order.id} order={order} placedAt={group.placedAt} />
+              ))}
+            </div>
+          </>
         )}
+      </Section>
+
+      <Section id="account-shortcuts" title={t("shortcuts")}>
+        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            { href: "/account/quotes", icon: "receipt" as const, label: tNav("quotes"), value: null },
+            { href: "/account/designs", icon: "pen-tool" as const, label: tNav("designs"), value: null },
+            { href: "/account/documents", icon: "document" as const, label: tNav("documents"), value: null },
+            {
+              href: points ? "/account/points" : "/account/wallet",
+              icon: "star" as const,
+              label: points ? tNav("points") : tNav("wallet"),
+              value: points
+                ? t("points", { points: format.number(points.availablePoints) })
+                : credit
+                  ? format.thb(credit.balance)
+                  : null,
+            },
+          ].map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="border-border bg-surface hover:border-primary focus-visible:ring-focus-ring rounded-panel flex h-full items-center gap-3 border p-4 outline-none focus-visible:ring-2"
+              >
+                <span className="bg-primary-subtle text-primary-subtle-fg grid size-10 shrink-0 place-items-center rounded-xl">
+                  <Icon name={item.icon} size={20} aria-hidden="true" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">{item.label}</span>
+                  {item.value ? (
+                    <span className="text-primary block text-[0.8125rem] font-semibold tabular-nums">{item.value}</span>
+                  ) : null}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </Section>
 
       {launchpad ? (

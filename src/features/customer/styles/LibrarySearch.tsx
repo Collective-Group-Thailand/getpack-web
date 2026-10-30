@@ -6,7 +6,6 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { Input } from "@/ui/components/Input";
-import { Kbd } from "@/ui/components/Kbd";
 import { Spinner } from "@/ui/components/Spinner";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -23,7 +22,7 @@ const DEBOUNCE_MS = 160;
 /**
  * The library's search (styles redesign §2): results follow the words as they are typed — no
  * button — through `router.replace`, so the server renders them and Back does not step through
- * every letter. "/" focuses it from anywhere on the page. "ค้นหาบ่อย" are staff's terms
+ * every letter. "/" focuses it from anywhere on the page (no visible hint: a customer storefront). "ค้นหาบ่อย" are staff's terms
  * (`store.style-library.settings`), hidden when there are none.
  *
  * Without JavaScript it is a plain GET form to the same URL.
@@ -95,7 +94,7 @@ export function LibrarySearch({
   const tabClass = (on: boolean) =>
     cn(
       "focus-visible:ring-focus-ring rounded-lg px-3 py-1.5 text-sm font-medium outline-none focus-visible:ring-2",
-      on ? "bg-surface text-fg ring-border shadow-sm ring-1" : "text-muted hover:text-fg",
+      on ? "bg-primary-subtle text-primary-subtle-fg" : "text-muted hover:text-fg",
     );
 
   const search = (q: string) => {
@@ -112,36 +111,46 @@ export function LibrarySearch({
 
   return (
     <div className="flex min-w-0 flex-col">
-      {/* The method tabs (prototype `.stabs`): by word always; by size only with fit data (C0). */}
-      <div className="mb-2.5 flex flex-wrap items-center gap-1">
-        <div role="tablist" aria-label={t("searchMethods")} className="flex gap-1">
-          <button
-            type="button"
-            role="tab"
-            id="styles-tab-word"
-            aria-selected={method === "word"}
-            aria-controls="styles-pane-word"
-            onClick={() => setMethod("word")}
-            className={tabClass(method === "word")}
-          >
-            {t("searchTabWord")}
-          </button>
+      {/* The method tabs (prototype `.stabs`): drawn only when there is a choice — by word, and by size when the API
+          has styles with fit data (C0). One tab alone was a lone pill over the field (Project A review), so without
+          the size search the field stands on its own. A segmented track, the chosen method on the brand tint. */}
+      {sizeSearch || wizard ? (
+        <div className="mb-2.5 flex flex-wrap items-center gap-2">
           {sizeSearch ? (
-            <button
-              type="button"
-              role="tab"
-              id="styles-tab-size"
-              aria-selected={method === "size"}
-              aria-controls="styles-pane-size"
-              onClick={() => setMethod("size")}
-              className={tabClass(method === "size")}
+            <div
+              role="tablist"
+              aria-label={t("searchMethods")}
+              className="border-border bg-surface inline-flex gap-0.5 rounded-xl border p-[3px]"
             >
-              {t("searchTabSize")}
-            </button>
+              <button
+                type="button"
+                role="tab"
+                id="styles-tab-word"
+                aria-selected={method === "word"}
+                aria-controls="styles-pane-word"
+                onClick={() => setMethod("word")}
+                className={tabClass(method === "word")}
+              >
+                {t("searchTabWord")}
+              </button>
+              {sizeSearch ? (
+                <button
+                  type="button"
+                  role="tab"
+                  id="styles-tab-size"
+                  aria-selected={method === "size"}
+                  aria-controls="styles-pane-size"
+                  onClick={() => setMethod("size")}
+                  className={tabClass(method === "size")}
+                >
+                  {t("searchTabSize")}
+                </button>
+              ) : null}
+            </div>
           ) : null}
+          {wizard ? <div className="ms-auto">{wizard}</div> : null}
         </div>
-        {wizard ? <div className="ms-auto">{wizard}</div> : null}
-      </div>
+      ) : null}
       {sizeSearch && method === "size" ? (
         <div id="styles-pane-size" role="tabpanel" aria-labelledby="styles-tab-size">
           <form
@@ -186,7 +195,7 @@ export function LibrarySearch({
       <form
         role="search"
         id="styles-pane-word"
-        aria-labelledby="styles-tab-word"
+        {...(sizeSearch ? { "aria-labelledby": "styles-tab-word" } : {})}
         hidden={method !== "word"}
         action={action}
         onSubmit={(event) => {
@@ -213,7 +222,6 @@ export function LibrarySearch({
           enterKeyHint="search"
           value={value}
           placeholder={t("searchPlaceholder")}
-          aria-describedby="styles-q-shortcut"
           onFocus={() => setTyping(true)}
           onBlur={() => setTyping(false)}
           onChange={(event) => {
@@ -223,7 +231,7 @@ export function LibrarySearch({
             timer.current = setTimeout(() => search(next), DEBOUNCE_MS);
           }}
           className={cn(
-            "border-border bg-surface text-fg placeholder:text-subtle rounded-card h-13.5 w-full border ps-12 pe-14 text-base shadow-sm outline-none",
+            "border-border bg-surface text-fg placeholder:text-muted rounded-card h-13 w-full border ps-12 pe-14 text-base shadow-sm outline-none",
             "focus-visible:border-primary focus-visible:ring-focus-ring focus-visible:ring-2",
             "[&::-webkit-search-cancel-button]:hidden",
           )}
@@ -243,12 +251,7 @@ export function LibrarySearch({
             >
               <Icon name="close" size={16} aria-hidden="true" />
             </button>
-          ) : (
-            <span id="styles-q-shortcut" className="hidden md:inline">
-              <span className="sr-only">{t("searchShortcut")}</span>
-              <Kbd aria-hidden="true">/</Kbd>
-            </span>
-          )}
+          ) : null}
         </span>
       </form>
       {quickTerms.length && method === "word" ? (

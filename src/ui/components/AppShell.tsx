@@ -82,16 +82,18 @@ export function AppShell({
           tabIndex={-1} so the skip link can move focus here; without it the link scrolls but
           keyboard focus stays in the header.
         */}
-        <main
-          id="main"
-          tabIndex={-1}
-          className={cn("min-w-0 flex-1", reserveBottomNavSpace && "pb-16 md:pb-0 print:pb-0")}
-        >
+        <main id="main" tabIndex={-1} className="min-w-0 flex-1">
           {children}
         </main>
       </div>
 
       {footer}
+
+      {/* The room the fixed phone tab bar takes (its height and the home indicator), after the footer — so neither
+          the page's last row nor the footer ever ends under the bar. */}
+      {bottomNav && reserveBottomNavSpace ? (
+        <div aria-hidden="true" className="h-[max(4rem,var(--mobile-tab-h))] shrink-0 md:hidden print:hidden" />
+      ) : null}
 
       {bottomNav ? (
         <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t md:hidden print:hidden">

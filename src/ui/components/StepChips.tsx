@@ -95,7 +95,8 @@ export function useActiveStep(ids: readonly string[], rootMarginTop = "-160px"):
  * step with its state — done ✓, "ค่าเริ่มต้น", or a highlighted to-do — and a click that scrolls to
  * the step. A navigation landmark whose chip for the step in view is `aria-current="step"`.
  *
- * On a phone the row scrolls inside the bar (never the page), and the scrollbar stays hidden.
+ * On a phone the row scrolls inside the bar (never the page), edge to edge with room after the last chip, so a
+ * half-shown chip reads as "more this way"; from `md` the chips wrap instead, so none is ever cut off.
  * The state is an icon, a word or a number plus a highlight, never colour alone.
  */
 export function StepChips({ chips, top, className, ...props }: StepChipsProps) {
@@ -107,7 +108,7 @@ export function StepChips({ chips, top, className, ...props }: StepChipsProps) {
       className={cn("bg-bg/95 border-border z-sticky sticky border-b backdrop-blur", className)}
       style={{ top: top ?? "var(--site-sticky-top)" }}
     >
-      <ol className="m-0 flex [scrollbar-width:none] list-none gap-1.5 overflow-x-auto overscroll-x-contain p-0 py-2.5 [&::-webkit-scrollbar]:hidden">
+      <ol className="m-0 flex [scrollbar-width:none] list-none gap-1.5 overflow-x-auto overscroll-x-contain p-0 py-2.5 max-md:px-5 md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
         {chips.map((chip, index) => (
           <li key={chip.id} className="shrink-0">
             <a

@@ -302,10 +302,11 @@ export function ConfiguratorDock({
       >
         <div className="border-border bg-surface rounded-card shadow-card flex flex-col gap-3.5 border p-5 sm:p-[1.375rem]">
           <h2 className="text-muted m-0 text-sm font-normal">{t("title")}</h2>
-          <div aria-live="polite" aria-atomic="true">
+          {/* Project A: the price on the pale brand tint, the figure in green. */}
+          <div aria-live="polite" aria-atomic="true" className="bg-primary-subtle rounded-xl p-4">
             {status ?? (
               <>
-                <p className="serif m-0 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-4xl leading-none tabular-nums">
+                <p className="serif text-primary m-0 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-4xl leading-none tabular-nums">
                   <span
                     key={priced?.unitPrice ?? "none"}
                     data-unit-price=""

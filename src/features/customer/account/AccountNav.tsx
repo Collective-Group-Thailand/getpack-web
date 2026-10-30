@@ -100,7 +100,7 @@ export function AccountNav({
   const group = (key: AccountSection["group"]) => sections.filter((section) => section.group === key);
 
   return (
-    <nav aria-label={t("label")} className="lg:sticky lg:top-24 lg:self-start">
+    <nav aria-label={t("label")} className="lg:sticky lg:top-[calc(var(--site-sticky-top)+1.75rem)] lg:self-start">
       {/* Phones and tablets: one scrolling bar, under the site header. */}
       <ul className="border-border -mx-5 flex [scrollbar-width:none] gap-1 overflow-x-auto border-b px-5 pb-2 md:-mx-8 md:px-8 lg:hidden [&::-webkit-scrollbar]:hidden">
         {sections.map((section) => item(section, true))}

@@ -76,6 +76,8 @@ export { Meter, type MeterProps } from "./Meter";
 export { PageHeader, Toolbar, type PageHeaderProps } from "./PageHeader";
 export { LinkPagination, pageWindow, type LinkPaginationProps } from "./LinkPagination";
 export { Pagination, type PaginationLabels, type PaginationProps } from "./Pagination";
+export { CardImage, type CardImageProps } from "./CardImage";
+export { MobileActionBar } from "./MobileActionBar";
 export { ProductCard, type ProductCardImage, type ProductCardProps } from "./ProductCard";
 export { Popover, type PopoverProps } from "./Popover";
 export {

@@ -24,6 +24,25 @@ export function CompareLimitProvider({ limit, children }: { limit?: number | nul
 }
 
 const KEY = "pk_style_compare";
+const META_KEY = "pk_style_compare_meta";
+
+/** What the tray shows of a chosen style: its name, its photo (null: none) and the drawing's family. */
+export interface CompareMeta {
+  name: string;
+  image: string | null;
+  family: string;
+}
+let meta: Record<string, CompareMeta> = readMeta();
+
+function readMeta(): Record<string, CompareMeta> {
+  try {
+    if (typeof window === "undefined") return {};
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(META_KEY) ?? "{}");
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, CompareMeta>) : {};
+  } catch {
+    return {};
+  }
+}
 
 let codes: string[] = read();
 const listeners = new Set<() => void>();
@@ -38,10 +57,15 @@ function read(): string[] {
   }
 }
 
-function write(next: string[]) {
+function write(next: string[], about?: { code: string; meta: CompareMeta }) {
   codes = next;
+  // Only the chosen styles' details are kept.
+  meta = Object.fromEntries(
+    Object.entries(about ? { ...meta, [about.code]: about.meta } : meta).filter(([code]) => next.includes(code)),
+  );
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
+    window.localStorage.setItem(META_KEY, JSON.stringify(meta));
   } catch {
     // Storage blocked: the in-memory choice still works for this page.
   }
@@ -66,15 +90,17 @@ export function useCompare() {
     codes: current,
     limit,
     has: (code: string) => current.includes(code),
+    /** The tray's details of a chosen style, when the card that chose it gave them. */
+    metaOf: (code: string): CompareMeta | undefined => meta[code],
     full: current.length >= limit,
     /** `false` when the limit refused it — the caller says so (a toast). */
-    toggle: (code: string): boolean => {
+    toggle: (code: string, about?: CompareMeta): boolean => {
       if (current.includes(code)) {
         write(current.filter((c) => c !== code));
         return true;
       }
       if (current.length >= limit) return false;
-      write([...current, code]);
+      write([...current, code], about ? { code, meta: about } : undefined);
       return true;
     },
     remove: (code: string) => write(current.filter((c) => c !== code)),

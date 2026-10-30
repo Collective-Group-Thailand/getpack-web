@@ -434,7 +434,11 @@
       "failed": "Could not send. Please try again",
       "rateLimited": "Too many messages — please wait a moment, or message us on LINE",
       "required": "(required)"
-    }
+    },
+    "flow": {
+      "label": "How an order moves through a company account"
+    },
+    "showcaseLabel": "Packaging made with getpack"
   },
   "dashboard": {
     "status": {

@@ -168,7 +168,8 @@
       "status": "Status",
       "actions": "Actions"
     },
-    "inclVat": "incl. VAT"
+    "inclVat": "incl. VAT",
+    "moreActions": "More actions for {label}"
   },
   "book": {
     "title": "Addresses and tax invoices",
@@ -306,7 +307,8 @@
     },
     "expiresAt": "Expires {date}",
     "gain": "+{points}",
-    "loss": "{points}"
+    "loss": "{points}",
+    "emptyHistory": "No points history yet"
   },
   "referral": {
     "title": "Invite friends",
@@ -328,7 +330,19 @@
     "joined": "Joined",
     "status": "Status",
     "reward": "Reward",
-    "rewardPoints": "{points} points"
+    "rewardPoints": "{points} points",
+    "landing": {
+      "title": "A friend invited you to getpack",
+      "body": "Sign in or sign up with your mobile number, then use your friend's code on your account. The invited friend's discount applies to the first order.",
+      "codeLabel": "Friend's code",
+      "start": "Get started / Sign in",
+      "claim": "Use this code on my account",
+      "claimed": "Your friend's code is saved. The discount applies to your first order.",
+      "browse": "Browse products and prices",
+      "failed": "Couldn't use the code. Please try again.",
+      "invalidTitle": "This invite link doesn't work",
+      "invalidBody": "Check the link with your friend, or browse products now."
+    }
   },
   "wallet": {
     "title": "Store credit",
@@ -353,7 +367,11 @@
     "benefitFixed": "{amount} off",
     "benefitCap": " (up to {amount})",
     "minOrder": "Minimum order {amount}",
-    "firstOrder": "First order only"
+    "firstOrder": "First order only",
+    "history": "Credit history",
+    "tableItem": "Item",
+    "tableDate": "Date",
+    "tableAmount": "Amount"
   },
   "copy": {
     "copied": "Copied"
@@ -530,7 +548,7 @@
       "line": "LINE"
     },
     "channelFailed": "The channel could not be changed",
-    "back": "← All messages",
+    "back": "All messages",
     "readByGetpack": "Team last read {at}",
     "responseTarget": "The team replies during business hours",
     "openSubject": "Open it",
@@ -621,6 +639,7 @@
     "addresses": "Addresses & tax invoice",
     "notifications": "Notifications",
     "privacy": "Privacy",
-    "team": "Team & approvers"
+    "team": "Team & approvers",
+    "all": "All"
   }
 }

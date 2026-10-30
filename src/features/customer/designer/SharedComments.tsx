@@ -42,8 +42,9 @@ export function SharedComments({
   const r = Math.max(viewBox.width, viewBox.height) * 0.018;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-      <div className="bg-surface border-border relative aspect-[4/3] w-full rounded-xl border p-4">
+    // The viewer takes the room (8 of 12 on a wide screen), the comments a panel beside it, under it on a phone.
+    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="bg-surface border-border rounded-panel relative aspect-[4/3] w-full border p-4 md:p-6">
         <div className="relative h-full w-full">
           {children}
           <svg
@@ -79,7 +80,7 @@ export function SharedComments({
           </svg>
         </div>
       </div>
-      <aside aria-label={t("panel")} className="space-y-3">
+      <aside aria-label={t("panel")} className="border-border bg-surface rounded-panel space-y-3 border p-4">
         <CommentsPanel source={{ kind: "link", token }} toAnchor={toAnchor} toPoint={toPoint} placeOf={placeOf} />
       </aside>
     </div>

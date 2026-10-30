@@ -74,6 +74,8 @@ function LineChat({ lineOaId }: { lineOaId: string }) {
         "max-[1099px]:[body:has([data-quote-bar])_&]:bottom-[calc(var(--mobile-tab-h)+5.5rem)] md:max-[1099px]:[body:has([data-quote-bar])_&]:bottom-24",
         // Above the product page's buy bar (phones only; pdp redesign item 1).
         "max-md:[body:has([data-pdp-bar])_&]:bottom-[calc(var(--mobile-tab-h)+5rem)]",
+        // Above a page's bottom action bar (`MobileActionBar`, phones only) the same way.
+        "max-md:[body:has([data-mobile-bar])_&]:bottom-[calc(var(--mobile-tab-h)+5rem)]",
       )}
     >
       {open ? (

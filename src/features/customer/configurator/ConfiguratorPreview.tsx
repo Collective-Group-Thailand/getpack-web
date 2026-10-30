@@ -78,7 +78,7 @@ export function ConfiguratorPreview({
       material: materialName,
     });
     return (
-      <div className="border-border bg-bg-subtle rounded-card grid overflow-hidden border min-[1100px]:grid-cols-[minmax(0,1fr)_14rem]">
+      <div className="border-border bg-bg-subtle rounded-card grid overflow-hidden border min-[1100px]:grid-cols-[minmax(0,1fr)_16.5rem]">
         <figure className="m-0 flex min-w-0 flex-col gap-3 p-4">
           {style ? (
             <SegmentedControl

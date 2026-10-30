@@ -60,7 +60,8 @@ export function QuoteAnswer({ token, quoteNo }: { token: string; quoteNo: string
 
   if (!mode)
     return (
-      <div className="flex flex-wrap gap-3">
+      // The answer in its own card on the brand tint: accept as the one primary, decline as an outline.
+      <div className="bg-primary-subtle rounded-panel flex flex-wrap items-center gap-3 p-5">
         <Button size="lg" iconStart="check" onClick={() => setMode("accept")}>
           {t("accept")}
         </Button>
@@ -71,7 +72,7 @@ export function QuoteAnswer({ token, quoteNo }: { token: string; quoteNo: string
     );
 
   return (
-    <div className="border-border bg-surface flex flex-col gap-4 rounded-xl border p-4">
+    <div className="border-border bg-surface rounded-panel flex flex-col gap-4 border p-5 md:p-6">
       {mode === "accept" ? (
         <>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -101,7 +102,11 @@ export function QuoteAnswer({ token, quoteNo }: { token: string; quoteNo: string
           />
         </Field>
       )}
-      {error ? <p className="text-danger text-sm">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-danger-subtle-fg text-sm">
+          {error}
+        </p>
+      ) : null}
       <div className="flex flex-wrap gap-3">
         <Button size="lg" loading={busy} iconStart={mode === "accept" ? "check" : "send"} onClick={() => void send()}>
           {mode === "accept" ? t("acceptConfirm") : t("declineConfirm")}

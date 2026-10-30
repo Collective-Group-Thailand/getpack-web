@@ -53,8 +53,9 @@ export function timelineTitle(t: Translate, locale: string, entry: Schemas["Time
   const params = (entry.params ?? {}) as Params;
   if (entry.type === "production.milestone_reached") {
     if (typeof params["labelTh"] !== "string") return null;
-    const labelEn = typeof params["labelEn"] === "string" ? params["labelEn"] : null;
-    return t("timelineTypes.production_milestone", { stage: pick(locale, params["labelTh"], labelEn) });
+    // The stage words from the API's message, not the raw params: rows written before D-439 keep the
+    // old step words ("โรงงานรับงานแล้ว"), which the API rewrites for the customer (never a factory, D-050).
+    return t("timelineTypes.production_milestone", { stage: pick(locale, entry.messageTh, entry.messageEn) });
   }
   const values = LABELLED[entry.type];
   if (!values) return null;

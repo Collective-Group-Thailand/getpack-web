@@ -228,5 +228,23 @@
     "certificate": "Withholding certificate (50 ทวิ)",
     "failed": "Could not open the document",
     "emptyAction": "See your commission"
+  },
+  "table": {
+    "customer": "Customer",
+    "source": "Source",
+    "orders": "Orders",
+    "commission": "Commission",
+    "status": "Status",
+    "lead": "Lead",
+    "kind": "Type",
+    "contact": "Contact",
+    "protection": "Protection",
+    "actions": "Actions",
+    "item": "Item",
+    "detail": "Details",
+    "date": "Date",
+    "amount": "Amount",
+    "period": "Month",
+    "number": "Number"
   }
 }

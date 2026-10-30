@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { unitLabel } from "@/features/customer/catalog/unit-label";
 import { formatNumber } from "@/i18n/format";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
@@ -31,6 +32,7 @@ export function CallOffActions({
 }) {
   const t = useTranslations("account.callOffs");
   const tCommon = useTranslations("common");
+  const tCatalog = useTranslations("catalog");
   const router = useRouter();
   const locale = useLocale() as "th" | "en";
   const [quantity, setQuantity] = useState("");
@@ -80,7 +82,7 @@ export function CallOffActions({
           </h2>
           <div className="flex flex-wrap items-end gap-2">
             <Field
-              label={t("releaseQuantity", { unit: agreement.unit })}
+              label={t("releaseQuantity", { unit: unitLabel(tCatalog, agreement.unit) })}
               hint={t("releaseHint", {
                 min: formatNumber(agreement.minReleaseQuantity, locale),
                 left: formatNumber(agreement.remainingQuantity, locale),
@@ -113,7 +115,10 @@ export function CallOffActions({
         onOpenChange={setCancelling}
         tone="destructive"
         title={t("cancelTitle")}
-        description={t("cancelBody", { left: formatNumber(agreement.remainingQuantity, locale), unit: agreement.unit })}
+        description={t("cancelBody", {
+          left: formatNumber(agreement.remainingQuantity, locale),
+          unit: unitLabel(tCatalog, agreement.unit),
+        })}
         confirmLabel={t("cancel")}
         cancelLabel={tCommon("actions.cancel")}
         onConfirm={() => void cancel()}

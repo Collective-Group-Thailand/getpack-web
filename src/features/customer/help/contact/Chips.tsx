@@ -3,7 +3,8 @@
 import { cn } from "@/ui/lib/cn";
 
 const CHIP = "rounded-control border px-3 py-1.5 text-[13px] transition-colors disabled:opacity-50";
-const ON = "border-fg bg-fg text-bg";
+// Selected in brand green (Project A: selected states are green, never a black chip).
+const ON = "border-primary bg-primary text-primary-fg";
 const OFF = "border-border-strong bg-surface text-muted hover:text-fg";
 
 /** One choice among chips (`role="radio"`), for the reply channel, a call-back day and a slot. */

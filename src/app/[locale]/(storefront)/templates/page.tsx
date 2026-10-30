@@ -1,8 +1,11 @@
-import { ComingSoon, comingSoonMetadata } from "@/features/customer/shell/ComingSoon";
+import { getLocale } from "next-intl/server";
 
-/** Dieline templates to download (F3 3.2 / F4). */
-export const generateMetadata = () => comingSoonMetadata("pages.templates");
+import { permanentRedirect } from "@/i18n/navigation";
 
-export default function Page() {
-  return <ComingSoon titleKey="pages.templates" />;
+/**
+ * Dieline templates live in the style library (owner decision, Project A: no "coming soon" pages — every module
+ * is live): `/templates` sends visitors and old links there permanently.
+ */
+export default async function Page() {
+  permanentRedirect({ href: "/styles", locale: await getLocale() });
 }

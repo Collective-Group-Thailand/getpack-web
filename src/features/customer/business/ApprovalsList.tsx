@@ -166,7 +166,7 @@ export function ApprovalsList({
                         ) : null}
                       </dl>
                     </div>
-                    <div className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-4">
+                    <div className="bg-surface-subtle border-border rounded-card flex flex-col gap-3 border p-4">
                       <div className="flex items-baseline justify-between gap-3">
                         <span className="font-medium">{t("total")}</span>
                         <span className="text-xl font-bold tabular-nums">{format.thb(approval.amount)}</span>

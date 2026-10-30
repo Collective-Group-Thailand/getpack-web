@@ -70,6 +70,12 @@ describe("a style card", () => {
     expect(screen.getByText("ขอใบเสนอราคา")).toBeInTheDocument();
   });
 
+  it("claims no instant price without a price to show: no 'ราคาทันที' badge when the API sent no starting price", () => {
+    face({ ...base, pricePath: "instant" } as StyleCard);
+    expect(screen.queryByText("ราคาทันที")).toBeNull();
+    expect(screen.getByText("ขอใบเสนอราคา")).toBeInTheDocument();
+  });
+
   it("shows at most two option tags and '+n' for the rest, and one tag plus '+n' on phones", () => {
     const { container } = face(base);
     const tags = [...container.querySelectorAll("ul[aria-label] li")];

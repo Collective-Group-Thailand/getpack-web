@@ -11,13 +11,15 @@ import { Badge } from "@/ui/components/Badge";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Button } from "@/ui/components/Button";
 import { Spinner } from "@/ui/components/Spinner";
-import { Icon } from "@/ui/icons";
+import { MobileActionBar } from "@/ui/components/MobileActionBar";
+import { ProductPlate } from "@/ui/components/ProductIllustration";
 import { cn } from "@/ui/lib/cn";
 
 import type { DielineDownloadProps } from "./DielineDownload";
 import { DielineDownloadEntry } from "./DielineDownloadEntry";
 import { VariantActions, type VariantActionsProps } from "./VariantActions";
 import { axisLabel, valueLabel, type StylesT } from "./labels";
+import { illustrationOf } from "./illustration";
 import { previewSrc } from "./paths";
 import { change, optionsOf, selectionOf, variantOf, type Selection } from "./variants";
 
@@ -48,6 +50,9 @@ export function VariantPicker({
   dieline,
   initialCode,
   compact = false,
+  head,
+  below,
+  besidePanel,
 }: {
   style: StyleDetail;
   name: string;
@@ -59,6 +64,18 @@ export function VariantPicker({
   actions: Omit<VariantActionsProps, "base" | "variant">;
   /** One column — inside the library's quick view, which is narrower than a page. */
   compact?: boolean;
+  /**
+   * The style's own head (code, name, option count, save/compare) at the top of the configuration panel — the
+   * page's layout (Project A): the picture on the left, the panel that names and configures it on the right.
+   */
+  head?: React.ReactNode;
+  /**
+   * What follows the picture in its column on a wide screen (the style's facts and sizes), so the left column does
+   * not end in an empty area beside a tall panel; under the panel on a narrower screen.
+   */
+  below?: React.ReactNode;
+  /** Under the panel in the right column (the style's feature links): short, and part of choosing. */
+  besidePanel?: React.ReactNode;
 }) {
   const t = useTranslations("styles") as unknown as StylesT & ReturnType<typeof useTranslations>;
   const locale = useLocale();
@@ -88,12 +105,29 @@ export function VariantPicker({
       : valueLabel(t, axis, String(value));
 
   return (
-    <div className={compact ? "flex flex-col gap-6" : "grid gap-8 md:grid-cols-2"}>
-      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3">
-        <h2 id={`${id}-preview`} className="text-lg font-semibold">
+    // Project A: on a page, the picture (7 of 12 columns) with the style's facts and sizes under it, beside the
+    // configuration panel (5 of 12) that holds the head, the options, the chosen variant on the brand tint and its
+    // one primary action. One column in the quick view and below `lg`: picture, panel, then the facts.
+    <div
+      className={
+        compact
+          ? "flex flex-col gap-6"
+          : "grid items-start gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:grid-rows-[auto_1fr] lg:gap-8"
+      }
+    >
+      <section
+        aria-labelledby={`${id}-preview`}
+        className={cn("flex min-w-0 flex-col gap-3", !compact && "lg:col-start-1 lg:row-start-1")}
+      >
+        <h2 id={`${id}-preview`} className={compact ? "text-lg font-semibold" : "sr-only"}>
           {t("detail.preview")}
         </h2>
-        <div className="bg-bg-subtle rounded-card flex min-h-64 items-center justify-center overflow-hidden p-2">
+        <div
+          className={cn(
+            "border-border bg-surface rounded-panel flex min-h-64 items-center justify-center overflow-hidden border p-3",
+            !compact && "md:min-h-[26rem]",
+          )}
+        >
           {pictureView === "dieline" && dielineAsset && !show3d ? (
             // eslint-disable-next-line @next/next/no-img-element -- a signed URL on the API's file host
             <img
@@ -134,7 +168,7 @@ export function VariantPicker({
               className="bg-surface aspect-[4/3] h-auto w-full max-w-full object-contain p-4"
             />
           ) : (
-            <Icon name="box" size={64} className="text-subtle" aria-hidden="true" />
+            <ProductPlate family={illustrationOf(style)} className="w-full" />
           )}
         </div>
         {pictureView === "dieline" && dielineAsset && !show3d ? (
@@ -142,128 +176,158 @@ export function VariantPicker({
             {t("detail.dielineLegend")}
           </p>
         ) : null}
-        {dielineAsset && !show3d ? (
-          <SegmentedControl
-            label={t("detail.viewLabel")}
-            size="sm"
-            value={pictureView}
-            onValueChange={setPictureView}
-            options={[
-              { value: "photo", label: t("detail.viewPhoto") },
-              { value: "dieline", label: t("detail.viewDieline") },
-            ]}
-          />
-        ) : null}
-        {!show3d ? (
-          <Button variant="secondary" iconStart="box" onClick={() => setShow3d(true)} disabled={!variant}>
-            {t("detail.show3d")}
-          </Button>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-3">
+          {dielineAsset && !show3d ? (
+            <SegmentedControl
+              label={t("detail.viewLabel")}
+              size="sm"
+              value={pictureView}
+              onValueChange={setPictureView}
+              options={[
+                { value: "photo", label: t("detail.viewPhoto") },
+                { value: "dieline", label: t("detail.viewDieline") },
+              ]}
+            />
+          ) : null}
+          {!show3d ? (
+            <Button variant="secondary" iconStart="box" onClick={() => setShow3d(true)} disabled={!variant}>
+              {t("detail.show3d")}
+            </Button>
+          ) : null}
+        </div>
       </section>
 
-      <section aria-labelledby={`${id}-options`} className="flex flex-col gap-4">
-        <div>
-          <h2 id={`${id}-options`} className="text-lg font-semibold">
-            {t("detail.options")}
-          </h2>
-          <p className="text-muted text-sm">{t("detail.optionsIntro")}</p>
-        </div>
-        {style.axes.map((axis) => {
-          const options = optionsOf(axis, selection, style.variants);
-          const chosen = selection[axis.axis];
-          return (
-            <fieldset key={axis.axis} className="flex flex-col gap-2">
-              <legend className="mb-1 text-sm font-medium">{axisLabel(t, axis.axis)}</legend>
-              <div className="flex flex-wrap gap-2">
-                {options.map((option) => {
-                  const on = Array.isArray(chosen) ? chosen.includes(option.value) : chosen === option.value;
-                  const reason = option.available
-                    ? undefined
-                    : t("detail.unavailable", {
-                        choice:
-                          option.conflicts.map((a) => `${axisLabel(t, a)} ${describe(a, selection[a])}`).join(", ") ||
-                          axisLabel(t, axis.axis),
-                      });
-                  const reasonId = `${id}-${axis.axis}-${option.value}`;
-                  return (
-                    <div key={option.value} className="flex flex-col">
-                      <button
-                        type="button"
-                        role={axis.multiSelect ? "checkbox" : "radio"}
-                        aria-checked={on}
-                        aria-disabled={!option.available || undefined}
-                        aria-describedby={reason ? reasonId : undefined}
-                        onClick={() => option.available && setSelection((s) => change(s, axis, option.value))}
-                        className={cn(
-                          "focus-visible:ring-focus-ring rounded-control border px-3 py-1.5 text-sm outline-none focus-visible:ring-2",
-                          on
-                            ? "border-primary bg-primary-subtle text-primary-subtle-fg font-medium"
-                            : "border-border hover:bg-bg-subtle",
-                          !option.available &&
-                            "text-muted cursor-not-allowed line-through opacity-70 hover:bg-transparent",
-                        )}
-                      >
-                        {valueLabel(t, axis.axis, option.value)}
-                      </button>
-                      {reason ? (
-                        <span id={reasonId} className="sr-only">
-                          {reason}
-                        </span>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-              {options.some((o) => !o.available) ? (
-                <ul className="text-muted text-xs">
-                  {options
-                    .filter((o) => !o.available)
-                    .map((o) => (
-                      <li key={o.value} aria-hidden="true">
-                        {valueLabel(t, axis.axis, o.value)}:{" "}
-                        {t("detail.unavailable", {
+      {/* The right column: the panel and what helps choose with it (the feature links), sticky under the header on
+          a wide screen while the picture and the facts scroll beside it. */}
+      <div
+        className={cn(
+          "flex min-w-0 flex-col gap-6",
+          !compact &&
+            "lg:sticky lg:top-[calc(var(--site-sticky-top)+1.25rem)] lg:col-start-2 lg:row-span-2 lg:row-start-1",
+        )}
+      >
+        <section
+          aria-labelledby={`${id}-options`}
+          className={cn(
+            "flex min-w-0 flex-col gap-5",
+            !compact && "border-border bg-surface rounded-panel border p-5 md:p-6",
+          )}
+        >
+          {head ? <div className="border-border border-b pb-5">{head}</div> : null}
+          <div>
+            <h2 id={`${id}-options`} className="text-lg font-semibold">
+              {t("detail.options")}
+            </h2>
+            <p className="text-muted text-sm">{t("detail.optionsIntro")}</p>
+          </div>
+          {style.axes.map((axis) => {
+            const options = optionsOf(axis, selection, style.variants);
+            const chosen = selection[axis.axis];
+            return (
+              <fieldset key={axis.axis} className="flex flex-col gap-2">
+                <legend className="mb-1 text-sm font-medium">{axisLabel(t, axis.axis)}</legend>
+                <div className="flex flex-wrap gap-2">
+                  {options.map((option) => {
+                    const on = Array.isArray(chosen) ? chosen.includes(option.value) : chosen === option.value;
+                    const reason = option.available
+                      ? undefined
+                      : t("detail.unavailable", {
                           choice:
-                            (o.available ? [] : o.conflicts)
-                              .map((a) => `${axisLabel(t, a)} ${describe(a, selection[a])}`)
-                              .join(", ") || axisLabel(t, axis.axis),
-                        })}
-                      </li>
-                    ))}
-                </ul>
-              ) : null}
-            </fieldset>
-          );
-        })}
+                            option.conflicts.map((a) => `${axisLabel(t, a)} ${describe(a, selection[a])}`).join(", ") ||
+                            axisLabel(t, axis.axis),
+                        });
+                    const reasonId = `${id}-${axis.axis}-${option.value}`;
+                    return (
+                      <div key={option.value} className="flex flex-col">
+                        <button
+                          type="button"
+                          role={axis.multiSelect ? "checkbox" : "radio"}
+                          aria-checked={on}
+                          aria-disabled={!option.available || undefined}
+                          aria-describedby={reason ? reasonId : undefined}
+                          onClick={() => option.available && setSelection((s) => change(s, axis, option.value))}
+                          className={cn(
+                            "focus-visible:ring-focus-ring rounded-control min-h-10 border px-3.5 py-1.5 text-sm outline-none focus-visible:ring-2",
+                            on
+                              ? "border-primary bg-primary-subtle text-primary-subtle-fg ring-primary font-medium ring-1 ring-inset"
+                              : "border-border hover:bg-bg-subtle",
+                            !option.available &&
+                              "text-muted cursor-not-allowed line-through opacity-70 hover:bg-transparent",
+                          )}
+                        >
+                          {valueLabel(t, axis.axis, option.value)}
+                        </button>
+                        {reason ? (
+                          <span id={reasonId} className="sr-only">
+                            {reason}
+                          </span>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+                {options.some((o) => !o.available) ? (
+                  <ul className="text-muted text-xs">
+                    {options
+                      .filter((o) => !o.available)
+                      .map((o) => (
+                        <li key={o.value} aria-hidden="true">
+                          {valueLabel(t, axis.axis, o.value)}:{" "}
+                          {t("detail.unavailable", {
+                            choice:
+                              (o.available ? [] : o.conflicts)
+                                .map((a) => `${axisLabel(t, a)} ${describe(a, selection[a])}`)
+                                .join(", ") || axisLabel(t, axis.axis),
+                          })}
+                        </li>
+                      ))}
+                  </ul>
+                ) : null}
+              </fieldset>
+            );
+          })}
 
-        <div className="bg-surface border-border rounded-card flex flex-col gap-2 border p-4" aria-live="polite">
-          <p className="text-sm font-medium">{t("detail.variant")}</p>
-          {variant ? (
-            <>
-              <p className="text-sm tabular-nums">{t("detail.variantCode", { code: variant.code })}</p>
-              <p className="text-sm">
-                <span className="text-muted me-2">{t("detail.price")}</span>
-                <Badge
-                  tone={variant.pricePath === "instant" ? "instant" : "info"}
-                  icon={variant.pricePath === "instant" ? "zap" : undefined}
-                >
-                  {t(`pricePaths.${variant.pricePath}`)}
-                </Badge>
-              </p>
-            </>
-          ) : null}
-          {variant ? (
-            <div className="pt-1">
-              <VariantActions
-                base={style.code}
-                variant={variant}
-                designLabel={compact ? t("detail.startDesign") : undefined}
-                {...actions}
-              />
-            </div>
-          ) : null}
-        </div>
-        {dieline && variant ? <DielineDownloadEntry variantCode={variant.code} {...dieline} /> : null}
-      </section>
+          {/* The chosen variant on the brand tint: its code, its way to a price and its actions. */}
+          <div className="bg-primary-subtle flex flex-col gap-2 rounded-xl p-4" aria-live="polite">
+            <p className="text-sm font-semibold">{t("detail.variant")}</p>
+            {variant ? (
+              <>
+                <p className="text-sm tabular-nums">{t("detail.variantCode", { code: variant.code })}</p>
+                <p className="text-sm">
+                  <span className="text-muted me-2">{t("detail.price")}</span>
+                  <Badge
+                    tone={variant.pricePath === "instant" ? "instant" : "info"}
+                    icon={variant.pricePath === "instant" ? "zap" : undefined}
+                  >
+                    {t(`pricePaths.${variant.pricePath}`)}
+                  </Badge>
+                </p>
+              </>
+            ) : null}
+            {variant ? (
+              <div className="pt-1">
+                <VariantActions
+                  base={style.code}
+                  variant={variant}
+                  designLabel={compact ? t("detail.startDesign") : undefined}
+                  {...actions}
+                />
+              </div>
+            ) : null}
+          </div>
+          {dieline && variant ? <DielineDownloadEntry variantCode={variant.code} {...dieline} /> : null}
+        </section>
+        {!compact && besidePanel ? besidePanel : null}
+      </div>
+      {!compact && below ? (
+        <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-start-2">{below}</div>
+      ) : null}
+      {/* A phone keeps the chosen variant's one primary action in reach at the foot of the screen. */}
+      {!compact && variant ? (
+        <MobileActionBar>
+          <VariantActions base={style.code} variant={variant} primaryOnly {...actions} />
+        </MobileActionBar>
+      ) : null}
     </div>
   );
 }

@@ -3,7 +3,10 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 export interface AuthSplitLayoutProps {
-  /** `brand` — the storefront's teal; `ink` — the back office's dark panel (UX audit: staff login). */
+  /**
+   * `brand` — the storefront's: a pale brand-tint panel (Project A: no large dark block in the light storefront) and
+   * the form as one centred card; `ink` — the back office's dark panel (UX audit: staff login).
+   */
   tone: "brand" | "ink";
   /** The panel's headline and the line under it. */
   headline: React.ReactNode;
@@ -43,22 +46,35 @@ export function AuthSplitLayout({
       <aside
         className={cn(
           "relative hidden flex-col overflow-hidden px-10 py-12 md:flex lg:px-16",
-          // The storefront's panel is the brand green, flat (design language v3).
-          tone === "brand" ? "bg-primary text-primary-fg" : "bg-fg text-fg-inverse",
+          // The storefront's panel is the pale brand tint, flat (design language v3, Project A).
+          tone === "brand" ? "bg-primary-subtle text-fg" : "bg-fg text-fg-inverse",
         )}
       >
-        <div className="relative">{homeLink(<BrandLockup />)}</div>
+        <div className="relative">{homeLink(<BrandLockup tone={tone} />)}</div>
 
         <div className="relative my-auto max-w-[32rem] py-10">
-          <p className="serif text-4xl leading-[1.1] lg:text-[3.625rem] [&_em]:text-current/70 [&_em]:not-italic">
+          <p
+            className={cn(
+              "serif text-4xl leading-[1.1] lg:text-[3.25rem] [&_em]:not-italic",
+              tone === "brand" ? "[&_em]:text-primary" : "[&_em]:text-current/70",
+            )}
+          >
             {headline}
           </p>
-          <p className="mt-5 text-lg leading-relaxed opacity-80">{lead}</p>
+          <p className={cn("mt-5 text-lg leading-relaxed", tone === "brand" ? "text-muted" : "opacity-80")}>{lead}</p>
           {points.length > 0 ? (
             <ul className="mt-9 grid gap-4">
               {points.map((point, index) => (
-                <li key={index} className="flex items-start gap-3 text-base leading-normal opacity-90">
-                  <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-current/15">
+                <li
+                  key={index}
+                  className={cn("flex items-start gap-3 text-base leading-normal", tone === "ink" && "opacity-90")}
+                >
+                  <span
+                    className={cn(
+                      "mt-0.5 grid size-6 shrink-0 place-items-center rounded-full",
+                      tone === "brand" ? "bg-surface text-primary" : "bg-current/15",
+                    )}
+                  >
                     <Icon name="check" size={14} aria-hidden="true" />
                   </span>
                   {point}
@@ -69,11 +85,20 @@ export function AuthSplitLayout({
         </div>
 
         {note ? (
-          <div className="rounded-control relative flex items-center gap-5 border border-current/20 bg-current/[0.06] p-6">
-            <DielineSketch />
+          <div
+            className={cn(
+              "rounded-control relative flex items-center gap-5 border p-6",
+              tone === "brand" ? "border-border bg-surface" : "border-current/20 bg-current/[0.06]",
+            )}
+          >
+            <span className={tone === "brand" ? "text-primary" : undefined}>
+              <DielineSketch />
+            </span>
             <div>
               <p className="font-semibold">{note.title}</p>
-              <p className="mt-1 text-sm leading-relaxed opacity-90">{note.body}</p>
+              <p className={cn("mt-1 text-sm leading-relaxed", tone === "brand" ? "text-muted" : "opacity-90")}>
+                {note.body}
+              </p>
             </div>
           </div>
         ) : null}
@@ -87,15 +112,23 @@ export function AuthSplitLayout({
             {topEnd ? <div className="min-w-0 text-end text-sm">{topEnd}</div> : null}
           </div>
         ) : null}
-        <div className="w-full max-w-[27.5rem]">{children}</div>
+        {/* The storefront's form is one focused card (Project A); the back office keeps the bare column. */}
+        <div
+          className={cn(
+            "w-full max-w-[27.5rem]",
+            tone === "brand" && "border-border bg-surface rounded-panel shadow-card border p-6 sm:p-8",
+          )}
+        >
+          {children}
+        </div>
       </main>
     </div>
   );
 }
 
-function BrandLockup() {
-  // The one-colour logo in the panel's text colour: the greens would sink into the green panel.
-  return <BrandLogo height={32} tone="mono" />;
+function BrandLockup({ tone }: { tone: "brand" | "ink" }) {
+  // On the pale tint the brand's own colours read; on the dark panel the one-colour logo in its text colour.
+  return <BrandLogo height={32} tone={tone === "brand" ? "brand" : "mono"} />;
 }
 
 /** A flat carton's outline with its fold lines dashed — getpack's own drawing, decorative. */

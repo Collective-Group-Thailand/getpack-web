@@ -29,7 +29,10 @@ export function AccountTabs({ team = false }: { team?: boolean }) {
   );
 }
 
-/** One row of tab links (a pill track that scrolls sideways on a phone). Shared with in-page filters. */
+/**
+ * One row of tab links — a segmented row (Project B: bordered, the chosen tab on the brand tint with its count),
+ * scrolling sideways inside itself on a phone, never cut. Shared with in-page filters.
+ */
 export function TabBar({
   label,
   items,
@@ -44,7 +47,7 @@ export function TabBar({
 }) {
   return (
     <nav aria-label={label} className={cn("max-w-full", className)}>
-      <ul className="bg-bg-subtle inline-flex max-w-full [scrollbar-width:none] gap-1 overflow-x-auto rounded-xl p-1 [&::-webkit-scrollbar]:hidden">
+      <ul className="border-border bg-surface inline-flex max-w-full [scrollbar-width:none] gap-0.5 overflow-x-auto overscroll-x-contain rounded-xl border p-[3px] [&::-webkit-scrollbar]:hidden">
         {items.map((item) => (
           <li key={item.key} className="shrink-0">
             <Link
@@ -52,8 +55,10 @@ export function TabBar({
               aria-current={item.current ? "page" : undefined}
               onClick={onSelect ? () => onSelect(item.key) : undefined}
               className={cn(
-                "rounded-control inline-flex min-h-9 items-center gap-1.5 px-3 text-[0.84375rem] whitespace-nowrap",
-                item.current ? "bg-surface text-fg shadow-card font-semibold" : "text-muted hover:text-fg font-medium",
+                "focus-visible:ring-focus-ring inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-[0.84375rem] whitespace-nowrap outline-none focus-visible:ring-2",
+                item.current
+                  ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                  : "text-muted hover:bg-surface-subtle hover:text-fg font-medium",
               )}
             >
               {item.label}

@@ -74,7 +74,7 @@ export function StyleResults({ initial, nextCursor, query, total, signedIn, sign
         items={items}
         itemKey={(item) => item.code}
         label={t("grid")}
-        minColumnWidth={228}
+        minColumnWidth={280}
         minColumns={2}
         gap={16}
         estimatedRowHeight={420}

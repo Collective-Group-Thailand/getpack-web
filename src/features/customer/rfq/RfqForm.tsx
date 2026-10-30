@@ -54,6 +54,11 @@ export interface RfqFormProps {
    * basket is the main action, and afterwards the next tray item opens (or the basket, when none is left).
    */
   tray?: { kind: "catalog" | "stock"; key: string } | null;
+  /**
+   * What heads the form's side panel on a wide screen, above the send buttons (the page's "how it works"
+   * steps). Project A: the panel is sticky beside the sections, so the way to send stays in view.
+   */
+  aside?: React.ReactNode;
 }
 
 interface Attached {
@@ -84,6 +89,7 @@ export function RfqForm({
   style = null,
   productRef = null,
   tray = null,
+  aside,
 }: RfqFormProps) {
   const t = useTranslations("quoteRequests.form");
   const quoteTray = useQuoteTray();
@@ -294,232 +300,254 @@ export function RfqForm({
 
   const errorList = Object.values(errors);
   const field = (key: string) => errors[key];
+  // The sections are numbered in the order they are drawn (Project A): a card each, a step badge each.
+  let sectionNumber = 0;
+  const nextStep = () => ++sectionNumber;
 
   return (
-    <form noValidate onSubmit={onSubmit} className="flex flex-col gap-8">
-      <div ref={summaryRef} tabIndex={-1} className="outline-none">
-        {errorList.length > 0 ? (
-          <Callout tone="danger" live title={t("fixErrors", { count: errorList.length })}>
-            <ul className="list-disc ps-5">
-              {errorList.map((message, index) => (
-                <li key={index}>{message}</li>
-              ))}
-            </ul>
-          </Callout>
-        ) : null}
-        {failure && errorList.length === 0 ? (
-          <Callout tone="danger" live>
-            {failure}
-          </Callout>
-        ) : null}
-      </div>
-
-      {fromProduct ? <Callout tone="info">{t("fromProduct", { name: fromProduct.name })}</Callout> : null}
-      {style ? (
-        <Callout tone="info">
-          {t("chosenStyle", { name: style.name, code: style.code })}{" "}
-          <Link href={style.href} className="text-primary underline underline-offset-2">
-            {t("chosenStyleChange")}
-          </Link>
-        </Callout>
-      ) : null}
-
-      <FormSection title={t("specTitle")}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {form.fields.map((entry) => {
-            const help = pick(locale, entry.helpTh ?? "", entry.helpEn) || undefined;
-            const value = spec[entry.key];
-            const set = (next: SpecValue) => setSpec((current) => ({ ...current, [entry.key]: next }));
-            if (entry.type === "boolean") {
-              return (
-                <Checkbox
-                  key={entry.key}
-                  className="sm:col-span-2"
-                  checked={value === true}
-                  onCheckedChange={(checked) => set(checked === true)}
-                  label={label(entry)}
-                  description={help}
-                />
-              );
-            }
-            return (
-              <Field
-                key={entry.key}
-                label={label(entry)}
-                hint={help}
-                required={entry.required}
-                requiredLabel={t("requiredMark")}
-                error={field(`spec.${entry.key}`)}
-                className={entry.type === "textarea" ? "sm:col-span-2" : undefined}
-              >
-                {entry.type === "select" ? (
-                  <SearchableSelect
-                    value={typeof value === "string" ? value : ""}
-                    onValueChange={set}
-                    placeholder={t("choose")}
-                    options={entry.options.map((option) => ({
-                      value: option.value,
-                      label: pick(locale, option.labelTh, option.labelEn),
-                    }))}
-                  />
-                ) : entry.type === "textarea" ? (
-                  <Textarea
-                    rows={4}
-                    value={typeof value === "string" ? value : ""}
-                    onChange={(event) => set(event.target.value)}
-                  />
-                ) : entry.type === "number" ? (
-                  <NumberInput
-                    min={entry.min ?? undefined}
-                    max={entry.max ?? undefined}
-                    unit={entry.unit ?? undefined}
-                    value={typeof value === "number" || typeof value === "string" ? String(value) : ""}
-                    onChange={(event) => set(event.target.value === "" ? "" : Number(event.target.value))}
-                  />
-                ) : (
-                  <Input value={typeof value === "string" ? value : ""} onChange={(event) => set(event.target.value)} />
-                )}
-              </Field>
-            );
-          })}
+    <form noValidate onSubmit={onSubmit} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+      <div className="flex min-w-0 flex-col gap-5">
+        <div ref={summaryRef} tabIndex={-1} className="outline-none empty:hidden">
+          {errorList.length > 0 ? (
+            <Callout tone="danger" live title={t("fixErrors", { count: errorList.length })}>
+              <ul className="list-disc ps-5">
+                {errorList.map((message, index) => (
+                  <li key={index}>{message}</li>
+                ))}
+              </ul>
+            </Callout>
+          ) : null}
+          {failure && errorList.length === 0 ? (
+            <Callout tone="danger" live>
+              {failure}
+            </Callout>
+          ) : null}
         </div>
-      </FormSection>
 
-      {form.dimensions.asked ? (
-        <FormSection title={t("dimensionsTitle")} description={t("dimensionsHint")}>
-          <div className="grid grid-cols-3 gap-3">
-            {(form.dimensions.height ? (["l", "w", "h"] as const) : (["l", "w"] as const)).map((axis) => (
-              <Field
-                key={axis}
-                label={t(`axes.${axis}`)}
-                required={form.dimensions.required}
-                requiredLabel={t("requiredMark")}
-                error={field(`dims.${axis}`)}
-              >
-                <NumberInput
-                  min={1}
-                  unit={t("mm")}
-                  value={dims[axis]}
-                  onChange={(event) => setDims((current) => ({ ...current, [axis]: event.target.value }))}
-                />
-              </Field>
+        {fromProduct ? <Callout tone="info">{t("fromProduct", { name: fromProduct.name })}</Callout> : null}
+        {style ? (
+          <Callout tone="info">
+            {t("chosenStyle", { name: style.name, code: style.code })}{" "}
+            <Link href={style.href} className="text-primary underline underline-offset-2">
+              {t("chosenStyleChange")}
+            </Link>
+          </Callout>
+        ) : null}
+
+        {form.fields.length > 0 ? (
+          <FormSection card step={nextStep()} title={t("specTitle")}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {form.fields.map((entry) => {
+                const help = pick(locale, entry.helpTh ?? "", entry.helpEn) || undefined;
+                const value = spec[entry.key];
+                const set = (next: SpecValue) => setSpec((current) => ({ ...current, [entry.key]: next }));
+                if (entry.type === "boolean") {
+                  return (
+                    <Checkbox
+                      key={entry.key}
+                      className="sm:col-span-2"
+                      checked={value === true}
+                      onCheckedChange={(checked) => set(checked === true)}
+                      label={label(entry)}
+                      description={help}
+                    />
+                  );
+                }
+                return (
+                  <Field
+                    key={entry.key}
+                    label={label(entry)}
+                    hint={help}
+                    required={entry.required}
+                    requiredLabel={t("requiredMark")}
+                    error={field(`spec.${entry.key}`)}
+                    className={entry.type === "textarea" ? "sm:col-span-2" : undefined}
+                  >
+                    {entry.type === "select" ? (
+                      <SearchableSelect
+                        value={typeof value === "string" ? value : ""}
+                        onValueChange={set}
+                        placeholder={t("choose")}
+                        options={entry.options.map((option) => ({
+                          value: option.value,
+                          label: pick(locale, option.labelTh, option.labelEn),
+                        }))}
+                      />
+                    ) : entry.type === "textarea" ? (
+                      <Textarea
+                        rows={4}
+                        value={typeof value === "string" ? value : ""}
+                        onChange={(event) => set(event.target.value)}
+                      />
+                    ) : entry.type === "number" ? (
+                      <NumberInput
+                        min={entry.min ?? undefined}
+                        max={entry.max ?? undefined}
+                        unit={entry.unit ?? undefined}
+                        value={typeof value === "number" || typeof value === "string" ? String(value) : ""}
+                        onChange={(event) => set(event.target.value === "" ? "" : Number(event.target.value))}
+                      />
+                    ) : (
+                      <Input
+                        value={typeof value === "string" ? value : ""}
+                        onChange={(event) => set(event.target.value)}
+                      />
+                    )}
+                  </Field>
+                );
+              })}
+            </div>
+          </FormSection>
+        ) : null}
+
+        {form.dimensions.asked ? (
+          <FormSection card step={nextStep()} title={t("dimensionsTitle")} description={t("dimensionsHint")}>
+            <div className="grid grid-cols-3 gap-3">
+              {(form.dimensions.height ? (["l", "w", "h"] as const) : (["l", "w"] as const)).map((axis) => (
+                <Field
+                  key={axis}
+                  label={t(`axes.${axis}`)}
+                  required={form.dimensions.required}
+                  requiredLabel={t("requiredMark")}
+                  error={field(`dims.${axis}`)}
+                >
+                  <NumberInput
+                    min={1}
+                    unit={t("mm")}
+                    value={dims[axis]}
+                    onChange={(event) => setDims((current) => ({ ...current, [axis]: event.target.value }))}
+                  />
+                </Field>
+              ))}
+            </div>
+          </FormSection>
+        ) : null}
+
+        <FormSection
+          card
+          step={nextStep()}
+          title={t("quantitiesTitle")}
+          description={t("quantitiesHint", { count: form.quantity.maxTiers })}
+        >
+          <div className="flex flex-col gap-3">
+            {quantities.map((value, index) => (
+              <div key={index} className="flex items-end gap-2">
+                <Field
+                  label={t("quantityLabel", { index: index + 1 })}
+                  error={field(`quantities.${index}`) ?? (index === 0 ? field("quantities") : undefined)}
+                  className="flex-1"
+                >
+                  <NumberInput
+                    min={form.quantity.min}
+                    unit={t("pieces")}
+                    value={value}
+                    onChange={(event) =>
+                      setQuantities((current) =>
+                        current.map((entry, at) => (at === index ? event.target.value : entry)),
+                      )
+                    }
+                  />
+                </Field>
+                {quantities.length > 1 ? (
+                  <IconButton
+                    name="trash"
+                    variant="ghost"
+                    label={t("removeQuantity", { index: index + 1 })}
+                    onClick={() => setQuantities((current) => current.filter((_, at) => at !== index))}
+                  />
+                ) : null}
+              </div>
             ))}
+            {quantities.length < form.quantity.maxTiers ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                iconStart="plus"
+                className="self-start"
+                onClick={() => setQuantities((current) => [...current, ""])}
+              >
+                {t("addQuantity")}
+              </Button>
+            ) : null}
           </div>
         </FormSection>
-      ) : null}
 
-      <FormSection title={t("quantitiesTitle")} description={t("quantitiesHint", { count: form.quantity.maxTiers })}>
-        <div className="flex flex-col gap-3">
-          {quantities.map((value, index) => (
-            <div key={index} className="flex items-end gap-2">
-              <Field
-                label={t("quantityLabel", { index: index + 1 })}
-                error={field(`quantities.${index}`) ?? (index === 0 ? field("quantities") : undefined)}
-                className="flex-1"
-              >
-                <NumberInput
-                  min={form.quantity.min}
-                  unit={t("pieces")}
-                  value={value}
-                  onChange={(event) =>
-                    setQuantities((current) => current.map((entry, at) => (at === index ? event.target.value : entry)))
-                  }
-                />
-              </Field>
-              {quantities.length > 1 ? (
-                <IconButton
-                  name="trash"
-                  variant="ghost"
-                  label={t("removeQuantity", { index: index + 1 })}
-                  onClick={() => setQuantities((current) => current.filter((_, at) => at !== index))}
-                />
-              ) : null}
-            </div>
-          ))}
-          {quantities.length < form.quantity.maxTiers ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              iconStart="plus"
-              className="self-start"
-              onClick={() => setQuantities((current) => [...current, ""])}
-            >
-              {t("addQuantity")}
-            </Button>
-          ) : null}
-        </div>
-      </FormSection>
+        <FormSection card step={nextStep()} title={t("deliveryTitle")}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("postcode")} required requiredLabel={t("requiredMark")} error={field("postcode")}>
+              <Input
+                inputMode="numeric"
+                autoComplete="postal-code"
+                maxLength={5}
+                value={postcode}
+                onChange={(event) => setPostcode(event.target.value.replace(/\D/g, "").slice(0, 5))}
+              />
+            </Field>
+            <Field label={t("targetDate")} hint={t("targetDateHint")}>
+              <Input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
+            </Field>
+          </div>
+        </FormSection>
 
-      <FormSection title={t("deliveryTitle")}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("postcode")} required requiredLabel={t("requiredMark")} error={field("postcode")}>
-            <Input
-              inputMode="numeric"
-              autoComplete="postal-code"
-              maxLength={5}
-              value={postcode}
-              onChange={(event) => setPostcode(event.target.value.replace(/\D/g, "").slice(0, 5))}
+        <FormSection card step={nextStep()} title={t("filesTitle")} description={t("filesHint")}>
+          <div className="flex flex-col gap-3">
+            <FileDropzone
+              multiple
+              accept={form.files.accept.join(",")}
+              maxBytes={form.files.maxBytes}
+              disabled={files.length >= form.files.maxFiles}
+              onFiles={(selected) => void attach(selected)}
+              labels={{
+                prompt: t("dropPrompt"),
+                browse: t("browse"),
+                hint: t("fileRules", { max: format.bytes(form.files.maxBytes), count: form.files.maxFiles }),
+                tooLarge: (name) => t("tooLarge", { name }),
+                wrongType: (name) => t("wrongType", { name }),
+              }}
             />
+            {field("files") ? <p className="text-danger text-xs font-medium">{field("files")}</p> : null}
+            {files.length > 0 ? (
+              <ul className="flex flex-col gap-2">
+                {files.map((file) => (
+                  <li
+                    key={file.key}
+                    className="bg-surface border-border flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <span className="min-w-0 flex-1 truncate">{file.name}</span>
+                    <span className={file.failed ? "text-danger text-xs" : "text-muted text-xs"}>
+                      {file.failed ? t("uploadFailed") : file.file ? t("uploaded") : t("uploading")}
+                    </span>
+                    <IconButton
+                      name="close"
+                      size="sm"
+                      variant="ghost"
+                      label={t("removeFile", { name: file.name })}
+                      onClick={() => setFiles((current) => current.filter((item) => item.key !== file.key))}
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        </FormSection>
+
+        <FormSection card step={nextStep()} title={t("notesTitle")}>
+          <Field label={t("notes")} hint={t("notesHint")}>
+            <Textarea rows={4} maxLength={4000} value={notes} onChange={(event) => setNotes(event.target.value)} />
           </Field>
-          <Field label={t("targetDate")} hint={t("targetDateHint")}>
-            <Input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
-          </Field>
-        </div>
-      </FormSection>
+        </FormSection>
+      </div>
 
-      <FormSection title={t("filesTitle")} description={t("filesHint")}>
-        <div className="flex flex-col gap-3">
-          <FileDropzone
-            multiple
-            accept={form.files.accept.join(",")}
-            maxBytes={form.files.maxBytes}
-            disabled={files.length >= form.files.maxFiles}
-            onFiles={(selected) => void attach(selected)}
-            labels={{
-              prompt: t("dropPrompt"),
-              browse: t("browse"),
-              hint: t("fileRules", { max: format.bytes(form.files.maxBytes), count: form.files.maxFiles }),
-              tooLarge: (name) => t("tooLarge", { name }),
-              wrongType: (name) => t("wrongType", { name }),
-            }}
-          />
-          {field("files") ? <p className="text-danger text-xs font-medium">{field("files")}</p> : null}
-          {files.length > 0 ? (
-            <ul className="flex flex-col gap-2">
-              {files.map((file) => (
-                <li
-                  key={file.key}
-                  className="bg-surface border-border flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
-                >
-                  <span className="min-w-0 flex-1 truncate">{file.name}</span>
-                  <span className={file.failed ? "text-danger text-xs" : "text-muted text-xs"}>
-                    {file.failed ? t("uploadFailed") : file.file ? t("uploaded") : t("uploading")}
-                  </span>
-                  <IconButton
-                    name="close"
-                    size="sm"
-                    variant="ghost"
-                    label={t("removeFile", { name: file.name })}
-                    onClick={() => setFiles((current) => current.filter((item) => item.key !== file.key))}
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </FormSection>
-
-      <FormSection title={t("notesTitle")}>
-        <Field label={t("notes")} hint={t("notesHint")}>
-          <Textarea rows={4} maxLength={4000} value={notes} onChange={(event) => setNotes(event.target.value)} />
-        </Field>
-      </FormSection>
-
-      <div className="flex flex-col gap-2">
+      {/* The send panel: sticky beside the sections on a wide screen, the form's end on a phone. One primary
+          button (send, or "add to the basket" when walking the tray), the other as an outline. */}
+      <aside className="border-border bg-surface rounded-card flex flex-col gap-4 border p-5 lg:sticky lg:top-[calc(var(--site-sticky-top)+1.25rem)]">
+        {aside}
         {form.slaTargetHours !== null ? (
-          <p className="text-muted text-sm">{t("sla", { hours: form.slaTargetHours })}</p>
+          <p className="bg-primary-subtle text-fg rounded-xl px-3.5 py-3 text-sm">
+            {t("sla", { hours: form.slaTargetHours })}
+          </p>
         ) : null}
-        <div className={cn("flex flex-wrap gap-3", tray && "flex-row-reverse justify-end")}>
+        <div className={cn("flex flex-col gap-2.5 *:w-full", tray && "flex-col-reverse")}>
           <Button
             type="submit"
             size="lg"
@@ -543,7 +571,7 @@ export function RfqForm({
         </div>
         <p className="text-muted text-xs">{t("basketHint")}</p>
         {!session ? <p className="text-muted text-xs">{t("signInNote")}</p> : null}
-      </div>
+      </aside>
 
       {signIn ? (
         <SignInSheet
