@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { plainNumber } from "@/features/partner/erp/format";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format/useFormat";
@@ -14,7 +15,7 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
@@ -80,6 +81,7 @@ export function ReceiptForm({
   preset: { customerId?: string; invoiceId?: string };
 }) {
   const t = useTranslations("partnerSales.receipts.form");
+  const tSections = useTranslations("partnerSales.form.sections");
   const tMethods = useTranslations("partnerSales.methods");
   const tCommon = useTranslations("partnerSales.common");
   const { factoryId } = useFactory();
@@ -171,138 +173,183 @@ export function ReceiptForm({
     }
   }
 
+  const customerName = customers.find((c) => c.id === customerId)?.name ?? "";
+  const invoiceNos = invoices.filter((row) => row.id in alloc).map((row) => row.invoiceNo ?? "");
+  const submit = (
+    <Button type="submit" size="xl" loading={busy} iconStart="save">
+      {refund ? t("saveRefund") : t("save")}
+    </Button>
+  );
+
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={tCommon("customer")} required requiredLabel={tCommon("required")}>
-          <Select
-            value={customerId || null}
-            placeholder={t("customerPlaceholder")}
-            onValueChange={(id) => {
-              setCustomerId(id);
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary title={tSections("summary")} action={submit}>
+            <SummaryRows
+              rows={[
+                { key: "customer", label: tCommon("customer"), value: customerName },
+                { key: "kind", label: t("kind"), value: t(`kinds.${kind}`) },
+                {
+                  key: "invoices",
+                  label: refund ? t("refundInvoices") : t("invoices"),
+                  value: invoiceNos.join(", "),
+                },
+                { key: "date", label: t("receivedOn"), value: receivedOn ? format.date(receivedOn) : "" },
+                { key: "method", label: t("method"), value: tMethods(method) },
+                ...(!refund && wht && MONEY.test(plainNumber(wht))
+                  ? [{ key: "wht", label: t("wht"), value: format.thb(plainNumber(wht)) }]
+                  : []),
+              ]}
+            />
+            <dl className="border-border grid grid-cols-[1fr_auto] items-baseline gap-x-3 border-t pt-3">
+              <dt className="text-muted text-sm">{refund ? t("refundAmount") : t("amount")}</dt>
+              <dd className="text-end text-xl font-semibold tabular-nums">
+                {cash && MONEY.test(plainNumber(cash)) ? format.thb(plainNumber(cash)) : "—"}
+              </dd>
+            </dl>
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("customer")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={tCommon("customer")} required requiredLabel={tCommon("required")}>
+              <Select
+                value={customerId || null}
+                placeholder={t("customerPlaceholder")}
+                onValueChange={(id) => {
+                  setCustomerId(id);
+                  setAlloc({});
+                }}
+                options={customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
+              />
+            </Field>
+            <Field label={t("receivedOn")}>
+              <Input
+                type="date"
+                value={receivedOn}
+                onChange={(event) => setReceivedOn(event.target.value || bangkokToday())}
+              />
+            </Field>
+          </div>
+          <SegmentedControl
+            label={t("kind")}
+            size="md"
+            value={kind}
+            onValueChange={(next) => {
+              setKind(next);
               setAlloc({});
             }}
-            options={customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
+            options={[
+              { value: "receipt", label: t("kinds.receipt") },
+              { value: "refund", label: t("kinds.refund") },
+            ]}
           />
-        </Field>
-        <SegmentedControl
-          label={t("kind")}
-          size="md"
-          value={kind}
-          onValueChange={(next) => {
-            setKind(next);
-            setAlloc({});
-          }}
-          options={[
-            { value: "receipt", label: t("kinds.receipt") },
-            { value: "refund", label: t("kinds.refund") },
-          ]}
-        />
-      </div>
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-medium">{refund ? t("refundInvoices") : t("invoices")}</legend>
-        {!customerId ? (
-          <p className="text-muted text-sm">{t("pickCustomer")}</p>
-        ) : invoices.length ? (
-          invoices.map((row) => (
-            <div
-              key={row.id}
-              className="border-border bg-surface grid items-center gap-2 rounded-xl border p-3 md:grid-cols-[1fr_12rem]"
-            >
-              <Checkbox
-                checked={row.id in alloc}
-                onCheckedChange={(on) => {
-                  const next = { ...alloc };
-                  if (on) next[row.id] = abs(row.openAmount);
-                  else delete next[row.id];
-                  setAlloc(next);
-                }}
-                label={`${row.invoiceNo ?? ""} · ${format.date(row.issueDate)}`}
-                description={t("openLine", { open: format.thb(abs(row.openAmount)), due: format.date(row.dueDate) })}
+        </FormSection>
+        <FormSection card step={2} title={refund ? t("refundInvoices") : t("invoices")}>
+          <fieldset className="flex flex-col gap-2">
+            <legend className="sr-only">{refund ? t("refundInvoices") : t("invoices")}</legend>
+            {!customerId ? (
+              <p className="text-muted text-sm">{t("pickCustomer")}</p>
+            ) : invoices.length ? (
+              invoices.map((row) => (
+                <div
+                  key={row.id}
+                  className="border-border grid items-center gap-2 rounded-xl border p-3 md:grid-cols-[1fr_12rem]"
+                >
+                  <Checkbox
+                    checked={row.id in alloc}
+                    onCheckedChange={(on) => {
+                      const next = { ...alloc };
+                      if (on) next[row.id] = abs(row.openAmount);
+                      else delete next[row.id];
+                      setAlloc(next);
+                    }}
+                    label={`${row.invoiceNo ?? ""} · ${format.date(row.issueDate)}`}
+                    description={t("openLine", {
+                      open: format.thb(abs(row.openAmount)),
+                      due: format.date(row.dueDate),
+                    })}
+                  />
+                  {row.id in alloc ? (
+                    <NumberInput
+                      aria-label={t("settle", { no: row.invoiceNo ?? "" })}
+                      step="any"
+                      min={0}
+                      unit="฿"
+                      value={alloc[row.id]}
+                      onChange={(event) => setAlloc({ ...alloc, [row.id]: event.target.value })}
+                    />
+                  ) : null}
+                </div>
+              ))
+            ) : (
+              <p className="text-muted text-sm">{refund ? t("noRefunds") : t("noInvoices")}</p>
+            )}
+          </fieldset>
+        </FormSection>
+        <FormSection card step={3} title={tSections("payment")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("method")}>
+              <Select
+                value={method}
+                onValueChange={(value) => setMethod(value as Method)}
+                options={METHODS.map((m) => ({ value: m, label: tMethods(m) }))}
               />
-              {row.id in alloc ? (
-                <NumberInput
-                  aria-label={t("settle", { no: row.invoiceNo ?? "" })}
-                  step="any"
-                  min={0}
-                  unit="฿"
-                  value={alloc[row.id]}
-                  onChange={(event) => setAlloc({ ...alloc, [row.id]: event.target.value })}
-                />
-              ) : null}
+            </Field>
+            <Field label={t("reference")}>
+              <Input
+                value={reference}
+                placeholder={t("referencePlaceholder")}
+                onChange={(event) => setReference(event.target.value)}
+              />
+            </Field>
+          </div>
+          {method === "cheque" ? (
+            <div className="grid gap-4 md:grid-cols-3">
+              <Field label={t("chequeNo")}>
+                <Input value={chequeNo} onChange={(event) => setChequeNo(event.target.value)} />
+              </Field>
+              <Field label={t("chequeBank")}>
+                <Input value={chequeBank} onChange={(event) => setChequeBank(event.target.value)} />
+              </Field>
+              <Field label={t("chequeDate")}>
+                <Input type="date" value={chequeDate} onChange={(event) => setChequeDate(event.target.value)} />
+              </Field>
             </div>
-          ))
-        ) : (
-          <p className="text-muted text-sm">{refund ? t("noRefunds") : t("noInvoices")}</p>
-        )}
-      </fieldset>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Field label={t("receivedOn")}>
-          <Input
-            type="date"
-            value={receivedOn}
-            onChange={(event) => setReceivedOn(event.target.value || bangkokToday())}
-          />
-        </Field>
-        <Field label={t("method")}>
-          <Select
-            value={method}
-            onValueChange={(value) => setMethod(value as Method)}
-            options={METHODS.map((m) => ({ value: m, label: tMethods(m) }))}
-          />
-        </Field>
-        <Field label={t("reference")}>
-          <Input
-            value={reference}
-            placeholder={t("referencePlaceholder")}
-            onChange={(event) => setReference(event.target.value)}
-          />
-        </Field>
-        {method === "cheque" ? (
-          <>
-            <Field label={t("chequeNo")}>
-              <Input value={chequeNo} onChange={(event) => setChequeNo(event.target.value)} />
+          ) : null}
+          {!refund ? (
+            <div className="grid gap-4 md:grid-cols-3">
+              <Field label={t("wht")} hint={t("whtHint")}>
+                <NumberInput step="any" min={0} unit="฿" value={wht} onChange={(event) => setWht(event.target.value)} />
+              </Field>
+              <Field label={t("whtCertNo")}>
+                <Input value={whtCertNo} onChange={(event) => setWhtCertNo(event.target.value)} />
+              </Field>
+              <Field label={t("whtCertDate")}>
+                <Input type="date" value={whtCertDate} onChange={(event) => setWhtCertDate(event.target.value)} />
+              </Field>
+            </div>
+          ) : null}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={refund ? t("refundAmount") : t("amount")} hint={t("amountHint")} error={error}>
+              <NumberInput
+                step="any"
+                min={0}
+                unit="฿"
+                value={cash}
+                onChange={(event) => {
+                  setTouched(true);
+                  setAmount(event.target.value);
+                }}
+              />
             </Field>
-            <Field label={t("chequeBank")}>
-              <Input value={chequeBank} onChange={(event) => setChequeBank(event.target.value)} />
-            </Field>
-            <Field label={t("chequeDate")}>
-              <Input type="date" value={chequeDate} onChange={(event) => setChequeDate(event.target.value)} />
-            </Field>
-          </>
-        ) : null}
-      </div>
-      {!refund ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Field label={t("wht")} hint={t("whtHint")}>
-            <NumberInput step="any" min={0} unit="฿" value={wht} onChange={(event) => setWht(event.target.value)} />
+          </div>
+          <Field label={t("note")}>
+            <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
           </Field>
-          <Field label={t("whtCertNo")}>
-            <Input value={whtCertNo} onChange={(event) => setWhtCertNo(event.target.value)} />
-          </Field>
-          <Field label={t("whtCertDate")}>
-            <Input type="date" value={whtCertDate} onChange={(event) => setWhtCertDate(event.target.value)} />
-          </Field>
-        </div>
-      ) : null}
-      <Field label={refund ? t("refundAmount") : t("amount")} hint={t("amountHint")} error={error}>
-        <NumberInput
-          step="any"
-          min={0}
-          unit="฿"
-          value={cash}
-          onChange={(event) => {
-            setTouched(true);
-            setAmount(event.target.value);
-          }}
-        />
-      </Field>
-      <Field label={t("note")}>
-        <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {refund ? t("saveRefund") : t("save")}
-      </Button>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
@@ -316,6 +363,7 @@ export function BillingForm({
   preset: { customerId?: string };
 }) {
   const t = useTranslations("partnerSales.billing.form");
+  const tSections = useTranslations("partnerSales.form.sections");
   const tCommon = useTranslations("partnerSales.common");
   const { factoryId } = useFactory();
   const format = useFormat();
@@ -352,66 +400,90 @@ export function BillingForm({
     }
   }
 
+  const customerName = customers.find((c) => c.id === customerId)?.name ?? "";
+  const chosenNos = invoices.filter((row) => chosen.has(row.id)).map((row) => row.invoiceNo ?? "");
+
   return (
-    <div className="flex flex-col gap-5">
-      <Field label={tCommon("customer")} required requiredLabel={tCommon("required")}>
-        <Select
-          value={customerId || null}
-          placeholder={t("customerPlaceholder")}
-          onValueChange={(id) => {
-            setCustomerId(id);
-            setChosen(new Set());
-          }}
-          options={customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
-        />
-      </Field>
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-medium">{t("invoices")}</legend>
-        {!customerId ? (
-          <p className="text-muted text-sm">{t("pickCustomer")}</p>
-        ) : invoices.length ? (
-          invoices.map((row) => (
-            <Checkbox
-              key={row.id}
-              checked={chosen.has(row.id)}
-              onCheckedChange={(on) => {
-                const next = new Set(chosen);
-                if (on) next.add(row.id);
-                else next.delete(row.id);
-                setChosen(next);
-              }}
-              label={`${row.invoiceNo ?? ""} · ${format.thb(row.openAmount)}`}
-              description={t("dueLine", { date: format.date(row.dueDate) })}
+    <FormColumns
+      aside={
+        <FormSummary
+          title={tSections("summary")}
+          action={
+            <Button size="xl" loading={busy} iconStart="save" onClick={() => void save()}>
+              {t("save")}
+            </Button>
+          }
+        >
+          <SummaryRows
+            rows={[
+              { key: "customer", label: tCommon("customer"), value: customerName },
+              { key: "invoices", label: t("invoices"), value: chosenNos.join(", ") },
+              { key: "date", label: t("billingDate"), value: billingDate ? format.date(billingDate) : "" },
+              { key: "collect", label: t("collectOn"), value: collectOn ? format.date(collectOn) : "" },
+            ]}
+          />
+        </FormSummary>
+      }
+    >
+      <FormSection card step={1} title={tSections("customer")}>
+        <Field label={tCommon("customer")} required requiredLabel={tCommon("required")}>
+          <Select
+            value={customerId || null}
+            placeholder={t("customerPlaceholder")}
+            onValueChange={(id) => {
+              setCustomerId(id);
+              setChosen(new Set());
+            }}
+            options={customers.map((c) => ({ value: c.id, label: c.name, description: c.code }))}
+          />
+        </Field>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label={t("billingDate")}>
+            <Input
+              type="date"
+              value={billingDate}
+              onChange={(event) => setBillingDate(event.target.value || bangkokToday())}
             />
-          ))
-        ) : (
-          <p className="text-muted text-sm">{t("noInvoices")}</p>
-        )}
-      </fieldset>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("billingDate")}>
-          <Input
-            type="date"
-            value={billingDate}
-            onChange={(event) => setBillingDate(event.target.value || bangkokToday())}
-          />
+          </Field>
+          <Field label={t("collectOn")} hint={t("collectOnHint")}>
+            <Input
+              type="date"
+              min={billingDate}
+              value={collectOn}
+              onChange={(event) => setCollectOn(event.target.value)}
+            />
+          </Field>
+        </div>
+      </FormSection>
+      <FormSection card step={2} title={t("invoices")}>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="sr-only">{t("invoices")}</legend>
+          {!customerId ? (
+            <p className="text-muted text-sm">{t("pickCustomer")}</p>
+          ) : invoices.length ? (
+            invoices.map((row) => (
+              <Checkbox
+                key={row.id}
+                checked={chosen.has(row.id)}
+                onCheckedChange={(on) => {
+                  const next = new Set(chosen);
+                  if (on) next.add(row.id);
+                  else next.delete(row.id);
+                  setChosen(next);
+                }}
+                label={`${row.invoiceNo ?? ""} · ${format.thb(row.openAmount)}`}
+                description={t("dueLine", { date: format.date(row.dueDate) })}
+              />
+            ))
+          ) : (
+            <p className="text-muted text-sm">{t("noInvoices")}</p>
+          )}
+        </fieldset>
+        <Field label={t("note")}>
+          <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
         </Field>
-        <Field label={t("collectOn")} hint={t("collectOnHint")}>
-          <Input
-            type="date"
-            min={billingDate}
-            value={collectOn}
-            onChange={(event) => setCollectOn(event.target.value)}
-          />
-        </Field>
-      </div>
-      <Field label={t("note")}>
-        <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
-      </Field>
-      <Button size="xl" loading={busy} iconStart="save" className="self-start" onClick={() => void save()}>
-        {t("save")}
-      </Button>
-    </div>
+      </FormSection>
+    </FormColumns>
   );
 }
 

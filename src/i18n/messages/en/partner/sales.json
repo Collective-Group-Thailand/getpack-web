@@ -104,7 +104,8 @@
       "contact": "Contact details",
       "followUp": "Sales follow-up",
       "deal": "Opportunity details",
-      "forecast": "Value and chance to close"
+      "forecast": "Value and chance to close",
+      "payment": "Payment"
     }
   },
   "quotations": {

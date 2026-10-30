@@ -163,7 +163,7 @@ export default async function PurchasingPage({
                   description={t("emptyBody")}
                   action={
                     canDraft ? (
-                      <Button asChild iconStart="plus">
+                      <Button asChild variant="secondary" iconStart="plus">
                         <Link href="/purchasing/new">{t("new")}</Link>
                       </Button>
                     ) : view !== "all" ? (

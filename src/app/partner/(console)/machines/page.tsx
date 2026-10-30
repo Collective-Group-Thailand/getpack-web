@@ -101,12 +101,14 @@ export default async function MachinesPage({ searchParams }: { searchParams: Pro
               rows={rows}
               rowKey={(m) => m.id}
               rowHref={(m) => `/machines/${m.id}`}
+              // The edge marks an exception only — a breakdown, or a cycle that has run past its date. A cycle that has
+              // just come round is said in the maintenance column; striping every such row would be alarm noise.
               rowTone={(m) =>
                 m.status !== "active"
                   ? undefined
                   : m.state === "down"
                     ? "danger"
-                    : m.openMaintenance || m.plans.some((p) => p.due)
+                    : m.plans.some((p) => p.due && p.daysLeft !== null && p.daysLeft < 0)
                       ? "warning"
                       : undefined
               }

@@ -257,7 +257,7 @@ export default async function StockPage({
                     description={t("emptyItemsBody")}
                     action={
                       canMove ? (
-                        <Button asChild iconStart="plus">
+                        <Button asChild variant="secondary" iconStart="plus">
                           <Link href="/stock/items/new">{t("actions.newItem")}</Link>
                         </Button>
                       ) : undefined

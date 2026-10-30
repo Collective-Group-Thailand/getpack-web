@@ -14,7 +14,16 @@ type Change = Schemas["ErpGlAccountChangeDto"];
 type Line = Schemas["ErpGlBankLineDto"];
 
 /** D-389: what may be done to a journal entry — only what its `nextActions` offer. */
-export function JournalActions({ journal: j, etag }: { journal: Journal; etag: string | null }) {
+export function JournalActions({
+  journal: j,
+  etag,
+  layout = "row",
+}: {
+  journal: Journal;
+  etag: string | null;
+  /** `panel`: the entry page's sticky next-steps panel — one full-width stack (see `SalesActions`). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerLedger.journal");
   const tc = useTranslations("partnerLedger.common");
   const post = (key: string, action: string, title: string, description: string, done: string, reason = false) => ({
@@ -28,8 +37,12 @@ export function JournalActions({ journal: j, etag }: { journal: Journal; etag: s
     ...(reason ? { reason: { label: tc("reasonLabel") }, body: (r: string) => ({ reason: r }) } : {}),
   });
   return (
-    <div className="flex flex-wrap gap-2">
+    <div
+      {...(layout === "panel" ? { "data-fill": "row" } : {})}
+      className={layout === "panel" ? "flex flex-col gap-2" : "flex flex-wrap gap-2"}
+    >
       <SalesActions
+        layout={layout}
         offered={j.nextActions}
         etag={etag}
         actions={[
@@ -63,7 +76,14 @@ export function JournalActions({ journal: j, etag }: { journal: Journal; etag: s
 }
 
 /** D-390: a period's transitions and, on the last month, the year-end close. */
-export function PeriodActions({ period }: { period: Period }) {
+export function PeriodActions({
+  period,
+  layout = "row",
+}: {
+  period: Period;
+  /** `panel`: the period page's sticky panel — one full-width stack (see `SalesActions`). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerLedger.period");
   const tc = useTranslations("partnerLedger.common");
   const transition = (key: string, action: string, title: string, description: string, reason = false) => ({
@@ -79,6 +99,7 @@ export function PeriodActions({ period }: { period: Period }) {
   });
   return (
     <SalesActions
+      layout={layout}
       offered={period.nextActions}
       actions={[
         transition("erp_period.soft_close", "soft_close", t("softClose", { month: period.month }), t("softCloseBody")),

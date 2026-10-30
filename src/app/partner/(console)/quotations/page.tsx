@@ -108,7 +108,7 @@ export default async function QuotationsPage({
                 description={manage ? t("emptyBody") : undefined}
                 action={
                   manage ? (
-                    <Button asChild iconStart="plus">
+                    <Button asChild variant="secondary" iconStart="plus">
                       <Link href="/quotations/new">{t("new")}</Link>
                     </Button>
                   ) : view !== "all" ? (

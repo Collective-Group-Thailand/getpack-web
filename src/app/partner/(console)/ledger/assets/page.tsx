@@ -66,6 +66,57 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
   const bankOptions = (banks.data ?? [])
     .filter((b) => b.status === "active")
     .map((b) => ({ id: b.id, label: `${b.bankName} ${b.name} xx${b.accountNoLast4}` }));
+  const categoriesSection = (
+    <PartnerSection
+      title={t("categories")}
+      actions={canConfigure && categories.data?.length ? <CategoryButton accounts={accounts} /> : null}
+    >
+      {categories.data ? (
+        <PartnerTable
+          caption={t("categories")}
+          rows={categories.data}
+          rowKey={(row) => row.id}
+          empty={
+            <EmptyState
+              icon="layers"
+              title={t("noCategories")}
+              action={canConfigure ? <CategoryButton accounts={accounts} /> : undefined}
+            />
+          }
+          columns={[
+            { key: "n", header: t("category"), primary: true, cell: (row) => row.name },
+            { key: "l", header: t("life"), align: "end", cell: (row) => format.number(row.usefulLifeMonths) },
+            {
+              key: "a",
+              header: t("accounts"),
+              hideOnPhone: true,
+              cell: (row) => (
+                <span className="text-xs tabular-nums">
+                  {[row.assetAccount, row.accumulatedAccount, row.expenseAccount, row.gainLossAccount]
+                    .map((a) => a.code)
+                    .join(" · ")}
+                </span>
+              ),
+            },
+            {
+              key: "c",
+              header: t("name"),
+              align: "end",
+              hideOnPhone: true,
+              cell: (row) => format.number(row.assets),
+            },
+            {
+              key: "x",
+              header: "",
+              cell: (row) => (canConfigure ? <CategoryButton accounts={accounts} category={row} /> : null),
+            },
+          ]}
+        />
+      ) : (
+        <PageError error={categories.error} />
+      )}
+    </PartnerSection>
+  );
   return (
     <PartnerPage
       full
@@ -75,19 +126,37 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
         canPost ? (
           <div className="flex flex-wrap gap-2">
             <RunDepreciation month={thisMonth()} />
-            <AssetButton categories={active} machines={machines.map((m) => ({ id: m.id, label: m.label }))} />
+            {active.length ? (
+              <AssetButton categories={active} machines={machines.map((m) => ({ id: m.id, label: m.label }))} />
+            ) : null}
           </div>
         ) : null
       }
     >
-      {canPost && !active.length ? <p className="text-warning text-sm">{t("noCategories")}</p> : null}
+      {/* With no category nothing can be registered: the categories come first, as the first step. */}
+      {!active.length ? categoriesSection : null}
       {assets.data ? (
         <>
           <PartnerTable
             caption={t("title")}
             rows={assets.data.data}
             rowKey={(row) => row.id}
-            empty={<EmptyState icon="building" title={t("empty")} description={t("emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="building"
+                title={t("empty")}
+                description={t("emptyBody")}
+                action={
+                  canPost && active.length ? (
+                    <AssetButton
+                      variant="secondary"
+                      categories={active}
+                      machines={machines.map((m) => ({ id: m.id, label: m.label }))}
+                    />
+                  ) : undefined
+                }
+              />
+            }
             columns={[
               {
                 key: "no",
@@ -143,85 +212,54 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
       ) : (
         <PageError error={assets.error} />
       )}
-      <PartnerSection title={t("runs")}>
-        {runs.data ? (
-          <PartnerTable
-            caption={t("runs")}
-            rows={runs.data}
-            rowKey={(row) => row.id}
-            rowHref={(row) => (row.entry ? `/ledger/journals/${row.entry.id}` : "/ledger/assets")}
-            empty={<p className="text-muted text-sm">{t("noRuns")}</p>}
-            columns={[
-              {
-                key: "m",
-                header: tc("month"),
-                primary: true,
-                cell: (row) => (
-                  <span className="whitespace-nowrap">
-                    {format.date(`${row.month.slice(0, 7)}-01`, { style: "month" })}
-                  </span>
-                ),
-              },
-              {
-                key: "e",
-                header: t("entry"),
-                hideOnPhone: true,
-                cell: (row) => <span className="tabular-nums">{row.entry?.number ?? "—"}</span>,
-              },
-              {
-                key: "n",
-                header: t("assetCount"),
-                align: "end",
-                hideOnPhone: true,
-                cell: (row) => format.number(row.lines.length),
-              },
-              { key: "t", header: tc("total"), align: "end", cell: (row) => format.thb(row.total) },
-            ]}
-          />
-        ) : (
-          <PageError error={runs.error} />
-        )}
-      </PartnerSection>
-      <PartnerSection title={t("categories")} actions={canConfigure ? <CategoryButton accounts={accounts} /> : null}>
-        {categories.data ? (
-          <PartnerTable
-            caption={t("categories")}
-            rows={categories.data}
-            rowKey={(row) => row.id}
-            empty={<p className="text-muted text-sm">{t("noCategories")}</p>}
-            columns={[
-              { key: "n", header: t("category"), primary: true, cell: (row) => row.name },
-              { key: "l", header: t("life"), align: "end", cell: (row) => format.number(row.usefulLifeMonths) },
-              {
-                key: "a",
-                header: t("accounts"),
-                hideOnPhone: true,
-                cell: (row) => (
-                  <span className="text-xs tabular-nums">
-                    {[row.assetAccount, row.accumulatedAccount, row.expenseAccount, row.gainLossAccount]
-                      .map((a) => a.code)
-                      .join(" · ")}
-                  </span>
-                ),
-              },
-              {
-                key: "c",
-                header: t("name"),
-                align: "end",
-                hideOnPhone: true,
-                cell: (row) => format.number(row.assets),
-              },
-              {
-                key: "x",
-                header: "",
-                cell: (row) => (canConfigure ? <CategoryButton accounts={accounts} category={row} /> : null),
-              },
-            ]}
-          />
-        ) : (
-          <PageError error={categories.error} />
-        )}
-      </PartnerSection>
+      {assets.data?.data.length || runs.data?.length || runs.error ? (
+        <PartnerSection title={t("runs")}>
+          {runs.data ? (
+            <PartnerTable
+              caption={t("runs")}
+              rows={runs.data}
+              rowKey={(row) => row.id}
+              rowHref={(row) => (row.entry ? `/ledger/journals/${row.entry.id}` : "/ledger/assets")}
+              empty={
+                <EmptyState
+                  icon="calculator"
+                  title={t("noRuns")}
+                  action={canPost && assets.data?.data.length ? <RunDepreciation month={thisMonth()} /> : undefined}
+                />
+              }
+              columns={[
+                {
+                  key: "m",
+                  header: tc("month"),
+                  primary: true,
+                  cell: (row) => (
+                    <span className="whitespace-nowrap">
+                      {format.date(`${row.month.slice(0, 7)}-01`, { style: "month" })}
+                    </span>
+                  ),
+                },
+                {
+                  key: "e",
+                  header: t("entry"),
+                  hideOnPhone: true,
+                  cell: (row) => <span className="tabular-nums">{row.entry?.number ?? "—"}</span>,
+                },
+                {
+                  key: "n",
+                  header: t("assetCount"),
+                  align: "end",
+                  hideOnPhone: true,
+                  cell: (row) => format.number(row.lines.length),
+                },
+                { key: "t", header: tc("total"), align: "end", cell: (row) => format.thb(row.total) },
+              ]}
+            />
+          ) : (
+            <PageError error={runs.error} />
+          )}
+        </PartnerSection>
+      ) : null}
+      {active.length ? categoriesSection : null}
     </PartnerPage>
   );
 }

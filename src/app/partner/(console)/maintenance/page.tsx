@@ -233,7 +233,7 @@ export default async function MaintenancePage({
                 description={t("plans.emptyBody")}
                 action={
                   canManage ? (
-                    <Button asChild iconStart="plus">
+                    <Button asChild variant="secondary" iconStart="plus">
                       <Link href="/maintenance/plans/new">{t("newPlan")}</Link>
                     </Button>
                   ) : undefined

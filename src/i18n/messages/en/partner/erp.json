@@ -119,7 +119,9 @@
       "notes": "Warehouse and note",
       "affected": "What it affects",
       "owner": "Owner and due date",
-      "quantities": "Lot and quantities"
+      "quantities": "Lot and quantities",
+      "tax": "Tax",
+      "payment": "Payment"
     }
   },
   "stock": {

@@ -104,7 +104,7 @@ export default async function RfqsPage({
                 description={t("emptyBody")}
                 action={
                   canAt(context, "factory_procurement.manage") ? (
-                    <Button asChild iconStart="plus">
+                    <Button asChild variant="secondary" iconStart="plus">
                       <Link href="/purchasing/rfqs/new">{t("new")}</Link>
                     </Button>
                   ) : view !== "all" ? (

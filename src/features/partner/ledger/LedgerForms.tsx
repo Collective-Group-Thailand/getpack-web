@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { plainNumber } from "@/features/partner/erp/format";
 import { erpPost, erpSave } from "@/features/partner/sales/api";
 import { Select } from "@/features/partner/select";
@@ -17,11 +18,12 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
+import { cn } from "@/ui/lib/cn";
 
 type Journal = Schemas["ErpGlJournalDto"];
 type Recurring = Schemas["ErpGlRecurringDto"];
@@ -92,6 +94,7 @@ export function JournalForm({
 }) {
   const t = useTranslations("partnerLedger.form");
   const tc = useTranslations("partnerLedger.common");
+  const tSections = useTranslations("partnerErp.common.sections");
   const format = useFormat();
   const router = useRouter();
   const { factoryId } = useFactory();
@@ -164,77 +167,115 @@ export function JournalForm({
     if (saved) router.push(`/ledger/journals/${saved.id}`);
   }
 
+  const balanced = debit === credit && debit > 0n;
+  const actions = (
+    <>
+      <Button size="xl" iconStart="send" loading={busy} disabled={!balanced} onClick={() => void save(true)}>
+        {t("submit")}
+      </Button>
+      <Button size="xl" variant="secondary" iconStart="save" loading={busy} onClick={() => void save(false)}>
+        {t("saveDraft")}
+      </Button>
+    </>
+  );
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-3 md:grid-cols-[12rem_1fr_12rem]">
-        <Field label={t("date")} required>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </Field>
+    <FormColumns
+      aside={
+        <FormSummary title={tSections("summary")} action={actions}>
+          <SummaryRows
+            rows={[
+              { key: "date", label: t("date"), value: date ? format.date(date) : "" },
+              { key: "description", label: t("description"), value: description.trim() },
+              { key: "debit", label: tc("debit"), value: format.thb(fromSatang(debit)) },
+              { key: "credit", label: tc("credit"), value: format.thb(fromSatang(credit)) },
+            ]}
+          />
+          <p
+            className={cn(
+              "border-border border-t pt-3 text-sm font-medium",
+              balanced ? "text-success" : "text-warning-subtle-fg",
+            )}
+            aria-live="polite"
+          >
+            {balanced
+              ? t("balanced")
+              : t("unbalanced", { diff: format.thb(fromSatang(debit > credit ? debit - credit : credit - debit)) })}
+          </p>
+        </FormSummary>
+      }
+    >
+      <FormSection card step={1} title={tSections("details")}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label={t("date")} required>
+            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </Field>
+          <Field label={t("autoReverse")} hint={t("autoReverseHint")}>
+            <Input type="date" value={autoReverseOn} onChange={(e) => setAutoReverseOn(e.target.value)} />
+          </Field>
+        </div>
         <Field label={t("description")} required>
           <Input value={description} maxLength={500} onChange={(e) => setDescription(e.target.value)} />
         </Field>
-        <Field label={t("autoReverse")} hint={t("autoReverseHint")}>
-          <Input type="date" value={autoReverseOn} onChange={(e) => setAutoReverseOn(e.target.value)} />
-        </Field>
-      </div>
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-sm font-medium">{t("lines")}</legend>
-        {lines.map((line, i) => (
-          <div
-            key={i}
-            className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(14rem,2fr)_9rem_10rem_minmax(8rem,1fr)_auto] md:items-end md:border-0 md:p-0"
-          >
-            <Field label={tc("account")} labelHidden={i > 0}>
-              <Select
-                value={line.accountCode || null}
-                options={options}
-                placeholder={tc("accountPlaceholder")}
-                onValueChange={(v) => set(i, { accountCode: v })}
-                aria-label={tc("account")}
-              />
-            </Field>
-            <Field label={t("side")} labelHidden={i > 0}>
-              <SegmentedControl
-                label={t("side")}
-                size="md"
-                value={line.side}
-                onValueChange={(v) => set(i, { side: v as "debit" | "credit" })}
-                options={[
-                  { value: "debit", label: tc("debit") },
-                  { value: "credit", label: tc("credit") },
-                ]}
-              />
-            </Field>
-            <Field
-              label={tc("amount")}
-              labelHidden={i > 0}
-              error={line.amount && satang(line.amount) === null ? tc("invalidAmount") : undefined}
+      </FormSection>
+      <FormSection card step={2} title={t("lines")}>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="sr-only">{t("lines")}</legend>
+          {lines.map((line, i) => (
+            <div
+              key={i}
+              className="border-border grid gap-2 rounded-lg border p-3 xl:grid-cols-[minmax(12rem,2fr)_9rem_9rem_minmax(7rem,1fr)_auto] xl:items-end xl:border-0 xl:p-0"
             >
-              <Input
-                inputMode="decimal"
-                value={line.amount}
-                onChange={(e) => set(i, { amount: e.target.value })}
-                className="text-end"
+              <Field label={tc("account")} labelHidden={i > 0}>
+                <Select
+                  value={line.accountCode || null}
+                  options={options}
+                  placeholder={tc("accountPlaceholder")}
+                  onValueChange={(v) => set(i, { accountCode: v })}
+                  aria-label={tc("account")}
+                />
+              </Field>
+              <Field label={t("side")} labelHidden={i > 0}>
+                <SegmentedControl
+                  label={t("side")}
+                  size="md"
+                  value={line.side}
+                  onValueChange={(v) => set(i, { side: v as "debit" | "credit" })}
+                  options={[
+                    { value: "debit", label: tc("debit") },
+                    { value: "credit", label: tc("credit") },
+                  ]}
+                />
+              </Field>
+              <Field
+                label={tc("amount")}
+                labelHidden={i > 0}
+                error={line.amount && satang(line.amount) === null ? tc("invalidAmount") : undefined}
+              >
+                <Input
+                  inputMode="decimal"
+                  value={line.amount}
+                  onChange={(e) => set(i, { amount: e.target.value })}
+                  className="text-end tabular-nums"
+                />
+              </Field>
+              <Field label={t("lineDescription")} labelHidden={i > 0}>
+                <Input
+                  value={line.description}
+                  maxLength={300}
+                  onChange={(e) => set(i, { description: e.target.value })}
+                />
+              </Field>
+              <IconButton
+                name="trash"
+                label={t("removeLine")}
+                variant="ghost"
+                disabled={lines.length <= 2}
+                onClick={() => setLines(lines.filter((_, j) => j !== i))}
               />
-            </Field>
-            <Field label={t("lineDescription")} labelHidden={i > 0}>
-              <Input
-                value={line.description}
-                maxLength={300}
-                onChange={(e) => set(i, { description: e.target.value })}
-              />
-            </Field>
-            <IconButton
-              name="trash"
-              label={t("removeLine")}
-              variant="ghost"
-              disabled={lines.length <= 2}
-              onClick={() => setLines(lines.filter((_, j) => j !== i))}
-            />
-          </div>
-        ))}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="flex flex-wrap gap-2">
+            </div>
+          ))}
+          <div className="flex flex-wrap gap-2 pt-1">
             <Button
               variant="secondary"
               iconStart="plus"
@@ -247,35 +288,10 @@ export function JournalForm({
                 {t("balanceIt")}
               </Button>
             ) : null}
-          </span>
-          <p
-            className={
-              debit === credit && debit > 0n ? "text-success text-sm font-medium" : "text-warning text-sm font-medium"
-            }
-            aria-live="polite"
-          >
-            {t("totals", { debit: format.thb(fromSatang(debit)), credit: format.thb(fromSatang(credit)) })} ·{" "}
-            {debit === credit && debit > 0n
-              ? t("balanced")
-              : t("unbalanced", { diff: format.thb(fromSatang(debit > credit ? debit - credit : credit - debit)) })}
-          </p>
-        </div>
-      </fieldset>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          size="lg"
-          iconStart="send"
-          loading={busy}
-          disabled={debit !== credit || debit === 0n}
-          onClick={() => void save(true)}
-        >
-          {t("submit")}
-        </Button>
-        <Button size="lg" variant="secondary" iconStart="save" loading={busy} onClick={() => void save(false)}>
-          {t("saveDraft")}
-        </Button>
-      </div>
-    </div>
+          </div>
+        </fieldset>
+      </FormSection>
+    </FormColumns>
   );
 }
 

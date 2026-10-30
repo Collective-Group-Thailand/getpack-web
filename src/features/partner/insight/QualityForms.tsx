@@ -713,7 +713,14 @@ export function CheckRecordForm({ check, etag, canEdit }: { check: Check; etag: 
 }
 
 /** A check's actions (D-372, D-375): set the result with a reason, print the certificate of analysis. */
-export function CheckActions({ check }: { check: Check }) {
+export function CheckActions({
+  check,
+  layout = "row",
+}: {
+  check: Check;
+  /** `panel`: the record page's sticky next-steps panel — one full-width stack (see `SalesActions`). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerInsight.checks.actions");
   const tResult = useTranslations("status.erpCheck");
   const { factoryId } = useFactory();
@@ -747,6 +754,7 @@ export function CheckActions({ check }: { check: Check }) {
   return (
     <>
       <SalesActions
+        layout={layout}
         offered={check.nextActions.filter((a) => a.key !== "erp_qc.record")}
         actions={[
           { key: "erp_qc.coa", kind: "pdf", path: "/quality-checks/{checkId}/coa", params },
@@ -1080,7 +1088,14 @@ export function NcrWorkForm({ ncr, etag, people }: { ncr: Ncr; etag: string | nu
 }
 
 /** An NCR's actions (D-374): decide the disposition (a scrap leaves stock), verify, close, cancel. */
-export function NcrActions({ ncr }: { ncr: Ncr }) {
+export function NcrActions({
+  ncr,
+  layout = "row",
+}: {
+  ncr: Ncr;
+  /** `panel`: the record page's sticky next-steps panel — one full-width stack (see `SalesActions`). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerInsight.ncrs.actions");
   const tDisposition = useTranslations("partnerInsight.dispositions");
   const { factoryId } = useFactory();
@@ -1113,6 +1128,7 @@ export function NcrActions({ ncr }: { ncr: Ncr }) {
   return (
     <>
       <SalesActions
+        layout={layout}
         offered={ncr.nextActions.filter((a) => a.key !== "erp_ncr.edit")}
         actions={[
           {

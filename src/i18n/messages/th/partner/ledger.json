@@ -372,7 +372,8 @@
       "semi_finished": "งานระหว่างทำ",
       "finished_good": "สินค้าสำเร็จรูป",
       "packing": "วัสดุบรรจุภัณฑ์"
-    }
+    },
+    "sectionTotal": "รวม{section}"
   },
   "accounts": {
     "title": "ผังบัญชีและตั้งค่า",

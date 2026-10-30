@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format/useFormat";
@@ -14,7 +15,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
@@ -45,6 +46,7 @@ export function InvoiceFromDeliveries({
 }) {
   const t = useTranslations("partnerSales.invoices.fromDeliveries");
   const tCommon = useTranslations("partnerSales.common");
+  const tSections = useTranslations("partnerSales.form.sections");
   const { factoryId } = useFactory();
   const format = useFormat();
   const router = useRouter();
@@ -85,54 +87,77 @@ export function InvoiceFromDeliveries({
     }
   }
 
+  const chosenNos = deliveries.filter((d) => chosen.has(d.id)).map((d) => d.doNo);
+
   return (
-    <div className="flex flex-col gap-5">
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-medium">{t("deliveries")}</legend>
-        {deliveries.length ? (
-          deliveries.map((d) => (
-            <Checkbox
-              key={d.id}
-              checked={chosen.has(d.id)}
-              onCheckedChange={(on) => {
-                const next = new Set(chosen);
-                if (on) next.add(d.id);
-                else next.delete(d.id);
-                setChosen(next);
-              }}
-              label={`${d.doNo} · ${format.date(d.deliverOn)}`}
-              description={d.salesOrder}
-            />
-          ))
-        ) : (
-          <p className="text-muted text-sm">{t("noDeliveries")}</p>
-        )}
-        {salesOrderId ? <p className="text-muted text-sm">{t("servicesToo")}</p> : null}
-      </fieldset>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("issueDate")} hint={t("issueDateHint")}>
-          <Input
-            type="date"
-            value={issueDate}
-            onChange={(event) => setIssueDate(event.target.value || bangkokToday())}
+    <FormColumns
+      aside={
+        <FormSummary
+          title={tSections("summary")}
+          action={
+            <Button size="xl" loading={busy} iconStart="receipt" onClick={() => void save()}>
+              {t("save", { customer: customer.name })}
+            </Button>
+          }
+        >
+          <SummaryRows
+            rows={[
+              { key: "customer", label: tCommon("customer"), value: customer.name },
+              { key: "deliveries", label: t("deliveries"), value: chosenNos.join(", ") },
+              { key: "date", label: t("issueDate"), value: issueDate ? format.date(issueDate) : "" },
+              { key: "form", label: t("form"), value: t(`forms.${form}`) },
+            ]}
           />
-        </Field>
-      </div>
-      <SegmentedControl
-        label={t("form")}
-        size="md"
-        value={form}
-        onValueChange={setForm}
-        options={[
-          { value: "invoice", label: t("forms.invoice") },
-          { value: "invoice_receipt", label: t("forms.invoice_receipt") },
-        ]}
-      />
-      <p className="text-muted text-sm">{t(`formHints.${form}`)}</p>
-      <Button size="xl" loading={busy} iconStart="receipt" className="self-start" onClick={() => void save()}>
-        {t("save", { customer: customer.name })}
-      </Button>
-    </div>
+        </FormSummary>
+      }
+    >
+      <FormSection card step={1} title={t("deliveries")}>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="sr-only">{t("deliveries")}</legend>
+          {deliveries.length ? (
+            deliveries.map((d) => (
+              <Checkbox
+                key={d.id}
+                checked={chosen.has(d.id)}
+                onCheckedChange={(on) => {
+                  const next = new Set(chosen);
+                  if (on) next.add(d.id);
+                  else next.delete(d.id);
+                  setChosen(next);
+                }}
+                label={`${d.doNo} · ${format.date(d.deliverOn)}`}
+                description={d.salesOrder}
+              />
+            ))
+          ) : (
+            <p className="text-muted text-sm">{t("noDeliveries")}</p>
+          )}
+          {salesOrderId ? <p className="text-muted text-sm">{t("servicesToo")}</p> : null}
+        </fieldset>
+      </FormSection>
+      <FormSection card step={2} title={t("form")}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label={t("issueDate")} hint={t("issueDateHint")}>
+            <Input
+              type="date"
+              value={issueDate}
+              onChange={(event) => setIssueDate(event.target.value || bangkokToday())}
+            />
+          </Field>
+        </div>
+        <SegmentedControl
+          label={t("form")}
+          size="md"
+          value={form}
+          onValueChange={setForm}
+          options={[
+            { value: "invoice", label: t("forms.invoice") },
+            { value: "invoice_receipt", label: t("forms.invoice_receipt") },
+          ]}
+        />
+        <p className="text-muted text-sm">{t(`formHints.${form}`)}</p>
+      </FormSection>
+    </FormColumns>
   );
 }
 
@@ -140,7 +165,16 @@ export function InvoiceFromDeliveries({
  * What can be done with an invoice now (D-363 – D-365): edit and issue the draft — numbered in date order, a
  * cash sale with its receipt — receive payment, credit or debit it, void it, print it.
  */
-export function InvoiceActions({ invoice, etag }: { invoice: Invoice; etag: string | null }) {
+export function InvoiceActions({
+  invoice,
+  etag,
+  layout = "row",
+}: {
+  invoice: Invoice;
+  etag: string | null;
+  /** `panel`: the invoice page's sticky next-steps panel (see `SalesActions`). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.invoices.actions");
   const tCommon = useTranslations("partnerSales.common");
   const tMethods = useTranslations("partnerSales.methods");
@@ -182,6 +216,7 @@ export function InvoiceActions({ invoice, etag }: { invoice: Invoice; etag: stri
   return (
     <>
       <SalesActions
+        layout={layout}
         offered={invoice.nextActions}
         etag={etag}
         actions={[

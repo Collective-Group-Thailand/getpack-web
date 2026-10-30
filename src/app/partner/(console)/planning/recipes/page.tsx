@@ -112,7 +112,7 @@ export default async function RecipesPage({
                 description={t("emptyBody")}
                 action={
                   canPlan ? (
-                    <Button asChild iconStart="plus">
+                    <Button asChild variant="secondary" iconStart="plus">
                       <Link href="/planning/recipes/new">{t("new")}</Link>
                     </Button>
                   ) : view !== "all" ? (

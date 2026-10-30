@@ -212,7 +212,7 @@ export default async function QualityChecksPage({
                 description={t("emptyBody")}
                 action={
                   canRecord ? (
-                    <Button asChild iconStart="plus">
+                    <Button asChild variant="secondary" iconStart="plus">
                       <Link href="/quality/new">{t("new")}</Link>
                     </Button>
                   ) : view !== "all" || kind ? (

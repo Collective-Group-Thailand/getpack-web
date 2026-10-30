@@ -313,5 +313,9 @@
     "handOverConfirm": "Tax invoice {no} for {amount} becomes the tax invoice of statement {statement}, with its PDF.",
     "done": "Tax invoice {no} sent to getpack",
     "failed": "Could not send the tax invoice"
+  },
+  "views": {
+    "label": "Statement status",
+    "all": "All"
   }
 }

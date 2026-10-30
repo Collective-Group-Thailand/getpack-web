@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { RATE_LINE_ACCEPTANCE, SETTING_VERSION_STATUS } from "@/domain/status";
@@ -9,6 +10,7 @@ import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -22,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function ShippingRatesPage() {
   const t = await getTranslations("partnerPrices.shipping");
+  const tPrices = await getTranslations("partnerPrices");
   const format = await getFormat();
   const locale = await getLocale();
   const context = await factoryContext();
@@ -65,9 +68,10 @@ export default async function ShippingRatesPage() {
     ].join(" · ");
 
   return (
-    <PartnerPage title={t("title")} description={t("body")}>
+    <PartnerPage wide title={t("title")} description={t("body")} back={{ href: "/prices", label: tPrices("title") }}>
       {open?.data ? (
         <PartnerSection
+          id="rate-open"
           title={t("openTitle", { version: open.data.versionNo })}
           description={t("openBody", { date: format.date(open.data.effectiveFrom), count: open.data.openLines })}
         >
@@ -125,17 +129,40 @@ export default async function ShippingRatesPage() {
                   align: "end",
                   cell: (rate) => (rate.perExtraKg ? format.thb(rate.perExtraKg) : "—"),
                 },
-                {
-                  key: "status",
-                  header: t("table.status"),
-                  className: "whitespace-nowrap",
-                  cell: (rate) => <StatusChip map={RATE_LINE_ACCEPTANCE} value={rate.acceptance} />,
-                },
+                // Every line of a card in force is accepted: a chip on each row would only repeat it. The column
+                // shows up only when a line says something else.
+                ...(current.data.rates.some((rate) => rate.acceptance !== "accepted")
+                  ? [
+                      {
+                        key: "status",
+                        header: t("table.status"),
+                        className: "whitespace-nowrap",
+                        cell: (rate: Schemas["FactoryRateDto"]) =>
+                          rate.acceptance === "accepted" ? null : (
+                            <StatusChip map={RATE_LINE_ACCEPTANCE} value={rate.acceptance} />
+                          ),
+                      },
+                    ]
+                  : []),
               ]}
             />
           </>
         ) : (
-          <EmptyState icon="truck" title={t("noCurrent")} />
+          <EmptyState
+            icon="truck"
+            title={t("noCurrent")}
+            action={
+              open?.data ? (
+                <Button asChild variant="secondary" iconStart="handshake">
+                  <a href="#rate-open">{t("openTitle", { version: open.data.versionNo })}</a>
+                </Button>
+              ) : (
+                <Button asChild variant="secondary" iconStart="arrow-left">
+                  <Link href="/prices">{tPrices("title")}</Link>
+                </Button>
+              )
+            }
+          />
         )}
       </PartnerSection>
 

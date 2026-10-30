@@ -118,7 +118,7 @@ export default async function PlanningPage({
               description={t("emptyBody")}
               action={
                 canPlan ? (
-                  <Button asChild iconStart="plus">
+                  <Button asChild variant="secondary" iconStart="plus">
                     <Link href="/planning/orders/new">{t("newOrder")}</Link>
                   </Button>
                 ) : view !== "all" ? (

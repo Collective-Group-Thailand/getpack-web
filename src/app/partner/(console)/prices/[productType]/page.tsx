@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { PROPOSAL_STATUS, SETTING_VERSION_STATUS } from "@/domain/status";
 import { canAt, factoryContext, getFactoryContext } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ViewTabs } from "@/features/partner/rows";
 import { CreateProposal, VersionSignOff } from "@/features/partner/prices/actions";
 import { componentsFor } from "@/features/partner/prices/components-by-type";
 import { PriceTable } from "@/features/partner/prices/PriceTable";
@@ -128,7 +129,6 @@ export default async function PriceListPage({ params, searchParams }: Props) {
   };
   const versions = [list.current, ...list.upcoming].filter((item): item is NonNullable<typeof item> => !!item);
 
-  // The one thing to do next, in the header: carry on with the draft, read what was sent, or start one.
   // The one thing to do next, in the header — only when no proposal is open (an open one has its own box below).
   const primary =
     prices.mode === "factory_price_list" && !open && canPropose ? (
@@ -161,10 +161,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
       ) : null}
 
       {open ? (
-        <Callout
-          tone={open.status === "draft" ? "warning" : "info"}
-          title={t(`openNotice.${open.status === "draft" ? "draft" : "sent"}`)}
-        >
+        <Callout tone="info" title={t(`openNotice.${open.status === "draft" ? "draft" : "sent"}`)}>
           <span className="flex flex-col gap-2">
             <span className="flex flex-wrap items-center gap-2">
               <StatusChip map={PROPOSAL_STATUS} value={open.status} />
@@ -199,28 +196,22 @@ export default async function PriceListPage({ params, searchParams }: Props) {
               </p>
               <p className="text-muted">{t(`origin.${version.origin}`)}</p>
               {versions.length > 1 ? (
-                <nav aria-label={t("version.switch")} className="ms-auto flex flex-wrap gap-1">
-                  {versions.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/prices/${productType}?${new URLSearchParams({
-                        ...(item.id !== list.current?.id ? { version: item.id } : {}),
-                        ...(component ? { component } : {}),
-                      })}`}
-                      aria-current={item.id === version.id ? "page" : undefined}
-                      className={cn(
-                        "rounded-control border-border inline-flex min-h-10 items-center border px-3",
-                        item.id === version.id
-                          ? "bg-primary text-primary-fg border-primary font-medium"
-                          : "hover:bg-surface-subtle",
-                      )}
-                    >
-                      {item.id === list.current?.id
+                <ViewTabs
+                  label={t("version.switch")}
+                  className="ms-auto"
+                  current={version.id}
+                  items={versions.map((item) => ({
+                    key: item.id,
+                    href: `/prices/${productType}?${new URLSearchParams({
+                      ...(item.id !== list.current?.id ? { version: item.id } : {}),
+                      ...(component ? { component } : {}),
+                    })}`,
+                    label:
+                      item.id === list.current?.id
                         ? t("version.current", { version: item.versionNo })
-                        : t("version.upcoming", { version: item.versionNo, date: format.date(item.effectiveFrom) })}
-                    </Link>
-                  ))}
-                </nav>
+                        : t("version.upcoming", { version: item.versionNo, date: format.date(item.effectiveFrom) }),
+                  }))}
+                />
               ) : null}
             </div>
             <p className="text-muted">{t("version.parts", { filled, total: definitions.length })}</p>
@@ -260,7 +251,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
                             className={cn(
                               "rounded-control border-border flex min-h-10 items-center justify-between gap-2 border px-3 text-sm xl:border-0",
                               current
-                                ? "bg-primary text-primary-fg border-primary font-medium"
+                                ? "bg-primary-subtle text-primary-subtle-fg border-transparent font-semibold"
                                 : lines === 0
                                   ? "text-muted hover:bg-surface-subtle"
                                   : "hover:bg-surface-subtle",
@@ -268,7 +259,12 @@ export default async function PriceListPage({ params, searchParams }: Props) {
                           >
                             <span>{tComponents(item.component)}</span>
                             {lines !== undefined ? (
-                              <span className={cn("text-xs tabular-nums", current ? "text-primary-fg" : "text-muted")}>
+                              <span
+                                className={cn(
+                                  "text-xs tabular-nums",
+                                  current ? "text-primary-subtle-fg" : "text-muted",
+                                )}
+                              >
                                 {lines}
                               </span>
                             ) : null}

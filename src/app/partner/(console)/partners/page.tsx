@@ -105,7 +105,7 @@ export default async function TradingPartnersPage({
                 description={t("emptyBody")}
                 action={
                   manage && view !== "archived" ? (
-                    <Button asChild iconStart="plus">
+                    <Button asChild variant="secondary" iconStart="plus">
                       <Link href={`/partners/new${view === "customer" ? "?kind=customer" : ""}`}>{t("new")}</Link>
                     </Button>
                   ) : (

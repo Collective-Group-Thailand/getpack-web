@@ -90,7 +90,7 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
               description={t("emptyBody")}
               action={
                 canManage ? (
-                  <Button asChild iconStart="plus">
+                  <Button asChild variant="secondary" iconStart="plus">
                     <Link href="/quality/templates/new">{t("new")}</Link>
                   </Button>
                 ) : archived ? (

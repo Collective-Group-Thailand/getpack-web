@@ -4,9 +4,10 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_SUPPLIER_INVOICE_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage } from "@/features/partner/frame";
-import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerStats } from "@/features/partner/frame";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -78,6 +79,28 @@ export default async function PayablesPage({
         )
       : null,
   ]);
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const listed = await viewTotals(["open", "overdue", "all", "payments"] as const, async (key) =>
+    key === "payments"
+      ? (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/supplier-payments", {
+            params: { path, query: { perPage: 1, ...(q ? { q } : {}) } },
+          })
+        ).data
+      : (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/supplier-invoices", {
+            params: {
+              path,
+              query: {
+                perPage: 1,
+                ...(key === "open" ? { status: "open" } : key === "overdue" ? { overdue: true } : {}),
+                ...(q ? { q } : {}),
+              },
+            },
+          })
+        ).data,
+  );
+  const counts: Record<View, number | null> = { ...listed, aging: aging.data?.suppliers.length ?? null };
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/payables${queryOf({ view: next === "open" ? undefined : next, ...extra })}`;
   const pagination = {
@@ -111,39 +134,46 @@ export default async function PayablesPage({
       }
     >
       {totals ? (
-        <StatStrip
+        <PartnerStats
           label={t("stats.label")}
+          columns={4}
           items={[
-            { key: "total", label: t("stats.open"), value: format.thb(totals.total) },
-            { key: "soon", label: t("stats.dueSoon"), value: format.thb(aging.data!.dueSoon), tone: "warning" },
+            { key: "total", label: t("stats.open"), value: format.thb(totals.total), highlight: true },
+            { key: "soon", label: t("stats.dueSoon"), value: format.thb(aging.data!.dueSoon) },
             {
               key: "late",
               label: t("stats.late"),
               value: format.thb(totals.d1_30),
-              hint: overdue ? t("stats.overdueHint") : undefined,
-              tone: overdue ? "danger" : undefined,
               href: href("overdue"),
+              ...(overdue ? { hint: t("stats.overdueHint"), tone: "danger" as const, icon: "warning" as const } : {}),
             },
             { key: "current", label: t("stats.current"), value: format.thb(totals.current) },
           ]}
         />
       ) : null}
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      {view !== "aging" ? (
-        <SearchBar
-          id="ap-q"
-          action="/payables"
-          hidden={{ view: view === "open" ? undefined : view }}
-          q={q}
-          label={t("searchLabel")}
-          placeholder={t("searchPlaceholder")}
-          button={tCommon("search")}
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: href(key, key === "aging" ? {} : { q }),
+            label: t(`views.${key}`),
+            count: counts[key],
+          }))}
         />
-      ) : null}
+        {view !== "aging" ? (
+          <SearchBar
+            id="ap-q"
+            action="/payables"
+            hidden={{ view: view === "open" ? undefined : view }}
+            q={q}
+            label={t("searchLabel")}
+            placeholder={t("searchPlaceholder")}
+            button={tCommon("search")}
+          />
+        ) : null}
+      </ListToolbar>
       {invoices ? (
         invoices.data ? (
           <>
@@ -153,7 +183,24 @@ export default async function PayablesPage({
               rowKey={(inv) => inv.id}
               rowHref={(inv) => `/payables/invoices/${inv.id}`}
               rowTone={(inv) => (inv.overdue ? "danger" : undefined)}
-              empty={<EmptyState icon="receipt" title={t("empty")} description={t("emptyBody")} />}
+              empty={
+                <EmptyState
+                  icon="receipt"
+                  title={t("empty")}
+                  description={t("emptyBody")}
+                  action={
+                    view !== "all" ? (
+                      <Button asChild variant="secondary" iconEnd="arrow-right">
+                        <Link href={href("all")}>{t("views.all")}</Link>
+                      </Button>
+                    ) : canManage ? (
+                      <Button asChild variant="secondary" iconStart="plus">
+                        <Link href="/payables/invoices/new">{t("newInvoice")}</Link>
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              }
               columns={[
                 {
                   key: "no",
@@ -217,7 +264,19 @@ export default async function PayablesPage({
               rows={payments.data.data}
               rowKey={(p) => p.id}
               rowHref={(p) => `/payables/payments/${p.id}`}
-              empty={<EmptyState icon="coins" title={t("emptyPayments")} />}
+              empty={
+                <EmptyState
+                  icon="coins"
+                  title={t("emptyPayments")}
+                  action={
+                    canManage && !q ? (
+                      <Button asChild variant="secondary" iconStart="coins">
+                        <Link href="/payables/payments/new">{t("newPayment")}</Link>
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              }
               columns={[
                 {
                   key: "no",
@@ -275,7 +334,17 @@ export default async function PayablesPage({
           rows={aging.data.suppliers}
           rowKey={(row) => row.supplier.id}
           rowHref={(row) => `/partners/${row.supplier.id}`}
-          empty={<EmptyState icon="check" title={t("nothingOwed")} />}
+          empty={
+            <EmptyState
+              icon="check"
+              title={t("nothingOwed")}
+              action={
+                <Button asChild variant="secondary" iconEnd="arrow-right">
+                  <Link href={href("payments")}>{t("views.payments")}</Link>
+                </Button>
+              }
+            />
+          }
           columns={[
             { key: "supplier", header: t("table.supplier"), primary: true, cell: (row) => row.supplier.name },
             {

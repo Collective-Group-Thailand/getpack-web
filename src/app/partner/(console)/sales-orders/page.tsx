@@ -108,7 +108,7 @@ export default async function SalesOrdersPage({
                 description={manage ? t("emptyBody") : undefined}
                 action={
                   manage ? (
-                    <Button asChild iconStart="plus">
+                    <Button asChild variant="secondary" iconStart="plus">
                       <Link href="/sales-orders/new">{t("new")}</Link>
                     </Button>
                   ) : view !== "all" ? (
