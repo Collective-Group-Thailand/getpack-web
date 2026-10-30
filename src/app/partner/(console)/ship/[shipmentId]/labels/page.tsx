@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { addressLine } from "@/features/partner/address";
+import { destinationPlace } from "@/features/partner/ship/destination";
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { PrintButton } from "@/features/partner/ship/actions";
 import { getFormat } from "@/features/shared/format/server";
@@ -18,8 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Carton labels, 100 × 150 mm, one per carton (B4.3), drawn from the packed trip's `cartons[]`:
- * the shipment and carton numbers, the recipient (D-142), and a QR of the carton's label code —
- * no price, no customer beyond that. The API's own labels PDF opens from the trip.
+ * the carton's label code, its number in the trip, the job, the destination as province and postcode prefix
+ * (P4-01, P4-D1: no recipient name, phone or address on a label the factory prints) and a QR of the label code. The API's own labels PDF opens from the trip.
  *
  * CONTRACT-GAP partner.shipments — the API leaves out the per-carton public tracking URL (its
  * token is stored hashed), so the QR carries the label code the scanner resolves, not a link.
@@ -57,10 +57,11 @@ export default async function LabelsPage({ params }: Props) {
               <p className="font-semibold">{t("carton", { n: carton.seq, total: shipment.cartons.length })}</p>
               <p className="text-[10pt]">{t("job", { jobNo: jobNos })}</p>
               <hr className="border-black" />
+              {/* P4-01 / P4-D1: the job, where it goes as province and postcode prefix, the carton — no recipient. */}
               <p className="text-[9pt] font-semibold">{t("to")}</p>
-              <p className="text-[14pt] font-bold">{destination.recipientName}</p>
-              <p>{addressLine({ ...destination, province: destination.province.nameTh })}</p>
-              <p className="font-semibold">{destination.phone}</p>
+              <p className="text-[14pt] font-bold">
+                {destinationPlace(destination.province.nameTh, destination.postcode)}
+              </p>
               {carton.weightG ? (
                 <p className="text-[9pt]">{t("weight", { kg: format.number(carton.weightG / 1000) })}</p>
               ) : null}

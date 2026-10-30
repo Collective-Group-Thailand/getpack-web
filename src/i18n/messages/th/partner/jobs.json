@@ -219,7 +219,7 @@
     "tolerance": "ค่าเผื่อจำนวน",
     "toleranceValue": "ขาดได้ {shortage} · เกินได้ {overage}",
     "destinations": "ส่งถึง",
-    "destinationsNote": "ชื่อ ที่อยู่ และเบอร์โทรผู้รับเท่านั้น",
+    "destinationsNote": "ชื่อ เบอร์ และที่อยู่ผู้รับ getpack เป็นผู้ดูแล โรงงานเห็นเลขปลายทาง จังหวัด และรหัสไปรษณีย์ 3 หลักแรก",
     "destinationQty": "{quantity} ชิ้น · ส่งแล้ว {shipped}",
     "quality": "คุณภาพ",
     "qcBy": "ตรวจโดย {name}",

@@ -158,7 +158,7 @@
     "sheet": "Labels for {no}",
     "carton": "Carton {n} of {total}",
     "job": "{jobNo}",
-    "to": "To",
+    "to": "Destination",
     "weight": "{kg} kg",
     "scan": "Carton code",
     "qr": "Carton code QR, carton {n}",
@@ -190,5 +190,9 @@
     "gate": "Waiting to leave",
     "road": "On the road",
     "pod": "POD due"
+  },
+  "destination": {
+    "code": "Destination {code}",
+    "confidential": "getpack keeps the recipient's name, phone and address. The factory sees the destination code, the province and the postcode's first three digits."
   }
 }

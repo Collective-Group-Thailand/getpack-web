@@ -8,6 +8,7 @@ import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame
 import { StatStrip, ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { CreateShipment } from "@/features/partner/ship/actions";
+import { destinationCode, destinationPlace } from "@/features/partner/ship/destination";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
@@ -35,7 +36,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ShipPage({ searchParams }: Props) {
   const query = await searchParams;
   const view: View = (VIEWS as readonly string[]).includes(query.view ?? "") ? (query.view as View) : "open";
-  const [t, format] = await Promise.all([getTranslations("partnerShip"), getFormat()]);
+  const [t, tDest, format] = await Promise.all([
+    getTranslations("partnerShip"),
+    getTranslations("partnerShip.destination"),
+    getFormat(),
+  ]);
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
   const [plan, list, every] = await Promise.all([
@@ -130,12 +135,14 @@ export default async function ShipPage({ searchParams }: Props) {
                     ) : null}
                     <ul className="grid gap-3 md:grid-cols-2">
                       {job.destinations
-                        .filter((destination) => destination.remainingQuantity > 0)
-                        .map((destination) => (
+                        // The code is the destination's place in the job's list (P4-01), counted before filtering.
+                        .map((destination, index) => ({ destination, code: destinationCode(index) }))
+                        .filter(({ destination }) => destination.remainingQuantity > 0)
+                        .map(({ destination, code }) => (
                           <li key={destination.destinationId} className="border-border rounded-lg border p-3">
-                            <p className="font-medium">{destination.recipientName}</p>
+                            <p className="font-medium">{tDest("code", { code })}</p>
                             <p className="text-muted text-sm">
-                              {[destination.provinceNameTh, destination.postcode].join(" ")}
+                              {destinationPlace(destination.provinceNameTh, destination.postcode)}
                             </p>
                             <p className="mb-3 text-sm">
                               {t("plan.left", {
@@ -149,8 +156,8 @@ export default async function ShipPage({ searchParams }: Props) {
                                 jobNo={job.jobNo}
                                 destination={{
                                   id: destination.destinationId,
-                                  recipientName: destination.recipientName,
-                                  place: [destination.provinceNameTh, destination.postcode].join(" "),
+                                  label: tDest("code", { code }),
+                                  place: destinationPlace(destination.provinceNameTh, destination.postcode),
                                   left: destination.remainingQuantity,
                                 }}
                               />
@@ -195,10 +202,7 @@ export default async function ShipPage({ searchParams }: Props) {
                   key: "to",
                   header: t("list.table.to"),
                   cell: (shipment) => (
-                    <span className="flex flex-col">
-                      <span>{shipment.destination.recipientName}</span>
-                      <span className="text-muted text-sm">{shipment.destination.province.nameTh}</span>
-                    </span>
+                    <span>{destinationPlace(shipment.destination.province.nameTh, shipment.destination.postcode)}</span>
                   ),
                 },
                 {

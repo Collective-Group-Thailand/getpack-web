@@ -176,7 +176,11 @@
     },
     "search": "ค้นหาเมนู",
     "searchPlaceholder": "ค้นหาเมนู (กด /)",
-    "noMatch": "ไม่พบเมนูที่ตรงกัน"
+    "noMatch": "ไม่พบเมนูที่ตรงกัน",
+    "sections": {
+      "getpack": "งานกับ getpack",
+      "erp": "ERP ของโรงงาน"
+    }
   },
   "status": {
     "job": {

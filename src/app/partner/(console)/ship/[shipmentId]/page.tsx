@@ -4,7 +4,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { SHIPMENT_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { addressLine } from "@/features/partner/address";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import {
   CancelShipment,
@@ -15,6 +14,7 @@ import {
   UpdateTransit,
 } from "@/features/partner/ship/actions";
 import { PhotoGrid, ViewFile } from "@/features/partner/viewer";
+import { destinationPlace } from "@/features/partner/ship/destination";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
@@ -43,8 +43,9 @@ const linkClass =
  */
 export default async function ShipmentPage({ params }: Props) {
   const { shipmentId } = await params;
-  const [t, tTolerance, tProblems, format, locale] = await Promise.all([
+  const [t, tDest, tTolerance, tProblems, format, locale] = await Promise.all([
     getTranslations("partnerShip.detail"),
+    getTranslations("partnerShip.destination"),
     getTranslations("partnerShip.tolerance"),
     getTranslations("problems"),
     getFormat(),
@@ -208,20 +209,15 @@ export default async function ShipmentPage({ params }: Props) {
       ) : null}
 
       <PartnerSection title={t("recipient")} description={t("recipientNote")}>
+        {/* P4-01: the province and the postcode's first digits only — getpack keeps the recipient. */}
         <Card padding="md">
-          <p className="font-medium">{shipment.destination.recipientName}</p>
-          <p>
-            {addressLine({
-              ...shipment.destination,
-              province: locale === "en" ? shipment.destination.province.nameEn : shipment.destination.province.nameTh,
-            })}
+          <p className="font-medium">
+            {destinationPlace(
+              locale === "en" ? shipment.destination.province.nameEn : shipment.destination.province.nameTh,
+              shipment.destination.postcode,
+            )}
           </p>
-          <a
-            href={`tel:${shipment.destination.phone}`}
-            className="text-primary inline-flex min-h-11 items-center underline md:min-h-10"
-          >
-            {shipment.destination.phone}
-          </a>
+          <p className="text-muted mt-1 text-sm">{tDest("confidential")}</p>
         </Card>
       </PartnerSection>
 

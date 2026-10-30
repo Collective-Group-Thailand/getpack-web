@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { ERP_PRODUCTION_STATUS, INSPECTION_STATUS, JOB_ISSUE_STATUS, JOB_STATUS, QC_RESULT } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { addressLine } from "@/features/partner/address";
+import { destinationCode, destinationPlace } from "@/features/partner/ship/destination";
 import { ViewFile } from "@/features/partner/viewer";
 import { termsFrom, TermsHelp } from "@/features/partner/terms";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
@@ -49,8 +49,9 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function JobPage({ params }: Props) {
   const { jobId } = await params;
-  const [t, tStages, tIssue, tQc, tSpec, format, locale] = await Promise.all([
+  const [t, tDest, tStages, tIssue, tQc, tSpec, format, locale] = await Promise.all([
     getTranslations("partnerJobs.detail"),
+    getTranslations("partnerShip.destination"),
     getTranslations("partnerJobs.stages"),
     getTranslations("partnerJobs.issue"),
     getTranslations("partnerJobs.qc"),
@@ -435,20 +436,16 @@ export default async function JobPage({ params }: Props) {
 
         <PartnerSection title={t("destinations")} description={t("destinationsNote")}>
           <ul className="flex flex-col gap-2">
-            {job.destinations.map((destination) => (
+            {job.destinations.map((destination, index) => (
               <li key={destination.id}>
+                {/* P4-01: the destination's code, province and postcode prefix — getpack keeps the recipient. */}
                 <Card padding="md">
-                  <p className="font-medium">{destination.recipientName}</p>
-                  <p className="text-sm">
-                    {addressLine({
-                      ...destination,
-                      province: locale === "en" ? destination.provinceNameEn : destination.provinceNameTh,
-                    })}
-                  </p>
-                  <p className="text-sm">
-                    <a href={`tel:${destination.phone}`} className="text-primary underline">
-                      {destination.phone}
-                    </a>
+                  <p className="font-medium">{tDest("code", { code: destinationCode(index) })}</p>
+                  <p className="text-muted text-sm">
+                    {destinationPlace(
+                      locale === "en" ? destination.provinceNameEn : destination.provinceNameTh,
+                      destination.postcode,
+                    )}
                   </p>
                   <p className="text-muted mt-1 text-sm">
                     {t("destinationQty", {
