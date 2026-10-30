@@ -11,8 +11,8 @@ import { cn } from "@/ui/lib/cn";
 
 import { ApprovalSimulator } from "./landing/ApprovalSimulator";
 import { ControlDemo } from "./landing/ControlDemo";
-import { DashboardIllustration } from "./landing/DashboardIllustration";
 import { DocChecklist } from "./landing/DocChecklist";
+import { OrderIllustration } from "./landing/OrderIllustration";
 import { RoiCalculator } from "./landing/RoiCalculator";
 import { SalesForm } from "./landing/SalesForm";
 import { pricedSamples, sampleOrders } from "./landing/samples.server";
@@ -72,8 +72,8 @@ function SectionHead({ id, title, lead }: { id: string; title: string; lead?: st
 }
 
 /**
- * getpack for business, for a visitor (business pack Phase 1, C10): dark hero with the account illustration, who it
- * is for, before → after, the features (live and "เร็ว ๆ นี้" from `storefront.roadmap`), the approval simulator on
+ * getpack for business, for a visitor (business pack Phase 1, C10): light hero with the priced-order illustration, who it
+ * is for, before → after, the features (ordered by `storefront.roadmap`, all live), the approval simulator on
  * real prices, the catalogue and budget demo, the ROI calculator, the credit path, opening an account with the
  * document checklist, purchasing FAQ, what customers see during production, and the sales form. Every figure is the
  * API's (prices, price lock, reply days, payment methods, issuer) or the visitor's own; nothing is sample data.
@@ -89,17 +89,21 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
   ]);
   const page = await pageContext("/business", t("metaTitle"));
   const applyHref = signedIn ? "/business/apply" : `/sign-in?returnTo=${encodeURIComponent("/business/apply")}`;
-  const roadmap = new Map((config?.roadmap.business ?? []).map((item) => [item.key, item.status]));
-  // Without the roadmap the page claims only what the pack calls live, and shows no "เร็ว ๆ นี้" card.
-  const features = (config?.roadmap.business ?? [])
-    .filter((item) => item.key in FEATURE_ICONS)
-    .map((item) => ({ key: item.key, soon: item.status !== "live" }));
-  const soon = t("features.soon");
+  // Every company-account feature is live (product owner, 2026-10-30): the roadmap only orders the cards.
+  const features = (config?.roadmap.business ?? []).filter((item) => item.key in FEATURE_ICONS);
   const issuer =
     locale === "en" ? (config?.issuer.legalNameEn ?? config?.issuer.legalNameTh) : config?.issuer.legalNameTh;
   const methods = (config?.paymentMethods ?? []).filter((method) => method in PAY_ICONS);
   const faq = FAQ.map((key) => ({ key, question: t(`faq.items.${key}.q`), answer: t(`faq.items.${key}.a`) }));
   const replyDays = options?.replyBusinessDaysByTopic.business ?? options?.replyBusinessDays ?? null;
+  // The hero's figures: the price lock is the API's (D-309, left out without one); the rest is the offer itself.
+  const facts: { key: string; value: string; label: string }[] = [
+    ...(config?.priceLockDays
+      ? [{ key: "lock", value: t("facts.lock.value", { days: config.priceLockDays }), label: t("facts.lock.label") }]
+      : []),
+    { key: "credit", value: t("facts.credit.value"), label: t("facts.credit.label") },
+    { key: "free", value: t("facts.free.value"), label: t("facts.free.label") },
+  ];
   const salesPoints: { key: string; icon: IconName; text: string }[] = [
     ...(replyDays !== null
       ? [{ key: "reply", icon: "check" as const, text: t("sales.points.reply", { days: replyDays }) }]
@@ -132,12 +136,12 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
       />
       <JsonLd data={faqPageSchema(faq.map(({ question, answer }) => ({ question, answer })))} />
 
-      {/* The hero: the one deliberate dark band, in both themes (the dark token set, scoped). */}
-      <section data-theme="dark" aria-labelledby="business-hero" className="bg-bg text-fg">
+      {/* The hero (redesign 2026-10-30): light, the order illustration beside the claim — no dark band. */}
+      <section aria-labelledby="business-hero" className="bg-surface">
         <div
           className={cn(
             HOME_WRAP,
-            "grid items-center gap-10 py-12 md:py-16 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12",
+            "grid items-center gap-8 py-10 md:py-14 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12 xl:py-16",
           )}
         >
           <div>
@@ -149,27 +153,27 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
             </h1>
             <p className="text-muted mt-4 max-w-[48ch] text-[16.5px] leading-relaxed">{t("intro")}</p>
             <div className="mt-7 flex flex-wrap gap-2.5">
-              <Button asChild size="lg" iconEnd="arrow-right">
+              <Button asChild size="lg" iconEnd="arrow-right" className="w-full sm:w-auto">
                 <TrackedLink event="biz_cta" target="apply" href={applyHref}>
                   {t("apply")}
                 </TrackedLink>
               </Button>
-              <Button asChild size="lg" variant="secondary">
+              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                 <TrackedAnchor event="biz_cta" target="sales" href="#sales">
                   {t("talk")}
                 </TrackedAnchor>
               </Button>
             </div>
             <dl className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
-              {(["credit", "review", "roles"] as const).map((fact) => (
-                <div key={fact} className="flex flex-col-reverse">
-                  <dt className="text-muted text-[13px]">{t(`facts.${fact}.label`)}</dt>
-                  <dd className="text-2xl leading-tight font-bold tabular-nums">{t(`facts.${fact}.value`)}</dd>
+              {facts.map((fact) => (
+                <div key={fact.key} className="flex flex-col-reverse">
+                  <dt className="text-muted text-[13px]">{fact.label}</dt>
+                  <dd className="text-2xl leading-tight font-bold tabular-nums">{fact.value}</dd>
                 </div>
               ))}
             </dl>
           </div>
-          <DashboardIllustration />
+          <OrderIllustration orders={sampleOrders(products)} creditTerms={t("facts.credit.value")} />
         </div>
       </section>
 
@@ -236,15 +240,10 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
                     WIDE.has(feature.key) ? "xl:col-span-3" : "xl:col-span-2",
                   )}
                 >
-                  {feature.soon ? (
-                    <span className="bg-instant-subtle text-instant-subtle-fg rounded-control absolute top-4 right-4 px-2 py-0.5 text-[11px] font-semibold">
-                      {soon}
-                    </span>
-                  ) : null}
                   <span className="bg-primary-subtle text-primary rounded-control grid size-10 place-items-center">
                     <Icon name={FEATURE_ICONS[feature.key]!} size={21} aria-hidden="true" />
                   </span>
-                  <h3 className="mt-1 pr-20 text-[17px] font-semibold">{t(`features.items.${feature.key}.title`)}</h3>
+                  <h3 className="mt-1 text-[17px] font-semibold">{t(`features.items.${feature.key}.title`)}</h3>
                   <p className="text-muted text-sm">{t(`features.items.${feature.key}.body`)}</p>
                   {feature.key === "team" ? (
                     <ul className="mt-1.5 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
@@ -277,12 +276,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
 
         <section aria-labelledby="business-control" className={SECTION}>
           <SectionHead id="business-control" title={t("control.title")} lead={t("control.lead")} />
-          <ControlDemo
-            products={products}
-            soonLabel={soon}
-            catalogueSoon={roadmap.get("company_catalogue") !== "live"}
-            budgetsSoon={roadmap.get("budgets") !== "live"}
-          />
+          <ControlDemo products={products} />
         </section>
 
         <section aria-labelledby="business-roi" className={SECTION}>

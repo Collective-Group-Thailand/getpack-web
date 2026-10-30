@@ -1,84 +1,7 @@
 import { getTranslations } from "next-intl/server";
+import { Icon } from "@/ui/icons";
 
-/** Skeleton lines and progress widths of the drawings — shapes, not data. */
-const JOBS: { column: "plan" | "running" | "qc" | "ready"; own: boolean; progress?: number }[] = [
-  { column: "plan", own: false },
-  { column: "plan", own: true },
-  { column: "running", own: false, progress: 64 },
-  { column: "running", own: true, progress: 30 },
-  { column: "qc", own: false },
-  { column: "ready", own: false },
-  { column: "ready", own: true },
-];
-const COLUMNS = ["plan", "running", "qc", "ready"] as const;
 const LINE = "bg-border-strong rounded-thumb block h-1.5";
-
-/**
- * The getpack Factory hero picture (pack Phase 3 item 1): a labelled illustration of the production board — the
- * board's real column names and the two job sources, with neutral placeholder lines instead of job names, quantities,
- * dates or machines (GLOBAL-RULES §3: no sample data). A real screenshot replaces it once supplied.
- */
-export async function ProductionBoard() {
-  const t = await getTranslations("pages.partner.board");
-  return (
-    <figure
-      role="img"
-      aria-label={t("label")}
-      className="bg-surface border-border rounded-panel shadow-panel overflow-hidden text-[12.5px]"
-    >
-      <div className="border-border text-muted flex items-center gap-2.5 border-b px-4 py-3">
-        <b className="text-fg font-semibold">{t("title")}</b>
-        <span>· {t("view")}</span>
-        <span className="ml-auto hidden gap-1.5 sm:flex">
-          <span className="bg-bg-subtle rounded-control px-2 py-0.5 text-[11.5px]">{t("today")}</span>
-          <span className="bg-bg-subtle rounded-control px-2 py-0.5 text-[11.5px]">{t("machines")}</span>
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-4">
-        {COLUMNS.map((column) => (
-          <div key={column} className="bg-bg-subtle rounded-card flex min-w-0 flex-col gap-1.5 p-2">
-            <h4 className="text-muted mx-1 mt-0.5 mb-1 text-[11px] font-medium">{t(`columns.${column}`)}</h4>
-            {JOBS.filter((job) => job.column === column).map((job, index) => (
-              <div
-                key={index}
-                className="bg-surface border-border rounded-control flex flex-col gap-1.5 border p-2"
-                aria-hidden="true"
-              >
-                <span
-                  className={
-                    job.own
-                      ? "bg-instant-subtle text-instant-subtle-fg rounded-thumb self-start px-1.5 py-px text-[10.5px] font-semibold"
-                      : "bg-primary-subtle text-primary-subtle-fg rounded-thumb self-start px-1.5 py-px text-[10.5px] font-semibold"
-                  }
-                >
-                  {job.own ? t("own") : t("fromGetpack")}
-                </span>
-                <span className={`${LINE} w-4/5`} />
-                {job.progress !== undefined ? (
-                  <span className="bg-bg-subtle rounded-thumb block h-1 overflow-hidden">
-                    <span className="bg-primary block h-full" style={{ width: `${job.progress}%` }} />
-                  </span>
-                ) : null}
-                <span className={`${LINE} w-1/2 opacity-60`} />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div className="grid gap-2 px-3 pb-3 sm:grid-cols-2">
-        <p className="bg-bg-subtle rounded-control flex items-start gap-2 p-2.5">
-          <span aria-hidden="true" className="bg-warning mt-1.5 size-2 shrink-0 rounded-full" />
-          <span className="text-muted">{t("stock")}</span>
-        </p>
-        <p className="bg-bg-subtle rounded-control flex items-start gap-2 p-2.5">
-          <span aria-hidden="true" className="bg-danger mt-1.5 size-2 shrink-0 rounded-full" />
-          <span className="text-muted">{t("repair")}</span>
-        </p>
-      </div>
-      <figcaption className="text-muted px-4 pb-3 text-[11.5px]">{t("caption")}</figcaption>
-    </figure>
-  );
-}
 
 /**
  * The shop-floor phone (pack Phase 3 item 4): the operator screen's real buttons (เสร็จ 1 ล็อต, หยุดชั่วคราว,
@@ -117,6 +40,148 @@ export async function OperatorPhone() {
         </div>
       </div>
       <figcaption className="text-muted mt-2 text-center text-[11.5px]">{t("caption")}</figcaption>
+    </figure>
+  );
+}
+
+const SPEC_CHIPS = ["flute", "material", "dieline", "colour"] as const;
+const QUEUE: { own: boolean; stage: "qc" | "running"; progress: number }[] = [
+  { own: false, stage: "qc", progress: 60 },
+  { own: true, stage: "running", progress: 40 },
+];
+
+/**
+ * The getpack Factory hero picture (hero redesign 2026-10-30): today's jobs with a getpack job ready to take —
+ * real product-type names from the catalogue as the job names, the real spec chips (ลอน · วัสดุ · ไดคัท · ค่าสี ΔE)
+ * and no quantity, date or machine (GLOBAL-RULES §3) — beside the automatic journal posting (Dr/Cr account names,
+ * no amounts) and the operator's three buttons. Without product types the job names are placeholder lines.
+ */
+export async function FactoryHero({ jobNames }: { jobNames: string[] }) {
+  const t = await getTranslations("pages.partner.hero");
+  const [featured, ...queue] = jobNames;
+  return (
+    <figure
+      role="img"
+      aria-label={t("label")}
+      className="bg-bg-subtle rounded-panel relative px-4 pt-5 pb-4 sm:px-8 sm:pt-8 sm:pb-8 xl:pr-12 xl:pb-36 xl:pl-14"
+    >
+      {/* Before → now */}
+      <p className="border-border bg-surface text-muted inline-flex max-w-full flex-wrap items-center gap-x-2.5 gap-y-1 rounded-full border px-3.5 py-1.5 text-[13px]">
+        <s className="decoration-instant">{t("before")}</s>
+        <Icon name="arrow-right" size={14} aria-hidden="true" className="text-fg shrink-0" />
+        <b className="text-instant font-semibold tabular-nums">{t("now")}</b>
+      </p>
+
+      {/* Today's jobs */}
+      <div className="border-border bg-surface rounded-panel shadow-panel mt-4 max-w-[32rem] overflow-hidden text-[13.5px]">
+        <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3.5 sm:px-5">
+          <b className="text-[15px] font-semibold">{t("today")}</b>
+          <span className="bg-bg-subtle rounded-control hidden gap-0.5 p-0.5 text-xs sm:flex">
+            <span className="bg-surface rounded-control px-2 py-0.5 font-semibold shadow-xs">{t("tabs.all")}</span>
+            <span className="text-muted px-2 py-0.5">{t("tabs.getpack")}</span>
+            <span className="text-muted px-2 py-0.5">{t("tabs.own")}</span>
+          </span>
+        </div>
+
+        <div className="bg-primary-subtle/50 border-primary/30 m-3 rounded-[0.75rem] border p-3.5 sm:m-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <span className="text-primary flex items-center gap-1.5 text-xs font-semibold">
+                <span aria-hidden="true" className="bg-primary size-1.5 rounded-full" />
+                {t("newJob")}
+              </span>
+              {featured ? (
+                <b className="mt-1 block truncate text-[15px] font-semibold">{featured}</b>
+              ) : (
+                <span className={`${LINE} mt-2.5 block h-2.5 w-3/5`} aria-hidden="true" />
+              )}
+            </div>
+            <span className="bg-primary text-primary-fg rounded-control shrink-0 px-3.5 py-2 text-[13px] font-semibold">
+              {t("take")}
+            </span>
+          </div>
+          <ul className="text-muted mt-3 flex flex-wrap gap-x-3.5 gap-y-1 text-xs">
+            {(["checked", "spec", "price"] as const).map((point) => (
+              <li key={point} className="flex items-center gap-1">
+                <Icon name="check" size={12} aria-hidden="true" className="text-primary" />
+                {t(`points.${point}`)}
+              </li>
+            ))}
+          </ul>
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {SPEC_CHIPS.map((chip) => (
+              <li key={chip} className="border-border bg-surface rounded-control border px-2 py-0.5 text-xs">
+                {t(`spec.${chip}`)}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <ul className="px-3 pb-1 sm:px-4">
+          {QUEUE.map((job, index) => (
+            <li key={index} className="border-border flex items-center gap-3 border-t py-3">
+              <span
+                className={
+                  job.own
+                    ? "bg-instant-subtle text-instant-subtle-fg rounded-control shrink-0 px-2 py-0.5 text-[11px] font-semibold"
+                    : "bg-primary-subtle text-primary-subtle-fg rounded-control shrink-0 px-2 py-0.5 text-[11px] font-semibold"
+                }
+              >
+                {job.own ? t("tabs.own") : t("tabs.getpack")}
+              </span>
+              {queue[index] ? (
+                <span className="min-w-0 flex-1 truncate">{queue[index]}</span>
+              ) : (
+                <span className={`${LINE} flex-1`} aria-hidden="true" />
+              )}
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                <span className="flex gap-0.5" aria-hidden="true">
+                  {[0, 1, 2, 3, 4].map((seg) => (
+                    <span
+                      key={seg}
+                      className={`h-1 w-3.5 rounded-full ${seg * 20 < job.progress ? "bg-primary" : "bg-border-strong"}`}
+                    />
+                  ))}
+                </span>
+                <span className="text-muted text-[11px]">{t(`stage.${job.stage}`)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Floating notes — only beside the card on a wide screen */}
+      <div className="bg-surface border-border rounded-card shadow-panel absolute bottom-7 left-14 hidden w-[17rem] border p-3.5 text-[12.5px] xl:block">
+        <span className="flex items-center justify-between font-semibold">
+          {t("journal.title")}
+          <span className="text-primary text-[11px]">{t("journal.auto")}</span>
+        </span>
+        <dl className="text-muted mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+          <dt>{t("journal.dr")}</dt>
+          <dd className="text-fg text-right">{t("journal.debit")}</dd>
+          <dt>{t("journal.cr")}</dt>
+          <dd className="text-fg text-right">{t("journal.credit")}</dd>
+        </dl>
+        <p className="text-primary border-border mt-2.5 flex items-center gap-1.5 border-t pt-2 text-xs font-semibold">
+          <Icon name="check" size={13} aria-hidden="true" />
+          {t("journal.posted")}
+        </p>
+      </div>
+      <div className="bg-fg text-fg-inverse rounded-card absolute right-8 bottom-7 hidden w-[17rem] p-3.5 text-[12.5px] xl:block">
+        <span className="flex items-center justify-between font-semibold">
+          {t("floor.title")}
+          <span className="text-[11px] opacity-70">{t("floor.thai")}</span>
+        </span>
+        <span className="mt-2.5 grid grid-cols-3 gap-1.5 text-center text-[13px] font-semibold" aria-hidden="true">
+          <span className="bg-primary text-primary-fg rounded-control py-2.5">{t("floor.start")}</span>
+          <span className="rounded-control border border-white/25 py-2.5">{t("floor.pause")}</span>
+          <span className="rounded-control border border-white/25 py-2.5">{t("floor.done")}</span>
+        </span>
+      </div>
+
+      <figcaption className="text-muted mt-3 text-[11.5px] xl:absolute xl:top-3 xl:right-6 xl:mt-0">
+        {t("caption")}
+      </figcaption>
     </figure>
   );
 }

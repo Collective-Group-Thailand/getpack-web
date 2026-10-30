@@ -7,7 +7,7 @@ import { getProductTypes, getProvinces, getPublicConfig } from "@/features/custo
 import { pick } from "@/features/customer/catalog/localize";
 import { pageContext } from "@/features/customer/content/page-meta.server";
 import { FactoryApplyForm } from "@/features/customer/factory-programme/FactoryApplyForm";
-import { OperatorPhone, ProductionBoard } from "@/features/customer/factory-programme/Illustrations";
+import { FactoryHero, OperatorPhone } from "@/features/customer/factory-programme/Illustrations";
 import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { zoneHosts } from "@/lib/env/server";
@@ -65,7 +65,7 @@ function SectionHead({ id, title, lead }: { id: string; title: string; lead?: st
 /**
  * getpack Factory (business pack Phase 3, C10) — the only customer-zone page that talks TO factories (GLOBAL-RULES §1
  * exception): the free whole-factory ERP offer (free, every module, unlimited users, after a factory account and the
- * partner agreement — never why it is free, §2), job sources, the modules with their status from `storefront.roadmap`,
+ * partner agreement — never why it is free, §2), job sources, the modules (ordered by `storefront.roadmap`, all live),
  * the shop floor, the comparison, participation tiers and price sources, the application (a contact ticket routed to
  * the Partner team, D-458) and the factory FAQ. Nothing names, counts or describes existing partner factories, and
  * no payment or delivery terms (they are in the partner agreement only).
@@ -108,11 +108,12 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
       />
       <JsonLd data={faqPageSchema(faq.map(({ question, answer }) => ({ question, answer })))} />
 
-      <section data-theme="dark" aria-labelledby="factory-hero" className="bg-bg text-fg">
+      {/* The hero (redesign 2026-10-30): light, the factory's day beside the offer — no dark band. */}
+      <section aria-labelledby="factory-hero" className="bg-surface">
         <div
           className={cn(
             HOME_WRAP,
-            "grid items-center gap-10 py-12 md:py-16 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12",
+            "grid items-center gap-8 py-10 md:py-14 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12 xl:py-16",
           )}
         >
           <div>
@@ -120,7 +121,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               id="factory-hero"
               className="text-[2.25rem] leading-[1.08] font-bold tracking-[-0.03em] text-balance md:text-[3.25rem] xl:text-[3.625rem]"
             >
-              {t("titleStart")} <em className="text-instant not-italic">{t("titleEm")}</em> {t("titleEnd")}
+              {t("titleStart")} <em className="text-instant not-italic">{t("titleEm")}</em>
             </h1>
             <p className={lede}>{t("lede")}</p>
             <div className="mt-7 flex flex-wrap gap-2.5">
@@ -139,13 +140,21 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               <b className="text-instant text-[1.375rem] font-bold tabular-nums">{t("offerPrice")}</b>
               <span className="text-muted">{t("offer")}</span>
             </p>
+            <ul className="text-muted mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-[13.5px]">
+              {(["jobs", "paid", "data"] as const).map((point) => (
+                <li key={point} className="flex items-center gap-1.5">
+                  <Icon name="check" size={14} aria-hidden="true" className="text-primary shrink-0" />
+                  {t(`trust.${point}`)}
+                </li>
+              ))}
+            </ul>
             <p className="mt-4 text-sm">
               <a href={partnerLoginUrl} className="text-muted hover:text-fg underline underline-offset-4">
                 {t("login")}
               </a>
             </p>
           </div>
-          <ProductionBoard />
+          <FactoryHero jobNames={types.slice(0, 3).map((type) => pick(locale, type.nameTh, type.nameEn))} />
         </div>
       </section>
 
@@ -179,7 +188,6 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
             <SectionHead id="factory-modules" title={t("modules.title")} lead={t("modules.lead")} />
             <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {modules.map((module) => {
-                const live = module.status === "live";
                 return (
                   <li
                     key={module.key}
@@ -193,14 +201,6 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                   >
                     <span
                       className={cn(
-                        "rounded-control absolute top-3.5 right-3.5 px-2 py-0.5 text-[11px] font-semibold",
-                        live ? "bg-success-subtle text-success-subtle-fg" : "bg-instant-subtle text-instant-subtle-fg",
-                      )}
-                    >
-                      {live ? t("modules.live") : t("modules.in_development")}
-                    </span>
-                    <span
-                      className={cn(
                         "rounded-control grid size-9.5 place-items-center",
                         module.key === "getpack_jobs"
                           ? "bg-primary-subtle text-primary"
@@ -209,7 +209,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                     >
                       <Icon name={MODULE_ICONS[module.key]!} size={20} aria-hidden="true" />
                     </span>
-                    <b className="mt-1 pr-24 text-base font-semibold">{t(`modules.items.${module.key}.title`)}</b>
+                    <b className="mt-1 text-base font-semibold">{t(`modules.items.${module.key}.title`)}</b>
                     <p className="text-muted text-[13.5px]">{t(`modules.items.${module.key}.body`)}</p>
                   </li>
                 );
@@ -288,7 +288,6 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </tbody>
             </table>
           </div>
-          <p className="text-muted mt-2.5 text-xs">{t("compare.note")}</p>
         </section>
 
         <section aria-labelledby="factory-tiers" className={SECTION}>

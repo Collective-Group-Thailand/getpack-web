@@ -14,42 +14,26 @@
     "menuCurrent": "This page: {page}"
   },
   "landing": {
-    "metaTitle": "getpack for business — company account, approvers, credit terms, tax invoices per branch",
+    "metaTitle": "getpack for business — instant real prices, in-system approval, tax invoices per branch, credit terms",
     "metaDescription": "One company account for the whole team: approvers by amount, PO numbers, tax invoices per branch, 15–60 day credit terms and bulk reorders. Opening an account is free.",
-    "intro": "One company account for your whole team: set approvers, add PO numbers, split tax invoices by branch, apply for credit terms and reorder many items at once — real prices every time, no waiting for quotations.",
-    "titleStart": "Your company's packaging,",
-    "titleEm": "managed in one place",
+    "intro": "No waiting for quotations. One company account for the whole team: approvers by spending limit, PO numbers, tax invoices issued to the right branch, credit terms, and bulk reorders from a single file.",
+    "titleStart": "Order packaging for your whole company,",
+    "titleEm": "priced instantly",
     "apply": "Open a company account — free",
     "talk": "Talk to sales",
     "facts": {
+      "lock": {
+        "value": "Price held {days} days",
+        "label": "Save it as a quotation"
+      },
       "credit": {
         "value": "15–60 days",
         "label": "Credit terms"
       },
-      "review": {
-        "value": "1–2 business days",
-        "label": "Document review"
-      },
-      "roles": {
-        "value": "4 roles",
-        "label": "In one team"
+      "free": {
+        "value": "฿0",
+        "label": "To open a company account"
       }
-    },
-    "screen": {
-      "label": "Illustration of the company account: spend by branch, orders waiting for approval and the credit line",
-      "caption": "Sample screen · illustration, not real data",
-      "company": "Company account",
-      "tabs": {
-        "overview": "Overview",
-        "orders": "Orders",
-        "team": "Team",
-        "statements": "Statements"
-      },
-      "spend": "Spend by branch",
-      "pending": "Waiting for approval",
-      "approve": "Approve",
-      "credit": "Credit line",
-      "reorder": "Frequent reorders"
     },
     "audienceLabel": "Made for",
     "audience": {
@@ -91,7 +75,6 @@
     },
     "features": {
       "title": "Everything purchasing, accounting and marketing need",
-      "soon": "Coming soon",
       "items": {
         "team": {
           "title": "The whole team, one account",
@@ -434,6 +417,29 @@
       "failed": "Could not send. Please try again",
       "rateLimited": "Too many messages — please wait a moment, or message us on LINE",
       "required": "(required)"
+    },
+    "order": {
+      "label": "Illustration of a company purchase order: lines with real prices from the pricing system, the approval path, the tax invoice per branch and credit-term payment",
+      "caption": "Illustration · prices from getpack's pricing system",
+      "before": "Ask 3 suppliers for quotes, wait 2–3 days",
+      "now": "Real price, instantly",
+      "title": "Company purchase order",
+      "po": "Add your company's PO number",
+      "csv": "Imported from CSV · {count} lines",
+      "csvNoCount": "Imported from CSV",
+      "priced": "Prices include VAT, shipping not included · calculated instantly by size, material, print and quantity",
+      "steps": {
+        "buyer": "Buyer",
+        "approver": "Approver",
+        "accountant": "Accounting"
+      },
+      "path": "Waits for approval above the company's limit · every step on record",
+      "invoice": {
+        "title": "Tax invoice",
+        "body": "Issued to the ordering branch automatically — no corrections later"
+      },
+      "pay": "Paying by",
+      "credit": "Credit terms {terms}"
     }
   },
   "dashboard": {

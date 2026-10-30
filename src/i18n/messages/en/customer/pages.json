@@ -114,36 +114,17 @@
     "ctaContact": "Contact us"
   },
   "partner": {
-    "title": "getpack Factory — a whole-factory ERP, free",
+    "title": "getpack Factory — take getpack jobs, run your whole factory on a free ERP",
     "metaTitle": "getpack Factory — ERP for packaging factories, every module free",
     "metaDescription": "getpack Factory, the ERP for packaging factories: stock, purchasing, production planning, shop floor, QC, delivery, accounting and the general ledger. Every module free, unlimited users, once you open a factory account and sign the partner agreement with getpack.",
-    "titleStart": "A whole-factory ERP,",
-    "titleEm": "free",
-    "titleEnd": "with new jobs every day",
-    "lede": "Stock, purchasing, production planning, shop floor, QC and delivery, through to accounting and the general ledger, in one system — for jobs from getpack and your own customers.",
+    "titleStart": "Take getpack jobs,",
+    "titleEm": "run your whole factory on a free ERP",
+    "lede": "getpack jobs arrive with checked files and an agreed price. The system — stock, purchasing, production planning, shop floor, QC, delivery, accounting and the general ledger — works for your own customers' jobs too.",
     "apply": "Apply as a partner factory",
     "modulesCta": "See every module",
     "offerPrice": "฿0",
     "offer": "Every module · unlimited users · open an account and sign the partner agreement with getpack",
     "login": "Partner factory sign-in",
-    "board": {
-      "label": "Illustration of the getpack Factory production board: jobs from getpack and the factory's own customers in one plan",
-      "caption": "Sample screen · illustration, not real data",
-      "title": "Your factory",
-      "view": "Production board",
-      "today": "Today",
-      "machines": "All machines",
-      "columns": {
-        "plan": "To plan",
-        "running": "In production",
-        "qc": "QC",
-        "ready": "Ready to ship"
-      },
-      "fromGetpack": "getpack",
-      "own": "Own customer",
-      "stock": "Material running low against the plan",
-      "repair": "Machine repair reported; job moved to another machine"
-    },
     "sources": {
       "title": "Jobs from getpack + your own customers, one system",
       "lead": "No second system: every job goes into the same production plan and stock",
@@ -163,8 +144,6 @@
     "modules": {
       "title": "Everything a packaging factory runs on",
       "lead": "Switch modules on one at a time; the data is connected",
-      "live": "Available",
-      "in_development": "In development",
       "items": {
         "getpack_jobs": {
           "title": "Jobs from getpack",
@@ -282,8 +261,7 @@
           "erp": "Not connected to customers",
           "us": "getpack jobs update the customer automatically"
         }
-      },
-      "note": "Some modules are still in development — see each module's status above"
+      }
     },
     "tiers": {
       "title": "Choose the level that suits your factory",
@@ -397,6 +375,56 @@
           "q": "Can we use only some modules?",
           "a": "Yes. Start with jobs from getpack and switch other modules on when you are ready."
         }
+      }
+    },
+    "trust": {
+      "jobs": "Jobs arrive with checked files, a full spec and an agreed price",
+      "paid": "getpack is the customer's counterparty — your factory is paid by getpack, no chasing",
+      "data": "Your factory's details stay confidential, never shown to customers"
+    },
+    "hero": {
+      "label": "Illustration of getpack Factory: today's jobs, a new getpack job ready to take, the automatic journal entry and the operator's buttons",
+      "caption": "Illustration · job names are product types from the getpack catalogue",
+      "before": "Licence · set-up · per-user fees",
+      "now": "฿0, unlimited users",
+      "today": "Today's jobs",
+      "tabs": {
+        "all": "All",
+        "getpack": "getpack",
+        "own": "Your customers"
+      },
+      "newJob": "New job from getpack",
+      "take": "Take job",
+      "points": {
+        "checked": "Files checked",
+        "spec": "Full spec",
+        "price": "Price agreed"
+      },
+      "spec": {
+        "flute": "Flute",
+        "material": "Material",
+        "dieline": "Dieline",
+        "colour": "Colour ΔE"
+      },
+      "stage": {
+        "qc": "At QC",
+        "running": "In production"
+      },
+      "journal": {
+        "title": "Posted automatically",
+        "auto": "No re-keying",
+        "debit": "Accounts receivable",
+        "credit": "Sales revenue",
+        "posted": "In the general ledger",
+        "dr": "Dr.",
+        "cr": "Cr."
+      },
+      "floor": {
+        "title": "Shop floor · die-cutter",
+        "thai": "In Thai",
+        "start": "Start",
+        "pause": "Pause",
+        "done": "Done"
       }
     }
   },
