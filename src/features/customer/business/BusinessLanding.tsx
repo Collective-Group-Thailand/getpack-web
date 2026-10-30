@@ -6,12 +6,12 @@ import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
+import { FlowPath } from "@/ui/components/FlowPath";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { ApprovalSimulator } from "./landing/ApprovalSimulator";
 import { ControlDemo } from "./landing/ControlDemo";
-import { DashboardIllustration } from "./landing/DashboardIllustration";
 import { DocChecklist } from "./landing/DocChecklist";
 import { RoiCalculator } from "./landing/RoiCalculator";
 import { SalesForm } from "./landing/SalesForm";
@@ -169,7 +169,37 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
               ))}
             </dl>
           </div>
-          <DashboardIllustration />
+          {/* The hero's picture (owner request 2026-10-30): how an order moves through the account's roles, as a path
+              of real text — not a drawing of a screen. */}
+          <FlowPath
+            label={t("flow.label")}
+            steps={[
+              {
+                key: "buyer",
+                icon: "box",
+                title: t("features.roles.buyer.title"),
+                caption: t("features.items.reorder.title"),
+              },
+              {
+                key: "approver",
+                icon: "shield-check",
+                title: t("features.roles.approver.title"),
+                caption: t("features.items.approval.title"),
+              },
+              {
+                key: "accountant",
+                icon: "receipt",
+                title: t("features.roles.accountant.title"),
+                caption: t("features.items.credit.title"),
+              },
+              {
+                key: "admin",
+                icon: "settings",
+                title: t("features.roles.admin.title"),
+                caption: t("features.items.team.title"),
+              },
+            ]}
+          />
         </div>
       </section>
 

@@ -144,7 +144,15 @@ export function StyleCardFace({
           </span>
         ) : undefined
       }
-      imageActions={favourite}
+      // Owner redesign 2026-10-30: compare beside the heart over the picture (no longer a checkbox in the footer).
+      imageActions={
+        compare || favourite ? (
+          <>
+            {compare}
+            {favourite}
+          </>
+        ) : undefined
+      }
       facts={
         words.specs.length || words.meta ? (
           <>
@@ -208,7 +216,6 @@ export function StyleCardFace({
               <span className="text-muted block text-[0.6875rem]">{words.quoteHint}</span>
             </p>
           )}
-          {compare ?? null}
         </>
       }
     />

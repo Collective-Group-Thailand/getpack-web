@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
-import { Checkbox } from "@/ui/components/Checkbox";
 import { IconButton } from "@/ui/components/IconButton";
 import { toast } from "@/ui/components/Toast";
 
@@ -51,20 +50,35 @@ export function FavouriteToggle({
   );
 }
 
-/** "เปรียบเทียบ" on a library card: a checkbox; past the limit it stays off and says why. */
-export function CompareToggle({ code, name }: { code: string; name: string }) {
+/**
+ * "เปรียบเทียบ" on a library card (owner redesign 2026-10-30): a small toggle over the picture's top corner, beside
+ * the heart — shown on hover or focus with a mouse, always on touch, and kept in view while chosen. Past the limit
+ * it stays off and says why. It hands the tray the style's name and photo, so the tray shows the product.
+ */
+export function CompareToggle({
+  code,
+  name,
+  image = null,
+  family = "tuck",
+}: {
+  code: string;
+  name: string;
+  image?: string | null;
+  family?: string;
+}) {
   const t = useTranslations("styles.library");
   const compare = useCompare();
   const chosen = compare.has(code);
   return (
-    <Checkbox
+    <IconButton
+      name={chosen ? "check" : "columns"}
+      variant={chosen ? "primary" : "ghost"}
       size="sm"
-      className="shrink-0"
-      checked={chosen}
-      aria-label={`${t("compare")}: ${name}`}
-      label={t("compare")}
-      onCheckedChange={() => {
-        if (!compare.toggle(code)) {
+      aria-pressed={chosen}
+      label={`${t("compare")}: ${name}`}
+      className={chosen ? undefined : plate}
+      onClick={() => {
+        if (!compare.toggle(code, { name, image, family })) {
           toast(t("compareLimit", { limit: compare.limit }));
           return;
         }

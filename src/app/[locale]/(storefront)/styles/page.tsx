@@ -10,14 +10,15 @@ import {
   getSupportChannels,
   listStyles,
 } from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { rfqHref } from "@/features/customer/catalog/paths";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
-import { CategoryRail } from "@/features/customer/styles/CategoryRail";
+import { ChipRow } from "@/features/customer/products/HubToolbar";
 import { CompareLimitProvider } from "@/features/customer/styles/compare-store";
 import { CompareTray } from "@/features/customer/styles/CompareTray";
 import { groupFacets } from "@/features/customer/styles/facet-groups";
-import { ClearFiltersButton, FilterPanel, type PanelGroup } from "@/features/customer/styles/FilterPanel";
+import { type PanelGroup } from "@/features/customer/styles/FilterPanel";
 import { FilterSheet } from "@/features/customer/styles/FilterSheet";
 import { axisLabel, facetLabel, valueLabel, type StylesT } from "@/features/customer/styles/labels";
 import { LibraryLinks } from "@/features/customer/styles/LibraryLinks";
@@ -29,6 +30,7 @@ import { LibraryToolbar } from "@/features/customer/styles/LibraryToolbar";
 import { VatSwitch } from "@/features/customer/styles/VatSwitch";
 import { figuresOf, vatSwitchAvailable } from "@/features/shared/format/price";
 import { LibraryViews } from "@/features/customer/styles/LibraryViews";
+import { illustrationOf } from "@/features/customer/styles/illustration";
 import { forUseCaseHref, styleHref, STYLES_HREF } from "@/features/customer/styles/paths";
 import {
   activeFilterCount,
@@ -152,12 +154,14 @@ export default async function StylesPage({
   }));
 
   const head = (
-    <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,35rem)] lg:items-end lg:gap-x-12">
+    // Owner redesign 2026-10-30: a compact head — the title, one line with the library's totals, and the search
+    // as the page's main control at the full width under it.
+    <header className="flex flex-col gap-4">
       <div>
         <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
           {t("list.heading")}
         </h1>
-        <p className="text-muted mt-2 max-w-2xl">
+        <p className="text-muted mt-1.5 max-w-3xl">
           {totals ? (
             <b className="text-fg font-semibold tabular-nums">
               {t("library.totals", { styles: totals.styles, variants: totals.variants })}
@@ -265,7 +269,14 @@ export default async function StylesPage({
           favourite={
             <FavouriteToggle code={style.code} name={cardText.name} signedIn={signedIn} signInHref={signInHref} />
           }
-          compare={<CompareToggle code={style.code} name={cardText.name} />}
+          compare={
+            <CompareToggle
+              code={style.code}
+              name={cardText.name}
+              image={storeImageSrc(style.thumbnailUrl, "thumb")}
+              family={illustrationOf(style)}
+            />
+          }
         />
       ),
     };
@@ -315,38 +326,7 @@ export default async function StylesPage({
         {crumbs}
         {head}
 
-        {list.facets.category.length > 1 || query.category ? (
-          <CategoryRail
-            label={t("library.categories")}
-            items={[undefined, ...list.facets.category.map((f) => f.value)].map((category) => {
-              const count = category ? categoryCount.get(category) : allCount;
-              return {
-                category: category ?? null,
-                label: category ? facetLabel(words, "category", category) : t("library.allCategories"),
-                countLabel: count !== undefined ? t("library.categoryCount", { count }) : undefined,
-                href: listHref({ ...query, category, style: undefined }),
-                current: query.category === category,
-              };
-            })}
-          />
-        ) : null}
-
-        <div className="mt-8 grid gap-x-6 gap-y-8 min-[65rem]:grid-cols-[15rem_minmax(0,1fr)]">
-          {/* Project A: the filters stay beside the grid while it scrolls — sticky under the header, scrolling inside
-              themselves when longer than the screen — so there is no empty band next to a long grid. */}
-          <aside
-            className="hidden min-w-0 min-[65rem]:sticky min-[65rem]:top-[calc(var(--site-sticky-top)+1rem)] min-[65rem]:block min-[65rem]:max-h-[calc(100dvh-var(--site-sticky-top)-2rem)] min-[65rem]:self-start min-[65rem]:overflow-y-auto min-[65rem]:overscroll-contain min-[65rem]:pe-2"
-            aria-labelledby="library-filters"
-          >
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 id="library-filters" className="text-base font-semibold">
-                {t("library.filters")}
-              </h2>
-              {active ? <ClearFiltersButton params={query} /> : null}
-            </div>
-            <FilterPanel {...panel} />
-          </aside>
-
+        <div className="mt-6">
           <section aria-labelledby="library-results" className="flex min-w-0 flex-col gap-4">
             <LibraryToolbar
               count={
@@ -358,6 +338,24 @@ export default async function StylesPage({
                     </span>
                   ) : null}
                 </>
+              }
+              categories={
+                list.facets.category.length > 1 || query.category ? (
+                  <ChipRow
+                    label={t("library.categories")}
+                    bleed
+                    chips={[undefined, ...list.facets.category.map((f) => f.value)].map((category) => {
+                      const count = category ? categoryCount.get(category) : allCount;
+                      return {
+                        key: category ?? "all",
+                        label: category ? facetLabel(words, "category", category) : t("library.allCategories"),
+                        count: count !== undefined ? format.number(count) : undefined,
+                        href: listHref({ ...query, category, style: undefined }),
+                        current: query.category === category,
+                      };
+                    })}
+                  />
+                ) : undefined
               }
               filters={<FilterSheet {...panel} active={active} />}
               views={totals ? <LibraryViews current="styles" totals={totals} /> : null}

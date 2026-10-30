@@ -19,7 +19,7 @@ export function SortSelect({ params, sorts }: { params: ListParams; sorts: { val
   return (
     <SearchableSelect
       aria-label={t("sort")}
-      className="w-auto min-w-44"
+      className="w-full md:w-auto md:min-w-44"
       value={params.sort ?? defaultSort(params)}
       options={sorts.map((s) => ({ value: s.value, label: t("sortOption", { sort: s.label }) }))}
       onValueChange={(sort) =>

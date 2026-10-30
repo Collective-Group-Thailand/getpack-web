@@ -33,7 +33,9 @@ function Page({ limit }: { limit?: number | null }) {
   );
 }
 
-const pick = (code: string) => fireEvent.click(screen.getByRole("checkbox", { name: new RegExp(code) }));
+// The card's compare control is a toggle button over the picture (owner redesign 2026-10-30).
+const pick = (code: string) =>
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(`${styles.library.compare}: ${code}`) }));
 
 beforeEach(() => {
   toast.mockReset();
@@ -55,7 +57,7 @@ describe("the compare tray", () => {
     act(() => pick("PK-A-1"));
     act(() => pick("PK-A-2"));
     expect(screen.getByText("เลือกแล้ว 2/3")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "เปรียบเทียบ" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "เปรียบเทียบ 2 แบบ" })).toHaveAttribute(
       "href",
       "/styles/compare?codes=PK-A-1,PK-A-2",
     );
@@ -66,7 +68,10 @@ describe("the compare tray", () => {
     for (const code of ["PK-A-1", "PK-A-2", "PK-A-3", "PK-A-4"]) act(() => pick(code));
     expect(toast).toHaveBeenCalledWith("เปรียบเทียบได้สูงสุด 3 แบบ");
     expect(screen.getByText("เลือกแล้ว 3/3")).toBeInTheDocument();
-    expect(screen.getByRole("checkbox", { name: /PK-A-4/ })).not.toBeChecked();
+    expect(screen.getByRole("button", { name: new RegExp(`${styles.library.compare}: PK-A-4`) })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 
   it("takes the limit from settings when the API supplies one", () => {

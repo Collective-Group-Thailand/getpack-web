@@ -339,7 +339,9 @@
       "price": "Price",
       "leadTime": "Lead time",
       "options": "Structural options"
-    }
+    },
+    "viewStyle": "View this style",
+    "addMore": "Add a style"
   },
   "detail": {
     "code": "Style code",

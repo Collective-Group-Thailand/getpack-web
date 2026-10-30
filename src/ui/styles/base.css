@@ -618,3 +618,309 @@
     font-size: 0.9375rem;
   }
 }
+
+/*
+ * FlowPath (owner request 2026-10-30): the step whose turn it is gets the green icon plate and its tag tinted, and
+ * the document chip sits on it; each step's turn is one slice of a loop of 1.6 s per step. Hover pauses the loop.
+ * Under reduced motion nothing moves and every step shows its chip (the rule above would otherwise end the loop on
+ * its last, chip-less frame).
+ */
+@layer components {
+  .flow-path .flow-card,
+  .flow-path .flow-icon,
+  .flow-path .flow-chip,
+  .flow-path .flow-tag {
+    animation-duration: calc(var(--flow-n) * 1.6s);
+    animation-delay: calc(var(--i) * 1.6s);
+    animation-iteration-count: infinite;
+    animation-timing-function: var(--ease-standard);
+  }
+  .flow-path .flow-chip {
+    opacity: 0;
+  }
+  .flow-path[data-flow="3"] {
+    --flow-n: 3;
+  }
+  .flow-path[data-flow="4"] {
+    --flow-n: 4;
+  }
+  .flow-path[data-flow="5"] {
+    --flow-n: 5;
+  }
+  .flow-path[data-flow="6"] {
+    --flow-n: 6;
+  }
+  .flow-path[data-flow="3"] .flow-card {
+    animation-name: flow-card-3;
+  }
+  .flow-path[data-flow="4"] .flow-card {
+    animation-name: flow-card-4;
+  }
+  .flow-path[data-flow="5"] .flow-card {
+    animation-name: flow-card-5;
+  }
+  .flow-path[data-flow="6"] .flow-card {
+    animation-name: flow-card-6;
+  }
+  .flow-path[data-flow="3"] .flow-icon {
+    animation-name: flow-icon-3;
+  }
+  .flow-path[data-flow="4"] .flow-icon {
+    animation-name: flow-icon-4;
+  }
+  .flow-path[data-flow="5"] .flow-icon {
+    animation-name: flow-icon-5;
+  }
+  .flow-path[data-flow="6"] .flow-icon {
+    animation-name: flow-icon-6;
+  }
+  .flow-path[data-flow="3"] .flow-chip {
+    animation-name: flow-chip-3;
+  }
+  .flow-path[data-flow="4"] .flow-chip {
+    animation-name: flow-chip-4;
+  }
+  .flow-path[data-flow="5"] .flow-chip {
+    animation-name: flow-chip-5;
+  }
+  .flow-path[data-flow="6"] .flow-chip {
+    animation-name: flow-chip-6;
+  }
+  .flow-path[data-flow="3"] .flow-tag {
+    animation-name: flow-tag-3;
+  }
+  .flow-path[data-flow="4"] .flow-tag {
+    animation-name: flow-tag-4;
+  }
+  .flow-path[data-flow="5"] .flow-tag {
+    animation-name: flow-tag-5;
+  }
+  .flow-path[data-flow="6"] .flow-tag {
+    animation-name: flow-tag-6;
+  }
+  .flow-path:hover .flow-card,
+  .flow-path:hover .flow-icon,
+  .flow-path:hover .flow-chip,
+  .flow-path:hover .flow-tag {
+    animation-play-state: paused;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-path .flow-card,
+  .flow-path .flow-icon,
+  .flow-path .flow-chip,
+  .flow-path .flow-tag {
+    animation: none !important;
+  }
+  .flow-path .flow-chip {
+    opacity: 1;
+  }
+}
+@keyframes flow-card-3 {
+  0%,
+  32.33% {
+    border-color: var(--color-primary);
+  }
+  33.33%,
+  100% {
+    border-color: var(--color-border);
+  }
+}
+@keyframes flow-icon-3 {
+  0%,
+  32.33% {
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  33.33%,
+  100% {
+    background-color: var(--color-surface-subtle);
+    color: var(--color-muted);
+  }
+}
+@keyframes flow-chip-3 {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  5.0%,
+  28.33% {
+    opacity: 1;
+    transform: none;
+  }
+  32.33%,
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes flow-tag-3 {
+  0%,
+  32.33% {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  33.33%,
+  100% {
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-muted);
+  }
+}
+@keyframes flow-card-4 {
+  0%,
+  24.0% {
+    border-color: var(--color-primary);
+  }
+  25.0%,
+  100% {
+    border-color: var(--color-border);
+  }
+}
+@keyframes flow-icon-4 {
+  0%,
+  24.0% {
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  25.0%,
+  100% {
+    background-color: var(--color-surface-subtle);
+    color: var(--color-muted);
+  }
+}
+@keyframes flow-chip-4 {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  3.75%,
+  21.25% {
+    opacity: 1;
+    transform: none;
+  }
+  24.0%,
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes flow-tag-4 {
+  0%,
+  24.0% {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  25.0%,
+  100% {
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-muted);
+  }
+}
+@keyframes flow-card-5 {
+  0%,
+  19.0% {
+    border-color: var(--color-primary);
+  }
+  20.0%,
+  100% {
+    border-color: var(--color-border);
+  }
+}
+@keyframes flow-icon-5 {
+  0%,
+  19.0% {
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  20.0%,
+  100% {
+    background-color: var(--color-surface-subtle);
+    color: var(--color-muted);
+  }
+}
+@keyframes flow-chip-5 {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  3.0%,
+  17.0% {
+    opacity: 1;
+    transform: none;
+  }
+  19.0%,
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes flow-tag-5 {
+  0%,
+  19.0% {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  20.0%,
+  100% {
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-muted);
+  }
+}
+@keyframes flow-card-6 {
+  0%,
+  15.67% {
+    border-color: var(--color-primary);
+  }
+  16.67%,
+  100% {
+    border-color: var(--color-border);
+  }
+}
+@keyframes flow-icon-6 {
+  0%,
+  15.67% {
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  16.67%,
+  100% {
+    background-color: var(--color-surface-subtle);
+    color: var(--color-muted);
+  }
+}
+@keyframes flow-chip-6 {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  2.5%,
+  14.17% {
+    opacity: 1;
+    transform: none;
+  }
+  15.67%,
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes flow-tag-6 {
+  0%,
+  15.67% {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+  16.67%,
+  100% {
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-muted);
+  }
+}

@@ -7,12 +7,13 @@ import { getProductTypes, getProvinces, getPublicConfig } from "@/features/custo
 import { pick } from "@/features/customer/catalog/localize";
 import { pageContext } from "@/features/customer/content/page-meta.server";
 import { FactoryApplyForm } from "@/features/customer/factory-programme/FactoryApplyForm";
-import { OperatorPhone, ProductionBoard } from "@/features/customer/factory-programme/Illustrations";
+import { OperatorPhone } from "@/features/customer/factory-programme/Illustrations";
 import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { zoneHosts } from "@/lib/env/server";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
+import { FlowPath } from "@/ui/components/FlowPath";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -146,7 +147,24 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </a>
             </p>
           </div>
-          <ProductionBoard />
+          {/* The hero's picture (owner request 2026-10-30): a getpack job's path through the factory, as real text —
+              not a drawing of the production board. */}
+          <FlowPath
+            label={t("flow.label")}
+            chipIcon="box"
+            steps={[
+              {
+                key: "job",
+                icon: "inbox",
+                title: t("sources.getpack.title"),
+                caption: t("modules.items.getpack_jobs.title"),
+              },
+              { key: "make", icon: "factory", title: t("flow.make"), caption: t("floor.points.start.title") },
+              { key: "qc", icon: "scan", title: t("board.columns.qc"), caption: t("floor.points.photos.title") },
+              { key: "ship", icon: "truck", title: t("flow.ship"), caption: t("flow.shipCaption") },
+              { key: "bill", icon: "receipt", title: t("flow.bill"), caption: t("flow.billCaption") },
+            ]}
+          />
         </div>
       </section>
 

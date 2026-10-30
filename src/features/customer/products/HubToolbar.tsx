@@ -27,6 +27,8 @@ export interface ToolbarChip {
   href?: string;
   onSelect?: () => void;
   current: boolean;
+  /** A count after the label ("34 แบบ"), quieter than it. */
+  count?: string;
 }
 
 type SortProp = { label: string; value: string; options: { value: string; label: string; href: string }[] };
@@ -343,6 +345,7 @@ export function ChipRow({ chips, label, bleed }: { chips: ToolbarChip[]; label: 
                 className={chipClass(chip.current)}
               >
                 {chip.label}
+                {chip.count ? <span className="ms-1.5 text-xs font-normal tabular-nums">{chip.count}</span> : null}
               </button>
             ) : (
               <Link
@@ -352,6 +355,7 @@ export function ChipRow({ chips, label, bleed }: { chips: ToolbarChip[]; label: 
                 className={chipClass(chip.current)}
               >
                 {chip.label}
+                {chip.count ? <span className="ms-1.5 text-xs font-normal tabular-nums">{chip.count}</span> : null}
               </Link>
             )}
           </li>

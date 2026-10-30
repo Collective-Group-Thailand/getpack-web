@@ -231,7 +231,7 @@ export function LibrarySearch({
             timer.current = setTimeout(() => search(next), DEBOUNCE_MS);
           }}
           className={cn(
-            "border-border bg-surface text-fg placeholder:text-muted rounded-card h-13.5 w-full border ps-12 pe-14 text-base shadow-sm outline-none",
+            "border-border bg-surface text-fg placeholder:text-muted rounded-card h-13 w-full border ps-12 pe-14 text-base shadow-sm outline-none",
             "focus-visible:border-primary focus-visible:ring-focus-ring focus-visible:ring-2",
             "[&::-webkit-search-cancel-button]:hidden",
           )}
