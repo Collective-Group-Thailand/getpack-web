@@ -52,6 +52,9 @@ const forbidden = () => problem(403, "company.forbidden", "บทบาทขอ
 const memberships = new Map<string, { companyId: string; memberId: string }>([
   ["companyadmin", { companyId: companyStores[0]!.company.id, memberId: companyStores[0]!.members[0]!.id }],
   ["companybuyer", { companyId: companyStores[0]!.company.id, memberId: companyStores[0]!.members[1]!.id }],
+  // D-462: the company on a temporary limit (B2606).
+  ["creditadmin", { companyId: companyStores[5]!.company.id, memberId: companyStores[5]!.members[0]!.id }],
+  ["creditbuyer", { companyId: companyStores[5]!.company.id, memberId: companyStores[5]!.members[1]!.id }],
 ]);
 
 /** The customer's company and roles, for the other store mocks (API clients, U2.F5). */
@@ -172,6 +175,9 @@ function creditOf(store: CompanyStore): Schemas["CompanyCreditDto"] {
     availableAmount: presented.credit.availableAmount,
     exposureAmount: presented.receivables.openAmount,
     termDays: presented.credit.termDays,
+    validUntil: presented.credit.validUntil ?? null,
+    fallbackLimitAmount: presented.credit.validUntil ? (presented.credit.fallbackLimitAmount ?? null) : null,
+    fallbackTermDays: presented.credit.validUntil ? (presented.credit.fallbackTermDays ?? null) : null,
     currency: "THB",
     eligibility: toCreditEligibilityDto(store),
     pendingRequest:
@@ -764,9 +770,28 @@ export const storeBusinessHandlers = [
     return HttpResponse.json(creditOf(found.store), { status: 201 });
   }),
 
+  // store.companyCredit.get: Company Admin and Accountant only (`company_documents.read`, D-121).
   http.get("*/v1/store/companies/:companyId/credit", ({ params, request }) => {
     const found = companyContext(request, String(params.companyId));
-    return found instanceof Response ? found : HttpResponse.json(creditOf(found.store));
+    if (found instanceof Response) return found;
+    if (!has(found.member, "company_admin", "company_accountant")) return forbidden();
+    return HttpResponse.json(creditOf(found.store));
+  }),
+
+  // store.companyCredit.summary (D-462): every member who may order — status, available, term, end date.
+  http.get("*/v1/store/companies/:companyId/credit/summary", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    if (!has(found.member, "company_admin", "company_buyer", "company_approver")) return forbidden();
+    const credit = creditOf(found.store);
+    const inForce = credit.creditStatus === "credit" && credit.limitAmount !== null;
+    return HttpResponse.json({
+      creditStatus: credit.creditStatus,
+      availableAmount: inForce ? credit.availableAmount : null,
+      termDays: inForce ? credit.termDays : null,
+      validUntil: inForce ? credit.validUntil : null,
+      currency: "THB",
+    } satisfies Schemas["CompanyCreditSummaryDto"]);
   }),
 
   // store.companyCredit.receivables (D-122): aging, the next due date and the notices.

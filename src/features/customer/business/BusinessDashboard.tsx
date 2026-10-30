@@ -7,6 +7,7 @@ import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Icon } from "@/ui/icons";
 
 import type { Schemas } from "@/lib/api/types";
 
@@ -43,7 +44,9 @@ export async function BusinessDashboard({
 }) {
   const [t, format] = await Promise.all([getTranslations("business.dashboard"), getFormat()]);
   const roles = await getTranslations("business.members.roles");
-  const creditStatus = company.credit?.creditStatus ?? company.creditStatus;
+  const creditStatus = company.credit?.creditStatus ?? company.creditSummary?.creditStatus ?? company.creditStatus;
+  const summary = company.creditSummary;
+  const validUntil = company.credit?.validUntil ?? summary?.validUntil ?? null;
   const hasCredit = creditStatus === "credit" || creditStatus === "blocked_overdue";
 
   return (
@@ -108,9 +111,27 @@ export async function BusinessDashboard({
                   : t("prepaid")}
               </p>
             </>
+          ) : summary ? (
+            // D-462: a buyer sees what is available and the term, not the limit.
+            <>
+              <p className="mt-1 text-2xl font-bold tabular-nums">
+                {summary.availableAmount !== null
+                  ? format.thb(summary.availableAmount)
+                  : t(`creditStatus.${summary.creditStatus}`)}
+              </p>
+              <p className="text-muted text-sm">
+                {summary.termDays !== null ? t("creditTerm", { days: summary.termDays }) : t("prepaid")}
+              </p>
+            </>
           ) : (
             <p className="mt-1 text-2xl font-bold">{t(`creditStatus.${company.creditStatus}`)}</p>
           )}
+          {validUntil ? (
+            <p className="text-muted mt-2 flex items-center gap-1.5 text-xs">
+              <Icon name="calendar" size={14} aria-hidden="true" />
+              {t("creditUntil", { date: format.date(validUntil) })}
+            </p>
+          ) : null}
           {!hasCredit && company.can.viewFinance ? (
             <Link
               href="/business/credit"

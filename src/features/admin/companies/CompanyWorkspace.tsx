@@ -23,6 +23,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { Switch } from "@/ui/components/Switch";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
@@ -563,18 +564,43 @@ function Branches({ company }: { company: Company }) {
   );
 }
 
+/** Tomorrow in Bangkok as `YYYY-MM-DD` — the earliest end date of a temporary limit (the API wants > 1 day ahead). */
+function bangkokTomorrow(now = new Date()): string {
+  return new Date(now.getTime() + 7 * 3_600_000 + 2 * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** The term picker's "custom" choice (D-462): any number of days within `b2b.credit_custom_terms`, staff only. */
+const CUSTOM_TERM = "custom";
+
+interface CreditDraft {
+  limitAmount: string;
+  /** One of the allowed days, `CUSTOM_TERM`, or empty for the default. */
+  termDays: string;
+  customDays: string;
+  basis: Basis;
+  reason: string;
+  /** D-462: a temporary limit, ending at the end of `validUntil` (a Bangkok date). */
+  temporary: boolean;
+  validUntil: string;
+}
+
+const EMPTY_CREDIT_DRAFT: CreditDraft = {
+  limitAmount: "",
+  termDays: "",
+  customDays: "",
+  basis: "financial_statement",
+  reason: "",
+  temporary: false,
+  validUntil: "",
+};
+
 function Credit({ company, onChanged }: { company: Company; onChanged: () => void }) {
   const t = useTranslations("companies.credit");
   const format = useFormat();
   const queryClient = useQueryClient();
   const canManage = useCan("company_credit.manage");
   const [requesting, setRequesting] = useState<{ key: string } | null>(null);
-  const [draft, setDraft] = useState<{ limitAmount: string; termDays: string; basis: Basis; reason: string }>({
-    limitAmount: "",
-    termDays: "",
-    basis: "financial_statement",
-    reason: "",
-  });
+  const [draft, setDraft] = useState<CreditDraft>(EMPTY_CREDIT_DRAFT);
   const key = queryKeys.related("admin", "company", company.id, "credit");
   const credit = useQuery({
     queryKey: key,
@@ -605,7 +631,30 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
   const versionColumns: DataTableColumn<CreditVersion>[] = [
     { id: "versionNo", header: t("version"), numeric: true, cell: (row) => row.versionNo },
     { id: "limit", header: t("limit"), numeric: true, cell: (row) => format.thb(row.limitAmount) },
-    { id: "term", header: t("term"), cell: (row) => t("termDays", { days: row.termDays }) },
+    {
+      id: "term",
+      header: t("term"),
+      cell: (row) => (
+        <span className="inline-flex items-center gap-1.5">
+          {t("termDays", { days: row.termDays })}
+          {row.customTerm ? (
+            <Badge size="sm" tone="neutral">
+              {t("customBadge")}
+            </Badge>
+          ) : null}
+        </span>
+      ),
+    },
+    {
+      id: "validUntil",
+      header: t("validUntil"),
+      cell: (row) =>
+        row.validUntil ? (
+          <span className="text-sm">{format.date(row.validUntil)}</span>
+        ) : (
+          <span className="text-muted text-sm">{t("permanent")}</span>
+        ),
+    },
     { id: "basis", header: t("basis"), cell: (row) => t(`bases.${row.basis}`) },
     {
       id: "status",
@@ -650,12 +699,7 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
               iconStart="plus"
               disabled={!figures || pending !== null}
               onClick={() => {
-                setDraft({
-                  limitAmount: "",
-                  termDays: "",
-                  basis: eligibility?.reason ?? "financial_statement",
-                  reason: "",
-                });
+                setDraft({ ...EMPTY_CREDIT_DRAFT, basis: eligibility?.reason ?? "financial_statement" });
                 // One intent per opening: a retry after a timeout replays the same request.
                 setRequesting({ key: newIdempotencyKey() });
               }}
@@ -689,6 +733,20 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
             <dd className="text-lg font-semibold tabular-nums">{figures ? format.thb(figures.exposureAmount) : "–"}</dd>
           </div>
         </dl>
+        {figures?.validUntil ? (
+          <Callout
+            tone="info"
+            className="mt-3"
+            title={t("temporaryInForce", { date: format.date(figures.validUntil) })}
+          >
+            {figures.fallbackLimitAmount && figures.fallbackTermDays !== null
+              ? t("temporaryFallback", {
+                  limit: format.thb(figures.fallbackLimitAmount),
+                  days: figures.fallbackTermDays,
+                })
+              : t("temporaryNoFallback")}
+          </Callout>
+        ) : null}
         {eligibility ? (
           <Callout
             tone={eligibility.eligible ? "success" : "info"}
@@ -799,13 +857,20 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
             if (!/^\d{1,12}(\.\d{1,2})?$/.test(draft.limitAmount) || /^0+(\.0+)?$/.test(draft.limitAmount))
               throw new FormError(t("needLimit"));
             if (draft.reason.trim().length < 3) throw new FormError(t("needReason"));
+            const custom = draft.termDays === CUSTOM_TERM;
+            if (custom && !/^\d{1,3}$/.test(draft.customDays)) throw new FormError(t("needCustomDays"));
+            if (draft.temporary && !/^\d{4}-\d{2}-\d{2}$/.test(draft.validUntil))
+              throw new FormError(t("needValidUntil"));
+            const termDays = custom ? Number(draft.customDays) : draft.termDays ? Number(draft.termDays) : null;
             try {
               const [whole, fraction = ""] = draft.limitAmount.split(".");
               const { data } = await adminBrowserApis().contract.POST("/v1/admin/companies/{companyId}/credit-limits", {
                 params: { path: { companyId: company.id }, header: { "Idempotency-Key": requesting.key } },
                 body: {
                   limitAmount: `${whole}.${fraction.padEnd(2, "0")}`,
-                  ...(draft.termDays ? { termDays: Number(draft.termDays) } : {}),
+                  ...(termDays !== null ? { termDays } : {}),
+                  // The end of the chosen day in Bangkok: the limit holds all of that day.
+                  ...(draft.temporary ? { validUntil: `${draft.validUntil}T23:59:59+07:00` } : {}),
                   basis: draft.basis,
                   reason: draft.reason.trim(),
                 },
@@ -833,12 +898,42 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
               value={draft.termDays || undefined}
               placeholder={t("chooseTerm")}
               onValueChange={(termDays) => setDraft({ ...draft, termDays })}
-              options={allowedTerms.map((days) => ({
-                value: String(days),
-                label: t(days === eligibility?.defaultTermDays ? "termDefault" : "termDays", { days }),
-              }))}
+              options={[
+                ...allowedTerms.map((days) => ({
+                  value: String(days),
+                  label: t(days === eligibility?.defaultTermDays ? "termDefault" : "termDays", { days }),
+                })),
+                { value: CUSTOM_TERM, label: t("termCustom") },
+              ]}
             />
           </Field>
+          {draft.termDays === CUSTOM_TERM ? (
+            <Field label={t("customDays")} hint={t("customDaysHint")} required>
+              <NumberInput
+                min={1}
+                step="1"
+                unit={t("daysUnit")}
+                value={draft.customDays}
+                onChange={(event) => setDraft({ ...draft, customDays: event.target.value })}
+              />
+            </Field>
+          ) : null}
+          <Switch
+            label={t("temporary")}
+            description={t("temporaryHint")}
+            checked={draft.temporary}
+            onCheckedChange={(temporary) => setDraft({ ...draft, temporary })}
+          />
+          {draft.temporary ? (
+            <Field label={t("validUntil")} hint={t("validUntilHint")} required>
+              <Input
+                type="date"
+                min={bangkokTomorrow()}
+                value={draft.validUntil}
+                onChange={(event) => setDraft({ ...draft, validUntil: event.target.value })}
+              />
+            </Field>
+          ) : null}
           <SegmentedControl
             label={t("basis")}
             value={draft.basis}

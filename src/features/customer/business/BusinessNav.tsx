@@ -14,11 +14,12 @@ type Can = {
   order: boolean;
 };
 
-const ITEMS: { key: string; href: string; icon: IconName; when?: keyof Can }[] = [
+const ITEMS: { key: string; href: string; icon: IconName; when?: keyof Can | (keyof Can)[] }[] = [
   { key: "overview", href: "/business", icon: "dashboard" },
   { key: "approvals", href: "/business/approvals", icon: "check" },
   { key: "reorder", href: "/business/reorder", icon: "refresh", when: "order" },
-  { key: "credit", href: "/business/credit", icon: "wallet", when: "viewFinance" },
+  // D-462: a member who may order sees the available credit; the full credit stays with finance roles.
+  { key: "credit", href: "/business/credit", icon: "wallet", when: ["viewFinance", "order"] },
   { key: "members", href: "/business/members", icon: "users" },
   { key: "branches", href: "/business/branches", icon: "building" },
   { key: "assets", href: "/business/assets", icon: "image" },
@@ -34,7 +35,9 @@ const ITEMS: { key: string; href: string; icon: IconName; when?: keyof Can }[] =
 export function BusinessNav({ can }: { can: Can }) {
   const t = useTranslations("business.nav");
   const pathname = usePathname().replace(/^\/en(?=\/|$)/, "") || "/";
-  const items = ITEMS.filter((item) => !item.when || can[item.when]);
+  const items = ITEMS.filter(
+    (item) => !item.when || (Array.isArray(item.when) ? item.when.some((key) => can[key]) : can[item.when]),
+  );
   const isCurrent = (item: (typeof ITEMS)[number]) =>
     item.href === "/business" ? pathname === "/business" : pathname.startsWith(item.href);
   const currentItem = items.find(isCurrent);

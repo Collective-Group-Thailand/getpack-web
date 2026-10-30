@@ -27,7 +27,8 @@ export default async function Page() {
   ]);
   const { receivables } = company;
   const credit = company.credit;
-  const status = credit?.creditStatus ?? company.creditStatus;
+  const summary = company.creditSummary;
+  const status = credit?.creditStatus ?? summary?.creditStatus ?? company.creditStatus;
   const hasCredit = status === "credit" || status === "blocked_overdue";
   const issued = statements ?? [];
 
@@ -57,8 +58,31 @@ export default async function Page() {
                   { term: t("termLabel"), description: t("days", { days: credit.termDays ?? 0 }) },
                 ]
               : []),
+            // D-462: a buyer sees the available credit and the term only.
+            ...(hasCredit && !credit && summary?.availableAmount
+              ? [
+                  { term: t("available"), description: format.thb(summary.availableAmount) },
+                  { term: t("termLabel"), description: t("days", { days: summary.termDays ?? 0 }) },
+                ]
+              : []),
           ]}
         />
+        {credit?.validUntil || summary?.validUntil ? (
+          <Callout
+            tone="info"
+            className="mt-4"
+            title={t("temporaryTitle", { date: format.date((credit?.validUntil ?? summary?.validUntil)!) })}
+          >
+            {credit?.fallbackLimitAmount && credit.fallbackTermDays !== null
+              ? t("temporaryFallback", {
+                  limit: format.thb(credit.fallbackLimitAmount),
+                  days: credit.fallbackTermDays,
+                })
+              : credit
+                ? t("temporaryNoFallback")
+                : t("temporaryBuyer")}
+          </Callout>
+        ) : null}
         {status === "blocked_overdue" || receivables?.creditOrdersBlocked ? (
           <Callout tone="danger" className="mt-4" title={t("blockedTitle")}>
             {receivables?.oldestOverdueDays

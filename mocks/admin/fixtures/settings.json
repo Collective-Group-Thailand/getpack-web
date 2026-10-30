@@ -252,6 +252,19 @@
     "decisions": ["D-121"]
   },
   {
+    "key": "b2b.credit_custom_terms",
+    "valueType": "json",
+    "value": {
+      "minDays": 7,
+      "maxDays": 120,
+      "temporaryMaxDays": 180
+    },
+    "description": "D-462 staff may give a term outside b2b.credit_terms within minDays–maxDays, and a temporary limit lasting at most temporaryMaxDays",
+    "decisions": ["D-462"],
+    "confirmation": "proposed",
+    "ownerRole": "finance_manager"
+  },
+  {
     "key": "b2b.credit_eligibility_paid_orders",
     "valueType": "integer",
     "value": 3,

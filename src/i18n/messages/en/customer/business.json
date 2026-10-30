@@ -585,7 +585,9 @@
     "creditNone": "Credit",
     "requestCredit": "Request a credit line",
     "spendEmpty": "No company orders yet",
-    "spendEmptyBody": "Once members order on the company's behalf, the totals — by month, member, branch and product type — appear here"
+    "spendEmptyBody": "Once members order on the company's behalf, the totals — by month, member, branch and product type — appear here",
+    "creditTerm": "{days}-day credit after delivery",
+    "creditUntil": "Temporary limit, valid until {date}"
   },
   "apply": {
     "title": "Open a company account",
@@ -812,7 +814,7 @@
   "credit": {
     "title": "Credit & statements",
     "intro": "Your limit, terms, what's outstanding and the monthly statements.",
-    "noAccess": "Statements are for the company admin and accountants.",
+    "noAccess": "You see the available credit and the term; the full limit and statements are for the company admin and accountant",
     "summary": "Credit",
     "statusLabel": "Status",
     "statuses": {
@@ -884,7 +886,11 @@
     "owedTitle": "Owed as of {date}",
     "nextDueTerm": "Next due",
     "openFile": "Open file",
-    "nothingOwed": "Nothing is owed"
+    "nothingOwed": "Nothing is owed",
+    "temporaryTitle": "This is a temporary limit, valid until {date}",
+    "temporaryFallback": "Afterwards {limit} on {days}-day credit applies again",
+    "temporaryNoFallback": "Afterwards the company pays in advance until a new limit is approved",
+    "temporaryBuyer": "The limit may drop after this date; ask your company admin"
   },
   "reorder": {
     "title": "Bulk reorder",

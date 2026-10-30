@@ -13,6 +13,9 @@
  *   companyadmin   0867890123 — the admin and approver of the first fake company (B2601: credit,
  *              a THB 50,000 approval threshold, PO numbers required), F3 3.7.
  *   companybuyer   0878901234 — a buyer in the same company, whose large orders wait for approval.
+ *   creditadmin    0891112222 — the admin of the sixth fake company (B2606), on a temporary THB 150,000 / 90-day
+ *              limit (custom term) that falls back to THB 30,000 / 30 days (D-462).
+ *   creditbuyer    0892223333 — a buyer in B2606: sees only the credit summary, not the limit (D-462).
  *   founder    0889012345 — no company yet: signs one up (F3 3.7).
  *   artist     0834567890 — the fourth fake customer, whose unpaid order waiting for artwork
  *              the artwork and proof flow (F3 3.5) walks end to end on its own.
@@ -36,6 +39,8 @@ export type CustomerPersona =
   | "receiver"
   | "companyadmin"
   | "companybuyer"
+  | "creditadmin"
+  | "creditbuyer"
   | "founder"
   | "designer"
   /** A scorecard round's participant, P01–P10 (`../uat.ts`; only with `MOCK_DATASET=uat`). */
@@ -49,6 +54,8 @@ export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0845678901": "receiver",
   "0867890123": "companyadmin",
   "0878901234": "companybuyer",
+  "0891112222": "creditadmin",
+  "0892223333": "creditbuyer",
   "0889012345": "founder",
   "0856789012": "designer",
   ...Object.fromEntries(uatParticipants().map((participant) => [participant.phone, uatPersona(participant)])),
@@ -178,6 +185,20 @@ function fresh(persona: CustomerPersona): MockCustomer {
       phone: "0878901234",
       ownerIndex: 1,
     },
+    creditadmin: {
+      n: 10,
+      name: "ผู้ดูแลบัญชีบริษัท วงเงินชั่วคราว (ข้อมูลจำลอง)",
+      email: "seed.creditadmin",
+      phone: "0891112222",
+      ownerIndex: 11,
+    },
+    creditbuyer: {
+      n: 11,
+      name: "ผู้สั่งซื้อสาขา (ข้อมูลจำลอง)",
+      email: "seed.creditbuyer",
+      phone: "0892223333",
+      ownerIndex: 11,
+    },
     founder: {
       n: 8,
       name: "ผู้ก่อตั้งบริษัท (ข้อมูลจำลอง)",
@@ -212,7 +233,7 @@ function fresh(persona: CustomerPersona): MockCustomer {
   const account = accounts[persona as Exclude<CustomerPersona, "newcomer" | `uat_p${string}`>];
   return {
     persona,
-    id: `00000000-0000-4000-8000-00000000000${account.n}`,
+    id: `00000000-0000-4000-8000-${String(account.n).padStart(12, "0")}`,
     displayName: account.name,
     email: `${account.email}@getpack.invalid`,
     phone: account.phone,
@@ -237,6 +258,8 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   receiver: fresh("receiver"),
   companyadmin: fresh("companyadmin"),
   companybuyer: fresh("companybuyer"),
+  creditadmin: fresh("creditadmin"),
+  creditbuyer: fresh("creditbuyer"),
   founder: fresh("founder"),
   designer: fresh("designer"),
   ...Object.fromEntries(

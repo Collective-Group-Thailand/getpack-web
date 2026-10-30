@@ -18,6 +18,8 @@ import { findMyCompany } from "./companies.server";
 export type Company = Schemas["CompanyDto"] & {
   etag: string;
   credit: Schemas["CompanyCreditDto"] | null;
+  /** D-462: what a member who may order sees when the full credit is not theirs to see. */
+  creditSummary: Schemas["CompanyCreditSummaryDto"] | null;
   receivables: Schemas["CompanyReceivablesDto"] | null;
 };
 
@@ -41,13 +43,18 @@ export const getMyCompany = cache(async (): Promise<Company | null> => {
   if (!read?.data) return null;
   if (read.data.myRoles.length === 0) return null;
   const path = { params: { path: { companyId: found.id } } };
-  const [credit, receivables] = await Promise.all([
-    orNull(api.GET("/v1/store/companies/{companyId}/credit", path).then(({ data }) => data!)),
+  const [credit, creditSummary, receivables] = await Promise.all([
+    read.data.can.viewFinance
+      ? orNull(api.GET("/v1/store/companies/{companyId}/credit", path).then(({ data }) => data!))
+      : Promise.resolve(null),
+    !read.data.can.viewFinance && read.data.can.order
+      ? orNull(api.GET("/v1/store/companies/{companyId}/credit/summary", path).then(({ data }) => data!))
+      : Promise.resolve(null),
     read.data.can.viewFinance
       ? orNull(api.GET("/v1/store/companies/{companyId}/receivables", path).then(({ data }) => data!))
       : Promise.resolve(null),
   ]);
-  return { ...read.data, etag: read.response.headers.get("etag") ?? "", credit, receivables };
+  return { ...read.data, etag: read.response.headers.get("etag") ?? "", credit, creditSummary, receivables };
 });
 
 /** The company's shared brand assets, with signed URLs (`store.companyAssets.list`, D-227). */

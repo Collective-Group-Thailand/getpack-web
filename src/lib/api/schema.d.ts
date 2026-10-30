@@ -6091,9 +6091,9 @@ export interface paths {
         put?: never;
         /**
          * Request a credit limit and term
-         * @description For an eligible company (3 paid orders) or after a verified financial statement (D-121). Routed by `credit_limit`: Finance up to THB 100,000, C-Level above; the requester cannot approve. Terms from `b2b.credit_terms` (15 / 30 / 45 / 60, default 30). The response carries the new version and its approval. The verified financial statement is a KYC document, so the request takes no evidence files.
+         * @description For an eligible company (3 paid orders) or after a verified financial statement (D-121). Routed by `credit_limit`: Finance up to THB 100,000, C-Level above; the requester cannot approve. Terms from `b2b.credit_terms` (15 / 30 / 45 / 60, default 30), or a custom term within `b2b.credit_custom_terms` (D-462); `validUntil` makes it a temporary limit, after which the latest permanent version applies again (D-462). The response carries the new version and its approval. The verified financial statement is a KYC document, so the request takes no evidence files.
          *
-         *     Implements: D-121.
+         *     Implements: D-121, D-462.
          */
         post: operations["admin.companyCredit.requestLimit"];
         delete?: never;
@@ -29261,6 +29261,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/companies/{companyId}/credit/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My company’s available credit
+         * @description Any member who may order for the company (`company_orders.place`): the credit status, what is available now, the term and when a temporary limit ends — no limit, exposure or statements (those are Admin / Accountant, D-121). D-462.
+         *
+         *     Implements: D-121, D-462.
+         */
+        get: operations["store.companyCredit.summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/companies/{companyId}/issued-statements": {
         parameters: {
             query?: never;
@@ -36030,6 +36052,16 @@ export interface components {
              * @example 25000.00
              */
             exposureAmount: string;
+            /**
+             * @description D-462: the permanent limit after a temporary one ends; null without one
+             * @example null
+             */
+            fallbackLimitAmount: string | null;
+            /**
+             * @description D-462: the permanent term after a temporary limit ends; null without one
+             * @example 30
+             */
+            fallbackTermDays: number | null;
             /** @example 100000.00 */
             limitAmount: string | null;
             /** @description A limit waiting for approval */
@@ -36039,6 +36071,12 @@ export interface components {
              * @example 30
              */
             termDays: number | null;
+            /**
+             * Format: date-time
+             * @description D-462: the limit in force is temporary and ends at this time; null when permanent
+             * @example null
+             */
+            validUntil: string | null;
             /** @description Every limit version, newest first */
             versions: components["schemas"]["CreditLimitVersionDto"][];
         };
@@ -44234,6 +44272,16 @@ export interface components {
              * @example 25000.00
              */
             exposureAmount: string;
+            /**
+             * @description D-462: the permanent limit after a temporary one ends; null without one
+             * @example null
+             */
+            fallbackLimitAmount: string | null;
+            /**
+             * @description D-462: the permanent term after a temporary limit ends; null without one
+             * @example 30
+             */
+            fallbackTermDays: number | null;
             /** @example 100000.00 */
             limitAmount: string | null;
             /** @description A limit waiting for approval */
@@ -44243,12 +44291,40 @@ export interface components {
              * @example 30
              */
             termDays: number | null;
+            /**
+             * Format: date-time
+             * @description D-462: the limit in force is temporary and ends at this time; null when permanent
+             * @example null
+             */
+            validUntil: string | null;
         };
         /**
          * @description D-122: due within the reminder window, due today, overdue, credit orders blocked
          * @enum {string}
          */
         CompanyCreditNoticeCode: "due_soon" | "due_today" | "overdue" | "credit_blocked";
+        CompanyCreditSummaryDto: {
+            /**
+             * @description Available credit now; null while the company has no credit in force
+             * @example 75000.00
+             */
+            availableAmount: string | null;
+            /** @example credit */
+            creditStatus: components["schemas"]["CreditStatus"];
+            /** @example THB */
+            currency: string;
+            /**
+             * @description Payment term in days after delivery
+             * @example 30
+             */
+            termDays: number | null;
+            /**
+             * Format: date-time
+             * @description The limit in force is temporary and ends at this time
+             * @example null
+             */
+            validUntil: string | null;
+        };
         CompanyDefaultsDto: {
             /**
              * Format: uuid
@@ -48229,6 +48305,11 @@ export interface components {
             /** @example paid_orders */
             basis: components["schemas"]["CreditEligibilityBasis"];
             /**
+             * @description D-462: a term outside `b2b.credit_terms.allowedDays`
+             * @example false
+             */
+            customTerm: boolean;
+            /**
              * Format: date-time
              * @example 2026-10-06T10:00:00+07:00
              */
@@ -48257,6 +48338,12 @@ export interface components {
             status: components["schemas"]["ConfigVersionStatus"];
             /** @example 30 */
             termDays: number;
+            /**
+             * Format: date-time
+             * @description D-462: a temporary limit ends at this time; null when permanent
+             * @example null
+             */
+            validUntil: string | null;
             /** @example 1 */
             versionNo: number;
         };
@@ -73158,10 +73245,16 @@ export interface components {
             /** @example สั่งซื้อสม่ำเสมอ ชำระตรงเวลา 3 ครั้ง */
             reason: string;
             /**
-             * @description One of `b2b.credit_terms.allowedDays`; default `defaultDays`
+             * @description One of `b2b.credit_terms.allowedDays` (default `defaultDays`), or a custom term within `b2b.credit_custom_terms.minDays`–`maxDays` (D-462)
              * @example 30
              */
             termDays?: number;
+            /**
+             * Format: date-time
+             * @description D-462: a temporary limit ending at this time (more than a day and at most `b2b.credit_custom_terms.temporaryMaxDays` ahead); omit for a permanent limit
+             * @example 2026-12-31T23:59:59+07:00
+             */
+            validUntil?: string;
         };
         RequestCreditNoteDto: {
             /**
@@ -133455,13 +133548,17 @@ export interface operations {
                      *         "reason": "paid_orders"
                      *       },
                      *       "exposureAmount": "25000.00",
+                     *       "fallbackLimitAmount": null,
+                     *       "fallbackTermDays": null,
                      *       "limitAmount": "100000.00",
                      *       "pendingRequest": null,
                      *       "termDays": 30,
+                     *       "validUntil": null,
                      *       "versions": [
                      *         {
                      *           "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000c1030",
                      *           "basis": "paid_orders",
+                     *           "customTerm": false,
                      *           "decidedAt": "2026-10-06T10:00:00+07:00",
                      *           "effectiveFrom": "2026-10-05T10:00:00+07:00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c1031",
@@ -133474,6 +133571,7 @@ export interface operations {
                      *           },
                      *           "status": "approved",
                      *           "termDays": 30,
+                     *           "validUntil": null,
                      *           "versionNo": 1
                      *         }
                      *       ]
@@ -133596,6 +133694,8 @@ export interface operations {
                      *         "reason": "paid_orders"
                      *       },
                      *       "exposureAmount": "25000.00",
+                     *       "fallbackLimitAmount": null,
+                     *       "fallbackTermDays": null,
                      *       "limitAmount": null,
                      *       "pendingRequest": {
                      *         "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000c1030",
@@ -133605,10 +133705,12 @@ export interface operations {
                      *         "versionNo": 1
                      *       },
                      *       "termDays": null,
+                     *       "validUntil": null,
                      *       "versions": [
                      *         {
                      *           "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000c1030",
                      *           "basis": "paid_orders",
+                     *           "customTerm": false,
                      *           "decidedAt": null,
                      *           "effectiveFrom": "2026-10-05T10:00:00+07:00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c1031",
@@ -133621,6 +133723,7 @@ export interface operations {
                      *           },
                      *           "status": "proposed",
                      *           "termDays": 30,
+                     *           "validUntil": null,
                      *           "versionNo": 1
                      *         }
                      *       ]
@@ -301850,9 +301953,12 @@ export interface operations {
                      *         "reason": "paid_orders"
                      *       },
                      *       "exposureAmount": "25000.00",
+                     *       "fallbackLimitAmount": null,
+                     *       "fallbackTermDays": null,
                      *       "limitAmount": "100000.00",
                      *       "pendingRequest": null,
-                     *       "termDays": 30
+                     *       "termDays": 30,
+                     *       "validUntil": null
                      *     }
                      */
                     "application/json": components["schemas"]["CompanyCreditDto"];
@@ -301972,13 +302078,16 @@ export interface operations {
                      *         "reason": "paid_orders"
                      *       },
                      *       "exposureAmount": "25000.00",
+                     *       "fallbackLimitAmount": null,
+                     *       "fallbackTermDays": null,
                      *       "limitAmount": null,
                      *       "pendingRequest": {
                      *         "limitAmount": "100000.00",
                      *         "requestedAt": "2026-10-05T10:00:00+07:00",
                      *         "termDays": 30
                      *       },
-                     *       "termDays": null
+                     *       "termDays": null,
+                     *       "validUntil": null
                      *     }
                      */
                     "application/json": components["schemas"]["CompanyCreditDto"];
@@ -302035,6 +302144,105 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.companyCredit.summary": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                companyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credit summary */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "availableAmount": "75000.00",
+                     *       "creditStatus": "credit",
+                     *       "currency": "THB",
+                     *       "termDays": 30,
+                     *       "validUntil": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CompanyCreditSummaryDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
