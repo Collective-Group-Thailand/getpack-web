@@ -113,7 +113,13 @@
       "units": "Units",
       "buying": "Buying and stock",
       "partner": "Partner details",
-      "terms": "Trading terms"
+      "terms": "Trading terms",
+      "details": "Details",
+      "schedule": "Schedule",
+      "notes": "Warehouse and note",
+      "affected": "What it affects",
+      "owner": "Owner and due date",
+      "quantities": "Lot and quantities"
     }
   },
   "stock": {

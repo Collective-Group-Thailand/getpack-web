@@ -27,6 +27,7 @@ export default async function ReportBreakdownPage({ searchParams }: { searchPara
   );
   return (
     <PartnerPage
+      full
       title={t("reportTitle")}
       description={t("reportBody")}
       back={

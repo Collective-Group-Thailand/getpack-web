@@ -30,7 +30,7 @@ export default async function NewPlanPage({ searchParams }: { searchParams: Prom
     return { machines: machines.data!, items: items.filter((i) => i.status === "active") };
   });
   return (
-    <PartnerPage title={t("newTitle")} back={{ href: "/maintenance?view=plans", label: tMt("plans.title") }}>
+    <PartnerPage full title={t("newTitle")} back={{ href: "/maintenance?view=plans", label: tMt("plans.title") }}>
       {read.data ? (
         <PlanForm
           machines={read.data.machines.filter((m) => m.status === "active").map((m) => ({ id: m.id, name: m.name }))}

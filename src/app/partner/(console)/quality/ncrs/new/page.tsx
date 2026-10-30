@@ -23,7 +23,12 @@ export default async function NewNcrPage({
   ]);
   const pickers = await qualityPickers(context.factoryId);
   return (
-    <PartnerPage title={t("pageTitle")} description={t("pageBody")} back={{ href: "/quality/ncrs", label: t("back") }}>
+    <PartnerPage
+      full
+      title={t("pageTitle")}
+      description={t("pageBody")}
+      back={{ href: "/quality/ncrs", label: t("back") }}
+    >
       {pickers.data ? (
         <NcrForm
           items={pickers.data.items}

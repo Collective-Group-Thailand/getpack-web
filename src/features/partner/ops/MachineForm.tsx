@@ -24,7 +24,14 @@ const size = (value: string) => {
  * Add or edit a machine (D-355): the same record getpack reads in the capability profile, so a machine
  * added here is one the platform can route work to. Retiring keeps its history.
  */
-export function MachineButton({ machine }: { machine?: Machine }) {
+export function MachineButton({
+  machine,
+  buttonSize,
+}: {
+  machine?: Machine;
+  /** The trigger's size; left out, small beside a record and medium in a page head. */
+  buttonSize?: "sm" | "md" | "lg";
+}) {
   const t = useTranslations("partnerOps.machines");
   const tCommon = useTranslations("partnerErp.common");
   const { factoryId } = useFactory();
@@ -69,7 +76,7 @@ export function MachineButton({ machine }: { machine?: Machine }) {
     <>
       <Button
         variant={machine ? "secondary" : "primary"}
-        size={machine ? "sm" : "md"}
+        size={buttonSize ?? (machine ? "sm" : "md")}
         iconStart={machine ? "edit" : "plus"}
         onClick={() => setOpen(true)}
       >

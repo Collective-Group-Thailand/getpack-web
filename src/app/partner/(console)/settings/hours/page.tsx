@@ -6,6 +6,7 @@ import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame
 import { ClosuresEditor } from "@/features/partner/settings/ClosuresEditor";
 import { HoursEditor } from "@/features/partner/settings/HoursEditor";
 import { getFormat } from "@/features/shared/format/server";
+import { Callout } from "@/ui/components/Callout";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerAccount.hours"))("title") };
@@ -29,29 +30,34 @@ export default async function HoursPage() {
   const upcoming = (versions.data ?? []).filter((v) => !v.inForce && v.effectiveFrom > (inForce?.effectiveFrom ?? ""));
 
   return (
-    <PartnerPage title={t("title")} description={t("body")}>
-      {versions.data ? (
-        <PartnerSection
-          title={t("weekTitle")}
-          description={inForce ? t("inForce", { date: format.date(inForce.effectiveFrom) }) : t("platformDefault")}
-        >
-          {upcoming.length ? (
-            <p className="text-sm">
-              {t("upcoming", { dates: upcoming.map((v) => format.date(v.effectiveFrom)).join(", ") })}
-            </p>
-          ) : null}
-          <HoursEditor current={inForce?.hours ?? null} />
-        </PartnerSection>
-      ) : (
-        <PageError error={versions.error} />
-      )}
-      {closures.data ? (
-        <PartnerSection title={tClosures("title")} description={tClosures("body")}>
-          <ClosuresEditor days={closures.data} />
-        </PartnerSection>
-      ) : (
-        <PageError error={closures.error} />
-      )}
+    <PartnerPage full title={t("title")} description={t("body")}>
+      {/* The week on the left, the days that break it on the right: two settings, each saved on its own. */}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+        {versions.data ? (
+          <PartnerSection
+            title={t("weekTitle")}
+            description={inForce ? t("inForce", { date: format.date(inForce.effectiveFrom) }) : t("platformDefault")}
+          >
+            {upcoming.length ? (
+              <Callout tone="info">
+                {t("upcoming", { dates: upcoming.map((v) => format.date(v.effectiveFrom)).join(", ") })}
+              </Callout>
+            ) : null}
+            <HoursEditor current={inForce?.hours ?? null} />
+          </PartnerSection>
+        ) : (
+          <PageError error={versions.error} />
+        )}
+        <aside className="flex min-w-0 flex-col lg:sticky lg:top-20">
+          {closures.data ? (
+            <PartnerSection title={tClosures("title")} description={tClosures("body")}>
+              <ClosuresEditor days={closures.data} />
+            </PartnerSection>
+          ) : (
+            <PageError error={closures.error} />
+          )}
+        </aside>
+      </div>
     </PartnerPage>
   );
 }

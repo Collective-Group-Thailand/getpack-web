@@ -132,17 +132,20 @@ export function HoursEditor({ current }: { current: Hours | null }) {
         </ul>
       </div>
       {editable ? (
-        <>
-          <Field label={t("effectiveFrom")} hint={t("effectiveHint")}>
-            <Input type="date" value={from} min={bangkokToday(1)} onChange={(event) => setFrom(event.target.value)} />
-          </Field>
-          <p className="text-muted text-sm">{t("effect")}</p>
-          <div>
-            <Button className="min-h-11 md:min-h-10" loading={busy} disabled={!valid} onClick={() => void save()}>
+        // When the new week starts and the one button that saves it, side by side under the timetable.
+        <div className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex min-w-0 flex-col gap-2 sm:max-w-sm">
+            <Field label={t("effectiveFrom")} hint={t("effectiveHint")}>
+              <Input type="date" value={from} min={bangkokToday(1)} onChange={(event) => setFrom(event.target.value)} />
+            </Field>
+            <p className="text-muted text-sm text-pretty">{t("effect")}</p>
+          </div>
+          <div data-fill="row" className="flex shrink-0 flex-col">
+            <Button size="lg" iconStart="save" loading={busy} disabled={!valid} onClick={() => void save()}>
               {t("save")}
             </Button>
           </div>
-        </>
+        </div>
       ) : (
         <p className="text-muted text-sm">{t("readOnly")}</p>
       )}

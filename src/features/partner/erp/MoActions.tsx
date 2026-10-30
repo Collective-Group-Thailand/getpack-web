@@ -27,7 +27,16 @@ type Mo = Schemas["ErpProductionOrderDto"];
  * A production order's actions (D-340, D-341), as the API offers them: release (reserve), issue every
  * remaining material, complete with good and scrap pieces, cancel.
  */
-export function MoActions({ order, locale }: { order: Mo; locale: string }) {
+export function MoActions({
+  order,
+  locale,
+  layout = "row",
+}: {
+  order: Mo;
+  locale: string;
+  /** `panel`: the order page's next-steps panel (one full-width stack, one filled action, cancel last). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerFactory.orders.actions");
   const tCommon = useTranslations("partnerErp.common");
   const tStatus = useTranslations("status.action");
@@ -37,87 +46,116 @@ export function MoActions({ order, locale }: { order: Mo; locale: string }) {
   const unit = tCommon(`units.${order.unit}` as never);
   const completable = order.nextActions.some((a) => a.key === "erp_mo.complete" && !a.disabledReason);
 
+  const editable = order.nextActions.some((a) => a.key === "erp_mo.edit" && !a.disabledReason);
+  const editLink = editable ? (
+    <Button asChild size="lg" variant="secondary" iconStart="edit">
+      <Link href={`/planning/orders/${order.id}/edit`}>{t("edit")}</Link>
+    </Button>
+  ) : null;
+  // In the panel only one action is filled: completing is the next step unless releasing or issuing comes first.
+  const otherPrimary = order.nextActions.some(
+    (a) => (a.key === "erp_mo.release" || a.key === "erp_mo.issue") && !a.disabledReason,
+  );
+  const complete = completable ? (
+    <CompleteButton order={order} unit={unit} variant={layout === "panel" && otherPrimary ? "secondary" : "primary"} />
+  ) : null;
+  const bar = (children: React.ReactNode) => (
+    <ActionBar
+      layout={layout}
+      offered={order.nextActions}
+      failed={tCommon("failed")}
+      actions={[
+        {
+          key: "erp_mo.release",
+          label: tStatus("releaseProductionOrder"),
+          icon: "send",
+          variant: "primary",
+          confirm: { title: t("releaseTitle"), body: t("releaseBody"), confirmLabel: t("releaseConfirm") },
+          run: ({ idempotencyKey }) =>
+            browserApi().POST("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/release", {
+              params: { path, header: header(idempotencyKey) },
+            }),
+          done: t("released"),
+        },
+        {
+          key: "erp_mo.issue",
+          label: tStatus("issueMaterials"),
+          icon: "package",
+          variant: "primary",
+          confirm: {
+            title: t("issueTitle"),
+            body: (
+              <span className="flex flex-col gap-1">
+                <span>{t("issueBody")}</span>
+                <span className="text-muted">
+                  {order.materials
+                    .filter((m) => m.remainingQty !== "0.000")
+                    .map(
+                      (m) =>
+                        `${m.item.name} ${formatQty(m.remainingQty, locale)} ${tCommon(`units.${m.item.baseUnit}` as never)}`,
+                    )
+                    .join(" · ")}
+                </span>
+              </span>
+            ),
+            confirmLabel: t("issueConfirm"),
+          },
+          run: ({ idempotencyKey }) =>
+            browserApi().POST("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/issue", {
+              params: { path, header: header(idempotencyKey) },
+              body: {},
+            }),
+          done: t("issued"),
+        },
+        {
+          key: "erp_mo.cancel",
+          label: tStatus("cancelProductionOrder"),
+          icon: "ban",
+          variant: "destructive",
+          confirm: {
+            title: t("cancelTitle"),
+            body: t("cancelBody", { no: order.moNo }),
+            confirmLabel: t("cancelConfirm"),
+            destructive: true,
+            phrase: order.moNo,
+            reason: { label: t("reason"), required: true, placeholder: t("reasonPlaceholder") },
+          },
+          run: ({ idempotencyKey, reason }) =>
+            browserApi().POST("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/cancel", {
+              params: { path, header: header(idempotencyKey) },
+              body: { reason },
+            }),
+          done: t("cancelled"),
+        },
+      ]}
+    >
+      {children}
+    </ActionBar>
+  );
+  if (layout === "panel")
+    return bar(
+      <>
+        {complete}
+        {editLink}
+      </>,
+    );
   return (
     <div className="flex flex-wrap gap-2">
-      {order.nextActions.some((a) => a.key === "erp_mo.edit" && !a.disabledReason) ? (
-        <Button asChild size="lg" variant="secondary" iconStart="edit">
-          <Link href={`/planning/orders/${order.id}/edit`}>{t("edit")}</Link>
-        </Button>
-      ) : null}
-      <ActionBar
-        offered={order.nextActions}
-        failed={tCommon("failed")}
-        actions={[
-          {
-            key: "erp_mo.release",
-            label: tStatus("releaseProductionOrder"),
-            icon: "send",
-            variant: "primary",
-            confirm: { title: t("releaseTitle"), body: t("releaseBody"), confirmLabel: t("releaseConfirm") },
-            run: ({ idempotencyKey }) =>
-              browserApi().POST("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/release", {
-                params: { path, header: header(idempotencyKey) },
-              }),
-            done: t("released"),
-          },
-          {
-            key: "erp_mo.issue",
-            label: tStatus("issueMaterials"),
-            icon: "package",
-            variant: "primary",
-            confirm: {
-              title: t("issueTitle"),
-              body: (
-                <span className="flex flex-col gap-1">
-                  <span>{t("issueBody")}</span>
-                  <span className="text-muted">
-                    {order.materials
-                      .filter((m) => m.remainingQty !== "0.000")
-                      .map(
-                        (m) =>
-                          `${m.item.name} ${formatQty(m.remainingQty, locale)} ${tCommon(`units.${m.item.baseUnit}` as never)}`,
-                      )
-                      .join(" · ")}
-                  </span>
-                </span>
-              ),
-              confirmLabel: t("issueConfirm"),
-            },
-            run: ({ idempotencyKey }) =>
-              browserApi().POST("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/issue", {
-                params: { path, header: header(idempotencyKey) },
-                body: {},
-              }),
-            done: t("issued"),
-          },
-          {
-            key: "erp_mo.cancel",
-            label: tStatus("cancelProductionOrder"),
-            icon: "ban",
-            variant: "destructive",
-            confirm: {
-              title: t("cancelTitle"),
-              body: t("cancelBody", { no: order.moNo }),
-              confirmLabel: t("cancelConfirm"),
-              destructive: true,
-              phrase: order.moNo,
-              reason: { label: t("reason"), required: true, placeholder: t("reasonPlaceholder") },
-            },
-            run: ({ idempotencyKey, reason }) =>
-              browserApi().POST("/v1/partner/factories/{factoryId}/erp/production-orders/{moId}/actions/cancel", {
-                params: { path, header: header(idempotencyKey) },
-                body: { reason },
-              }),
-            done: t("cancelled"),
-          },
-        ]}
-      />
-      {completable ? <CompleteButton order={order} unit={unit} /> : null}
+      {editLink}
+      {bar(complete)}
     </div>
   );
 }
 
-function CompleteButton({ order, unit }: { order: Mo; unit: string }) {
+function CompleteButton({
+  order,
+  unit,
+  variant = "primary",
+}: {
+  order: Mo;
+  unit: string;
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("partnerFactory.orders.actions");
   const tCommon = useTranslations("partnerErp.common");
   const tStatus = useTranslations("status.action");
@@ -130,7 +168,7 @@ function CompleteButton({ order, unit }: { order: Mo; unit: string }) {
   const valid = QTY_PATTERN.test(plainNumber(good)) && QTY_PATTERN.test(plainNumber(scrap || "0"));
   return (
     <>
-      <Button size="lg" variant="primary" iconStart="check" onClick={() => setOpen(true)}>
+      <Button size="lg" variant={variant} iconStart="check" onClick={() => setOpen(true)}>
         {tStatus("completeProductionOrder")}
       </Button>
       <ConfirmAction

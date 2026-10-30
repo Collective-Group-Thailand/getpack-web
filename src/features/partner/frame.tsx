@@ -89,7 +89,7 @@ export function PartnerStats({
   label: string;
   items: readonly SummaryItem[];
   /** Left out, the count decides: every card in one row on a desk, no card alone in a row (6 → 3 + 3, 7 → 4 + 3). */
-  columns?: 2 | 3 | 4 | 5;
+  columns?: 2 | 3 | 4 | 5 | 6;
   className?: string;
 }) {
   if (!items.length) return null;

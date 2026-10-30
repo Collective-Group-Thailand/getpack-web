@@ -32,7 +32,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ templ
   ]);
   const back = { href: "/quality/templates", label: t("title") };
   return (
-    <PartnerPage title={read.data?.template.name ?? t("editTitle")} back={back}>
+    <PartnerPage full title={read.data?.template.name ?? t("editTitle")} back={back}>
       {read.data && pickers.data ? (
         <TemplateForm template={read.data.template} etag={read.data.etag} items={pickers.data.items} />
       ) : (

@@ -33,7 +33,7 @@ export default async function NewCheckPage({
   const pickers = await qualityPickers(context.factoryId);
   const back = { href: "/quality", label: t("back") };
   return (
-    <PartnerPage title={t("title")} description={t("body")} back={back}>
+    <PartnerPage full title={t("title")} description={t("body")} back={back}>
       {pickers.data ? (
         <CheckStartForm
           templates={pickers.data.templates}

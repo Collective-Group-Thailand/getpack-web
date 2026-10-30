@@ -15,7 +15,7 @@ export default async function NewTemplatePage() {
   const [t, context] = await Promise.all([getTranslations("partnerInsight.templates"), factoryContext()]);
   const pickers = await qualityPickers(context.factoryId);
   return (
-    <PartnerPage title={t("newTitle")} back={{ href: "/quality/templates", label: t("title") }}>
+    <PartnerPage full title={t("newTitle")} back={{ href: "/quality/templates", label: t("title") }}>
       {pickers.data ? <TemplateForm items={pickers.data.items} /> : <PageError error={pickers.error} />}
     </PartnerPage>
   );

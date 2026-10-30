@@ -203,6 +203,10 @@
       "result": "Result",
       "reason": "Reason",
       "reasonPlaceholder": "e.g. Customer accepts the slight colour shift"
+    },
+    "stats": {
+      "ncrOpen": "Open NCRs",
+      "ncrOverdue": "Overdue NCRs"
     }
   },
   "ncrs": {
@@ -384,7 +388,8 @@
       "machine": "Machine",
       "level": "Level",
       "certifiedOn": "Certified on",
-      "save": "Save skill"
+      "save": "Save skill",
+      "addTitle": "Add an operator skill"
     }
   },
   "support": {

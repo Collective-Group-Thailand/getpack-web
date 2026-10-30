@@ -7,7 +7,9 @@ import { queryOf } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { ScheduleBoard } from "@/features/partner/ops/ScheduleBoard";
 import { ViewTabs } from "@/features/partner/rows";
+import { getFormat } from "@/features/shared/format/server";
 import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerOps.schedule"))("title") };
@@ -30,9 +32,10 @@ export default async function SchedulePage({
   const today = bangkokDate();
   const from = query.from && DAY.test(query.from) ? query.from : today;
   const days = DAYS.includes(query.days as (typeof DAYS)[number]) ? Number(query.days) : 3;
-  const [t, tPlan, context] = await Promise.all([
+  const [t, tPlan, format, context] = await Promise.all([
     getTranslations("partnerOps.schedule"),
     getTranslations("partnerFactory.planning"),
+    getFormat(),
     factoryContext(),
   ]);
   const { contract } = await partnerServerApis();
@@ -47,37 +50,43 @@ export default async function SchedulePage({
   const href = (next: { from?: string; days?: number }) =>
     `/planning/schedule${queryOf({ from: (next.from ?? from) === today ? undefined : (next.from ?? from), days: next.days ?? days })}`;
 
-  return (
-    <PartnerPage
-      full
-      title={t("title")}
-      description={t("body")}
-      back={{ href: "/planning", label: tPlan("title") }}
-      actions={
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="secondary" iconStart="chevron-left">
-            <Link href={href({ from: shift(from, -days) })}>{t("prev")}</Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link href={href({ from: today })}>{t("today")}</Link>
-          </Button>
-          <Button asChild variant="secondary" iconEnd="chevron-right">
-            <Link href={href({ from: shift(from, days) })}>{t("next")}</Link>
-          </Button>
-        </div>
-      }
-    >
+  const last = shift(from, days - 1);
+  const range = days === 1 ? format.date(from) : `${format.date(from)} – ${format.date(last)}`;
+  // The window controls: how many days, then back / today / forward and the dates shown — one group, left of the
+  // board's primary action.
+  const nav = (
+    <>
       <ViewTabs
         label={t("days.label")}
         current={String(days)}
         items={DAYS.map((d) => ({ key: d, href: href({ days: Number(d) }), label: t(`days.${d}`) }))}
       />
+      <div className="flex items-center gap-1.5">
+        <IconButton asChild name="chevron-left" label={t("prev")} variant="secondary">
+          <Link href={href({ from: shift(from, -days) })} />
+        </IconButton>
+        <Button asChild variant="secondary" aria-current={from === today ? "date" : undefined}>
+          <Link href={href({ from: today })}>{t("today")}</Link>
+        </Button>
+        <IconButton asChild name="chevron-right" label={t("next")} variant="secondary">
+          <Link href={href({ from: shift(from, days) })} />
+        </IconButton>
+      </div>
+      <p className="text-sm font-medium tabular-nums" aria-live="polite">
+        {range}
+      </p>
+    </>
+  );
+
+  return (
+    <PartnerPage full title={t("title")} description={t("body")} back={{ href: "/planning", label: tPlan("title") }}>
       {read.data ? (
         <ScheduleBoard
           board={read.data.board}
           machines={read.data.machines.filter((m) => m.status === "active").map((m) => ({ id: m.id, name: m.name }))}
           days={days}
           canManage={canAt(context, "factory_planning.manage")}
+          nav={nav}
         />
       ) : (
         <PageError error={read.error} />

@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatQty } from "@/features/partner/erp/format";
 import { queryOf } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
-import { ShiftManager, SkillManager } from "@/features/partner/insight/PeopleForms";
+import { ShiftAdd, ShiftManager, SkillManager } from "@/features/partner/insight/PeopleForms";
 import { erpMachines } from "@/features/partner/insight/server";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { erpSalespeople } from "@/features/partner/sales/server";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -33,26 +34,37 @@ export default async function PeoplePage({
 }) {
   const query = await searchParams;
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "shifts";
-  const [t, format, context] = await Promise.all([
+  const [t, tPlan, format, context] = await Promise.all([
     getTranslations("partnerInsight.people"),
+    getTranslations("partnerFactory.planning"),
     getFormat(),
     factoryContext(),
   ]);
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const canManage = canAt(context, "factory_people.manage");
-  let body: React.ReactNode;
-  if (view === "shifts") {
-    const read = await attempt(
+  // Shifts and skills are read on every view: each is a tab's count.
+  const [shifts, skills] = await Promise.all([
+    attempt(
       async () => (await contract.GET("/v1/partner/factories/{factoryId}/erp/shifts", { params: { path } })).data!,
-    );
-    body = read.data ? <ShiftManager shifts={read.data} canEdit={canManage} /> : <PageError error={read.error} />;
+    ),
+    attempt(
+      async () =>
+        (await contract.GET("/v1/partner/factories/{factoryId}/erp/operator-skills", { params: { path } })).data!,
+    ),
+  ]);
+  const counts: Record<View, number | null> = {
+    shifts: shifts.data?.length ?? null,
+    skills: skills.data?.length ?? null,
+    log: null,
+  };
+  let body: React.ReactNode;
+  let tools: React.ReactNode = null;
+  if (view === "shifts") {
+    body = shifts.data ? <ShiftManager shifts={shifts.data} canEdit={canManage} /> : <PageError error={shifts.error} />;
+    tools = canManage && shifts.data?.length ? <ShiftAdd /> : null;
   } else if (view === "skills") {
-    const [skills, people, machines] = await Promise.all([
-      attempt(
-        async () =>
-          (await contract.GET("/v1/partner/factories/{factoryId}/erp/operator-skills", { params: { path } })).data!,
-      ),
+    const [people, machines] = await Promise.all([
       attempt(async () => erpSalespeople(contract, context.factoryId)),
       attempt(async () => erpMachines(contract, context.factoryId)),
     ]);
@@ -77,28 +89,42 @@ export default async function PeoplePage({
           })
         ).data!,
     );
+    if (read.data) counts.log = read.data.rows.length;
+    // The period sits in the toolbar beside the tabs, where a search sits on the other lists.
+    tools = (
+      <form className="flex flex-wrap items-center gap-2" action="/people">
+        <input type="hidden" name="view" value="log" />
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-muted">{t("from")}</span>
+          <Input type="date" name="from" defaultValue={from} className="w-40" />
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-muted">{t("to")}</span>
+          <Input type="date" name="to" defaultValue={to} className="w-40" />
+        </label>
+        <Button type="submit" variant="secondary">
+          {t("show")}
+        </Button>
+      </form>
+    );
     body = (
       <>
-        <form className="flex flex-wrap items-end gap-2" action="/people">
-          <input type="hidden" name="view" value="log" />
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">{t("from")}</span>
-            <Input type="date" name="from" defaultValue={from} className="w-44" />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">{t("to")}</span>
-            <Input type="date" name="to" defaultValue={to} className="w-44" />
-          </label>
-          <Button type="submit" variant="secondary">
-            {t("show")}
-          </Button>
-        </form>
         {read.data ? (
           <PartnerTable
             caption={t("views.log")}
             rows={read.data.rows}
             rowKey={(row) => `${row.user.id}-${row.day}`}
-            empty={<EmptyState icon="users" title={t("logEmpty")} />}
+            empty={
+              <EmptyState
+                icon="users"
+                title={t("logEmpty")}
+                action={
+                  <Button asChild variant="secondary" iconStart="play">
+                    <Link href="/floor">{tPlan("floor")}</Link>
+                  </Button>
+                }
+              />
+            }
             columns={[
               { key: "d", header: t("day"), cell: (row) => format.date(row.day) },
               { key: "u", header: t("person"), primary: true, cell: (row) => row.user.name },
@@ -123,15 +149,19 @@ export default async function PeoplePage({
   }
   return (
     <PartnerPage full title={t("title")} description={t("body")}>
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({
-          key,
-          href: `/people${queryOf({ view: key === "shifts" ? undefined : key })}`,
-          label: t(`views.${key}`),
-        }))}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: `/people${queryOf({ view: key === "shifts" ? undefined : key })}`,
+            label: t(`views.${key}`),
+            count: counts[key],
+          }))}
+        />
+        {tools}
+      </ListToolbar>
       {body}
     </PartnerPage>
   );

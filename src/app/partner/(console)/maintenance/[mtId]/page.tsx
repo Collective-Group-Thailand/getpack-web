@@ -6,13 +6,15 @@ import { ERP_MAINTENANCE_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatQty } from "@/features/partner/erp/format";
 import { erpItems, erpWarehouses } from "@/features/partner/erp/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { SummaryRows } from "@/features/partner/form-layout";
 import { MtActions } from "@/features/partner/ops/MaintenanceForms";
 import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { PhotoGrid } from "@/features/partner/viewer";
 import { getFormat } from "@/features/shared/format/server";
+import { Badge } from "@/ui/components/Badge";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,11 +23,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** One maintenance order (D-355): what broke or is due, its window, the parts it used, and what was done. */
 export default async function MaintenanceOrderPage({ params }: { params: Promise<{ mtId: string }> }) {
-  const [{ mtId }, t, tShared, tCommon, format, locale, context] = await Promise.all([
+  const [{ mtId }, t, tShared, tCommon, tSales, format, locale, context] = await Promise.all([
     params,
     getTranslations("partnerOps.maintenance"),
     getTranslations("partnerOps.shared"),
     getTranslations("partnerErp.common"),
+    getTranslations("partnerSales.common"),
     getFormat(),
     getLocale(),
     factoryContext(),
@@ -65,103 +68,141 @@ export default async function MaintenanceOrderPage({ params }: { params: Promise
   const qty = (value: string, unit: string) =>
     tCommon("inUnit", { qty: formatQty(value, locale), unit: tCommon(`units.${unit}` as never) });
 
+  const windowText =
+    mt.scheduledStart && mt.scheduledEnd
+      ? `${format.dateTime(mt.scheduledStart)} – ${format.dateTime(mt.scheduledEnd)}`
+      : null;
+
   return (
     <PartnerPage
-      wide
+      full
       title={`${mt.mtNo} · ${mt.title}`}
       back={back}
-      actions={
-        pickers?.data ? (
-          <MtActions order={mt} items={pickers.data.items} warehouses={pickers.data.warehouses} locale={locale} />
-        ) : undefined
+      meta={
+        <>
+          <StatusChip map={ERP_MAINTENANCE_STATUS} value={mt.status} />
+          <Badge tone={mt.kind === "breakdown" ? "danger" : "neutral"}>{t(`kinds.${mt.kind}`)}</Badge>
+        </>
       }
     >
-      <DescriptionList
-        items={[
-          { term: t("table.status"), description: <StatusChip map={ERP_MAINTENANCE_STATUS} value={mt.status} /> },
-          {
-            term: t("facts.machine"),
-            description: (
-              <Link href={`/machines/${mt.machine.id}`} className="underline-offset-4 hover:underline">
-                {mt.machine.name}
-              </Link>
-            ),
-          },
-          { term: t("facts.kind"), description: t(`kinds.${mt.kind}`) },
-          { term: t("facts.priority"), description: t(`priorities.${mt.priority}`) },
-          { term: t("facts.reported"), description: format.dateTime(mt.reportedAt) },
-          ...(mt.reportedBy ? [{ term: t("facts.reportedBy"), description: mt.reportedBy }] : []),
-          ...(mt.plan
-            ? [
+      {/* The order on the left; the machine, its window and the one next step in a panel that stays in view. */}
+      <PartnerDetail
+        aside={
+          <ActionPanel id="mt-next" tone="neutral" title={tSales("nextSteps")}>
+            <SummaryRows
+              rows={[
                 {
-                  term: t("facts.plan"),
-                  description: (
-                    <Link href={`/maintenance/plans/${mt.plan.id}`} className="underline-offset-4 hover:underline">
-                      {mt.plan.code}
+                  key: "machine",
+                  label: t("facts.machine"),
+                  value: (
+                    <Link
+                      href={`/machines/${mt.machine.id}`}
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      {mt.machine.name}
                     </Link>
                   ),
                 },
-              ]
-            : []),
-          ...(mt.scheduledStart && mt.scheduledEnd
-            ? [
-                {
-                  term: t("facts.window"),
-                  description: `${format.dateTime(mt.scheduledStart)} – ${format.dateTime(mt.scheduledEnd)}`,
-                },
-              ]
-            : []),
-          ...(mt.startedAt ? [{ term: t("facts.started"), description: format.dateTime(mt.startedAt) }] : []),
-          ...(mt.finishedAt ? [{ term: t("facts.finished"), description: format.dateTime(mt.finishedAt) }] : []),
-          ...(mt.downtimeMinutes !== null
-            ? [{ term: t("facts.downtime"), description: t("facts.downtimeMinutes", { n: mt.downtimeMinutes }) }]
-            : []),
-          ...(mt.description ? [{ term: t("facts.description"), description: mt.description }] : []),
-          ...(mt.instructions ? [{ term: t("facts.instructions"), description: mt.instructions }] : []),
-          ...(mt.resolution ? [{ term: t("facts.resolution"), description: mt.resolution }] : []),
-          ...(mt.cancelReason ? [{ term: t("facts.cancelReason"), description: mt.cancelReason }] : []),
-        ]}
-      />
-      {pickers && !pickers.data ? <PageError error={pickers.error} /> : null}
-
-      {mt.photos.length ? (
-        <PartnerSection title={t("photosTitle")}>
-          <PhotoGrid items={mt.photos.map((p) => ({ title: p.name, fileId: p.fileId }))} />
-        </PartnerSection>
-      ) : null}
-
-      <PartnerSection
-        title={t("partsTitle")}
-        description={mt.parts.length ? t("partsValue", { amount: format.thb(mt.partsValue) }) : t("partsBody")}
+                { key: "priority", label: t("facts.priority"), value: t(`priorities.${mt.priority}`) },
+                { key: "window", label: t("facts.window"), value: windowText ?? "" },
+                ...(mt.downtimeMinutes !== null
+                  ? [
+                      {
+                        key: "downtime",
+                        label: t("facts.downtime"),
+                        value: t("facts.downtimeMinutes", { n: mt.downtimeMinutes }),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+            {pickers?.data ? (
+              <MtActions
+                order={mt}
+                items={pickers.data.items}
+                warehouses={pickers.data.warehouses}
+                locale={locale}
+                layout="panel"
+              />
+            ) : null}
+            {pickers && !pickers.data ? <PageError error={pickers.error} /> : null}
+          </ActionPanel>
+        }
       >
-        {mt.plannedParts.length ? (
-          <p className="text-muted text-sm">
-            {t("plannedParts", {
-              list: mt.plannedParts.map((p) => `${p.item.name} ${qty(p.quantity, p.item.baseUnit)}`).join(", "),
-            })}
-          </p>
-        ) : null}
-        <PartnerTable
-          caption={t("partsTitle")}
-          rows={mt.parts}
-          rowKey={(p) => p.id}
-          empty={<p className="text-muted">{t("noParts")}</p>}
-          columns={[
-            { key: "item", header: tCommon("item"), primary: true, cell: (p) => p.item.name },
-            {
-              key: "qty",
-              header: tCommon("quantity"),
-              align: "end",
-              cell: (p) => qty(p.quantity, p.item.baseUnit),
-            },
-            { key: "warehouse", header: t("actions.warehouse"), hideOnPhone: true, cell: (p) => p.warehouse.code },
-            { key: "value", header: tShared("value"), align: "end", cell: (p) => format.thb(p.value) },
-            { key: "at", header: tShared("issuedAt"), hideOnPhone: true, cell: (p) => format.dateTime(p.at) },
-          ]}
-        />
-      </PartnerSection>
+        <section
+          aria-label={t("facts.description")}
+          className="rounded-card border-border bg-surface border p-4 sm:p-5"
+        >
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: t("facts.reported"), description: format.dateTime(mt.reportedAt) },
+              ...(mt.reportedBy ? [{ term: t("facts.reportedBy"), description: mt.reportedBy }] : []),
+              ...(mt.plan
+                ? [
+                    {
+                      term: t("facts.plan"),
+                      description: (
+                        <Link href={`/maintenance/plans/${mt.plan.id}`} className="underline-offset-4 hover:underline">
+                          {mt.plan.code}
+                        </Link>
+                      ),
+                    },
+                  ]
+                : []),
+              ...(mt.startedAt ? [{ term: t("facts.started"), description: format.dateTime(mt.startedAt) }] : []),
+              ...(mt.finishedAt ? [{ term: t("facts.finished"), description: format.dateTime(mt.finishedAt) }] : []),
+              ...(mt.description ? [{ term: t("facts.description"), description: mt.description }] : []),
+              ...(mt.instructions ? [{ term: t("facts.instructions"), description: mt.instructions }] : []),
+              ...(mt.resolution ? [{ term: t("facts.resolution"), description: mt.resolution }] : []),
+              ...(mt.cancelReason ? [{ term: t("facts.cancelReason"), description: mt.cancelReason }] : []),
+            ]}
+          />
+        </section>
 
-      <RelatedDocuments type="maintenance_order" id={mt.id} label={mt.mtNo} />
+        {mt.photos.length ? (
+          <PartnerSection title={t("photosTitle")}>
+            <PhotoGrid items={mt.photos.map((p) => ({ title: p.name, fileId: p.fileId }))} />
+          </PartnerSection>
+        ) : null}
+
+        <PartnerSection
+          title={t("partsTitle")}
+          description={mt.parts.length ? t("partsValue", { amount: format.thb(mt.partsValue) }) : t("partsBody")}
+        >
+          {mt.plannedParts.length ? (
+            <p className="text-muted text-sm">
+              {t("plannedParts", {
+                list: mt.plannedParts.map((p) => `${p.item.name} ${qty(p.quantity, p.item.baseUnit)}`).join(", "),
+              })}
+            </p>
+          ) : null}
+          <PartnerTable
+            caption={t("partsTitle")}
+            rows={mt.parts}
+            rowKey={(p) => p.id}
+            empty={
+              <p className="border-border text-muted rounded-xl border border-dashed px-4 py-5 text-sm">
+                {t("noParts")}
+              </p>
+            }
+            columns={[
+              { key: "item", header: tCommon("item"), primary: true, cell: (p) => p.item.name },
+              {
+                key: "qty",
+                header: tCommon("quantity"),
+                align: "end",
+                cell: (p) => qty(p.quantity, p.item.baseUnit),
+              },
+              { key: "warehouse", header: t("actions.warehouse"), hideOnPhone: true, cell: (p) => p.warehouse.code },
+              { key: "value", header: tShared("value"), align: "end", cell: (p) => format.thb(p.value) },
+              { key: "at", header: tShared("issuedAt"), hideOnPhone: true, cell: (p) => format.dateTime(p.at) },
+            ]}
+          />
+        </PartnerSection>
+
+        <RelatedDocuments type="maintenance_order" id={mt.id} label={mt.mtNo} />
+      </PartnerDetail>
     </PartnerPage>
   );
 }

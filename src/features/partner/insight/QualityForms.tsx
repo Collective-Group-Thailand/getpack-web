@@ -6,18 +6,21 @@ import { useState } from "react";
 
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { plainNumber, trimZeros } from "@/features/partner/erp/format";
 import { erpPost, erpSave } from "@/features/partner/sales/api";
 import { SalesActions } from "@/features/partner/sales/SalesActions";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { uploadFile } from "@/features/shared/files/upload";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import Link from "next/link";
+import { Field, FormSection } from "@/ui/components/Field";
 import { FilePickButton } from "@/ui/components/FilePickButton";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
@@ -182,145 +185,180 @@ export function TemplateForm({
     }
   }
 
+  const tChecks = useTranslations("partnerInsight.checks");
+  const tSections = useTranslations("partnerErp.common.sections");
   return (
-    <div className="flex flex-col gap-5">
-      <div className="grid gap-3 md:grid-cols-2">
-        <Field label={t("name")} required>
-          <Input value={name} placeholder={t("namePlaceholder")} onChange={(e) => setName(e.target.value)} />
-        </Field>
-        <Field label={t("kind")}>
-          <Select
-            value={kind}
-            onValueChange={(v) => setKind(v as Kind)}
-            options={CHECK_KINDS.map((k) => ({ value: k, label: tKind(k) }))}
-          />
-        </Field>
-        <Field label={t("item")} hint={t("itemHint")}>
-          <Select
-            value={itemId || null}
-            placeholder={t("anyItem")}
-            onValueChange={setItemId}
-            options={[
-              { value: "", label: t("anyItem") },
-              ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined })),
+    <FormColumns
+      aside={
+        <FormSummary
+          title={tSections("summary")}
+          action={
+            <Button size="xl" iconStart="save" loading={busy} onClick={() => void save()}>
+              {t("save")}
+            </Button>
+          }
+        >
+          <SummaryRows
+            rows={[
+              { key: "kind", label: t("kind"), value: tKind(kind) },
+              {
+                key: "item",
+                label: t("item"),
+                value: itemId ? (items.find((i) => i.id === itemId)?.label ?? "") : t("anyItem"),
+              },
+              { key: "points", label: t("points"), value: String(points.filter((p) => p.name.trim()).length) },
             ]}
           />
+          {template ? (
+            <SegmentedControl
+              label={t("status")}
+              size="md"
+              value={archived ? "archived" : "active"}
+              onValueChange={(v) => setArchived(v === "archived")}
+              options={[
+                { value: "active", label: t("active") },
+                { value: "archived", label: t("archived") },
+              ]}
+            />
+          ) : null}
+          {error ? (
+            <p className="text-danger text-sm" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {template && template.status === "active" ? (
+            <Button asChild variant="secondary" iconStart="clipboard-check">
+              <Link href={`/quality/new?kind=${template.kind}&templateId=${template.id}`}>{tChecks("new")}</Link>
+            </Button>
+          ) : null}
+        </FormSummary>
+      }
+    >
+      <FormSection card step={1} title={tSections("details")}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label={t("name")} required>
+            <Input value={name} placeholder={t("namePlaceholder")} onChange={(e) => setName(e.target.value)} />
+          </Field>
+          <Field label={t("kind")}>
+            <Select
+              value={kind}
+              onValueChange={(v) => setKind(v as Kind)}
+              options={CHECK_KINDS.map((k) => ({ value: k, label: tKind(k) }))}
+            />
+          </Field>
+          <Field label={t("item")} hint={t("itemHint")}>
+            <Select
+              value={itemId || null}
+              placeholder={t("anyItem")}
+              onValueChange={setItemId}
+              options={[
+                { value: "", label: t("anyItem") },
+                ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined })),
+              ]}
+            />
+          </Field>
+          <Field label={t("sampleHint")}>
+            <Input value={hint} placeholder={t("sampleHintPlaceholder")} onChange={(e) => setHint(e.target.value)} />
+          </Field>
+        </div>
+        <Field label={t("note")}>
+          <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
-        <Field label={t("sampleHint")}>
-          <Input value={hint} placeholder={t("sampleHintPlaceholder")} onChange={(e) => setHint(e.target.value)} />
-        </Field>
-      </div>
-      <Field label={t("note")}>
-        <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
-      </Field>
-      <ol className="flex flex-col gap-3">
-        {points.map((p, i) => (
-          <li key={p.key} className="border-border bg-surface rounded-xl border p-3 md:p-4">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="text-muted text-sm font-medium">{t("point", { n: i + 1 })}</span>
-              <span className="flex gap-1">
-                <IconButton
-                  name="chevron-up"
-                  size="sm"
-                  label={t("up", { n: i + 1 })}
-                  disabled={i === 0}
-                  onClick={() => setPoints(points.map((x, j) => (j === i - 1 ? p : j === i ? points[i - 1]! : x)))}
-                />
-                {points.length > 1 ? (
+      </FormSection>
+      <FormSection card step={2} title={t("points")}>
+        <ol className="flex flex-col gap-3">
+          {points.map((p, i) => (
+            <li key={p.key} className="border-border bg-surface-subtle rounded-lg border p-3 md:p-4">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="text-muted text-sm font-medium">{t("point", { n: i + 1 })}</span>
+                <span className="flex gap-1">
                   <IconButton
-                    name="trash"
+                    name="chevron-up"
                     size="sm"
-                    label={t("remove", { n: i + 1 })}
-                    onClick={() => setPoints(points.filter((_, j) => j !== i))}
+                    label={t("up", { n: i + 1 })}
+                    disabled={i === 0}
+                    onClick={() => setPoints(points.map((x, j) => (j === i - 1 ? p : j === i ? points[i - 1]! : x)))}
                   />
-                ) : null}
-              </span>
-            </div>
-            <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
-              <Field label={t("pointName")}>
-                <Input
-                  value={p.name}
-                  placeholder={t("pointNamePlaceholder")}
-                  onChange={(e) => update(i, { name: e.target.value })}
-                />
-              </Field>
-              <Field label={t("pointType")}>
-                <Select
-                  value={p.type}
-                  onValueChange={(v) => update(i, { type: v as PointType })}
-                  options={POINT_TYPES.map((x) => ({ value: x, label: tType(x) }))}
-                />
-              </Field>
-            </div>
-            {p.type === "measurement" ? (
-              <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
-                <Field label={t("unit")}>
+                  {points.length > 1 ? (
+                    <IconButton
+                      name="trash"
+                      size="sm"
+                      label={t("remove", { n: i + 1 })}
+                      onClick={() => setPoints(points.filter((_, j) => j !== i))}
+                    />
+                  ) : null}
+                </span>
+              </div>
+              <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
+                <Field label={t("pointName")}>
                   <Input
-                    value={p.unit}
-                    placeholder={t("unitPlaceholder")}
-                    onChange={(e) => update(i, { unit: e.target.value })}
+                    value={p.name}
+                    placeholder={t("pointNamePlaceholder")}
+                    onChange={(e) => update(i, { name: e.target.value })}
                   />
                 </Field>
-                <Field label={t("min")}>
-                  <NumberInput
-                    step="any"
-                    value={p.minValue}
-                    onChange={(e) => update(i, { minValue: e.target.value })}
-                  />
-                </Field>
-                <Field label={t("max")}>
-                  <NumberInput
-                    step="any"
-                    value={p.maxValue}
-                    onChange={(e) => update(i, { maxValue: e.target.value })}
-                  />
-                </Field>
-                <Field label={t("target")}>
-                  <NumberInput
-                    step="any"
-                    value={p.targetValue}
-                    onChange={(e) => update(i, { targetValue: e.target.value })}
+                <Field label={t("pointType")}>
+                  <Select
+                    value={p.type}
+                    onValueChange={(v) => update(i, { type: v as PointType })}
+                    options={POINT_TYPES.map((x) => ({ value: x, label: tType(x) }))}
                   />
                 </Field>
               </div>
-            ) : null}
-            <div className="mt-3">
-              <Field label={t("instruction")}>
-                <Input
-                  value={p.instruction}
-                  placeholder={t("instructionPlaceholder")}
-                  onChange={(e) => update(i, { instruction: e.target.value })}
-                />
-              </Field>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <Button
-        variant="secondary"
-        iconStart="plus"
-        className="self-start"
-        onClick={() => setPoints([...points, newPoint()])}
-      >
-        {t("addPoint")}
-      </Button>
-      {template ? (
-        <SegmentedControl
-          label={t("status")}
-          size="md"
-          value={archived ? "archived" : "active"}
-          onValueChange={(v) => setArchived(v === "archived")}
-          options={[
-            { value: "active", label: t("active") },
-            { value: "archived", label: t("archived") },
-          ]}
-        />
-      ) : null}
-      {error ? <p className="text-danger text-sm">{error}</p> : null}
-      <Button size="xl" iconStart="save" loading={busy} className="self-start" onClick={() => void save()}>
-        {t("save")}
-      </Button>
-    </div>
+              {p.type === "measurement" ? (
+                <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+                  <Field label={t("unit")}>
+                    <Input
+                      value={p.unit}
+                      placeholder={t("unitPlaceholder")}
+                      onChange={(e) => update(i, { unit: e.target.value })}
+                    />
+                  </Field>
+                  <Field label={t("min")}>
+                    <NumberInput
+                      step="any"
+                      value={p.minValue}
+                      onChange={(e) => update(i, { minValue: e.target.value })}
+                    />
+                  </Field>
+                  <Field label={t("max")}>
+                    <NumberInput
+                      step="any"
+                      value={p.maxValue}
+                      onChange={(e) => update(i, { maxValue: e.target.value })}
+                    />
+                  </Field>
+                  <Field label={t("target")}>
+                    <NumberInput
+                      step="any"
+                      value={p.targetValue}
+                      onChange={(e) => update(i, { targetValue: e.target.value })}
+                    />
+                  </Field>
+                </div>
+              ) : null}
+              <div className="mt-3">
+                <Field label={t("instruction")}>
+                  <Input
+                    value={p.instruction}
+                    placeholder={t("instructionPlaceholder")}
+                    onChange={(e) => update(i, { instruction: e.target.value })}
+                  />
+                </Field>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <Button
+          variant="secondary"
+          iconStart="plus"
+          className="self-start"
+          onClick={() => setPoints([...points, newPoint()])}
+        >
+          {t("addPoint")}
+        </Button>
+      </FormSection>
+    </FormColumns>
   );
 }
 
@@ -383,82 +421,114 @@ export function CheckStartForm({
     if (created) router.push(`/quality/${created.id}`);
   }
 
+  const tSections = useTranslations("partnerErp.common.sections");
+  const documentLabel =
+    kind === "incoming"
+      ? (receipts.find((r) => r.id === receiptId)?.label ?? "")
+      : (orders.find((o) => o.id === orderId)?.label ?? "");
   return (
-    <div className="flex flex-col gap-4">
-      <SegmentedControl
-        label={t("kind")}
-        size="md"
-        value={kind}
-        onValueChange={(v) => {
-          setKind(v);
-          setTemplateId("");
-        }}
-        options={CHECK_KINDS.map((k) => ({ value: k, label: tKind(k) }))}
-      />
-      <div className="grid gap-3 md:grid-cols-2">
-        {kind === "incoming" ? (
-          <>
-            <Field label={t("receipt")} hint={t("receiptHint")}>
+    <FormColumns
+      aside={
+        <FormSummary
+          title={tSections("summary")}
+          action={
+            <Button size="xl" iconStart="clipboard-check" loading={busy} onClick={() => void start()}>
+              {t("submit")}
+            </Button>
+          }
+        >
+          <SummaryRows
+            rows={[
+              { key: "kind", label: t("kind"), value: tKind(kind) },
+              { key: "doc", label: kind === "incoming" ? t("receipt") : t("order"), value: documentLabel },
+              { key: "item", label: t("item"), value: items.find((i) => i.id === itemId)?.label ?? "" },
+              {
+                key: "template",
+                label: t("template"),
+                value: usable.find((x) => x.id === templateId)?.label ?? t("withoutTemplate"),
+              },
+            ]}
+          />
+        </FormSummary>
+      }
+    >
+      <FormSection card step={1} title={tSections("details")}>
+        <SegmentedControl
+          label={t("kind")}
+          size="md"
+          value={kind}
+          onValueChange={(v) => {
+            setKind(v);
+            setTemplateId("");
+          }}
+          options={CHECK_KINDS.map((k) => ({ value: k, label: tKind(k) }))}
+        />
+        <div className="grid gap-4 md:grid-cols-2">
+          {kind === "incoming" ? (
+            <>
+              <Field label={t("receipt")} hint={t("receiptHint")}>
+                <Select
+                  value={receiptId || null}
+                  placeholder={t("choose")}
+                  onValueChange={setReceiptId}
+                  options={receipts.map((r) => ({ value: r.id, label: r.label, description: r.hint ?? undefined }))}
+                />
+              </Field>
+              <Field label={t("lineNo")}>
+                <NumberInput min={1} step={1} value={lineNo} onChange={(e) => setLineNo(e.target.value)} />
+              </Field>
+            </>
+          ) : (
+            <Field label={t("order")} hint={t("orderHint")}>
               <Select
-                value={receiptId || null}
-                placeholder={t("choose")}
-                onValueChange={setReceiptId}
-                options={receipts.map((r) => ({ value: r.id, label: r.label, description: r.hint ?? undefined }))}
+                value={orderId || null}
+                placeholder={t("noOrder")}
+                onValueChange={setOrderId}
+                options={[
+                  { value: "", label: t("noOrder") },
+                  ...orders.map((o) => ({ value: o.id, label: o.label, description: o.hint ?? undefined })),
+                ]}
               />
             </Field>
-            <Field label={t("lineNo")}>
-              <NumberInput min={1} step={1} value={lineNo} onChange={(e) => setLineNo(e.target.value)} />
-            </Field>
-          </>
-        ) : (
-          <Field label={t("order")} hint={t("orderHint")}>
+          )}
+          <Field label={t("item")} hint={t("itemHint")}>
             <Select
-              value={orderId || null}
-              placeholder={t("noOrder")}
-              onValueChange={setOrderId}
+              value={itemId || null}
+              placeholder={t("fromDocument")}
+              onValueChange={setItemId}
               options={[
-                { value: "", label: t("noOrder") },
-                ...orders.map((o) => ({ value: o.id, label: o.label, description: o.hint ?? undefined })),
+                { value: "", label: t("fromDocument") },
+                ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined })),
               ]}
             />
           </Field>
-        )}
-        <Field label={t("item")} hint={t("itemHint")}>
-          <Select
-            value={itemId || null}
-            placeholder={t("fromDocument")}
-            onValueChange={setItemId}
-            options={[
-              { value: "", label: t("fromDocument") },
-              ...items.map((i) => ({ value: i.id, label: i.label, description: i.hint ?? undefined })),
-            ]}
-          />
-        </Field>
-        <Field label={t("template")} hint={usable.length ? undefined : t("noTemplate")}>
-          <Select
-            value={templateId || null}
-            placeholder={t("withoutTemplate")}
-            onValueChange={setTemplateId}
-            options={[
-              { value: "", label: t("withoutTemplate") },
-              ...usable.map((x) => ({ value: x.id, label: x.label })),
-            ]}
-          />
-        </Field>
-        <Field label={t("lotNo")}>
-          <Input value={lotNo} onChange={(e) => setLotNo(e.target.value)} />
-        </Field>
-        <Field label={t("sample")}>
-          <NumberInput min={0} step="any" value={sample} onChange={(e) => setSample(e.target.value)} />
-        </Field>
-        <Field label={t("inspectedQty")} hint={t("inspectedQtyHint")}>
-          <NumberInput min={0} step="any" value={qty} onChange={(e) => setQty(e.target.value)} />
-        </Field>
-      </div>
-      <Button size="xl" iconStart="clipboard-check" loading={busy} className="self-start" onClick={() => void start()}>
-        {t("submit")}
-      </Button>
-    </div>
+          <Field label={t("template")} hint={usable.length ? undefined : t("noTemplate")}>
+            <Select
+              value={templateId || null}
+              placeholder={t("withoutTemplate")}
+              onValueChange={setTemplateId}
+              options={[
+                { value: "", label: t("withoutTemplate") },
+                ...usable.map((x) => ({ value: x.id, label: x.label })),
+              ]}
+            />
+          </Field>
+        </div>
+      </FormSection>
+      <FormSection card step={2} title={tSections("quantities")}>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label={t("lotNo")}>
+            <Input value={lotNo} onChange={(e) => setLotNo(e.target.value)} />
+          </Field>
+          <Field label={t("sample")}>
+            <NumberInput min={0} step="any" value={sample} onChange={(e) => setSample(e.target.value)} />
+          </Field>
+          <Field label={t("inspectedQty")} hint={t("inspectedQtyHint")}>
+            <NumberInput min={0} step="any" value={qty} onChange={(e) => setQty(e.target.value)} />
+          </Field>
+        </div>
+      </FormSection>
+    </FormColumns>
   );
 }
 
@@ -749,6 +819,7 @@ export function NcrForm({
   const t = useTranslations("partnerInsight.ncrs.form");
   const tSource = useTranslations("partnerInsight.sources");
   const tSeverity = useTranslations("status.erpNcrSeverity");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { run, busy } = useSave();
@@ -822,54 +893,88 @@ export function NcrForm({
     </Field>
   );
 
+  const tSections = useTranslations("partnerErp.common.sections");
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-3 md:grid-cols-2">
-        <Field label={t("source")}>
-          <Select
-            value={source}
-            onValueChange={(v) => setSource(v as Schemas["ErpNcrSource"])}
-            options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))}
+    <FormColumns
+      aside={
+        <FormSummary
+          title={tSections("summary")}
+          action={
+            <Button size="xl" iconStart="flag" loading={busy} onClick={() => void save()}>
+              {t("submit")}
+            </Button>
+          }
+        >
+          <SummaryRows
+            rows={[
+              { key: "source", label: t("source"), value: tSource(source) },
+              { key: "severity", label: t("severity"), value: tSeverity(severity) },
+              { key: "owner", label: t("owner"), value: people.find((p) => p.id === ownerId)?.label ?? t("me") },
+              { key: "due", label: t("due"), value: due ? format.date(due) : "" },
+            ]}
+          />
+          {error ? (
+            <p className="text-danger text-sm" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </FormSummary>
+      }
+    >
+      <FormSection card step={1} title={tSections("details")}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label={t("source")}>
+            <Select
+              value={source}
+              onValueChange={(v) => setSource(v as Schemas["ErpNcrSource"])}
+              options={SOURCES.map((s) => ({ value: s, label: tSource(s) }))}
+            />
+          </Field>
+          <Field label={t("severity")}>
+            <SegmentedControl
+              label={t("severity")}
+              size="md"
+              value={severity}
+              onValueChange={setSeverity}
+              options={SEVERITIES.map((s) => ({ value: s, label: tSeverity(s) }))}
+            />
+          </Field>
+        </div>
+        <Field label={t("title")} required>
+          <Input value={title} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} />
+        </Field>
+        <Field label={t("description")} required>
+          <Textarea
+            rows={3}
+            value={description}
+            placeholder={t("descriptionPlaceholder")}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </Field>
-        <SegmentedControl
-          label={t("severity")}
-          size="md"
-          value={severity}
-          onValueChange={setSeverity}
-          options={SEVERITIES.map((s) => ({ value: s, label: tSeverity(s) }))}
-        />
-      </div>
-      <Field label={t("title")} required>
-        <Input value={title} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} />
-      </Field>
-      <Field label={t("description")} required>
-        <Textarea
-          rows={3}
-          value={description}
-          placeholder={t("descriptionPlaceholder")}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </Field>
-      <div className="grid gap-3 md:grid-cols-2">
-        {pick(t("item"), itemId, setItemId, items, t("none"))}
-        <Field label={t("quantity")} hint={t("quantityHint")}>
-          <NumberInput min={0} step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-        </Field>
-        {source === "customer_complaint" ? pick(t("customer"), customerId, setCustomerId, customers, t("none")) : null}
-        {source === "goods_receipt" ? pick(t("supplier"), supplierId, setSupplierId, suppliers, t("none")) : null}
-        {pick(t("machine"), machineId, setMachineId, machines, t("none"))}
-        {pick(t("warehouse"), warehouseId, setWarehouseId, warehouses, t("none"))}
-        {pick(t("owner"), ownerId, setOwnerId, people, t("me"))}
-        <Field label={t("due")}>
-          <Input type="date" value={due} onChange={(e) => setDue(e.target.value)} />
-        </Field>
-      </div>
-      {error ? <p className="text-danger text-sm">{error}</p> : null}
-      <Button size="xl" iconStart="flag" loading={busy} className="self-start" onClick={() => void save()}>
-        {t("submit")}
-      </Button>
-    </div>
+      </FormSection>
+      <FormSection card step={2} title={tSections("affected")}>
+        <div className="grid gap-4 md:grid-cols-2">
+          {pick(t("item"), itemId, setItemId, items, t("none"))}
+          <Field label={t("quantity")} hint={t("quantityHint")}>
+            <NumberInput min={0} step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          </Field>
+          {source === "customer_complaint"
+            ? pick(t("customer"), customerId, setCustomerId, customers, t("none"))
+            : null}
+          {source === "goods_receipt" ? pick(t("supplier"), supplierId, setSupplierId, suppliers, t("none")) : null}
+          {pick(t("machine"), machineId, setMachineId, machines, t("none"))}
+          {pick(t("warehouse"), warehouseId, setWarehouseId, warehouses, t("none"))}
+        </div>
+      </FormSection>
+      <FormSection card step={3} title={tSections("owner")}>
+        <div className="grid gap-4 md:grid-cols-2">
+          {pick(t("owner"), ownerId, setOwnerId, people, t("me"))}
+          <Field label={t("due")}>
+            <Input type="date" value={due} onChange={(e) => setDue(e.target.value)} />
+          </Field>
+        </div>
+      </FormSection>
+    </FormColumns>
   );
 }
 

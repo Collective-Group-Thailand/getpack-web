@@ -202,3 +202,41 @@ export function StatStrip({
 export function ListToolbar({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-wrap items-center justify-between gap-3">{children}</div>;
 }
+
+/**
+ * A second, lighter filter under a list's toolbar (a check's kind, a document's type): a small label and plain
+ * toggles, the current one on the pale tint. Wraps on a phone instead of scrolling; never a second segmented row.
+ */
+export function FilterLinks({
+  label,
+  items,
+  current,
+}: {
+  label: string;
+  items: { key: string; href: string; label: React.ReactNode }[];
+  current: string;
+}) {
+  return (
+    <nav aria-label={label} className="-mt-1 flex flex-wrap items-center gap-x-1 gap-y-1.5 text-sm">
+      <span className="text-muted me-1.5">{label}</span>
+      {items.map((item) => {
+        const selected = item.key === current;
+        return (
+          <Link
+            key={item.key}
+            href={item.href}
+            aria-current={selected ? "page" : undefined}
+            className={cn(
+              "focus-visible:ring-focus-ring inline-flex min-h-11 items-center rounded-lg px-2.5 whitespace-nowrap outline-none focus-visible:ring-2 md:min-h-8",
+              selected
+                ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                : "text-muted hover:bg-surface hover:text-fg font-medium",
+            )}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

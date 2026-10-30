@@ -35,7 +35,7 @@ export function SummaryCards({
 }: {
   items: readonly SummaryItem[];
   /** 5: three to a row on a tablet (3 + 2), all five in one row from 1200 px. */
-  columns?: 2 | 3 | 4 | 5;
+  columns?: 2 | 3 | 4 | 5 | 6;
   /** On a phone the highlighted card takes the whole row; off for a pair of cards that should sit side by side. */
   wideHighlight?: boolean;
   className?: string;
@@ -52,6 +52,7 @@ export function SummaryCards({
         columns === 3 && "md:grid-cols-3",
         columns === 4 && "md:grid-cols-2 lg:grid-cols-4",
         columns === 5 && "md:grid-cols-3 min-[75rem]:grid-cols-5",
+        columns === 6 && "md:grid-cols-3 min-[75rem]:grid-cols-6",
         className,
       )}
     >

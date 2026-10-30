@@ -3,8 +3,10 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -15,10 +17,17 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const PER_PAGE = 50;
+const VIEWS = ["active", "archived", "all"] as const;
+type View = (typeof VIEWS)[number];
 
 /** The factory's recipes (D-339): how each product is made. */
-export default async function RecipesPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
+export default async function RecipesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; q?: string; page?: string }>;
+}) {
   const query = await searchParams;
+  const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "active";
   const page = pageOf(query.page);
   const q = query.q?.trim() || undefined;
   const [t, tPlan, tCommon, context] = await Promise.all([
@@ -32,10 +41,28 @@ export default async function RecipesPage({ searchParams }: { searchParams: Prom
     async () =>
       (
         await contract.GET("/v1/partner/factories/{factoryId}/erp/recipes", {
-          params: { path: { factoryId: context.factoryId }, query: { perPage: PER_PAGE, page, ...(q ? { q } : {}) } },
+          params: {
+            path: { factoryId: context.factoryId },
+            query: { perPage: PER_PAGE, page, ...(view === "all" ? {} : { status: view }), ...(q ? { q } : {}) },
+          },
         })
       ).data!,
   );
+  const counts = await viewTotals(
+    VIEWS,
+    async (key) =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/erp/recipes", {
+          params: {
+            path: { factoryId: context.factoryId },
+            query: { perPage: 1, ...(key === "all" ? {} : { status: key }), ...(q ? { q } : {}) },
+          },
+        })
+      ).data,
+  );
+  const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
+    `/planning/recipes${queryOf({ view: next === "active" ? undefined : next, ...extra })}`;
+  const canPlan = canAt(context, "factory_planning.manage");
   return (
     <PartnerPage
       full
@@ -43,21 +70,34 @@ export default async function RecipesPage({ searchParams }: { searchParams: Prom
       description={t("body")}
       back={{ href: "/planning", label: tPlan("title") }}
       actions={
-        canAt(context, "factory_planning.manage") ? (
+        canPlan ? (
           <Button asChild size="lg" iconStart="plus">
             <Link href="/planning/recipes/new">{t("new")}</Link>
           </Button>
         ) : undefined
       }
     >
-      <SearchBar
-        id="recipe-q"
-        action="/planning/recipes"
-        q={q}
-        label={t("searchLabel")}
-        placeholder={t("searchPlaceholder")}
-        button={tCommon("search")}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("title")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: href(key, { q }),
+            label: key === "all" ? tPlan("views.all") : tCommon(key),
+            count: counts[key],
+          }))}
+        />
+        <SearchBar
+          id="recipe-q"
+          action="/planning/recipes"
+          hidden={{ view: view === "active" ? undefined : view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
+      </ListToolbar>
       {list.data ? (
         <>
           <PartnerTable
@@ -65,9 +105,31 @@ export default async function RecipesPage({ searchParams }: { searchParams: Prom
             rows={list.data.data}
             rowKey={(r) => r.id}
             rowHref={(r) => `/planning/recipes/${r.id}`}
-            empty={<EmptyState icon="layers" title={t("empty")} description={t("emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="layers"
+                title={t("empty")}
+                description={t("emptyBody")}
+                action={
+                  canPlan ? (
+                    <Button asChild iconStart="plus">
+                      <Link href="/planning/recipes/new">{t("new")}</Link>
+                    </Button>
+                  ) : view !== "all" ? (
+                    <Button asChild variant="secondary" iconEnd="arrow-right">
+                      <Link href={href("all")}>{tPlan("views.all")}</Link>
+                    </Button>
+                  ) : undefined
+                }
+              />
+            }
             columns={[
-              { key: "name", header: t("table.name"), primary: true, cell: (r) => r.name },
+              {
+                key: "name",
+                header: t("table.name"),
+                primary: true,
+                cell: (r) => <span className="[overflow-wrap:anywhere] break-keep">{r.name}</span>,
+              },
               {
                 key: "product",
                 header: t("table.product"),
@@ -102,7 +164,7 @@ export default async function RecipesPage({ searchParams }: { searchParams: Prom
             page={page}
             perPage={PER_PAGE}
             total={list.data.meta.total}
-            hrefFor={(n) => `/planning/recipes${queryOf({ q, page: n > 1 ? n : undefined })}`}
+            hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })}
             labels={{
               nav: tCommon("pagination.nav"),
               previous: tCommon("pagination.previous"),
