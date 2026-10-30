@@ -824,3 +824,116 @@
     opacity: 0;
   }
 }
+
+/*
+ * HeroFlow (owner direction 2026-10-30): the card the dot rests on lifts with a green hairline ring — 2 s per step,
+ * the first second of each step's slot. On a phone a dot runs down the line. Under reduced motion nothing moves, the
+ * curve's dots are hidden and the first card stays lifted.
+ */
+@layer components {
+  .hero-flow-card {
+    --rest: 0 1px 2px rgb(30 27 24 / 0.06), 0 12px 28px -12px rgb(30 27 24 / 0.18);
+    --lift: 0 0 0 1px var(--color-primary), 0 18px 36px -14px rgb(30 27 24 / 0.28);
+    animation-duration: calc(var(--flow-n) * 2s);
+    animation-delay: calc(var(--i) * 2s);
+    animation-iteration-count: infinite;
+    animation-timing-function: var(--ease-standard);
+  }
+  [data-hero-flow="3"] {
+    --flow-n: 3;
+  }
+  [data-hero-flow="4"] {
+    --flow-n: 4;
+  }
+  [data-hero-flow="5"] {
+    --flow-n: 5;
+  }
+  [data-hero-flow="6"] {
+    --flow-n: 6;
+  }
+  [data-hero-flow="3"] .hero-flow-card {
+    animation-name: hero-card-3;
+  }
+  [data-hero-flow="4"] .hero-flow-card {
+    animation-name: hero-card-4;
+  }
+  [data-hero-flow="5"] .hero-flow-card {
+    animation-name: hero-card-5;
+  }
+  [data-hero-flow="6"] .hero-flow-card {
+    animation-name: hero-card-6;
+  }
+  .hero-flow-run {
+    animation: hero-flow-run calc(var(--flow-n) * 2s) linear infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-flow-card,
+  .hero-flow-run {
+    animation: none !important;
+  }
+  .hero-flow-run,
+  .hero-flow-dot {
+    display: none;
+  }
+  .hero-flow-card:first-of-type {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+}
+@keyframes hero-flow-run {
+  from {
+    top: 0%;
+  }
+  to {
+    top: 100%;
+  }
+}
+@keyframes hero-card-3 {
+  0%,
+  16.07% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  16.67%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
+}
+@keyframes hero-card-4 {
+  0%,
+  11.9% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  12.5%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
+}
+@keyframes hero-card-5 {
+  0%,
+  9.4% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  10.0%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
+}
+@keyframes hero-card-6 {
+  0%,
+  7.73% {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  8.33%,
+  100% {
+    transform: none;
+    box-shadow: var(--rest);
+  }
+}

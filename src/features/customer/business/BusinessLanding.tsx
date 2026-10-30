@@ -7,8 +7,7 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { showcasePhotos } from "@/features/customer/styles/showcase.server";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
-import { FlowPath } from "@/ui/components/FlowPath";
-import { HeroShowcase } from "@/ui/components/HeroShowcase";
+import { HeroFlow } from "@/ui/components/HeroFlow";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -89,7 +88,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
     getContactOptions(),
     pricedSamples(locale),
   ]);
-  const photos = await showcasePhotos(locale);
+  const photos = await showcasePhotos(locale, 0, 4);
   const page = await pageContext("/business", t("metaTitle"));
   const applyHref = signedIn ? "/business/apply" : `/sign-in?returnTo=${encodeURIComponent("/business/apply")}`;
   // Without the roadmap the page claims only what the pack calls live, and shows no "เร็ว ๆ นี้" card.
@@ -172,54 +171,26 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
               ))}
             </dl>
           </div>
-          {/* The hero's picture (owner direction 2026-10-30): real product photos with what the account does floating
-              over them; how an order moves through it is the section under the hero. */}
-          <HeroShowcase
-            label={t("showcaseLabel")}
-            photos={photos}
-            chips={[
-              { icon: "check", label: t("features.items.approval.title") },
-              { icon: "credit-card", label: t("features.items.credit.title") },
-              { icon: "receipt", label: t("features.items.invoices.title") },
-            ]}
-          />
-        </div>
-      </section>
-
-      {/* How an order moves through the account, as its own section under the hero (owner direction 2026-10-30). */}
-      <section aria-labelledby="business-flow" className="border-border border-b">
-        <div className={cn(HOME_WRAP, "py-12 md:py-16")}>
-          <h2 id="business-flow" className="mb-8 max-w-[30ch] text-[1.625rem] leading-tight font-semibold md:mb-10">
-            {t("flow.label")}
-          </h2>
-          <FlowPath
+          {/* The hero's picture (owner decision 2026-10-30): how an order moves through the account's roles, each
+              step with a real product photo, on a curve a dot travels. */}
+          <HeroFlow
+            id="business-flow"
             label={t("flow.label")}
+            promise={t("features.items.approval.title")}
             steps={[
-              {
-                key: "buyer",
-                icon: "box",
-                title: t("features.roles.buyer.title"),
-                description: t("features.items.reorder.body"),
-              },
+              { key: "buyer", title: t("features.roles.buyer.title"), caption: t("features.items.reorder.title") },
               {
                 key: "approver",
-                icon: "shield-check",
                 title: t("features.roles.approver.title"),
-                description: t("features.items.approval.body"),
+                caption: t("features.items.approval.title"),
               },
               {
                 key: "accountant",
-                icon: "receipt",
                 title: t("features.roles.accountant.title"),
-                description: t("features.items.invoices.body"),
+                caption: t("features.items.credit.title"),
               },
-              {
-                key: "admin",
-                icon: "settings",
-                title: t("features.roles.admin.title"),
-                description: t("features.items.team.body"),
-              },
-            ]}
+              { key: "admin", title: t("features.roles.admin.title"), caption: t("features.items.team.title") },
+            ].map((step, index) => ({ ...step, photo: photos[index]! }))}
           />
         </div>
       </section>

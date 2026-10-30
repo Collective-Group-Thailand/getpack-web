@@ -14,8 +14,7 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { zoneHosts } from "@/lib/env/server";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
-import { FlowPath } from "@/ui/components/FlowPath";
-import { HeroShowcase } from "@/ui/components/HeroShowcase";
+import { HeroFlow } from "@/ui/components/HeroFlow";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -84,7 +83,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
     getProvinces(),
   ]);
   const page = await pageContext("/partner-with-us", t("title"));
-  const photos = await showcasePhotos(locale, 3);
+  const photos = await showcasePhotos(locale, 4, 5);
   const scheme = headerList.get("x-forwarded-proto") ?? (zoneHosts.partner.startsWith("localhost") ? "http" : "https");
   const partnerLoginUrl = `${scheme}://${zoneHosts.partner}/login`;
   const modules = (config?.roadmap.erpModules ?? []).filter((item) => item.key in MODULE_ICONS);
@@ -150,40 +149,19 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </a>
             </p>
           </div>
-          {/* The hero's picture (owner direction 2026-10-30): real product photos with what the partner does in the
-              system floating over them; a getpack job's path is the section under the hero. */}
-          <HeroShowcase
-            label={t("showcaseLabel")}
-            photos={photos}
-            chips={[
-              { icon: "inbox", label: t("modules.items.getpack_jobs.title") },
-              { icon: "scan", label: t("floor.points.photos.title") },
-              { icon: "receipt", label: t("flow.billCaption") },
-            ]}
-          />
-        </div>
-      </section>
-
-      {/* A getpack job's path through the partner, as its own section under the hero (owner direction 2026-10-30). */}
-      <section aria-labelledby="factory-flow" className="border-border border-b">
-        <div className={cn(HOME_WRAP, "py-12 md:py-16")}>
-          <h2 id="factory-flow" className="mb-8 max-w-[30ch] text-[1.625rem] leading-tight font-semibold md:mb-10">
-            {t("flow.label")}
-          </h2>
-          <FlowPath
+          {/* The hero's picture (owner decision 2026-10-30): a getpack job's path through the partner, each step with
+              a real product photo, on a curve a dot travels. */}
+          <HeroFlow
+            id="factory-flow"
             label={t("flow.label")}
+            promise={t("modules.items.getpack_jobs.title")}
             steps={[
-              {
-                key: "job",
-                icon: "inbox",
-                title: t("sources.getpack.title"),
-                description: t("sources.getpack.body"),
-              },
-              { key: "make", icon: "factory", title: t("flow.make"), description: t("floor.points.start.body") },
-              { key: "qc", icon: "scan", title: t("board.columns.qc"), description: t("floor.points.photos.body") },
-              { key: "ship", icon: "truck", title: t("flow.ship"), description: t("flow.shipCaption") },
-              { key: "bill", icon: "receipt", title: t("flow.bill"), description: t("flow.billCaption") },
-            ]}
+              { key: "job", title: t("sources.getpack.title"), caption: t("modules.items.getpack_jobs.title") },
+              { key: "make", title: t("flow.make"), caption: t("floor.points.start.title") },
+              { key: "qc", title: t("board.columns.qc"), caption: t("floor.points.photos.title") },
+              { key: "ship", title: t("flow.ship"), caption: t("flow.shipCaption") },
+              { key: "bill", title: t("flow.bill"), caption: t("flow.billCaption") },
+            ].map((step, index) => ({ ...step, photo: photos[index]! }))}
           />
         </div>
       </section>
