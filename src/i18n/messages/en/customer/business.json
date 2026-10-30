@@ -437,7 +437,8 @@
     },
     "flow": {
       "label": "How an order moves through a company account"
-    }
+    },
+    "showcaseLabel": "Packaging made with getpack"
   },
   "dashboard": {
     "status": {

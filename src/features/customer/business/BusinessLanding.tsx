@@ -4,9 +4,11 @@ import { getContactOptions, getPublicConfig, getSupportChannels } from "@/featur
 import { pageContext } from "@/features/customer/content/page-meta.server";
 import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
+import { showcasePhotos } from "@/features/customer/styles/showcase.server";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { FlowPath } from "@/ui/components/FlowPath";
+import { HeroShowcase } from "@/ui/components/HeroShowcase";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -87,6 +89,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
     getContactOptions(),
     pricedSamples(locale),
   ]);
+  const photos = await showcasePhotos(locale);
   const page = await pageContext("/business", t("metaTitle"));
   const applyHref = signedIn ? "/business/apply" : `/sign-in?returnTo=${encodeURIComponent("/business/apply")}`;
   // Without the roadmap the page claims only what the pack calls live, and shows no "เร็ว ๆ นี้" card.
@@ -169,8 +172,26 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
               ))}
             </dl>
           </div>
-          {/* The hero's picture (owner request 2026-10-30): how an order moves through the account's roles, as a path
-              of real text — not a drawing of a screen. */}
+          {/* The hero's picture (owner direction 2026-10-30): real product photos with what the account does floating
+              over them; how an order moves through it is the section under the hero. */}
+          <HeroShowcase
+            label={t("showcaseLabel")}
+            photos={photos}
+            chips={[
+              { icon: "check", label: t("features.items.approval.title") },
+              { icon: "credit-card", label: t("features.items.credit.title") },
+              { icon: "receipt", label: t("features.items.invoices.title") },
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* How an order moves through the account, as its own section under the hero (owner direction 2026-10-30). */}
+      <section aria-labelledby="business-flow" className="border-border border-b">
+        <div className={cn(HOME_WRAP, "py-12 md:py-16")}>
+          <h2 id="business-flow" className="mb-8 max-w-[30ch] text-[1.625rem] leading-tight font-semibold md:mb-10">
+            {t("flow.label")}
+          </h2>
           <FlowPath
             label={t("flow.label")}
             steps={[
@@ -178,25 +199,25 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
                 key: "buyer",
                 icon: "box",
                 title: t("features.roles.buyer.title"),
-                caption: t("features.items.reorder.title"),
+                description: t("features.items.reorder.body"),
               },
               {
                 key: "approver",
                 icon: "shield-check",
                 title: t("features.roles.approver.title"),
-                caption: t("features.items.approval.title"),
+                description: t("features.items.approval.body"),
               },
               {
                 key: "accountant",
                 icon: "receipt",
                 title: t("features.roles.accountant.title"),
-                caption: t("features.items.credit.title"),
+                description: t("features.items.invoices.body"),
               },
               {
                 key: "admin",
                 icon: "settings",
                 title: t("features.roles.admin.title"),
-                caption: t("features.items.team.title"),
+                description: t("features.items.team.body"),
               },
             ]}
           />

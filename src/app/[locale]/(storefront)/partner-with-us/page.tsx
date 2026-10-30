@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { TrackedAnchor } from "@/features/customer/business/landing/TrackedLink";
 import { getProductTypes, getProvinces, getPublicConfig } from "@/features/customer/catalog/api.server";
+import { showcasePhotos } from "@/features/customer/styles/showcase.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { pageContext } from "@/features/customer/content/page-meta.server";
 import { FactoryApplyForm } from "@/features/customer/factory-programme/FactoryApplyForm";
@@ -14,6 +15,7 @@ import { zoneHosts } from "@/lib/env/server";
 import { faqPageSchema, serviceSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { FlowPath } from "@/ui/components/FlowPath";
+import { HeroShowcase } from "@/ui/components/HeroShowcase";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
@@ -82,6 +84,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
     getProvinces(),
   ]);
   const page = await pageContext("/partner-with-us", t("title"));
+  const photos = await showcasePhotos(locale, 3);
   const scheme = headerList.get("x-forwarded-proto") ?? (zoneHosts.partner.startsWith("localhost") ? "http" : "https");
   const partnerLoginUrl = `${scheme}://${zoneHosts.partner}/login`;
   const modules = (config?.roadmap.erpModules ?? []).filter((item) => item.key in MODULE_ICONS);
@@ -147,22 +150,39 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </a>
             </p>
           </div>
-          {/* The hero's picture (owner request 2026-10-30): a getpack job's path through the factory, as real text —
-              not a drawing of the production board. */}
+          {/* The hero's picture (owner direction 2026-10-30): real product photos with what the partner does in the
+              system floating over them; a getpack job's path is the section under the hero. */}
+          <HeroShowcase
+            label={t("showcaseLabel")}
+            photos={photos}
+            chips={[
+              { icon: "inbox", label: t("modules.items.getpack_jobs.title") },
+              { icon: "scan", label: t("floor.points.photos.title") },
+              { icon: "receipt", label: t("flow.billCaption") },
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* A getpack job's path through the partner, as its own section under the hero (owner direction 2026-10-30). */}
+      <section aria-labelledby="factory-flow" className="border-border border-b">
+        <div className={cn(HOME_WRAP, "py-12 md:py-16")}>
+          <h2 id="factory-flow" className="mb-8 max-w-[30ch] text-[1.625rem] leading-tight font-semibold md:mb-10">
+            {t("flow.label")}
+          </h2>
           <FlowPath
             label={t("flow.label")}
-            chipIcon="box"
             steps={[
               {
                 key: "job",
                 icon: "inbox",
                 title: t("sources.getpack.title"),
-                caption: t("modules.items.getpack_jobs.title"),
+                description: t("sources.getpack.body"),
               },
-              { key: "make", icon: "factory", title: t("flow.make"), caption: t("floor.points.start.title") },
-              { key: "qc", icon: "scan", title: t("board.columns.qc"), caption: t("floor.points.photos.title") },
-              { key: "ship", icon: "truck", title: t("flow.ship"), caption: t("flow.shipCaption") },
-              { key: "bill", icon: "receipt", title: t("flow.bill"), caption: t("flow.billCaption") },
+              { key: "make", icon: "factory", title: t("flow.make"), description: t("floor.points.start.body") },
+              { key: "qc", icon: "scan", title: t("board.columns.qc"), description: t("floor.points.photos.body") },
+              { key: "ship", icon: "truck", title: t("flow.ship"), description: t("flow.shipCaption") },
+              { key: "bill", icon: "receipt", title: t("flow.bill"), description: t("flow.billCaption") },
             ]}
           />
         </div>

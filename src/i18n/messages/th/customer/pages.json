@@ -406,7 +406,8 @@
       "shipCaption": "อัปเดตสถานะในระบบ",
       "bill": "วางบิล",
       "billCaption": "ติดตามการรับเงิน"
-    }
+    },
+    "showcaseLabel": "บรรจุภัณฑ์ที่ผลิตผ่าน getpack"
   },
   "legal": {
     "terms": {

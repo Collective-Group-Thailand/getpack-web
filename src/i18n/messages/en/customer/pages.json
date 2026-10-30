@@ -406,7 +406,8 @@
       "shipCaption": "Update the status in the system",
       "bill": "Bill",
       "billCaption": "Track payment"
-    }
+    },
+    "showcaseLabel": "Packaging produced through getpack"
   },
   "legal": {
     "terms": {
