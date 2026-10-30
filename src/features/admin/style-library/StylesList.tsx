@@ -121,16 +121,20 @@ export function StylesList({ initial }: { initial: InitialPage<AdminStyle> | nul
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("queuesLabel")}
-        param="published"
-        tabs={[
-          { value: null, label: t("all") },
-          { value: "true", label: t("shown") },
-          { value: "false", label: t("notShown") },
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={stylesList}
+            hideEmpty
+            label={t("queuesLabel")}
+            param="published"
+            tabs={[
+              { value: null, label: t("all") },
+              { value: "true", label: t("shown") },
+              { value: "false", label: t("notShown") },
+            ]}
+          />
+        }
         resource={stylesList}
         columns={columns}
         caption={t("title")}

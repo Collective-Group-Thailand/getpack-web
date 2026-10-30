@@ -10,10 +10,11 @@ import { AGENT_PLAN_VERSION_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
+import { DateField } from "@/ui/components/DateField";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
@@ -33,6 +34,7 @@ import {
   useActor,
   useCan,
 } from "../console";
+import { DetailSkeleton } from "../console/DetailSkeleton";
 import type { AgentKind, AgentPlan, AgentPlanTerms, AgentPlanVersion } from "./resources";
 import { bangkokToday, KindBadge, TermsList, usePlans, useRefreshAgents } from "./shared";
 
@@ -192,7 +194,19 @@ export function PlansList() {
         rows={plans.data ?? []}
         getRowId={(row) => row.id}
         loading={plans.isPending}
-        empty={<EmptyState icon="percent" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="percent"
+            title={t("empty")}
+            action={
+              canManage ? (
+                <Button variant="secondary" iconStart="plus" onClick={() => setCreating(true)}>
+                  {t("create")}
+                </Button>
+              ) : undefined
+            }
+          />
+        }
       />
       {creating ? <CreatePlanDialog onClose={() => setCreating(false)} /> : null}
     </Section>
@@ -274,6 +288,7 @@ function CreatePlanDialog({ onClose }: { onClose: () => void }) {
 export function PlanDetail({ planId }: { planId: string }) {
   const t = useTranslations("agents.plan");
   const tTerms = useTranslations("agents.terms");
+  const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const actor = useActor();
   const queryClient = useQueryClient();
@@ -295,7 +310,7 @@ export function PlanDetail({ planId }: { planId: string }) {
   });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const plan = query.data;
-  if (!plan) return null;
+  if (!plan) return <DetailSkeleton />;
 
   const settle = (updated: AgentPlan) => {
     queryClient.setQueryData(key, updated);
@@ -308,7 +323,7 @@ export function PlanDetail({ planId }: { planId: string }) {
       id: "versionNo",
       header: t("columns.version"),
       cell: (row) => (
-        <span className="flex items-center gap-2">
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 whitespace-nowrap">
           {t("versionNo", { no: row.versionNo })}
           {row.inForce ? (
             <Badge size="sm" tone="success">
@@ -390,61 +405,67 @@ export function PlanDetail({ planId }: { planId: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("plans"), href: "/agents/plans" }, { label: plan.code }]}
-          />
-        }
+        back={{ href: "/agents/plans", label: t("plans") }}
         title={plan.nameTh}
         meta={
           <>
             <span className="text-muted text-sm tabular-nums">{plan.code}</span>
             <KindBadge kind={plan.agentKind} />
             {plan.retiredAt ? <Badge icon="archive">{t("retired")}</Badge> : null}
-            <span className="text-muted text-sm">{t("agents", { count: plan.agentCount })}</span>
           </>
         }
         description={plan.description ?? undefined}
-        actions={
-          canManage && !plan.retiredAt ? (
-            <>
-              <Button
-                variant="ghost"
-                disabled={plan.agentCount > 0}
-                title={plan.agentCount > 0 ? t("retireInUse") : undefined}
-                onClick={() => setRetiring(true)}
-              >
-                {t("retire")}
-              </Button>
-              <Button
-                iconStart="edit"
-                disabled={hasDraft}
-                onClick={() => {
-                  setTerms(plan.current ? termsOf(plan.current) : BLANK);
-                  setEffectiveFrom(bangkokToday());
-                  setReason("");
-                  setDrafting(true);
-                }}
-              >
-                {t("propose")}
-              </Button>
-            </>
-          ) : null
-        }
       />
-      {hasDraft ? (
-        <Callout tone="warning" title={t("draftWaiting")}>
-          {t("draftWaitingBody")}
-        </Callout>
-      ) : null}
 
-      <Section title={t("current")}>
-        {plan.current ? <TermsList terms={plan.current} /> : <p className="text-muted text-sm">{t("noCurrent")}</p>}
-      </Section>
-      <Section title={t("versions")}>
-        <DataTable caption={t("versions")} columns={columns} rows={plan.versions} getRowId={(row) => row.id} />
-      </Section>
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="plan-panel"
+            tone="neutral"
+            title={t("panelTitle")}
+            description={t("agents", { count: plan.agentCount })}
+          >
+            {canManage && !plan.retiredAt ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                <Button
+                  iconStart="edit"
+                  disabled={hasDraft}
+                  onClick={() => {
+                    setTerms(plan.current ? termsOf(plan.current) : BLANK);
+                    setEffectiveFrom(bangkokToday());
+                    setReason("");
+                    setDrafting(true);
+                  }}
+                >
+                  {t("propose")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="text-danger"
+                  disabled={plan.agentCount > 0}
+                  onClick={() => setRetiring(true)}
+                >
+                  {t("retire")}
+                </Button>
+                {plan.agentCount > 0 ? <p className="text-muted text-xs text-pretty">{t("retireInUse")}</p> : null}
+              </div>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {hasDraft ? (
+          <Callout tone="warning" title={t("draftWaiting")}>
+            {t("draftWaitingBody")}
+          </Callout>
+        ) : null}
+
+        <Section title={t("current")}>
+          {plan.current ? <TermsList terms={plan.current} /> : <p className="text-muted text-sm">{t("noCurrent")}</p>}
+        </Section>
+        <Section title={t("versions")}>
+          <DataTable caption={t("versions")} columns={columns} rows={plan.versions} getRowId={(row) => row.id} />
+        </Section>
+      </DetailLayout>
 
       {drafting ? (
         <FormDialog
@@ -473,10 +494,10 @@ export function PlanDetail({ planId }: { planId: string }) {
           <TermsFields draft={terms} onChange={setTerms} />
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("effectiveFrom")} hint={t("effectiveFromHint")} required>
-              <Input
-                type="date"
+              <DateField
                 min={bangkokToday()}
                 value={effectiveFrom}
+                display={effectiveFrom ? format.date(effectiveFrom) : tFilters("pickDate")}
                 onChange={(event) => setEffectiveFrom(event.target.value)}
               />
             </Field>

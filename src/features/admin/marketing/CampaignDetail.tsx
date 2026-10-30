@@ -10,10 +10,12 @@ import { CAMPAIGN_STATUS, PROMOTION_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
+import { DateField } from "@/ui/components/DateField";
+import { DeskSection, StatsRow } from "@/ui/components/DeskPage";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
@@ -26,10 +28,10 @@ import {
   FormDialog,
   problemMessage,
   QueryError,
-  Section,
   StatusChip,
   useActor,
 } from "../console";
+import { DetailSkeleton } from "../console/DetailSkeleton";
 import { CampaignBudget } from "./CampaignBudget";
 import type { Campaign, Promotion } from "./resources";
 import { bangkokDayOf, bangkokMidnight } from "./time";
@@ -42,6 +44,9 @@ export async function readCampaign(campaignId: string) {
   return { data: data!, etag: response.headers.get("ETag") };
 }
 
+/** The panel's lifecycle steps in the order they are offered: starting first, ending (final) last. */
+const CAMPAIGN_ACTION_ORDER: readonly string[] = ["activate", "pause", "end"];
+
 /**
  * One campaign (F2 2.7, D-154): its budget against the alert threshold, what it has earned (the
  * promotion report of its promotions), the promotions it groups, and the actions its status
@@ -53,6 +58,7 @@ export async function readCampaign(campaignId: string) {
  */
 export function CampaignDetail({ campaignId }: { campaignId: string }) {
   const t = useTranslations("marketing.campaign");
+  const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const en = useLocale() === "en";
   const queryClient = useQueryClient();
@@ -84,7 +90,7 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
   });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const campaign = query.data;
-  if (!campaign) return null;
+  if (!campaign) return <DetailSkeleton />;
 
   const settle = (updated: Campaign) => {
     queryClient.setQueryData(key, updated);
@@ -128,105 +134,137 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
     },
   ];
 
+  const startEdit = () => {
+    setDraft({
+      name: campaign.name,
+      budgetAmount: campaign.budgetAmount ?? "",
+      startsOn: bangkokDayOf(campaign.startsAt),
+      endsOn: bangkokDayOf(campaign.endsAt),
+    });
+    setEditing(true);
+  };
+  const ordered = [...actions].sort(
+    (x, y) => CAMPAIGN_ACTION_ORDER.indexOf(x.action) - CAMPAIGN_ACTION_ORDER.indexOf(y.action),
+  );
+  const canAdd = can("promotions.manage") && campaign.status !== "ended";
+  const addPromotion = (variant: "secondary" | "ghost") => (
+    <Button size={variant === "ghost" ? "sm" : undefined} variant={variant} iconStart="plus" asChild>
+      <Link href={`/marketing/promotions/new?campaignId=${campaign.id}`}>{t("addPromotion")}</Link>
+    </Button>
+  );
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("campaigns"), href: "/marketing" }, { label: campaign.code }]}
-          />
-        }
+        back={{ href: "/marketing", label: t("campaigns") }}
         title={campaign.name}
         meta={
           <>
             <span className="text-muted text-sm tabular-nums">{campaign.code}</span>
             <StatusChip map={CAMPAIGN_STATUS} value={campaign.status} size="md" />
+          </>
+        }
+        description={
+          <>
+            {t("window", {
+              from: format.date(campaign.startsAt),
+              to: campaign.endsAt ? format.date(campaign.endsAt) : t("noEnd"),
+            })}
             {campaign.owner ? (
-              <span className="text-muted text-sm">
+              <span className="text-subtle">
+                {" · "}
                 {t("createdBy", { name: campaign.owner.displayName })} · <When at={campaign.createdAt} />
               </span>
             ) : null}
           </>
         }
-        description={t("window", {
-          from: format.date(campaign.startsAt),
-          to: campaign.endsAt ? format.date(campaign.endsAt) : t("noEnd"),
-        })}
-        actions={
-          <>
-            {canManage && campaign.status !== "ended" ? (
-              <Button
-                variant="secondary"
-                iconStart="edit"
-                onClick={() => {
-                  setDraft({
-                    name: campaign.name,
-                    budgetAmount: campaign.budgetAmount ?? "",
-                    startsOn: bangkokDayOf(campaign.startsAt),
-                    endsOn: bangkokDayOf(campaign.endsAt),
-                  });
-                  setEditing(true);
-                }}
-              >
-                {t("edit")}
-              </Button>
-            ) : null}
-            {actions.map((item) => (
-              <Button
-                key={item.action}
-                variant={item.action === "end" ? "ghost" : item.action === "activate" ? "primary" : "secondary"}
-                onClick={() => setAction(item)}
-              >
-                {t(`actions.${wording(item)}.label`)}
-              </Button>
-            ))}
-          </>
-        }
       />
 
-      {campaign.status === "exhausted" || campaign.alertedAt ? (
-        <Callout
-          tone={campaign.status === "exhausted" ? "danger" : "warning"}
-          title={
-            campaign.status === "exhausted"
-              ? t("exhausted")
-              : t("alerted", { threshold: format.percent(campaign.alertThresholdPct, 0) })
-          }
-        >
-          {campaign.alertedAt ? <When at={campaign.alertedAt} /> : null}
-        </Callout>
-      ) : null}
+      {report.isError ? (
+        <QueryError error={report.error} onRetry={() => void report.refetch()} />
+      ) : (
+        <StatsRow
+          label={t("performance")}
+          columns={5}
+          items={(
+            [
+              ["redemptions", metric(report.data?.redemptions)],
+              ["orders", metric(report.data?.orderGroups)],
+              ["discount", metric(report.data?.discountAmount, true)],
+              ["revenue", metric(report.data?.grossAmount, true)],
+              ["customers", metric(report.data?.customers)],
+            ] as const
+          ).map(([name, value]) => ({ key: name, label: t(`metrics.${name}`), value }))}
+        />
+      )}
 
-      <Section title={t("budget")} description={t("budgetNote")}>
-        <div className="max-w-xl">
-          <CampaignBudget campaign={campaign} />
-        </div>
-      </Section>
-
-      <Section title={t("performance")} description={t("performanceNote")}>
-        {report.isError ? (
-          <QueryError error={report.error} onRetry={() => void report.refetch()} />
-        ) : (
-          <dl className="grid gap-3 sm:grid-cols-5">
-            {(
-              [
-                ["redemptions", metric(report.data?.redemptions)],
-                ["orders", metric(report.data?.orderGroups)],
-                ["discount", metric(report.data?.discountAmount, true)],
-                ["revenue", metric(report.data?.grossAmount, true)],
-                ["customers", metric(report.data?.customers)],
-              ] as const
-            ).map(([name, value]) => (
-              <div key={name} className="rounded-md border p-3">
-                <dt className="text-muted text-xs">{t(`metrics.${name}`)}</dt>
-                <dd className="text-lg font-semibold tabular-nums">{value}</dd>
+      <DetailLayout
+        aside={
+          <ActionPanel id="campaign-budget" tone="neutral" title={t("budget")} description={t("budgetNote")}>
+            <CampaignBudget campaign={campaign} />
+            {canManage && (campaign.status !== "ended" || ordered.length > 0) ? (
+              <div data-fill="row" className="border-border flex flex-col gap-2 border-t pt-4">
+                {ordered
+                  .filter((item) => item.action === "activate")
+                  .map((item) => (
+                    <Button key={item.action} onClick={() => setAction(item)}>
+                      {t(`actions.${wording(item)}.label`)}
+                    </Button>
+                  ))}
+                {campaign.status !== "ended" ? (
+                  <Button variant="secondary" iconStart="edit" onClick={startEdit}>
+                    {t("edit")}
+                  </Button>
+                ) : null}
+                {ordered
+                  .filter((item) => item.action !== "activate")
+                  .map((item) => (
+                    <Button
+                      key={item.action}
+                      variant={item.action === "end" ? "ghost" : "secondary"}
+                      className={item.action === "end" ? "text-danger" : undefined}
+                      onClick={() => setAction(item)}
+                    >
+                      {t(`actions.${wording(item)}.label`)}
+                    </Button>
+                  ))}
               </div>
-            ))}
-          </dl>
-        )}
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {campaign.status === "exhausted" || campaign.alertedAt ? (
+          <Callout
+            tone={campaign.status === "exhausted" ? "danger" : "warning"}
+            title={
+              campaign.status === "exhausted"
+                ? t("exhausted")
+                : t("alerted", { threshold: format.percent(campaign.alertThresholdPct, 0) })
+            }
+          >
+            {campaign.alertedAt ? <When at={campaign.alertedAt} /> : null}
+          </Callout>
+        ) : null}
+
+        <DeskSection title={t("promotions")} actions={canAdd ? addPromotion("ghost") : null}>
+          <DataTable
+            caption={t("promotions")}
+            columns={columns}
+            rows={promotions.data?.data ?? []}
+            getRowId={(row) => row.id}
+            loading={promotions.isPending}
+            empty={
+              <EmptyState
+                icon="ticket"
+                title={t("noPromotions")}
+                action={canAdd ? addPromotion("secondary") : undefined}
+              />
+            }
+          />
+        </DeskSection>
+
         {goals.length > 0 ? (
-          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <p className="flex flex-wrap items-center gap-2 text-sm">
             <Badge size="sm">{t("goals")}</Badge>
             {goals.map(([name, value]) => (
               <span key={name}>
@@ -235,27 +273,7 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
             ))}
           </p>
         ) : null}
-      </Section>
-
-      <Section
-        title={t("promotions")}
-        actions={
-          can("promotions.manage") && campaign.status !== "ended" ? (
-            <Button size="sm" variant="secondary" iconStart="plus" asChild>
-              <Link href={`/marketing/promotions/new?campaignId=${campaign.id}`}>{t("addPromotion")}</Link>
-            </Button>
-          ) : null
-        }
-      >
-        <DataTable
-          caption={t("promotions")}
-          columns={columns}
-          rows={promotions.data?.data ?? []}
-          getRowId={(row) => row.id}
-          loading={promotions.isPending}
-          empty={<EmptyState icon="ticket" title={t("noPromotions")} />}
-        />
-      </Section>
+      </DetailLayout>
 
       {action ? (
         <ConfirmAction
@@ -327,16 +345,17 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("fields.startsOn")} required>
-              <Input
-                type="date"
+              <DateField
                 value={draft.startsOn}
+                display={draft.startsOn ? format.date(draft.startsOn) : tFilters("pickDate")}
                 onChange={(event) => setDraft({ ...draft, startsOn: event.target.value })}
               />
             </Field>
             <Field label={t("fields.endsOn")} hint={t("fields.endsOnHint")}>
-              <Input
-                type="date"
+              <DateField
                 value={draft.endsOn}
+                min={draft.startsOn || undefined}
+                display={draft.endsOn ? format.date(draft.endsOn) : tFilters("pickDate")}
                 onChange={(event) => setDraft({ ...draft, endsOn: event.target.value })}
               />
             </Field>

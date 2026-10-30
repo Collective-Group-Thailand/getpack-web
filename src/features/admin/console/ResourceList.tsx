@@ -220,7 +220,14 @@ export function ResourceList<TRow extends object>({
                 empty?.description ??
                 (state.q || Object.keys(state.filters).length > 0 ? t("emptyFiltered") : undefined)
               }
-              action={empty?.action}
+              action={
+                empty?.action ??
+                (narrowed ? (
+                  <Button variant="secondary" onClick={() => update({ q: "", filters: { ...defaults.filters } })}>
+                    {t("clearFilters")}
+                  </Button>
+                ) : undefined)
+              }
             />
           }
         />

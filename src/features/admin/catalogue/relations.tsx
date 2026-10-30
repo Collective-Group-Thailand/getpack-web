@@ -8,6 +8,7 @@ import { uploadFile } from "@/features/shared/files/upload";
 import { ifMatch } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
+import { ProductPlate, productFamilyOf } from "@/ui/components/ProductIllustration";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
@@ -399,7 +400,17 @@ function ImagesDialog({ def, row, onClose, onDone }: DialogProps) {
               )}
             >
               <div className="relative">
-                <FileImage fileId={image.fileId} alt={label} className="aspect-square w-full" />
+                <FileImage
+                  fileId={image.fileId}
+                  alt={label}
+                  className="aspect-square w-full"
+                  fallback={
+                    <ProductPlate
+                      family={productFamilyOf(String(row.productTypeCode ?? row.code ?? ""))}
+                      className="aspect-square w-full"
+                    />
+                  }
+                />
                 <div className="absolute inset-x-2 top-2 flex flex-wrap gap-1">
                   {index === 0 ? <Badge tone="primary">{t("images.cover")}</Badge> : null}
                   {source === "getpack" ? (

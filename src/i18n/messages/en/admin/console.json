@@ -4,7 +4,8 @@
     "clearSearch": "Clear search",
     "from": "From",
     "to": "To",
-    "pickDate": "Pick a date"
+    "pickDate": "Pick a date",
+    "pickMonth": "Pick a month"
   },
   "list": {
     "toolbar": "Filters and tools",

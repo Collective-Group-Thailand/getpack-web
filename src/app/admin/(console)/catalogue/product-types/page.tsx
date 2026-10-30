@@ -6,7 +6,6 @@ import { listFor } from "@/features/admin/catalogue/resources";
 import { tableByKey } from "@/features/admin/catalogue/tables";
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { prefetchList } from "@/features/admin/console/prefetch.server";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,15 +20,7 @@ export default async function ProductTypesPage({ searchParams }: Props) {
   return (
     <ConsolePage>
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[
-              { label: t("home.catalogueTitle"), href: "/catalogue" },
-              { label: t("tables.product-types.title") },
-            ]}
-          />
-        }
+        back={{ href: "/catalogue", label: t("home.catalogueTitle") }}
         title={t("tables.product-types.title")}
         description={t("tables.product-types.description")}
       />

@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 /**
  * Zero dead ends in the admin console, group by group (CAPTURE-PLAN-ADMIN §3): every empty state offers the next
  * action. An empty state may leave out `action` only where the next step is right beside it on the same screen —
- * listed here with why. G1 (sales and service), G2 (production and logistics) and the console frame are covered;
- * later groups join as they are redesigned.
+ * listed here with why. G1 (sales and service), G2 (production and logistics), G3 (catalogue and content) and the
+ * console frame are covered; later groups join as they are redesigned.
  */
 const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/admin/orders/OrderTabs.tsx":
@@ -27,6 +27,11 @@ const ACTION_BESIDE_IT: Record<string, string> = {
     "an order's prepress tabs: upload on the customer's behalf and the workspace's next-steps panel are the step",
   "src/features/admin/partners/tabs/Processes.tsx":
     "a factory's processes: adding a capability is the section's own action above the table",
+  // G3
+  "src/features/admin/agents/AgentDetail.tsx":
+    "an agent's record: each table's own 'view all' link and the record panel's steps are beside it",
+  "src/features/admin/pricing/PaymentSchedules.tsx":
+    "payment schedule templates come from the platform (the API has no create); each template's own button adds a version",
 };
 
 const G1 = [
@@ -64,6 +69,27 @@ const G1 = [
   "src/features/admin/logistics/Claim*.tsx",
 ];
 
+/** G3 — catalogue and content (CAPTURE-PLAN-ADMIN §1). */
+const G3 = [
+  ...[
+    "catalogue",
+    "style-library",
+    "studio-catalog",
+    "pricing",
+    "discount-memos",
+    "cms",
+    "marketing",
+    "line",
+    "document-branding",
+    "agents",
+  ].map((area) => `src/app/admin/[(]console[)]/${area}/**/*.tsx`),
+  ...["catalogue", "style-library", "pricing", "cms", "marketing", "agents", "document-branding"].map(
+    (area) => `src/features/admin/${area}/**/*.tsx`,
+  ),
+  "src/features/admin/content/Studio*.tsx",
+  "src/features/admin/content/LineMenusDesk.tsx",
+];
+
 /** G2 — production and logistics (CAPTURE-PLAN-ADMIN §1). */
 const G2 = [
   ...[
@@ -98,12 +124,13 @@ function emptyStatesWithoutAction(file: string): number {
 const filesOf = (patterns: readonly string[]) =>
   [...new Set(patterns.flatMap((pattern) => globSync(pattern)))].filter((file) => !/\.(test|stories)\.tsx$/.test(file));
 
-describe("zero dead ends in the admin console (frame + G1 + G2)", () => {
-  const files = filesOf([...G1, ...G2]);
+describe("zero dead ends in the admin console (frame + G1 + G2 + G3)", () => {
+  const files = filesOf([...G1, ...G2, ...G3]);
 
   it("finds the groups' files", () => {
     expect(filesOf(G1).length).toBeGreaterThan(60);
     expect(filesOf(G2).length).toBeGreaterThan(70);
+    expect(filesOf(G3).length).toBeGreaterThan(90);
   });
 
   it("gives every empty state a next action", () => {

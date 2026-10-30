@@ -158,15 +158,19 @@ export function LinksList({ initial }: { initial: InitialPage<AgentLink> | null 
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...LINK_STATUSES.map((status) => ({ value: status, label: tStatus(AGENT_LINK_STATUS[status].labelKey) })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={linksList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...LINK_STATUSES.map((status) => ({ value: status, label: tStatus(AGENT_LINK_STATUS[status].labelKey) })),
+            ]}
+          />
+        }
         resource={linksList}
         columns={columns}
         caption={t("title")}
@@ -179,7 +183,14 @@ export function LinksList({ initial }: { initial: InitialPage<AgentLink> | null 
             </Button>
           ) : null
         }
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: canManage ? (
+            <Button variant="secondary" iconStart="link" onClick={() => setAssigning(true)}>
+              {t("assign")}
+            </Button>
+          ) : undefined,
+        }}
       />
       {assigning ? <AssignDialog onClose={() => setAssigning(false)} /> : null}
     </div>
@@ -246,6 +257,7 @@ export function LeadsList({ initial }: { initial: InitialPage<AgentLead> | null 
   const t = useTranslations("agents.leads");
   const tStatus = useTranslations("status");
   const tKinds = useTranslations("agents.leadKinds");
+  const tNav = useTranslations("agents.nav");
   const format = useFormat();
   const canManage = useCan("agents.manage");
 
@@ -311,15 +323,19 @@ export function LeadsList({ initial }: { initial: InitialPage<AgentLead> | null 
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...LEAD_STATUSES.map((status) => ({ value: status, label: tStatus(AGENT_LEAD_STATUS[status].labelKey) })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={leadsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...LEAD_STATUSES.map((status) => ({ value: status, label: tStatus(AGENT_LEAD_STATUS[status].labelKey) })),
+            ]}
+          />
+        }
         resource={leadsList}
         columns={columns}
         caption={t("title")}
@@ -333,7 +349,14 @@ export function LeadsList({ initial }: { initial: InitialPage<AgentLead> | null 
             options: LEAD_KINDS.map((kind) => ({ value: kind, label: tKinds(kind) })),
           },
         ]}
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: (
+            <Button variant="secondary" asChild>
+              <Link href="/agents">{tNav("toAgents")}</Link>
+            </Button>
+          ),
+        }}
       />
     </div>
   );
@@ -401,18 +424,22 @@ export function FactoryLinksList({ initial }: { initial: InitialPage<AgentFactor
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...FACTORY_LINK_STATUSES.map((status) => ({
-            value: status,
-            label: tStatus(AGENT_FACTORY_LINK_STATUS[status].labelKey),
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={factoryLinksList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...FACTORY_LINK_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(AGENT_FACTORY_LINK_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         resource={factoryLinksList}
         columns={columns}
         caption={t("title")}
@@ -425,7 +452,14 @@ export function FactoryLinksList({ initial }: { initial: InitialPage<AgentFactor
             </Button>
           ) : null
         }
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: canLink ? (
+            <Button variant="secondary" iconStart="factory" onClick={() => setLinking(true)}>
+              {t("link")}
+            </Button>
+          ) : undefined,
+        }}
       />
       {linking ? <LinkFactoryDialog onClose={() => setLinking(false)} /> : null}
     </div>

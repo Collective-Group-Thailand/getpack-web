@@ -199,7 +199,7 @@ export function StudioTemplatesDesk() {
           ) : null}
           {canApprove && row.status === "pending_approval" ? (
             <>
-              <Button size="sm" onClick={() => act.mutate({ id: row.id, action: "approve" })}>
+              <Button size="sm" variant="secondary" onClick={() => act.mutate({ id: row.id, action: "approve" })}>
                 {t("approve")}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => act.mutate({ id: row.id, action: "return" })}>
@@ -223,15 +223,18 @@ export function StudioTemplatesDesk() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <SegmentedControl
-          label={t("status")}
-          value={status}
-          onValueChange={(value) => setStatus(value as Status | "all")}
-          options={[
-            { value: "all", label: t("all") },
-            ...STATUSES.map((s) => ({ value: s, label: t(`statuses.${s}`) })),
-          ]}
-        />
+        <div className="relative -mx-4 [scrollbar-width:none] overflow-x-auto overscroll-x-contain px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+          <SegmentedControl
+            className="max-w-none self-start [&>button]:whitespace-nowrap"
+            label={t("status")}
+            value={status}
+            onValueChange={(value) => setStatus(value as Status | "all")}
+            options={[
+              { value: "all", label: t("all") },
+              ...STATUSES.map((s) => ({ value: s, label: t(`statuses.${s}`) })),
+            ]}
+          />
+        </div>
         {canManage ? (
           <Button iconStart="plus" onClick={() => setDraft({ ...empty })}>
             {t("create")}
@@ -247,7 +250,20 @@ export function StudioTemplatesDesk() {
           rows={query.data ?? []}
           getRowId={(row) => row.id}
           loading={query.isPending}
-          empty={<EmptyState icon="layers" title={t("empty")} description={t("emptyHint")} />}
+          empty={
+            <EmptyState
+              icon="layers"
+              title={t("empty")}
+              description={t("emptyHint")}
+              action={
+                canManage ? (
+                  <Button variant="secondary" iconStart="plus" onClick={() => setDraft({ ...empty })}>
+                    {t("create")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
         />
       )}
 

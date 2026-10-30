@@ -8,7 +8,8 @@
     "links": "Linked customers",
     "leads": "Leads",
     "factories": "Referred factories",
-    "plans": "Commission plans"
+    "plans": "Commission plans",
+    "toAgents": "Go to agents"
   },
   "kinds": {
     "freelance": "Freelance",
@@ -85,7 +86,18 @@
     },
     "createEmployee": "Add sales employee",
     "empty": "No sales agents yet",
-    "emptyHint": "Freelancers apply from their own account; add sales employees with the button above"
+    "emptyHint": "Freelancers apply from their own account; add sales employees with the button above",
+    "stats": {
+      "label": "Waiting in the agent programme",
+      "applications": "Applications to review",
+      "applicationsHint": "Submitted, not yet decided",
+      "held": "Commissions held for review",
+      "heldHint": "Waiting for a decision",
+      "drafts": "Draft statements",
+      "draftsHint": "To approve before payroll export",
+      "leads": "Leads under protection",
+      "leadsHint": "Registered, not yet customers"
+    }
   },
   "createEmployee": {
     "title": "Make a sales employee an agent",
@@ -173,7 +185,8 @@
     "reason": "Reason",
     "rejected": "Rejection recorded",
     "failed": "That didn't work",
-    "accountMasked": "•••• {last4}"
+    "accountMasked": "•••• {last4}",
+    "decidePanel": "Decide this application"
   },
   "agent": {
     "pageTitle": "Sales agent",
@@ -287,7 +300,9 @@
     "planHint": "Changing the plan needs a reason",
     "needReason": "Give a reason for the plan change",
     "note": "Internal note",
-    "noteHint": "Only staff see this"
+    "noteHint": "Only staff see this",
+    "panelTitle": "This agent",
+    "totalsLabel": "The agent's commission totals"
   },
   "links": {
     "title": "Customers linked to agents",
@@ -630,6 +645,7 @@
     "retireTitle": "Retire plan",
     "retireBody": "{name} can no longer be chosen for an agent; its approved versions stay in the history",
     "retiredDone": "Plan retired",
-    "failed": "That didn't work"
+    "failed": "That didn't work",
+    "panelTitle": "This plan"
   }
 }

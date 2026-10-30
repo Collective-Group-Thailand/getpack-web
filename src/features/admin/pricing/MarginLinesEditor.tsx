@@ -43,7 +43,7 @@ export function MarginLinesEditor({
   );
   return (
     <div className="flex flex-col gap-3">
-      <div className="border-border overflow-x-auto rounded-md border">
+      <div className="border-border relative overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <caption className="sr-only">{t("caption")}</caption>
           <thead className="bg-surface-subtle text-muted text-xs">

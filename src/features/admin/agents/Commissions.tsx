@@ -142,18 +142,22 @@ export function CommissionsList({ initial }: { initial: InitialPage<AgentCommiss
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...COMMISSION_STATUSES.map((status) => ({
-            value: status,
-            label: tStatus(AGENT_COMMISSION_STATUS[status].labelKey),
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={commissionsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...COMMISSION_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(AGENT_COMMISSION_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         resource={commissionsList}
         columns={columns}
         caption={t("title")}
@@ -175,7 +179,14 @@ export function CommissionsList({ initial }: { initial: InitialPage<AgentCommiss
             </Button>
           ) : null
         }
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: canAdjust ? (
+            <Button variant="secondary" iconStart="plus" onClick={() => setAdjusting(true)}>
+              {t("adjust")}
+            </Button>
+          ) : undefined,
+        }}
       />
       {adjusting ? <AdjustDialog onClose={() => setAdjusting(false)} /> : null}
       {deciding ? (

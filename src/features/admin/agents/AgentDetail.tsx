@@ -9,15 +9,16 @@ import { AGENT_COMMISSION_STATUS, AGENT_LINK_STATUS, AGENT_STATEMENT_STATUS, AGE
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
+import { StatsRow } from "@/ui/components/DeskPage";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Stat } from "@/ui/components/Stat";
+import { Row, RowList } from "@/ui/components/RowList";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -31,6 +32,7 @@ import {
   StatusChip,
   useCan,
 } from "../console";
+import { DetailSkeleton } from "../console/DetailSkeleton";
 import type { Agent, AgentCommission, AgentLink, AgentStatement } from "./resources";
 import { KindBadge, planOptions, TermsList, usePlans, useRefreshAgents } from "./shared";
 
@@ -43,6 +45,7 @@ async function readAgent(agentId: string) {
 }
 
 type StatusAction = "suspend" | "reactivate" | "end";
+const ACTION_ORDER: readonly StatusAction[] = ["reactivate", "suspend", "end"];
 
 /**
  * One agent (D-416 – D-420): who they are, their link, what they are owed and why, the plan they
@@ -82,7 +85,7 @@ export function AgentDetail({ agentId }: { agentId: string }) {
 
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const agent = query.data;
-  if (!agent) return null;
+  if (!agent) return <DetailSkeleton />;
 
   const settle = (updated: Agent) => {
     queryClient.setQueryData(key, updated);
@@ -196,15 +199,23 @@ export function AgentDetail({ agentId }: { agentId: string }) {
     ],
   ];
 
+  const startEdit = () => {
+    setDraft({
+      planId: agent.plan.id,
+      employeeCode: agent.employeeCode ?? "",
+      note: agent.note ?? "",
+      reason: "",
+    });
+    setEditing(true);
+  };
+  // The panel's steps: bringing a suspended agent back is the one filled step; edits and a suspension are outlined,
+  // ending (which cannot be undone) comes last.
+  const ordered = [...actions].sort((x, y) => ACTION_ORDER.indexOf(x) - ACTION_ORDER.indexOf(y));
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("agents"), href: "/agents" }, { label: agent.code }]}
-          />
-        }
+        back={{ href: "/agents", label: t("agents") }}
         title={agent.legalName}
         meta={
           <>
@@ -213,93 +224,108 @@ export function AgentDetail({ agentId }: { agentId: string }) {
             <StatusChip map={AGENT_STATUS} value={agent.status} size="md" />
           </>
         }
-        actions={
-          canManage ? (
-            <>
-              {!ended ? (
-                <Button
-                  variant="secondary"
-                  iconStart="edit"
-                  onClick={() => {
-                    setDraft({
-                      planId: agent.plan.id,
-                      employeeCode: agent.employeeCode ?? "",
-                      note: agent.note ?? "",
-                      reason: "",
-                    });
-                    setEditing(true);
-                  }}
-                >
-                  {t("edit")}
-                </Button>
-              ) : null}
-              {actions.map((item) => (
-                <Button key={item} variant={item === "end" ? "ghost" : "secondary"} onClick={() => setAction(item)}>
-                  {t(`actions.${item}.label`)}
-                </Button>
-              ))}
-            </>
-          ) : null
-        }
       />
 
-      {agent.status !== "active" && agent.statusReason ? (
-        <Callout tone={agent.status === "suspended" ? "warning" : "info"} title={t(`statusNote.${agent.status}`)}>
-          {agent.statusReason}
-        </Callout>
-      ) : null}
-      {agent.kind === "freelance" && agent.bankAccount !== "active" && !ended ? (
-        <Callout tone="warning" title={t(`bankWarning.${agent.bankAccount}`)}>
-          {t("bankWarningBody")}
-        </Callout>
-      ) : null}
+      <DetailLayout
+        aside={
+          <ActionPanel id="agent-panel" tone="neutral" title={t("panelTitle")}>
+            {canManage && (!ended || ordered.length > 0) ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                {ordered
+                  .filter((item) => item === "reactivate")
+                  .map((item) => (
+                    <Button key={item} onClick={() => setAction(item)}>
+                      {t(`actions.${item}.label`)}
+                    </Button>
+                  ))}
+                {!ended ? (
+                  <Button variant="secondary" iconStart="edit" onClick={startEdit}>
+                    {t("edit")}
+                  </Button>
+                ) : null}
+                {ordered
+                  .filter((item) => item !== "reactivate")
+                  .map((item) => (
+                    <Button
+                      key={item}
+                      variant={item === "end" ? "ghost" : "secondary"}
+                      className={item === "end" ? "text-danger" : undefined}
+                      onClick={() => setAction(item)}
+                    >
+                      {t(`actions.${item}.label`)}
+                    </Button>
+                  ))}
+              </div>
+            ) : null}
+            <RowList label={t("panelTitle")} className="-mx-1">
+              <Row
+                href={`/agents/commissions?agentId=${agent.id}&status=held`}
+                icon="shield-alert"
+                tone={Number(totals.held) > 0 ? "warning" : "neutral"}
+                title={t("totals.held")}
+                aside={format.thb(totals.held)}
+              />
+              <Row
+                href={`/agents/links?agentId=${agent.id}`}
+                icon="users"
+                title={t("totals.customers")}
+                aside={format.number(totals.activeLinks)}
+              />
+              <Row
+                href={`/agents/leads?agentId=${agent.id}`}
+                icon="shield"
+                title={t("totals.leads")}
+                aside={format.number(totals.openLeads)}
+              />
+              <Row
+                href={`/agents/factories?agentId=${agent.id}`}
+                icon="factory"
+                title={t("totals.factories")}
+                aside={format.number(totals.factories)}
+              />
+            </RowList>
+          </ActionPanel>
+        }
+      >
+        {agent.status !== "active" && agent.statusReason ? (
+          <Callout tone={agent.status === "suspended" ? "warning" : "info"} title={t(`statusNote.${agent.status}`)}>
+            {agent.statusReason}
+          </Callout>
+        ) : null}
+        {agent.kind === "freelance" && agent.bankAccount !== "active" && !ended ? (
+          <Callout tone="warning" title={t(`bankWarning.${agent.bankAccount}`)}>
+            {t("bankWarningBody")}
+          </Callout>
+        ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label={t("totals.pending")} value={format.thb(totals.pending)} hint={t("totals.pendingHint")} />
-        <Stat
-          label={t("totals.earned")}
-          value={format.thb(totals.earned)}
-          hint={t("totals.earnedHint")}
-          tone="success"
+        <StatsRow
+          label={t("totalsLabel")}
+          columns={4}
+          items={[
+            {
+              key: "pending",
+              label: t("totals.pending"),
+              value: format.thb(totals.pending),
+              hint: t("totals.pendingHint"),
+            },
+            {
+              key: "earned",
+              label: t("totals.earned"),
+              value: format.thb(totals.earned),
+              hint: t("totals.earnedHint"),
+              highlight: true,
+            },
+            { key: "statemented", label: t("totals.statemented"), value: format.thb(totals.statemented) },
+            { key: "paidThisYear", label: t("totals.paidThisYear"), value: format.thb(totals.paidThisYear) },
+          ]}
         />
-        <Stat label={t("totals.statemented")} value={format.thb(totals.statemented)} />
-        <Stat label={t("totals.paidThisYear")} value={format.thb(totals.paidThisYear)} />
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat
-          label={t("totals.held")}
-          value={format.thb(totals.held)}
-          tone={Number(totals.held) > 0 ? "warning" : "neutral"}
-          as={Link}
-          href={`/agents/commissions?agentId=${agent.id}&status=held`}
-        />
-        <Stat
-          label={t("totals.customers")}
-          value={format.number(totals.activeLinks)}
-          as={Link}
-          href={`/agents/links?agentId=${agent.id}`}
-        />
-        <Stat
-          label={t("totals.leads")}
-          value={format.number(totals.openLeads)}
-          as={Link}
-          href={`/agents/leads?agentId=${agent.id}`}
-        />
-        <Stat
-          label={t("totals.factories")}
-          value={format.number(totals.factories)}
-          as={Link}
-          href={`/agents/factories?agentId=${agent.id}`}
-        />
-      </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
         <Section title={t("profile")}>
-          <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+          <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             {facts.map(([term, value]) => (
-              <div key={term} className="flex flex-col">
+              <div key={term} className="flex min-w-0 flex-col gap-0.5">
                 <dt className="text-muted text-xs">{term}</dt>
-                <dd>{value}</dd>
+                <dd className="[overflow-wrap:anywhere]">{value}</dd>
               </div>
             ))}
           </dl>
@@ -315,59 +341,59 @@ export function AgentDetail({ agentId }: { agentId: string }) {
         >
           {agent.terms ? <TermsList terms={agent.terms} /> : <p className="text-muted text-sm">{t("noTerms")}</p>}
         </Section>
-      </div>
 
-      <Section
-        title={t("commissions.title")}
-        actions={
-          <Button size="sm" variant="ghost" asChild>
-            <Link href={`/agents/commissions?agentId=${agent.id}`}>{t("viewAll")}</Link>
-          </Button>
-        }
-      >
-        <DataTable
-          caption={t("commissions.title")}
-          columns={commissionColumns}
-          rows={commissions.data?.data ?? []}
-          getRowId={(row) => row.id}
-          loading={commissions.isPending}
-          empty={<EmptyState icon="coins" title={t("commissions.empty")} />}
-        />
-      </Section>
-      <Section
-        title={t("links.title")}
-        actions={
-          <Button size="sm" variant="ghost" asChild>
-            <Link href={`/agents/links?agentId=${agent.id}`}>{t("viewAll")}</Link>
-          </Button>
-        }
-      >
-        <DataTable
-          caption={t("links.title")}
-          columns={linkColumns}
-          rows={links.data?.data ?? []}
-          getRowId={(row) => row.id}
-          loading={links.isPending}
-          empty={<EmptyState icon="users" title={t("links.empty")} />}
-        />
-      </Section>
-      <Section
-        title={t("statements.title")}
-        actions={
-          <Button size="sm" variant="ghost" asChild>
-            <Link href={`/agents/statements?agentId=${agent.id}`}>{t("viewAll")}</Link>
-          </Button>
-        }
-      >
-        <DataTable
-          caption={t("statements.title")}
-          columns={statementColumns}
-          rows={statements.data?.data ?? []}
-          getRowId={(row) => row.id}
-          loading={statements.isPending}
-          empty={<EmptyState icon="document" title={t("statements.empty")} />}
-        />
-      </Section>
+        <Section
+          title={t("commissions.title")}
+          actions={
+            <Button size="sm" variant="ghost" asChild>
+              <Link href={`/agents/commissions?agentId=${agent.id}`}>{t("viewAll")}</Link>
+            </Button>
+          }
+        >
+          <DataTable
+            caption={t("commissions.title")}
+            columns={commissionColumns}
+            rows={commissions.data?.data ?? []}
+            getRowId={(row) => row.id}
+            loading={commissions.isPending}
+            empty={<EmptyState icon="coins" title={t("commissions.empty")} />}
+          />
+        </Section>
+        <Section
+          title={t("links.title")}
+          actions={
+            <Button size="sm" variant="ghost" asChild>
+              <Link href={`/agents/links?agentId=${agent.id}`}>{t("viewAll")}</Link>
+            </Button>
+          }
+        >
+          <DataTable
+            caption={t("links.title")}
+            columns={linkColumns}
+            rows={links.data?.data ?? []}
+            getRowId={(row) => row.id}
+            loading={links.isPending}
+            empty={<EmptyState icon="users" title={t("links.empty")} />}
+          />
+        </Section>
+        <Section
+          title={t("statements.title")}
+          actions={
+            <Button size="sm" variant="ghost" asChild>
+              <Link href={`/agents/statements?agentId=${agent.id}`}>{t("viewAll")}</Link>
+            </Button>
+          }
+        >
+          <DataTable
+            caption={t("statements.title")}
+            columns={statementColumns}
+            rows={statements.data?.data ?? []}
+            getRowId={(row) => row.id}
+            loading={statements.isPending}
+            empty={<EmptyState icon="document" title={t("statements.empty")} />}
+          />
+        </Section>
+      </DetailLayout>
 
       {action ? (
         <ConfirmAction

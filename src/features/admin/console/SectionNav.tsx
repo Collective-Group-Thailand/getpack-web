@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 import { cn } from "@/ui/lib/cn";
 
@@ -29,10 +30,24 @@ export function SectionNav({
     .filter((item) => !item.permission || actor.permissions.includes(item.permission))
     .map(({ href, label: name, exact }) => ({ href, label: name, ...(exact ? { exact } : {}) }));
   const inShell = usePublishSubnav(shown);
+  const row = useRef<HTMLElement>(null);
+  // One line that scrolls sideways (never three wrapped lines above the list's own tabs): the current page is
+  // brought into view once, so it is never hidden past the edge.
+  useEffect(() => {
+    const current = row.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    const box = row.current;
+    if (current && box && box.scrollWidth > box.clientWidth) {
+      box.scrollLeft = current.offsetLeft - (box.clientWidth - current.offsetWidth) / 2;
+    }
+  }, [pathname]);
   return (
     <nav
+      ref={row}
       aria-label={label}
-      className={cn("-mt-2 flex flex-wrap items-center gap-x-1 gap-y-1.5 text-sm", inShell && "md:hidden")}
+      className={cn(
+        "relative -mx-4 -mt-2 flex [scrollbar-width:none] items-center gap-x-1 overflow-x-auto overscroll-x-contain px-4 text-sm md:mx-0 md:flex-wrap md:gap-y-1.5 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden",
+        inShell && "md:hidden",
+      )}
     >
       {shown.map((item) => {
         const active = isSubnavCurrent(item, pathname);
@@ -42,7 +57,7 @@ export function SectionNav({
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "focus-visible:ring-focus-ring inline-flex min-h-11 items-center rounded-lg px-2.5 whitespace-nowrap outline-none focus-visible:ring-2 md:min-h-8",
+              "focus-visible:ring-focus-ring inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-inset md:min-h-8",
               // Plain words, the current one in ink — lighter than the list's own view tabs under it.
               active ? "text-fg font-semibold underline underline-offset-4" : "text-muted hover:text-fg font-medium",
             )}

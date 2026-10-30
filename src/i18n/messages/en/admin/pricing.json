@@ -102,7 +102,8 @@
     "approveTitle": "Approve version {no}",
     "approveBody": "{table}: {lines} lines, effective from {date} (or from now if that has passed). Its lines cannot change once approved.",
     "approved": "Approved",
-    "failed": "Could not approve"
+    "failed": "Could not approve",
+    "panelTitle": "Version in force"
   },
   "lines": {
     "caption": "Sell-margin lines",

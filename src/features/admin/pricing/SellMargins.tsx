@@ -12,12 +12,15 @@ import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
+import { DateField } from "@/ui/components/DateField";
+import { DeskSection } from "@/ui/components/DeskPage";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -31,7 +34,6 @@ import {
   FormError,
   problemMessage,
   QueryError,
-  Section,
   StatusChip,
   today,
   useCan,
@@ -77,6 +79,8 @@ function useLineValue() {
  */
 export function SellMarginsList() {
   const t = useTranslations("pricing.margins");
+  const tMargin = useTranslations("pricing.margin");
+  const router = useRouter();
   const tKinds = useTranslations("pricing.kinds");
   const format = useFormat();
   const tables = useMarginTables();
@@ -106,39 +110,42 @@ export function SellMarginsList() {
     { id: "kind", header: t("columns.kind"), cell: (row) => <Badge size="sm">{tKinds(row.kind)}</Badge> },
     {
       id: "current",
-      header: t("columns.current"),
+      header: tMargin("columns.version"),
       cell: (row) =>
         row.current ? (
-          <span className="text-sm">
-            {t("versionSummary", {
-              no: row.current.versionNo,
-              lines: row.current.lines.length,
-              date: format.date(row.current.effectiveFrom),
-            })}
-          </span>
+          <span className="whitespace-nowrap">{tMargin("versionNo", { no: row.current.versionNo })}</span>
         ) : (
           <Badge size="sm" tone="warning" icon="warning">
             {t("noVersion")}
           </Badge>
         ),
     },
+    {
+      id: "lines",
+      header: tMargin("columns.lines"),
+      numeric: true,
+      cell: (row) => (row.current ? format.number(row.current.lines.length) : "–"),
+    },
+    {
+      id: "from",
+      header: tMargin("columns.from"),
+      cell: (row) =>
+        row.current ? <span className="tabular-nums">{format.date(row.current.effectiveFrom)}</span> : "–",
+    },
   ];
 
   if (tables.isError) return <QueryError error={tables.error} onRetry={() => void tables.refetch()} />;
+  const create = (variant: "primary" | "secondary") =>
+    canManage ? (
+      <Button variant={variant} iconStart="plus" onClick={() => setCreating(true)}>
+        {t("create")}
+      </Button>
+    ) : undefined;
   return (
-    <Section
-      title={t("listTitle")}
-      description={t("listBody")}
-      actions={
-        canManage ? (
-          <Button iconStart="plus" onClick={() => setCreating(true)}>
-            {t("create")}
-          </Button>
-        ) : null
-      }
-    >
-      <div className="mb-3">
+    <DeskSection title={t("listTitle")} description={t("listBody")} actions={create("primary")}>
+      <div className="relative -mx-4 [scrollbar-width:none] overflow-x-auto overscroll-x-contain px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         <SegmentedControl
+          className="max-w-none self-start [&>button]:whitespace-nowrap"
           label={t("filterKind")}
           value={kind}
           onValueChange={(value) => setKind(value as Kind | "all")}
@@ -154,10 +161,11 @@ export function SellMarginsList() {
         rows={rows}
         getRowId={(row) => row.id}
         loading={tables.isPending}
-        empty={<EmptyState icon="percent" title={t("empty")} />}
+        onRowClick={(row) => router.push(`/pricing/margins/${row.id}`)}
+        empty={<EmptyState icon="percent" title={t("empty")} action={create("secondary")} />}
       />
       {creating ? <CreateTableDialog onClose={() => setCreating(false)} /> : null}
-    </Section>
+    </DeskSection>
   );
 }
 
@@ -288,22 +296,25 @@ export function SellMarginDetail({ tableId }: { tableId: string }) {
       header: <span className="sr-only">{t("columns.actions")}</span>,
       cell: (row) =>
         row.status === "draft" && canManage ? (
-          <Button size="sm" onClick={() => setApproving(row)}>
+          <Button size="sm" variant="secondary" onClick={() => setApproving(row)}>
             {t("approve")}
           </Button>
         ) : null,
     },
   ];
 
+  const fallback =
+    shown && (shown.fallbackPct || shown.fallbackAmount)
+      ? t("fallback", {
+          value:
+            shown.fallbackPct !== null ? format.percent(shown.fallbackPct) : format.thb(shown.fallbackAmount ?? "0"),
+        })
+      : t("noFallback");
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("tables"), href: "/pricing/margins" }, { label: table.description }]}
-          />
-        }
+        back={{ href: "/pricing/margins", label: t("tables") }}
         title={table.description}
         meta={
           <>
@@ -314,96 +325,127 @@ export function SellMarginDetail({ tableId }: { tableId: string }) {
             </span>
           </>
         }
-        actions={
-          canManage ? (
-            <Button
-              iconStart="edit"
-              disabled={Boolean(draft)}
-              title={draft ? t("draftWaiting") : undefined}
-              onClick={() => setDrafting(true)}
-            >
-              {t("draft")}
-            </Button>
-          ) : null
-        }
       />
-      {draft ? (
-        <Callout tone="warning" title={t("draftTitle", { no: draft.versionNo })}>
-          {t("draftBody", { date: format.dateTime(draft.effectiveFrom) })}
-        </Callout>
-      ) : null}
-      {!table.current ? <Callout tone="info" title={t("noneInForce")} /> : null}
 
-      {shown ? (
-        <Section
-          title={t("linesTitle", { no: shown.versionNo })}
-          description={
-            shown.fallbackPct || shown.fallbackAmount
-              ? t("fallback", {
-                  value:
-                    shown.fallbackPct !== null
-                      ? format.percent(shown.fallbackPct)
-                      : format.thb(shown.fallbackAmount ?? "0"),
-                })
-              : t("noFallback")
-          }
-        >
-          <div className="border-border overflow-x-auto rounded-md border">
-            <table className="w-full text-sm">
-              <caption className="sr-only">{t("linesTitle", { no: shown.versionNo })}</caption>
-              <thead className="bg-surface-subtle text-muted text-xs">
-                <tr>
-                  <th className="px-3 py-2 text-start font-medium">{t("run")}</th>
-                  <th className="px-3 py-2 text-start font-medium">{t("buyPrice")}</th>
-                  <th className="px-3 py-2 text-start font-medium">{tLines("colourCount")}</th>
-                  <th className="px-3 py-2 text-start font-medium">{tLines("level")}</th>
-                  <th className="px-3 py-2 text-end font-medium">{tLines("value")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {shown.lines.map((line, index) => (
-                  <tr key={index} className="border-border border-t">
-                    <td className="px-3 py-2 tabular-nums">
-                      {t("range", {
-                        from: line.qtyMin === null ? t("open") : format.number(line.qtyMin),
-                        to: line.qtyMax === null ? t("open") : format.number(line.qtyMax),
-                      })}
-                    </td>
-                    <td className="px-3 py-2 tabular-nums">
-                      {t("priceRange", {
-                        from: line.priceMin === null ? t("open") : format.thb(line.priceMin),
-                        to: line.priceMax === null ? t("open") : format.thb(line.priceMax),
-                      })}
-                    </td>
-                    <td className="px-3 py-2">{line.colourCount ?? t("any")}</td>
-                    <td className="px-3 py-2">
-                      {line.difficultyLevelId ? levels.labelOf(line.difficultyLevelId) : t("any")}
-                    </td>
-                    <td className="px-3 py-2 text-end tabular-nums">{lineValue(line)}</td>
-                  </tr>
-                ))}
-                {shown.lines.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-muted px-3 py-6 text-center">
-                      {tLines("noLines")}
-                    </td>
-                  </tr>
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="margin-panel"
+            tone="neutral"
+            title={t("panelTitle")}
+            description={table.current ? undefined : t("noneInForce")}
+          >
+            {table.current ? (
+              <SummaryRows
+                rows={[
+                  {
+                    key: "version",
+                    label: t("columns.version"),
+                    value: t("versionNo", { no: table.current.versionNo }),
+                  },
+                  { key: "from", label: t("columns.from"), value: format.dateTime(table.current.effectiveFrom) },
+                  { key: "lines", label: t("columns.lines"), value: format.number(table.current.lines.length) },
+                ]}
+              />
+            ) : null}
+            {canManage ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                {draft ? (
+                  <Button iconStart="check" onClick={() => setApproving(draft)}>
+                    {t("approve")}
+                  </Button>
                 ) : null}
-              </tbody>
-            </table>
-          </div>
-        </Section>
-      ) : null}
+                <Button
+                  variant={draft ? "secondary" : "primary"}
+                  iconStart="edit"
+                  disabled={Boolean(draft)}
+                  onClick={() => setDrafting(true)}
+                >
+                  {t("draft")}
+                </Button>
+                {draft ? <p className="text-muted text-xs text-pretty">{t("draftWaiting")}</p> : null}
+              </div>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {draft ? (
+          <Callout tone="warning" title={t("draftTitle", { no: draft.versionNo })}>
+            {t("draftBody", { date: format.dateTime(draft.effectiveFrom) })}
+          </Callout>
+        ) : null}
 
-      <Section title={t("versionsTitle")}>
-        <DataTable
-          caption={t("versionsTitle")}
-          columns={columns}
-          rows={list}
-          getRowId={(row) => row.id}
-          empty={<EmptyState icon="history" title={t("noVersions")} />}
-        />
-      </Section>
+        {shown ? (
+          <DeskSection title={t("linesTitle", { no: shown.versionNo })} description={fallback}>
+            <div className="border-border bg-surface relative overflow-x-auto rounded-xl border">
+              <table className="w-full text-sm">
+                <caption className="sr-only">{t("linesTitle", { no: shown.versionNo })}</caption>
+                <thead className="bg-surface-subtle text-muted text-xs">
+                  <tr>
+                    <th className="px-4 py-2.5 text-end font-medium">{t("run")}</th>
+                    <th className="px-4 py-2.5 text-end font-medium">{t("buyPrice")}</th>
+                    <th className="px-4 py-2.5 text-end font-medium">{tLines("colourCount")}</th>
+                    <th className="px-4 py-2.5 text-start font-medium">{tLines("level")}</th>
+                    <th className="px-4 py-2.5 text-end font-medium">{tLines("value")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-border divide-y">
+                  {shown.lines.map((line, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-2.5 text-end whitespace-nowrap tabular-nums">
+                        {t("range", {
+                          from: line.qtyMin === null ? t("open") : format.number(line.qtyMin),
+                          to: line.qtyMax === null ? t("open") : format.number(line.qtyMax),
+                        })}
+                      </td>
+                      <td className="px-4 py-2.5 text-end whitespace-nowrap tabular-nums">
+                        {t("priceRange", {
+                          from: line.priceMin === null ? t("open") : format.thb(line.priceMin),
+                          to: line.priceMax === null ? t("open") : format.thb(line.priceMax),
+                        })}
+                      </td>
+                      <td className="px-4 py-2.5 text-end tabular-nums">{line.colourCount ?? t("any")}</td>
+                      <td className="px-4 py-2.5">
+                        {line.difficultyLevelId ? levels.labelOf(line.difficultyLevelId) : t("any")}
+                      </td>
+                      <td className="px-4 py-2.5 text-end font-semibold tabular-nums">{lineValue(line)}</td>
+                    </tr>
+                  ))}
+                  {shown.lines.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-muted px-4 py-6 text-center">
+                        {tLines("noLines")}
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </DeskSection>
+        ) : null}
+
+        <DeskSection title={t("versionsTitle")}>
+          <DataTable
+            caption={t("versionsTitle")}
+            columns={columns}
+            rows={list}
+            getRowId={(row) => row.id}
+            empty={
+              <EmptyState
+                icon="history"
+                title={t("noVersions")}
+                action={
+                  canManage ? (
+                    <Button variant="secondary" iconStart="edit" onClick={() => setDrafting(true)}>
+                      {t("draft")}
+                    </Button>
+                  ) : undefined
+                }
+              />
+            }
+          />
+        </DeskSection>
+      </DetailLayout>
 
       {drafting ? (
         <DraftVersionDialog
@@ -464,6 +506,8 @@ function DraftVersionDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const tPick = useTranslations("console.filters");
+  const dateFormat = useFormat();
   const t = useTranslations("pricing.draft");
   const [lines, setLines] = useState<EditableMarginLine[]>(() =>
     from && from.lines.length ? from.lines.map(toEditable) : [emptyMarginLine()],
@@ -526,10 +570,10 @@ function DraftVersionDialog({
           </Field>
         ) : null}
         <Field label={t("effectiveFrom")} hint={t("effectiveHint")} required>
-          <Input
-            type="date"
+          <DateField
             min={today()}
             value={effectiveFrom}
+            display={effectiveFrom ? dateFormat.date(effectiveFrom) : tPick("pickDate")}
             onChange={(event) => setEffectiveFrom(event.target.value)}
           />
         </Field>

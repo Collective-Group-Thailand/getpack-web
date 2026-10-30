@@ -478,7 +478,10 @@
     "catalogueTitle": "Catalogue",
     "catalogueDescription": "The platform's master data: types, materials, patterns, products and geography. No prices — those are each factory's.",
     "cmsTitle": "Site content",
-    "cmsDescription": "Banners, the home page, articles, FAQs, videos and SEO"
+    "cmsDescription": "Banners, the home page, articles, FAQs, videos and SEO",
+    "searchLabel": "Search tables",
+    "searchPlaceholder": "Table name or what it holds",
+    "noMatch": "No table matches the search"
   },
   "file": {
     "remove": "Remove",
@@ -633,7 +636,8 @@
       "quote": "Quote",
       "undo": "Undo",
       "redo": "Redo"
-    }
+    },
+    "details": "Article details"
   },
   "links": {
     "requests": "Structural design requests",
