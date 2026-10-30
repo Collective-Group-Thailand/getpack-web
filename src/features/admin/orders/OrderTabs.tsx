@@ -271,7 +271,16 @@ export function SummaryTab({ order, group }: { order: Order; group: OrderGroup |
                     .join(" ")}
                 </span>
               </span>
-              <span className="tabular-nums">{format.number(destination.quantity)}</span>
+              {/* How many go to this address, with its unit — a bare "1" read as a house number. */}
+              <span className="text-muted tabular-nums">
+                {t("summary.quantity")}{" "}
+                <span className="text-fg font-medium">
+                  {t("summary.quantityValue", {
+                    quantity: format.number(destination.quantity),
+                    unit: t(`units.${order.summary.unit}`),
+                  })}
+                </span>
+              </span>
             </li>
           ))}
         </ul>

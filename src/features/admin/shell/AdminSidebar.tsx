@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import type { StaffMe } from "@/lib/api/types";
@@ -11,8 +12,10 @@ import { Tooltip } from "@/ui/components/Tooltip";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { useQueues } from "../console/queues";
+import { listTotalQuery, useQueues } from "../console/queues";
+import { MENU_BADGES } from "./badges";
 import { groupSidebar, isCurrent, menuLabel, type SidebarItem } from "./menu";
+import { isSubnavCurrent, useSubnavItems } from "./subnav";
 
 // Which groups the reader opened or closed, remembered on this device (as the factory app does).
 const STORE = "getpack.admin.sidebar.open";
@@ -78,6 +81,15 @@ export function AdminSidebar({
     const entry = waiting.get(key) ?? { count: 0, overdue: false };
     waiting.set(key, { count: entry.count + queue.count, overdue: entry.overdue || queue.overdueCount > 0 });
   }
+  // A list with work queues counts the tab it opens on, with that tab's own read — the same number the tab shows.
+  const badged = items.filter((item) => MENU_BADGES[item.key]);
+  const totals = useQueries({ queries: badged.map((item) => listTotalQuery(MENU_BADGES[item.key]!.source)) });
+  badged.forEach((item, index) => {
+    const total = totals[index]?.data;
+    if (typeof total === "number") waiting.set(item.key, { count: total, overdue: false });
+    else waiting.delete(item.key);
+  });
+  const subnav = useSubnavItems();
   const roleLabel = (role: string) => (t.has(`roles.${role}`) ? t(`roles.${role}`) : role);
   const label = (key: string) => menuLabel(key, t);
 
@@ -123,116 +135,154 @@ export function AdminSidebar({
   const first = shown[0]?.items[0];
 
   return (
-    <div className="flex min-h-full flex-col gap-4 px-2 pb-4 md:gap-3">
-      {many ? (
-        <div className="relative px-1">
-          <Icon
-            name="search"
-            size={16}
-            className="text-muted pointer-events-none absolute start-4 top-1/2 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <input
-            ref={search}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && first) {
-                setQuery("");
-                router.push(first.href);
-              }
-              if (event.key === "Escape") setQuery("");
-            }}
-            aria-label={t("shell.searchMenu")}
-            placeholder={t("shell.searchMenuPlaceholder")}
-            className="border-border bg-surface focus-visible:outline-primary h-9 w-full rounded-lg border ps-9 pe-3 text-sm"
-          />
-        </div>
-      ) : null}
-      {shown.length === 0 ? <p className="text-muted px-3 text-sm">{t("shell.noMenuMatch")}</p> : null}
-      {shown.map((group) => {
-        const headingId = `nav-group-${group.key}`;
-        const listId = `nav-list-${group.key}`;
-        const expanded = needle !== "" || isOpen(group.key);
-        return (
-          <div key={group.key} className="flex flex-col gap-1">
-            {many && !needle ? (
-              <button
-                type="button"
-                id={headingId}
-                onClick={() => toggle(group.key)}
-                aria-expanded={expanded}
-                aria-controls={listId}
-                className="text-muted hover:text-fg flex items-center justify-between rounded-md px-3 pt-1 text-start text-sm font-semibold"
+    // The menu scrolls; the account block stays at the foot of the column (it was cut off on a 900 px screen).
+    <div className="flex min-h-full flex-col md:h-[calc(100dvh-5.5rem)] md:min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-2 pb-4 md:gap-3">
+        {many ? (
+          <div className="relative px-1">
+            <Icon
+              name="search"
+              size={16}
+              className="text-muted pointer-events-none absolute start-4 top-1/2 -translate-y-1/2"
+              aria-hidden="true"
+            />
+            <input
+              ref={search}
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && first) {
+                  setQuery("");
+                  router.push(first.href);
+                }
+                if (event.key === "Escape") setQuery("");
+              }}
+              aria-label={t("shell.searchMenu")}
+              placeholder={t("shell.searchMenuPlaceholder")}
+              className="border-border bg-surface focus-visible:outline-primary h-9 w-full rounded-lg border ps-9 pe-3 text-sm"
+            />
+          </div>
+        ) : null}
+        {shown.length === 0 ? <p className="text-muted px-3 text-sm">{t("shell.noMenuMatch")}</p> : null}
+        {shown.map((group) => {
+          const headingId = `nav-group-${group.key}`;
+          const listId = `nav-list-${group.key}`;
+          const expanded = needle !== "" || isOpen(group.key);
+          return (
+            <div key={group.key} className="flex flex-col gap-1">
+              {many && !needle ? (
+                <button
+                  type="button"
+                  id={headingId}
+                  onClick={() => toggle(group.key)}
+                  aria-expanded={expanded}
+                  aria-controls={listId}
+                  className="text-muted hover:text-fg flex items-center justify-between rounded-md px-3 pt-1 text-start text-sm font-semibold"
+                >
+                  <span>{t(`menuGroups.${group.key}`)}</span>
+                  <Icon name={expanded ? "chevron-up" : "chevron-down"} size={16} aria-hidden="true" />
+                </button>
+              ) : (
+                <p id={headingId} className={cn("text-muted px-3 pt-1 text-sm font-semibold", collapsed && "sr-only")}>
+                  {t(`menuGroups.${group.key}`)}
+                </p>
+              )}
+              {collapsed ? <hr aria-hidden className="border-border mx-2 mb-1" /> : null}
+              <ul
+                id={listId}
+                aria-labelledby={headingId}
+                className={cn("flex flex-col gap-0.5", !expanded && "hidden")}
               >
-                <span>{t(`menuGroups.${group.key}`)}</span>
-                <Icon name={expanded ? "chevron-up" : "chevron-down"} size={16} aria-hidden="true" />
-              </button>
-            ) : (
-              <p id={headingId} className={cn("text-muted px-3 pt-1 text-sm font-semibold", collapsed && "sr-only")}>
-                {t(`menuGroups.${group.key}`)}
-              </p>
-            )}
-            {collapsed ? <hr aria-hidden className="border-border mx-2 mb-1" /> : null}
-            <ul id={listId} aria-labelledby={headingId} className={cn("flex flex-col gap-0.5", !expanded && "hidden")}>
-              {group.items.map((item) => {
-                const name = label(item.key);
-                const current = isCurrent(item.href, pathname);
-                const queue = waiting.get(item.key);
+                {group.items.map((item) => {
+                  const name = label(item.key);
+                  const current = isCurrent(item.href, pathname);
+                  const queue = waiting.get(item.key);
 
-                const link = (
-                  <Link
-                    href={item.href}
-                    onClick={() => setQuery("")}
-                    // Marks the page for a screen reader, not just with a colour.
-                    aria-current={current ? "page" : undefined}
-                    className={cn(
-                      "flex min-h-11 items-center gap-3 border-s-[3px] px-3 text-base md:min-h-9 md:gap-2.5",
-                      collapsed ? "justify-center rounded-lg border-transparent px-0" : "rounded-e-lg",
-                      // The page you are on: a teal edge and teal words on a tint — seen at a glance, not guessed.
-                      current
-                        ? cn("bg-primary-subtle text-primary-subtle-fg font-semibold", !collapsed && "border-primary")
-                        : "text-fg hover:bg-bg border-transparent font-medium",
-                    )}
-                  >
-                    {item.icon ? (
-                      <Icon
-                        name={item.icon}
-                        size={20}
-                        className={cn("shrink-0 md:size-[18px]", current ? "text-primary" : "text-muted")}
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    {/*
+                  const link = (
+                    <Link
+                      href={`${item.href}${MENU_BADGES[item.key]?.search ?? ""}`}
+                      onClick={() => setQuery("")}
+                      // Marks the page for a screen reader, not just with a colour.
+                      aria-current={current ? "page" : undefined}
+                      className={cn(
+                        "flex min-h-11 items-center gap-3 border-s-[3px] px-3 text-base md:min-h-9 md:gap-2.5",
+                        collapsed ? "justify-center rounded-lg border-transparent px-0" : "rounded-e-lg",
+                        // The page you are on: a teal edge and teal words on a tint — seen at a glance, not guessed.
+                        current
+                          ? cn("bg-primary-subtle text-primary-subtle-fg font-semibold", !collapsed && "border-primary")
+                          : "text-fg hover:bg-bg border-transparent font-medium",
+                      )}
+                    >
+                      {item.icon ? (
+                        <Icon
+                          name={item.icon}
+                          size={20}
+                          className={cn("shrink-0 md:size-[18px]", current ? "text-primary" : "text-muted")}
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                      {/*
                       Collapsed, the label is still in the DOM and still read aloud — it is only
                       hidden visually. Removing it would make the whole nav unusable to a screen
                       reader the moment a sighted colleague collapsed it.
                     */}
-                    <span className={cn("truncate", collapsed && "sr-only")}>{name}</span>
-                    {queue?.count ? (
-                      <span
-                        className={cn(
-                          "rounded-control ms-auto px-1.5 text-xs font-medium tabular-nums",
-                          queue.overdue ? "bg-danger-subtle text-danger-subtle-fg" : "bg-bg text-fg",
-                          collapsed && "sr-only",
-                        )}
-                      >
-                        {queue.count}
-                        <span className="sr-only"> {t("shell.waiting")}</span>
-                      </span>
-                    ) : null}
-                  </Link>
-                );
+                      <span className={cn("truncate", collapsed && "sr-only")}>{name}</span>
+                      {queue?.count ? (
+                        <span
+                          className={cn(
+                            "rounded-control ms-auto px-1.5 text-xs font-medium tabular-nums",
+                            queue.overdue ? "bg-danger-subtle text-danger-subtle-fg" : "bg-bg text-fg",
+                            collapsed && "sr-only",
+                          )}
+                        >
+                          {queue.count}
+                          <span className="sr-only"> {t("shell.waiting")}</span>
+                        </span>
+                      ) : null}
+                    </Link>
+                  );
 
-                return <li key={item.key}>{collapsed ? <Tooltip content={name}>{link}</Tooltip> : link}</li>;
-              })}
-            </ul>
-          </div>
-        );
-      })}
+                  return (
+                    <li key={item.key}>
+                      {collapsed ? <Tooltip content={name}>{link}</Tooltip> : link}
+                      {/* The area's own pages (its `SectionNav`), under the entry you are in. */}
+                      {current && !collapsed && subnav?.length ? (
+                        <ul
+                          aria-label={name}
+                          className="border-border ms-[1.375rem] mt-0.5 mb-1 flex flex-col border-s ps-2"
+                        >
+                          {subnav.map((page) => {
+                            const here = isSubnavCurrent(page, pathname);
+                            return (
+                              <li key={page.href}>
+                                <Link
+                                  href={page.href}
+                                  aria-current={here ? "page" : undefined}
+                                  className={cn(
+                                    "flex min-h-11 items-center rounded-lg px-2.5 text-sm md:min-h-8",
+                                    here
+                                      ? "text-primary-subtle-fg bg-primary-subtle font-semibold"
+                                      : "text-muted hover:bg-bg hover:text-fg font-medium",
+                                  )}
+                                >
+                                  {page.label}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
       {actor && !collapsed ? (
-        <div className="border-border mt-auto flex items-center gap-3 border-t px-2 pt-3">
+        <div className="border-border mx-2 mt-auto flex shrink-0 items-center gap-3 border-t px-2 pt-3">
           <Avatar name={actor.displayName} />
           <div className="min-w-0">
             <p className="truncate font-semibold">{actor.displayName}</p>

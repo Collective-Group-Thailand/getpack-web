@@ -8,9 +8,10 @@ import { useFormat, When } from "@/features/shared/format";
 import { APPROVAL_STATUS, APPROVAL_STEP_STATUS, statusMeta } from "@/domain/status";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { Callout } from "@/ui/components/Callout";
+import { ActionPanel } from "@/ui/components/DetailLayout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { JsonView } from "@/ui/components/JsonView";
@@ -28,6 +29,7 @@ import {
   QueryError,
   useActor,
   useCan,
+  useProductTypes,
   useRoleLabel,
   useSlaFormat,
 } from "../console";
@@ -58,6 +60,8 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
   const format = useFormat();
   const sla = useSlaFormat();
   const roleLabel = useRoleLabel();
+  const tActions = useTranslations("console.actions");
+  const { labelOf: productTypeLabel } = useProductTypes();
   const actor = useActor();
   const canAct = useCan("approvals.act");
   const queryClient = useQueryClient();
@@ -126,16 +130,27 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
     .filter(([, value]) => !(typeof value === "string" && UUID.test(value)))
     .map(([key, value]) => {
       const kind = PAYLOAD_KINDS[key];
+      // A code the copy has words for ("factory_proposal" → "ข้อเสนอจากโรงงาน"), a product type by its name, a
+      // timestamp as a Thai date — never the stored string as it is.
+      const word = typeof value === "string" && t.has(`values.${key}.${value}`) ? t(`values.${key}.${value}`) : null;
       const text =
-        kind === "money" && typeof value === "string"
-          ? format.thb(value)
-          : kind === "percent" && typeof value === "string"
-            ? format.percent(value)
-            : kind === "number" && typeof value === "number"
-              ? format.number(value)
-              : typeof value === "string" || typeof value === "number"
-                ? String(value)
-                : null;
+        word !== null
+          ? word
+          : key === "productType" && typeof value === "string"
+            ? productTypeLabel(value)
+            : kind === "money" && typeof value === "string"
+              ? format.thb(value)
+              : kind === "percent" && typeof value === "string"
+                ? format.percent(value)
+                : kind === "number" && typeof value === "number"
+                  ? format.number(value)
+                  : typeof value === "string" && ISO_DATE_TIME.test(value)
+                    ? format.dateTime(value)
+                    : typeof value === "string" && ISO_DATE.test(value)
+                      ? format.date(value)
+                      : typeof value === "string" || typeof value === "number"
+                        ? String(value)
+                        : null;
       return {
         term: t.has(`fields.${key}`) ? t(`fields.${key}`) : humanise(key),
         description:
@@ -150,15 +165,43 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
       };
     });
 
+  // The decision, in the order the panel stacks it: the one filled step first (approve, or approve-it-myself),
+  // then reject, then withdrawing one's own request.
+  const decisionActions =
+    approval.status === "pending" && (mine || selfOffer || (canAct && !blocker)) ? (
+      <>
+        {canAct && !blocker ? (
+          <Button size="lg" iconStart="check" onClick={() => setDecision("approve")}>
+            {t("approve")}
+          </Button>
+        ) : null}
+        {selfOffer ? (
+          <Button
+            size="lg"
+            variant={canAct && !blocker ? "secondary" : "primary"}
+            iconStart="key"
+            onClick={() => setDecision("self")}
+          >
+            {t("selfApprove.action")}
+          </Button>
+        ) : null}
+        {canAct && !blocker ? (
+          <Button size="lg" variant="secondary" iconStart="ban" onClick={() => setDecision("reject")}>
+            {t("reject")}
+          </Button>
+        ) : null}
+        {mine ? (
+          <Button size="lg" variant="secondary" iconStart="undo" onClick={() => setDecision("withdraw")}>
+            {t("withdraw")}
+          </Button>
+        ) : null}
+      </>
+    ) : null;
+
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/approvals" }, { label: policyLabel }]}
-          />
-        }
+        back={{ href: "/approvals", label: t("title") }}
         title={
           <span className="flex items-center gap-2">
             <Icon name={POLICY_ICONS[approval.policy] ?? "stamp"} size={22} className="text-muted" />
@@ -190,32 +233,6 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
           </>
         }
         description={t("requestedBy", { name: approval.requester.displayName })}
-        actions={
-          approval.status === "pending" ? (
-            <>
-              {mine ? (
-                <Button variant="secondary" iconStart="undo" onClick={() => setDecision("withdraw")}>
-                  {t("withdraw")}
-                </Button>
-              ) : null}
-              {selfOffer ? (
-                <Button iconStart="check" onClick={() => setDecision("self")}>
-                  {t("selfApprove.action")}
-                </Button>
-              ) : null}
-              {canAct && !blocker ? (
-                <>
-                  <Button variant="secondary" iconStart="ban" onClick={() => setDecision("reject")}>
-                    {t("reject")}
-                  </Button>
-                  <Button iconStart="check" onClick={() => setDecision("approve")}>
-                    {t("approve")}
-                  </Button>
-                </>
-              ) : null}
-            </>
-          ) : undefined
-        }
       />
 
       {waitingOnOthers && step ? (
@@ -247,8 +264,17 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
         </Callout>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="flex flex-col gap-5">
+      {/* The record on the left; the decision in a panel on the right that stays in view (first on a phone), then the
+          approval's steps and history under it. */}
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+        <aside className="flex min-w-0 flex-col gap-5 lg:sticky lg:top-20 lg:col-start-2 lg:row-start-1">
+          {decisionActions ? (
+            <ActionPanel id="approval-decision" title={tActions("nextTitle")}>
+              <ActionStack>{decisionActions}</ActionStack>
+            </ActionPanel>
+          ) : null}
+        </aside>
+        <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <Card padding="lg">
             <CardHeader>
               <CardTitle>{t("summary")}</CardTitle>
@@ -287,7 +313,7 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
           </Card>
         </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-start-2">
           <Card padding="lg">
             <CardHeader>
               <CardTitle>{t("steps")}</CardTitle>
@@ -382,6 +408,8 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
   );
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** `poNumber` → "Po number": a field the copy has no label for yet still reads as words. */

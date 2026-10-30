@@ -373,7 +373,11 @@
       "production_at_risk": "งานผลิตที่เสี่ยงส่งไม่ทัน",
       "rfq_first_response_overdue": "RFQ ที่ยังไม่ตอบครั้งแรกเกิน SLA",
       "approvals_overdue": "คำขออนุมัติที่เกินกำหนด",
-      "slip_verification_wait_hours": "สลิปที่รอตรวจนานที่สุด (ชั่วโมง)"
+      "slip_verification_wait_hours": "สลิปที่รอตรวจนานที่สุด (ชั่วโมง)",
+      "claim_response_overdue": "เคลมที่ยังไม่ตอบลูกค้าเกินกำหนด",
+      "claim_decision_overdue": "เคลมที่ยังไม่ตัดสินเกินกำหนด",
+      "conversation_first_response_overdue": "บทสนทนาที่ยังไม่ตอบครั้งแรกเกินกำหนด",
+      "journey_conversion_drops": "อัตราการซื้อในเส้นทางลูกค้าลดลง"
     }
   }
 }

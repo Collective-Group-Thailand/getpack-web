@@ -47,15 +47,18 @@ export function SamplesList({ initial }: { initial: InitialPage<AdminSample> | n
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...SAMPLE_QUEUE.map((status) => ({ value: status, label: tStatus(SAMPLE_STATUS[status].labelKey) })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={samplesList}
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...SAMPLE_QUEUE.map((status) => ({ value: status, label: tStatus(SAMPLE_STATUS[status].labelKey) })),
+            ]}
+          />
+        }
         resource={samplesList}
         columns={columns}
         caption={t("title")}

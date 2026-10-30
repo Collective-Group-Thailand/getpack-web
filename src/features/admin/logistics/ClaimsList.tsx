@@ -93,19 +93,22 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        // Where a claim waits, not every status (UX audit, /claims): open, on the customer, on the
-        // factory, closed. The other statuses are the status chip on each row.
-        tabs={[
-          { value: null, label: t("open"), countKey: "claims.open" },
-          { value: "need_info", label: t("waitingCustomer") },
-          { value: "factory_review", label: t("waitingFactory") },
-          { value: "closed", label: tStatus(CLAIM_STATUS.closed.labelKey) },
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={claimsList}
+            label={t("statusesLabel")}
+            param="status"
+            // Where a claim waits, not every status (UX audit, /claims): open, on the customer, on the
+            // factory, closed. The other statuses are the status chip on each row.
+            tabs={[
+              { value: null, label: t("open"), countKey: "claims.open" },
+              { value: "need_info", label: t("waitingCustomer") },
+              { value: "factory_review", label: t("waitingFactory") },
+              { value: "closed", label: tStatus(CLAIM_STATUS.closed.labelKey) },
+            ]}
+          />
+        }
         resource={claimsList}
         exportResource="claims"
         columns={columns}

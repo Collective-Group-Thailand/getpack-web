@@ -12,7 +12,6 @@ import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
@@ -372,12 +371,7 @@ export function RecommendationDetail({ recommendationId }: { recommendationId: s
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("log"), href: "/advisor" }, { label: format.dateTime(rec.createdAt) }]}
-          />
-        }
+        back={{ href: "/advisor", label: t("log") }}
         title={t("title", { type: types.labelOf(inputs.productTypeCode ?? "") })}
         meta={
           <>

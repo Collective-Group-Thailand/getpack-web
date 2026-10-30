@@ -40,9 +40,11 @@ const SUPPORTED = new Set<string>(["start_production", "cancel", "reprice"]);
 export function OrderActionBar({
   actions,
   onAction,
+  layout,
 }: {
   actions: Order["nextActions"];
   onAction: (key: OrderActionKey) => void;
+  layout?: "row" | "panel";
 }) {
   const t = useTranslations("orders.actions");
   const tProblems = useTranslations("problems");
@@ -58,6 +60,7 @@ export function OrderActionBar({
             : action.disabledReason,
       }))}
       supported={SUPPORTED}
+      layout={layout}
       labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
       onAction={(key) => onAction(key as OrderActionKey)}
     />

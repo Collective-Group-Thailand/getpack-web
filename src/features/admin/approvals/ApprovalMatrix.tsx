@@ -123,6 +123,7 @@ function StepsList({ steps }: { steps: readonly Step[] }) {
  */
 export function ApprovalMatrix() {
   const t = useTranslations("approvals.matrix");
+  const tTabs = useTranslations("approvals.tabs");
   const tPolicies = useTranslations("approvals.policies");
   const format = useFormat();
   const canManage = useCan("approval_policies.manage");
@@ -134,7 +135,18 @@ export function ApprovalMatrix() {
   });
   if (policies.isError) return <QueryError error={policies.error} onRetry={() => void policies.refetch()} />;
   if (!policies.data) return <Skeleton className="h-64" />;
-  if (policies.data.length === 0) return <EmptyState icon="stamp" title={t("empty")} />;
+  if (policies.data.length === 0)
+    return (
+      <EmptyState
+        icon="stamp"
+        title={t("empty")}
+        action={
+          <Button asChild variant="secondary">
+            <Link href="/approvals?tab=all">{tTabs("all")}</Link>
+          </Button>
+        }
+      />
+    );
 
   const versionLine = (version: PolicyVersion, label: string) => (
     <>

@@ -81,20 +81,23 @@ export function CompaniesList({ initial }: { initial: InitialPage<Company> | nul
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        hideEmpty
-        tabs={[
-          { value: null, label: t("all") },
-          ...COMPANY_STATUSES.map((status) => ({
-            value: status,
-            label: tStatus(COMPANY_STATUS[status].labelKey),
-            ...(status === "kyc_review" ? { countKey: "companies.kyc_review" } : {}),
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={companiesList}
+            label={t("statusesLabel")}
+            param="status"
+            hideEmpty
+            tabs={[
+              { value: null, label: t("all") },
+              ...COMPANY_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(COMPANY_STATUS[status].labelKey),
+                ...(status === "kyc_review" ? { countKey: "companies.kyc_review" } : {}),
+              })),
+            ]}
+          />
+        }
         resource={companiesList}
         exportResource="companies"
         columns={columns}

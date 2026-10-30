@@ -47,7 +47,13 @@ async function shareUrl(quote: Quote, token: string): Promise<string> {
  * and a new link, the previous one revoked — stop sharing it, or re-price an expired one into a new
  * quotation at today's prices (the old one becomes superseded).
  */
-export function QuoteActions({ quote }: { quote: Quote }) {
+export function QuoteActions({
+  quote,
+  size,
+}: {
+  quote: Quote;
+  /** `lg` in a record's next-steps panel. */ size?: "lg";
+}) {
   const t = useTranslations("cs.quoteActions");
   const format = useFormat();
   const router = useRouter();
@@ -66,17 +72,17 @@ export function QuoteActions({ quote }: { quote: Quote }) {
   return (
     <>
       {["saved", "shared"].includes(quote.status) ? (
-        <Button variant="secondary" iconStart="link" onClick={() => setOpen("share")}>
+        <Button size={size} variant="secondary" iconStart="link" onClick={() => setOpen("share")}>
           {shared ? t("shareAgain") : t("share")}
         </Button>
       ) : null}
       {shared ? (
-        <Button variant="ghost" iconStart="ban" onClick={() => setOpen("unshare")}>
+        <Button size={size} variant="ghost" iconStart="ban" onClick={() => setOpen("unshare")}>
           {t("unshare")}
         </Button>
       ) : null}
       {quote.status === "expired" ? (
-        <Button iconStart="refresh" onClick={() => setOpen("reprice")}>
+        <Button size={size} iconStart="refresh" onClick={() => setOpen("reprice")}>
           {t("reprice")}
         </Button>
       ) : null}

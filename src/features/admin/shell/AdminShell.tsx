@@ -15,6 +15,7 @@ import { ActorProvider } from "../console/actor";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminTopbar } from "./AdminTopbar";
 import { sidebarItems } from "./menu";
+import { SubnavProvider } from "./subnav";
 import { usePaletteItems } from "./palette";
 import { NAV_COOKIE, NAV_COOKIE_MAX_AGE, type NavState } from "./nav-cookie";
 
@@ -73,7 +74,7 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
   useShortcutsOverlayShortcut(openShortcuts);
 
   return (
-    <>
+    <SubnavProvider>
       <AppShell
         skipLabel={tCommon("nav.skipToContent")}
         sidebarLabel={t("nav")}
@@ -135,6 +136,6 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
           { keys: [KEYCAP.esc], description: t("shortcutEscape") },
         ]}
       />
-    </>
+    </SubnavProvider>
   );
 }

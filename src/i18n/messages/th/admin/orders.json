@@ -486,7 +486,8 @@
       "skipped": "ยกเลิก"
     },
     "dueTitle": "กำหนดส่ง",
-    "deliveryBy": "คาดว่าลูกค้าได้รับ {date}"
+    "deliveryBy": "คาดว่าลูกค้าได้รับ {date}",
+    "times": "{count, plural, other {# ครั้ง}}"
   },
   "group": {
     "title": "กลุ่มคำสั่งซื้อ",

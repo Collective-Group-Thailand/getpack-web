@@ -373,7 +373,11 @@
       "production_at_risk": "Production jobs at risk of missing their date",
       "rfq_first_response_overdue": "RFQs past their first-response SLA",
       "approvals_overdue": "Overdue approval requests",
-      "slip_verification_wait_hours": "Longest wait for slip verification (hours)"
+      "slip_verification_wait_hours": "Longest wait for slip verification (hours)",
+      "claim_response_overdue": "Claims past their response time",
+      "claim_decision_overdue": "Claims past their decision time",
+      "conversation_first_response_overdue": "Conversations past their first-response time",
+      "journey_conversion_drops": "Drops in journey conversion"
     }
   }
 }

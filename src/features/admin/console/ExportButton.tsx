@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import type { Schemas } from "@/lib/api/types";
-import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { toast } from "@/ui/components/Toast";
 
@@ -48,9 +48,7 @@ export function ExportButton({ resource, query }: { resource: ListExportResource
         { id: "csv", label: t("csv"), icon: "document", onSelect: () => exportFile.mutate("csv") },
       ]}
       trigger={
-        <Button variant="secondary" size="sm" iconStart="download" loading={exportFile.isPending}>
-          {t("label")}
-        </Button>
+        <IconButton name="download" variant="secondary" size="sm" label={t("label")} loading={exportFile.isPending} />
       }
     />
   );

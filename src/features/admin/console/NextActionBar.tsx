@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { nextActionMeta, primaryAction, type NextAction } from "@/domain/status";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
 import { DropdownMenu } from "@/ui/components/DropdownMenu";
@@ -19,6 +20,12 @@ export interface NextActionBarProps {
   /** A screen's own label for a verb, when it has one; otherwise the shared `status.action.*` label. */
   labelOf?: (verb: string) => string | undefined;
   onAction: (verb: string) => void;
+  /**
+   * `panel`: the record page's sticky next-steps panel — the lead filled across the panel, the other actions this
+   * screen performs outlined under it, destructive last; offered actions it cannot perform sit behind "⋯". `row`
+   * (default): the lead and a "⋯" side by side, for a header.
+   */
+  layout?: "row" | "panel";
 }
 
 /**
@@ -28,7 +35,7 @@ export interface NextActionBarProps {
  * app's words when the problem code has them). An action key this version cannot perform is shown disabled rather than
  * hidden, so a new backend capability is visible, not lost.
  */
-export function NextActionBar({ actions, supported, labelOf, onAction }: NextActionBarProps) {
+export function NextActionBar({ actions, supported, labelOf, onAction, layout = "row" }: NextActionBarProps) {
   const t = useTranslations("status");
   const tConsole = useTranslations("console.actions");
   const tProblems = useTranslations("problems");
@@ -56,6 +63,53 @@ export function NextActionBar({ actions, supported, labelOf, onAction }: NextAct
   };
 
   if (actions.length === 0) return null;
+
+  if (layout === "panel") {
+    const others = constructive.filter((action) => action !== lead);
+    const destructive = performable.filter((action) => nextActionMeta(action.key).tone === "danger");
+    const unsupported = actions.filter((action) => !supported.has(actionVerb(action.key)));
+    const button = (action: NextAction, variant: "primary" | "secondary" | "destructive") => (
+      <div key={action.key} className="flex flex-col gap-1">
+        <Button
+          size="lg"
+          variant={variant}
+          disabled={Boolean(action.disabledReason)}
+          iconStart={nextActionMeta(action.key).icon}
+          onClick={() => run(action)}
+        >
+          {label(action)}
+        </Button>
+        {/* A blocked step says why, in words beside it — not only in a tooltip a touch screen never shows. */}
+        {action.disabledReason ? <p className="text-muted text-xs text-pretty">{reasonOf(action)}</p> : null}
+      </div>
+    );
+    return (
+      <ActionStack>
+        {lead ? button(lead, "primary") : null}
+        {others.map((action) => button(action, "secondary"))}
+        {destructive.map((action) => button(action, "destructive"))}
+        {unsupported.length > 0 ? (
+          <DropdownMenu
+            label={tConsole("more")}
+            align="end"
+            items={unsupported.map((action) => ({
+              id: action.key,
+              label: label(action),
+              description: reasonOf(action) ?? tConsole("unsupported"),
+              icon: nextActionMeta(action.key).icon,
+              disabled: true,
+              onSelect: () => undefined,
+            }))}
+            trigger={
+              <Button size="lg" variant="ghost" iconStart="more">
+                {tConsole("more")}
+              </Button>
+            }
+          />
+        ) : null}
+      </ActionStack>
+    );
+  }
 
   return (
     <>

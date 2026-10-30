@@ -65,13 +65,20 @@ const KIND_ICONS: Record<string, IconName> = {
  */
 export function OrderRail({ order }: { order: Order }) {
   return (
-    // Sticky beside the tabs on a wide screen (UX audit, order detail: "rail sticky").
-    <div className="flex flex-col gap-4 xl:sticky xl:top-24 xl:self-start">
+    <>
       <OrderStages order={order} />
       <DueCard order={order} />
-      <Notes orderId={order.id} />
+    </>
+  );
+}
+
+/** The rail's record: what happened (the timeline, repeats folded) and the team's internal notes. */
+export function OrderHistory({ order }: { order: Order }) {
+  return (
+    <>
       <OrderTimeline orderId={order.id} />
-    </div>
+      <Notes orderId={order.id} />
+    </>
   );
 }
 
@@ -147,8 +154,29 @@ function useEntryTitle() {
       const label = locale === "en" && typeof params.labelEn === "string" ? params.labelEn : params.labelTh;
       return t("production_milestone", { stage: label });
     }
-    return KNOWN_TYPES.has(entry.type) ? t(entry.type.replace(".", "_")) : t("other");
+    if (KNOWN_TYPES.has(entry.type)) return t(entry.type.replace(".", "_"));
+    // The API's own words for the event, before the desk's generic "updated".
+    const message = locale === "en" ? entry.messageEn : entry.messageTh;
+    return message || t("other");
   };
+}
+
+/** Folds runs of entries with the same title, actor and body into the newest of them, counting the run. */
+function foldRepeats(entries: Entry[], title: (entry: Entry) => string): (Entry & { times: number })[] {
+  const folded: (Entry & { times: number })[] = [];
+  for (const entry of entries) {
+    const last = folded.at(-1);
+    const same =
+      last &&
+      !entry.promisedAt &&
+      !last.promisedAt &&
+      title(last) === title(entry) &&
+      (last.actor?.displayName ?? null) === (entry.actor?.displayName ?? null) &&
+      (last.body ?? null) === (entry.body ?? null);
+    if (same) last.times += Math.max(1, entry.count);
+    else folded.push({ ...entry, times: Math.max(1, entry.count) });
+  }
+  return folded;
 }
 
 function OrderTimeline({ orderId }: { orderId: string }) {
@@ -167,7 +195,9 @@ function OrderTimeline({ orderId }: { orderId: string }) {
     getNextPageParam: (last) => last.meta.nextCursor ?? undefined,
     staleTime: STALE_TIME.transactional,
   });
-  const entries = feed.data?.pages.flatMap((page) => page.data) ?? [];
+  // Consecutive entries that say the same thing (the order updated twelve times in a row) are one line with a count:
+  // the newest time, how many, and no wall of identical rows.
+  const entries = foldRepeats(feed.data?.pages.flatMap((page) => page.data) ?? [], title);
 
   return (
     <Card padding="md">
@@ -182,6 +212,11 @@ function OrderTimeline({ orderId }: { orderId: string }) {
           title: (
             <span className="flex flex-wrap items-center gap-1">
               {title(entry)}
+              {entry.times > 1 ? (
+                <span className="text-muted text-xs font-normal tabular-nums">
+                  {t("times", { count: entry.times })}
+                </span>
+              ) : null}
               {entry.visibility.includes("internal") && !entry.visibility.includes("customer") ? (
                 <Badge size="sm">{t("internal")}</Badge>
               ) : null}

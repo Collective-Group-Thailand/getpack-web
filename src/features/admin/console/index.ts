@@ -18,7 +18,7 @@ export { FilterControl, ListSearch, useDebouncedValue, type FilterDef } from "./
 export { actionVerb, NextActionBar, type NextActionBarProps } from "./NextActionBar";
 export { parseListState, serialiseListState, toApiQuery, type ListDefaults, type ListState } from "./list-state";
 export { problemMessage, QueryError } from "./QueryError";
-export { QueueTabs, useQueues, type QueueTab } from "./queues";
+export { listTotalQuery, QueueTabs, tabQuery, useQueues, type QueueTab, type TabCountSource } from "./queues";
 export { asPage, defineList, shortRef, type InitialPage, type ListResource } from "./resource";
 export { ResourceList, type ResourceListProps } from "./ResourceList";
 export { SavedViews } from "./SavedViews";

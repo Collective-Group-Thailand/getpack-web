@@ -11,7 +11,7 @@ import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
+import { ActionPanel } from "@/ui/components/DetailLayout";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
@@ -42,6 +42,7 @@ import { draftOf, type Rfq, type RfqTab } from "./resources";
  */
 export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq | null; tab: RfqTab }) {
   const t = useTranslations("rfq.detail");
+  const tActions = useTranslations("console.actions");
   const format = useFormat();
   const pathname = usePathname();
   const router = useRouter();
@@ -129,38 +130,26 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-bg z-sticky sticky top-16 -mx-4 border-b border-transparent px-4 pt-1 pb-3 md:-mx-6 md:px-6">
-        <PageHeader
-          breadcrumbs={
-            <Breadcrumbs label={t("breadcrumb")} items={[{ label: t("rfqs"), href: "/rfq" }, { label: rfq.rfqCode }]} />
-          }
-          title={<span className="tabular-nums">{rfq.rfqCode}</span>}
-          meta={
-            <>
-              <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
-              {rfq.overdue ? (
-                <Badge tone="danger" icon="warning">
-                  {t("overdue")}
-                </Badge>
-              ) : null}
-              {rfq.routedFromCalculator ? <Badge icon="calculator">{t("routed")}</Badge> : null}
-            </>
-          }
-          description={t("headline", {
-            customer: rfq.customer.displayName,
-            type: rfq.productTypeName,
-            quantities: rfq.quantities.map((quantity) => format.number(quantity)).join(" / "),
-          })}
-          actions={
-            <RfqActionBar
-              rfq={rfq}
-              onAction={(key) => {
-                if (!starting) void run(key);
-              }}
-            />
-          }
-        />
-      </div>
+      <PageHeader
+        back={{ href: "/rfq", label: t("rfqs") }}
+        title={<span className="tabular-nums">{rfq.rfqCode}</span>}
+        meta={
+          <>
+            <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
+            {rfq.overdue ? (
+              <Badge tone="danger" icon="warning">
+                {t("overdue")}
+              </Badge>
+            ) : null}
+            {rfq.routedFromCalculator ? <Badge icon="calculator">{t("routed")}</Badge> : null}
+          </>
+        }
+        description={t("headline", {
+          customer: rfq.customer.displayName,
+          type: rfq.productTypeName,
+          quantities: rfq.quantities.map((quantity) => format.number(quantity)).join(" / "),
+        })}
+      />
 
       {rfq.status === "declined" && declineReason ? (
         // CONTRACT-GAP admin.rfqs — the published RFQ keeps the reason code, not the decline note.
@@ -180,10 +169,29 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
         />
       ) : null}
 
-      {/* 8:4 — the request's tabs, and the rail: where the RFQ stands, its SLA and the customer. */}
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Tabs label={t("tabsLabel")} items={tabs} value={current} onValueChange={go} />
-        <RfqRail rfq={rfq} onAssign={offered.has("assign") ? () => setAction("assign") : undefined} />
+      {/* The request's tabs, and beside them the next step with where the RFQ stands, its SLA and the customer —
+          first on a phone, before the long tabs. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] xl:gap-8">
+        <aside className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-20 xl:col-start-2 xl:row-start-1">
+          <ActionPanel
+            id="rfq-next"
+            tone={rfq.nextActions.length > 0 ? "primary" : "neutral"}
+            title={tActions("nextTitle")}
+            description={rfq.nextActions.length > 0 ? undefined : tActions("nothingNext")}
+          >
+            <RfqActionBar
+              rfq={rfq}
+              layout="panel"
+              onAction={(key) => {
+                if (!starting) void run(key);
+              }}
+            />
+          </ActionPanel>
+          <RfqRail rfq={rfq} onAssign={offered.has("assign") ? () => setAction("assign") : undefined} />
+        </aside>
+        <div className="min-w-0 xl:col-start-1 xl:row-start-1">
+          <Tabs label={t("tabsLabel")} items={tabs} value={current} onValueChange={go} />
+        </div>
       </div>
 
       <RfqActionDialogs rfq={rfq} open={action} onClose={() => setAction(null)} />
@@ -256,7 +264,7 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
   ] as const;
 
   return (
-    <div className="flex flex-col gap-4 xl:sticky xl:top-24 xl:self-start">
+    <div className="flex flex-col gap-4">
       <StageList
         title={t("stagesTitle")}
         stages={stages.map((stage) => ({ ...stage, label: t(`stages.${stage.key}`) }))}

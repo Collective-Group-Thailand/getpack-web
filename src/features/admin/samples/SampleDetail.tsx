@@ -11,11 +11,12 @@ import { useFormat, When } from "@/features/shared/format";
 import { EvidenceForm } from "@/features/shared/samples/EvidenceForm";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
@@ -51,6 +52,7 @@ function Photo({ id, alt }: { id: string; alt: string }) {
  */
 export function SampleDetail({ sampleId }: { sampleId: string }) {
   const t = useTranslations("orders.samples");
+  const tActions = useTranslations("console.actions");
   const tEvidence = useTranslations("common.sampleEvidence");
   const locale = useLocale() as "th" | "en";
   const format = useFormat();
@@ -90,15 +92,33 @@ export function SampleDetail({ sampleId }: { sampleId: string }) {
   const ev = sample.evidence;
   const itemOptions = (items.data ?? []).map((i) => ({ value: i.id, label: locale === "en" ? i.nameEn : i.nameTh }));
 
+  const cancellable = !["approved", "rejected", "cancelled", "expired"].includes(sample.status);
+  // The sample's steps, stacked: quote it (the one filled step), resample, and cancelling last.
+  const nextSteps =
+    canManage && (sample.status === "requested" || cancellable) ? (
+      <>
+        {sample.status === "requested" ? (
+          <Button size="lg" onClick={() => setDialog("quote")}>
+            {t("quote")}
+          </Button>
+        ) : null}
+        {sample.status === "changes_requested" && sample.kind === "attached" && sample.orderId ? (
+          <Button size="lg" variant="secondary" onClick={() => setDialog("resample")}>
+            {t("resample")}
+          </Button>
+        ) : null}
+        {cancellable ? (
+          <Button size="lg" variant="destructive" onClick={() => setDialog("cancel")}>
+            {t("cancel")}
+          </Button>
+        ) : null}
+      </>
+    ) : null;
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/samples" }, { label: t(`mockup.${sample.mockupOption}`) }]}
-          />
-        }
+        back={{ href: "/samples", label: t("title") }}
         title={t("detailTitle", { kind: t(`mockup.${sample.mockupOption}`) })}
         meta={
           <>
@@ -106,132 +126,135 @@ export function SampleDetail({ sampleId }: { sampleId: string }) {
             <StatusChip map={SAMPLE_KIND} value={sample.kind} />
           </>
         }
-        actions={
-          canManage ? (
-            <div className="flex flex-wrap gap-2">
-              {sample.status === "requested" ? <Button onClick={() => setDialog("quote")}>{t("quote")}</Button> : null}
-              {sample.status === "changes_requested" && sample.kind === "attached" && sample.orderId ? (
-                <Button variant="secondary" onClick={() => setDialog("resample")}>
-                  {t("resample")}
-                </Button>
-              ) : null}
-              {!["approved", "rejected", "cancelled", "expired"].includes(sample.status) ? (
-                <Button variant="ghost" className="text-danger" onClick={() => setDialog("cancel")}>
-                  {t("cancel")}
-                </Button>
-              ) : null}
-            </div>
-          ) : null
-        }
       />
 
-      <Section title={t("request")}>
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: t("customer"), description: sample.customerName ?? "—" },
-            {
-              term: t("order"),
-              description: sample.orderId ? (
-                <Link href={`/orders/${sample.orderId}`} className="text-primary hover:underline">
-                  {sample.orderCode}
-                </Link>
-              ) : (
-                t("noOrder")
-              ),
-            },
-            { term: t("quantity"), description: format.number(sample.quantity) },
-            {
-              term: t("size"),
-              description:
-                [config.l, config.w, config.d]
-                  .filter((n) => typeof n === "number")
-                  .map((n) => format.number(n as number))
-                  .join(" × ") || "—",
-            },
-            { term: t("customerNote"), description: sample.customerNote ?? "—" },
-            { term: t("asked"), description: <When at={sample.createdAt} /> },
-            ...(sample.sellGrossAmount ? [{ term: t("sell"), description: format.thb(sample.sellGrossAmount) }] : []),
-            ...(sample.buyNetAmount ? [{ term: t("buy"), description: format.thb(sample.buyNetAmount) }] : []),
-            ...(sample.previousSampleId
-              ? [
+      {/* The evidence (the work of this page) on the left; what the customer asked and the next step on the right —
+          first on a phone. */}
+      <DetailLayout
+        aside={
+          <>
+            {nextSteps ? (
+              <ActionPanel
+                id="sample-next"
+                // Only a cancel left: the panel stays on paper, not the tint that asks for a step.
+                tone={sample.status === "requested" ? "primary" : "neutral"}
+                title={tActions("nextTitle")}
+              >
+                <ActionStack>{nextSteps}</ActionStack>
+              </ActionPanel>
+            ) : null}
+            <Section title={t("request")}>
+              <DescriptionList
+                columns={1}
+                items={[
+                  { term: t("customer"), description: sample.customerName ?? "—" },
                   {
-                    term: t("previous"),
-                    description: (
-                      <Link href={`/samples/${sample.previousSampleId}`} className="text-primary hover:underline">
-                        {t("openPrevious")}
+                    term: t("order"),
+                    description: sample.orderId ? (
+                      <Link href={`/orders/${sample.orderId}`} className="text-primary hover:underline">
+                        {sample.orderCode}
                       </Link>
+                    ) : (
+                      t("noOrder")
                     ),
                   },
-                ]
-              : []),
-          ]}
-        />
-      </Section>
+                  { term: t("quantity"), description: format.number(sample.quantity) },
+                  {
+                    term: t("size"),
+                    description:
+                      [config.l, config.w, config.d]
+                        .filter((n) => typeof n === "number")
+                        .map((n) => format.number(n as number))
+                        .join(" × ") || "—",
+                  },
+                  { term: t("customerNote"), description: sample.customerNote ?? "—" },
+                  { term: t("asked"), description: <When at={sample.createdAt} /> },
+                  ...(sample.sellGrossAmount
+                    ? [{ term: t("sell"), description: format.thb(sample.sellGrossAmount) }]
+                    : []),
+                  ...(sample.buyNetAmount ? [{ term: t("buy"), description: format.thb(sample.buyNetAmount) }] : []),
+                  ...(sample.previousSampleId
+                    ? [
+                        {
+                          term: t("previous"),
+                          description: (
+                            <Link href={`/samples/${sample.previousSampleId}`} className="text-primary hover:underline">
+                              {t("openPrevious")}
+                            </Link>
+                          ),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </Section>
+          </>
+        }
+      >
+        <Section title={t("evidence")} description={ev.recordedAt ? undefined : t("evidenceHint")}>
+          {ev.recordedAt ? (
+            <div className="flex flex-col gap-3">
+              <DescriptionList
+                columns={2}
+                items={[
+                  {
+                    term: t("measured"),
+                    description: `${[ev.lengthMm, ev.widthMm, ev.depthMm].filter(Boolean).join(" × ")} · ${ev.basis ? tEvidence(`bases.${ev.basis}` as never) : ""}`,
+                  },
+                  { term: t("materialUsed"), description: ev.materialUsed ?? "—" },
+                  { term: t("recordedAt"), description: <When at={ev.recordedAt} /> },
+                ]}
+              />
+              <ul className="flex flex-wrap gap-3">
+                {ev.photos.map((p, i) => (
+                  <li key={p.id}>
+                    <Photo id={p.id} alt={t("photo", { n: i + 1 })} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : canManage && ["paid", "in_production"].includes(sample.status) ? (
+            <EvidenceForm
+              zone="admin"
+              onSubmit={async (body) => {
+                try {
+                  const { data } = await adminBrowserApis().contract.POST("/v1/admin/samples/{sampleId}/evidence", {
+                    ...path,
+                    body,
+                  });
+                  settle(data as unknown as AdminSample);
+                  toast.success(tEvidence("recorded"));
+                } catch (error) {
+                  toast.error(problemMessage(error, t("failed")));
+                }
+              }}
+            />
+          ) : (
+            <p className="text-muted text-sm">{t("noEvidence")}</p>
+          )}
+        </Section>
 
-      <Section title={t("evidence")} description={ev.recordedAt ? undefined : t("evidenceHint")}>
-        {ev.recordedAt ? (
-          <div className="flex flex-col gap-3">
+        {sample.decision ? (
+          <Section title={t("decision")}>
             <DescriptionList
               columns={2}
               items={[
+                { term: t("decidedAt"), description: <When at={sample.decision.decidedAt} /> },
                 {
-                  term: t("measured"),
-                  description: `${[ev.lengthMm, ev.widthMm, ev.depthMm].filter(Boolean).join(" × ")} · ${ev.basis ? tEvidence(`bases.${ev.basis}` as never) : ""}`,
+                  term: t("note"),
+                  description: <span className="whitespace-pre-line">{sample.decision.note ?? "—"}</span>,
                 },
-                { term: t("materialUsed"), description: ev.materialUsed ?? "—" },
-                { term: t("recordedAt"), description: <When at={ev.recordedAt} /> },
+                { term: t("photosSeen"), description: format.number(sample.decision.evidencePhotoSha256.length) },
+                { term: t("ip"), description: sample.decisionIp ?? "—" },
+                {
+                  term: t("userAgent"),
+                  description: <span className="break-all">{sample.decisionUserAgent ?? "—"}</span>,
+                },
               ]}
             />
-            <ul className="flex flex-wrap gap-3">
-              {ev.photos.map((p, i) => (
-                <li key={p.id}>
-                  <Photo id={p.id} alt={t("photo", { n: i + 1 })} />
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : canManage && ["paid", "in_production"].includes(sample.status) ? (
-          <EvidenceForm
-            zone="admin"
-            onSubmit={async (body) => {
-              try {
-                const { data } = await adminBrowserApis().contract.POST("/v1/admin/samples/{sampleId}/evidence", {
-                  ...path,
-                  body,
-                });
-                settle(data as unknown as AdminSample);
-                toast.success(tEvidence("recorded"));
-              } catch (error) {
-                toast.error(problemMessage(error, t("failed")));
-              }
-            }}
-          />
-        ) : (
-          <p className="text-muted text-sm">{t("noEvidence")}</p>
-        )}
-      </Section>
-
-      {sample.decision ? (
-        <Section title={t("decision")}>
-          <DescriptionList
-            columns={2}
-            items={[
-              { term: t("decidedAt"), description: <When at={sample.decision.decidedAt} /> },
-              {
-                term: t("note"),
-                description: <span className="whitespace-pre-line">{sample.decision.note ?? "—"}</span>,
-              },
-              { term: t("photosSeen"), description: format.number(sample.decision.evidencePhotoSha256.length) },
-              { term: t("ip"), description: sample.decisionIp ?? "—" },
-              {
-                term: t("userAgent"),
-                description: <span className="break-all">{sample.decisionUserAgent ?? "—"}</span>,
-              },
-            ]}
-          />
-        </Section>
-      ) : null}
+          </Section>
+        ) : null}
+      </DetailLayout>
 
       {dialog === "quote" ? (
         <FormDialog

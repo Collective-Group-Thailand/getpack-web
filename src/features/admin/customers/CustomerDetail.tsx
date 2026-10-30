@@ -11,7 +11,7 @@ import { POINTS_STATUS, REFERRAL_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
+import { StatsRow } from "@/ui/components/DeskPage";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -45,6 +45,8 @@ export function CustomerDetail({
   tab: CustomerTab;
 }) {
   const t = useTranslations("customers.detail");
+  const tPoints = useTranslations("customers.points");
+  const format = useFormat();
   const pathname = usePathname();
   const [current, setCurrent] = useState<string>(tab);
   const query = useQuery({
@@ -67,15 +69,7 @@ export function CustomerDetail({
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[
-              { label: t("customers"), href: "/customers" },
-              { label: customer.customerCode ?? customer.displayName },
-            ]}
-          />
-        }
+        back={{ href: "/customers", label: t("customers") }}
         title={customer.displayName}
         meta={
           <>
@@ -90,6 +84,29 @@ export function CustomerDetail({
             ) : null}
           </>
         }
+      />
+      {/* What the customer is worth at a glance, from the API: orders, the 12-month spend and points. */}
+      <StatsRow
+        label={t("profile")}
+        items={[
+          { key: "orders", label: t("orders"), value: format.number(customer.ordersCount) },
+          {
+            key: "lastOrder",
+            label: t("lastOrder"),
+            value: customer.lastOrderAt ? format.date(customer.lastOrderAt) : t("never"),
+          },
+          ...(loyalty.data
+            ? [
+                { key: "spend", label: t("spend12m"), value: format.thb(loyalty.data.spend12m) },
+                {
+                  key: "points",
+                  label: tPoints("available"),
+                  value: format.number(loyalty.data.availablePoints),
+                  hint: tPoints("worth", { value: format.thb(loyalty.data.availableValue) }),
+                },
+              ]
+            : []),
+        ]}
       />
       <Tabs
         label={t("tabsLabel")}

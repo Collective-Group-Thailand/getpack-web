@@ -54,17 +54,20 @@ export function InboxList({ initial }: { initial: InitialPage<Conversation> | nu
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("queuesLabel")}
-        param="sla"
-        tabs={[
-          { value: null, label: t("all") },
-          { value: "overdue", label: tStatus(CONVERSATION_SLA.overdue.labelKey) },
-          { value: "waiting", label: tStatus(CONVERSATION_SLA.waiting.labelKey) },
-          { value: "answered", label: tStatus(CONVERSATION_SLA.answered.labelKey) },
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={inboxList}
+            label={t("queuesLabel")}
+            param="sla"
+            tabs={[
+              { value: null, label: t("all") },
+              { value: "overdue", label: tStatus(CONVERSATION_SLA.overdue.labelKey) },
+              { value: "waiting", label: tStatus(CONVERSATION_SLA.waiting.labelKey) },
+              { value: "answered", label: tStatus(CONVERSATION_SLA.answered.labelKey) },
+            ]}
+          />
+        }
         resource={inboxList}
         columns={columns}
         caption={t("title")}

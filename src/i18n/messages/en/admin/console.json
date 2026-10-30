@@ -3,7 +3,8 @@
     "any": "Any",
     "clearSearch": "Clear search",
     "from": "From",
-    "to": "To"
+    "to": "To",
+    "pickDate": "Pick a date"
   },
   "list": {
     "toolbar": "Filters and tools",
@@ -22,7 +23,8 @@
     "next": "Next page",
     "range": "Showing {from}–{to} of {total}",
     "pageOf": "Page {page} of {pages}",
-    "perPage": "Rows per page"
+    "perPage": "Rows per page",
+    "filters": "Filters"
   },
   "views": {
     "label": "Saved views",
@@ -97,7 +99,9 @@
   },
   "actions": {
     "more": "More actions",
-    "unsupported": "Not available on this screen yet"
+    "unsupported": "Not available on this screen yet",
+    "nextTitle": "Next step",
+    "nothingNext": "Nothing to do on this record right now"
   },
   "assign": {
     "person": "Staff member",

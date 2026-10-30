@@ -13,6 +13,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Toolbar } from "@/ui/components/PageHeader";
 import { Pagination } from "@/ui/components/Pagination";
 import { Button } from "@/ui/components/Button";
+import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis } from "./api";
 import { ExportButton, type ListExportResource } from "./ExportButton";
@@ -43,6 +44,8 @@ export interface ResourceListProps<TRow extends object> {
   exportResource?: ListExportResource;
   /** Extra controls at the end of the toolbar (import, create). */
   toolbarEnd?: React.ReactNode;
+  /** The list's views (`QueueTabs`): drawn at the start of the toolbar's one row, the search across from them. */
+  views?: React.ReactNode;
   empty?: { title: string; description?: string; action?: React.ReactNode };
 }
 
@@ -72,6 +75,7 @@ export function ResourceList<TRow extends object>({
   savedViews = true,
   exportResource,
   toolbarEnd,
+  views,
   empty,
 }: ResourceListProps<TRow>) {
   const t = useTranslations("console.list");
@@ -95,49 +99,68 @@ export function ResourceList<TRow extends object>({
   const meta = query.data?.meta;
   const resourceName = resource.resourceName ?? resource.key;
   const currentViewQuery = viewQuery(state, defaults);
+  // A tab's own parameter is the view, not a narrowing: only search and the other filters offer "clear".
+  const narrowed =
+    Boolean(state.q) ||
+    Object.entries(state.filters).some(
+      ([key, value]) => filters.some((filter) => filter.id === key) && value !== (defaults.filters ?? {})[key],
+    );
+
+  const filterControls = (
+    <Toolbar label={t("filters")} className="gap-x-3 gap-y-2">
+      {filters.map((filter) => (
+        <FilterControl
+          key={filter.id}
+          filter={filter}
+          value={state.filters[filter.id]}
+          onChange={(value) => setFilter(filter.id, value)}
+        />
+      ))}
+      {narrowed ? (
+        <Button variant="ghost" onClick={() => update({ q: "", filters: { ...defaults.filters } })}>
+          {t("clearFilters")}
+        </Button>
+      ) : null}
+    </Toolbar>
+  );
 
   return (
     <div className="flex flex-col gap-3">
-      <Toolbar label={t("toolbar")}>
-        {searchLabel ? (
-          <ListSearch
-            value={state.q}
-            onChange={(q) => update({ q })}
-            label={searchLabel}
-            placeholder={searchPlaceholder}
-          />
-        ) : null}
-        {filters.map((filter) => (
-          <FilterControl
-            key={filter.id}
-            filter={filter}
-            value={state.filters[filter.id]}
-            onChange={(value) => setFilter(filter.id, value)}
-          />
-        ))}
-        {state.q || JSON.stringify(state.filters) !== JSON.stringify(defaults.filters ?? {}) ? (
-          <Button variant="ghost" onClick={() => update({ q: "", filters: { ...defaults.filters } })}>
-            {t("clearFilters")}
-          </Button>
-        ) : null}
-        <div className="ms-auto flex flex-wrap items-end gap-2 max-md:ms-0">
+      {/* One row over the list (the partner ERP toolbar): the views on the left; the search and the list's tools
+          across from them. The filters, when the list has any, are a lighter line under it. */}
+      <div className={cn("flex flex-wrap justify-between gap-3", views ? "items-center" : "items-end")}>
+        {/* A list without views keeps its filters on this one row, at its start. */}
+        {views ?? (filters.length > 0 || narrowed ? filterControls : null)}
+        <div role="toolbar" aria-label={t("toolbar")} className="flex flex-wrap items-center gap-2 max-md:w-full">
+          {searchLabel ? (
+            <ListSearch
+              value={state.q}
+              onChange={(q) => update({ q })}
+              label={searchLabel}
+              placeholder={searchPlaceholder}
+            />
+          ) : null}
           {savedViews ? (
             <SavedViews resource={resourceName} currentQuery={currentViewQuery} columns={null} onApply={applyQuery} />
           ) : null}
-          <ColumnToggle
-            label={t("columns")}
-            columns={columns.map((column) => ({
-              id: column.id,
-              label: typeof column.header === "string" ? column.header : column.id,
-              hideable: column.hideable,
-            }))}
-            hidden={state.hidden}
-            onHiddenChange={(hidden) => update({ hidden })}
-          />
+          {/* Columns are a desk matter: a phone shows each row as a card. */}
+          <span className="max-md:hidden">
+            <ColumnToggle
+              label={t("columns")}
+              columns={columns.map((column) => ({
+                id: column.id,
+                label: typeof column.header === "string" ? column.header : column.id,
+                hideable: column.hideable,
+              }))}
+              hidden={state.hidden}
+              onHiddenChange={(hidden) => update({ hidden })}
+            />
+          </span>
           {exportResource ? <ExportButton resource={exportResource} query={currentViewQuery} /> : null}
           {toolbarEnd}
         </div>
-      </Toolbar>
+      </div>
+      {views && (filters.length > 0 || narrowed) ? filterControls : null}
 
       {bulkActions && selected.length > 0 ? (
         <div

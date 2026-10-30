@@ -54,13 +54,22 @@ export function useDisabledReason() {
 }
 
 /** The RFQ's own `nextActions`, as the API offered them — see `NextActionBar`. */
-export function RfqActionBar({ rfq, onAction }: { rfq: Rfq; onAction: (key: RfqActionKey) => void }) {
+export function RfqActionBar({
+  rfq,
+  onAction,
+  layout,
+}: {
+  rfq: Rfq;
+  onAction: (key: RfqActionKey) => void;
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("rfq.actions");
   const reasonOf = useDisabledReason();
   return (
     <NextActionBar
       actions={rfq.nextActions.map((action) => ({ ...action, disabledReason: reasonOf(action.disabledReason) }))}
       supported={SUPPORTED}
+      layout={layout}
       labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
       onAction={(key) => onAction(key as RfqActionKey)}
     />
