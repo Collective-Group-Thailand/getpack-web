@@ -37,6 +37,7 @@ import {
   useCan,
 } from "../console";
 import { FileButton, FileList } from "./files";
+import { HandoverPanel } from "./HandoverPanel";
 import type { Shipment } from "./resources";
 import { piecesOf } from "./ShipmentsList";
 import { PodDialog, StatusDialog } from "./ShipmentUpdates";
@@ -376,6 +377,7 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
         </div>
 
         <div className="flex flex-col gap-5">
+          <HandoverPanel shipment={shipment} />
           <Section title={t("destination")}>
             <address className="text-sm not-italic">
               <p className="font-medium">{shipment.destination.recipientName}</p>

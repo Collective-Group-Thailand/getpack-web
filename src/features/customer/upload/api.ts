@@ -12,7 +12,8 @@ import type { Schemas } from "@/lib/api/types";
 export type FileCheck = Schemas["FileCheckDto"];
 export type FileCheckVersion = Schemas["FileCheckVersionDto"];
 export type FileCheckItem = Schemas["FileCheckItemDto"];
-export type FileCheckRules = Schemas["FileCheckRulesDto"];
+/** CONTRACT-SKEW (D-460): `corrugatedSafeZoneMm` is not in the vendored contract yet; read as optional. */
+export type FileCheckRules = Schemas["FileCheckRulesDto"] & { corrugatedSafeZoneMm?: string | null };
 export type PrintMethod = Schemas["PrintSideMethod"];
 
 const RESOURCE = "file-checks";

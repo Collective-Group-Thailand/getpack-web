@@ -2828,6 +2828,39 @@
           "type": "https://errors.getpack/guarantee.version_pending"
         }
       },
+      "problem.handover.expired": {
+        "summary": "handover.expired",
+        "value": {
+          "code": "handover.expired",
+          "detail": "ลิงก์รับส่งสินค้านี้ใช้ไม่ได้แล้ว (ส่งของเสร็จแล้วหรือลิงก์หมดอายุ) โปรดขอลิงก์ใหม่จาก getpack",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 410,
+          "title": "ลิงก์หมดอายุ",
+          "type": "https://errors.getpack/handover.expired"
+        }
+      },
+      "problem.handover.not_ready": {
+        "summary": "handover.not_ready",
+        "value": {
+          "code": "handover.not_ready",
+          "detail": "การจัดส่งนี้ยังไม่พร้อมให้รับสินค้า โปรดติดต่อ getpack",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 409,
+          "title": "ยังรับสินค้าไม่ได้",
+          "type": "https://errors.getpack/handover.not_ready"
+        }
+      },
+      "problem.handover.scan_mismatch": {
+        "summary": "handover.scan_mismatch",
+        "value": {
+          "code": "handover.scan_mismatch",
+          "detail": "กล่องที่สแกนไม่ได้อยู่ในการจัดส่งนี้",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 422,
+          "title": "กล่องไม่ตรงกับการจัดส่ง",
+          "type": "https://errors.getpack/handover.scan_mismatch"
+        }
+      },
       "problem.http.bad_request": {
         "summary": "http.bad_request",
         "value": {
@@ -9505,6 +9538,82 @@
         ],
         "type": "object"
       },
+      "AdminJobDestinationDto": {
+        "properties": {
+          "code": {
+            "description": "Code within the job (`D1`, `D2` …) by the order’s destination order (P4-D1)",
+            "example": "D1",
+            "type": "string"
+          },
+          "id": {
+            "description": "Referenced by shipment items (B4.3)",
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
+            "format": "uuid",
+            "type": "string"
+          },
+          "line1": {
+            "example": "1 ถนนทดสอบ",
+            "type": "string"
+          },
+          "line2": {
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "example": "+66810001234",
+            "type": "string"
+          },
+          "postcode": {
+            "example": "10110",
+            "type": "string"
+          },
+          "postcodePrefix": {
+            "description": "First three digits of the postcode, for shipping cost (P4-D1: never the full postcode)",
+            "example": "101",
+            "type": "string"
+          },
+          "provinceNameEn": {
+            "example": "Bangkok",
+            "type": "string"
+          },
+          "provinceNameTh": {
+            "example": "กรุงเทพมหานคร",
+            "type": "string"
+          },
+          "quantity": {
+            "example": 1000,
+            "type": "integer"
+          },
+          "recipientName": {
+            "description": "Recipient (D-142); never on the partner surface (P4-D1)",
+            "example": "ผู้รับ ทดสอบ",
+            "type": "string"
+          },
+          "shippedQuantity": {
+            "description": "Pieces on live shipments of this job (not cancelled / returned)",
+            "example": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "postcodePrefix",
+          "provinceNameTh",
+          "provinceNameEn",
+          "quantity",
+          "shippedQuantity",
+          "recipientName",
+          "phone",
+          "line1",
+          "line2",
+          "postcode"
+        ],
+        "type": "object"
+      },
       "AdminJobDto": {
         "properties": {
           "acceptDueAt": {
@@ -9578,8 +9687,9 @@
             ]
           },
           "destinations": {
+            "description": "With the recipient’s contact (staff only; the factory sees codes, P4-D1)",
             "items": {
-              "$ref": "#/components/schemas/JobDestinationDto"
+              "$ref": "#/components/schemas/AdminJobDestinationDto"
             },
             "type": "array"
           },
@@ -12677,6 +12787,57 @@
         ],
         "type": "object"
       },
+      "AdminShipmentDestinationDto": {
+        "properties": {
+          "code": {
+            "description": "The job destination’s code (`D1`, `D2` …) of the trip’s first item (P4-D1)",
+            "example": "D1",
+            "type": "string"
+          },
+          "line1": {
+            "example": "99/9 ถนนสุขุมวิท",
+            "type": "string"
+          },
+          "line2": {
+            "example": "แขวงคลองตัน เขตคลองเตย",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "example": "+66810001234",
+            "type": "string"
+          },
+          "postcode": {
+            "example": "10110",
+            "type": "string"
+          },
+          "postcodePrefix": {
+            "description": "First three digits of the postcode (P4-D1)",
+            "example": "101",
+            "type": "string"
+          },
+          "province": {
+            "$ref": "#/components/schemas/GeoRefDto"
+          },
+          "recipientName": {
+            "example": "สมหญิง ใจดี",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "postcodePrefix",
+          "province",
+          "recipientName",
+          "phone",
+          "line1",
+          "line2",
+          "postcode"
+        ],
+        "type": "object"
+      },
       "AdminShipmentDto": {
         "properties": {
           "blockedByPayment": {
@@ -12753,7 +12914,12 @@
             ]
           },
           "destination": {
-            "$ref": "#/components/schemas/ShipmentDestinationDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminShipmentDestinationDto"
+              }
+            ],
+            "description": "With the recipient’s contact (staff only)"
           },
           "events": {
             "items": {
@@ -12780,6 +12946,17 @@
             "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
             "format": "uuid",
             "type": "string"
+          },
+          "handover": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShipmentHandoverSummaryDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "D-462: the latest driver handover link (no token — regenerate to get a new URL); null until issued"
           },
           "id": {
             "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
@@ -12930,6 +13107,11 @@
               "null"
             ]
           },
+          "waybillIssued": {
+            "description": "D-462: getpack has issued the carrier waybill (a driver handover link or a fallback-carrier booking) — \"ส่งใบปะหน้าให้ผู้ขนส่งแล้ว\". The recipient’s details go to the carrier only; the factory never receives them.",
+            "example": false,
+            "type": "boolean"
+          },
           "weightG": {
             "example": 18000,
             "type": "integer"
@@ -12960,6 +13142,7 @@
           "cartons",
           "blockedByPayment",
           "carrierRequest",
+          "waybillIssued",
           "nextActions",
           "factoryId",
           "factoryCode",
@@ -12971,7 +13154,8 @@
           "cancelReason",
           "exception",
           "podReview",
-          "splitFrom"
+          "splitFrom",
+          "handover"
         ],
         "type": "object"
       },
@@ -27954,6 +28138,32 @@
         ],
         "type": "object"
       },
+      "ConfirmHandoverPickupDto": {
+        "properties": {
+          "scannedTokens": {
+            "description": "Tracking tokens read from carton QR codes (`<web>/track/<token>`), to check the cartons belong to this trip",
+            "example": [
+              "q3J9f0T1xYk8Zb2mR4sW6uE7vN0aLcDh"
+            ],
+            "items": {
+              "pattern": "^[A-Za-z0-9_-]{20,64}$",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "token": {
+            "description": "The token of the driver handover link `<web>/l/<token>` (starts with `d`)",
+            "example": "dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw",
+            "pattern": "^d[A-Za-z0-9_-]{32}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
       "ConfirmImportDto": {
         "properties": {
           "fileId": {
@@ -37364,58 +37574,6 @@
         ],
         "type": "object"
       },
-      "DefaultTolerancesDto": {
-        "properties": {
-          "colourDeltaE": {
-            "description": "Colour ΔE2000 against the approved proof — `fulfilment.colour_tolerance_delta_e.standard` (D-186)",
-            "example": "3",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "colourDeltaEFlexo": {
-            "description": "Colour ΔE2000 on flexo-printed corrugated board — `fulfilment.colour_tolerance_delta_e.flexo`",
-            "example": "5",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "quantityPct": {
-            "description": "Quantity ± % (shortage and overage) — `fulfilment.tolerance_default_pct` (D-163); null until set",
-            "example": "5.00",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "sizeMmMax": {
-            "description": "Largest of the same; null when none",
-            "example": "3.00",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "sizeMmMin": {
-            "description": "Smallest size tolerance ± mm over the product kinds that publish one — `fulfilment.dimensional_tolerance_mm` (D-186); null when none",
-            "example": "1.00",
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "quantityPct",
-          "sizeMmMin",
-          "sizeMmMax",
-          "colourDeltaE",
-          "colourDeltaEFlexo"
-        ],
-        "type": "object"
-      },
       "DefaultsDto": {
         "properties": {
           "companies": {
@@ -41319,6 +41477,92 @@
           "engine_unavailable"
         ],
         "type": "string"
+      },
+      "DriverHandoverDto": {
+        "properties": {
+          "canConfirmPickup": {
+            "example": true,
+            "type": "boolean"
+          },
+          "cartons": {
+            "items": {
+              "$ref": "#/components/schemas/HandoverCartonDto"
+            },
+            "type": "array"
+          },
+          "cartonsCount": {
+            "example": 3,
+            "type": "integer"
+          },
+          "expiresAt": {
+            "example": "2026-10-26T16:05:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "pickupConfirmedAt": {
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "plannedShipOn": {
+            "example": "2026-10-20",
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/HandoverRecipientDto"
+          },
+          "sender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HandoverSenderDto"
+              }
+            ],
+            "description": "getpack (never the factory, D-050)"
+          },
+          "shipmentNo": {
+            "example": "SH-2610-0001",
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShipmentStatus"
+              }
+            ],
+            "example": "ready"
+          },
+          "statusLabelTh": {
+            "description": "`status` (ShipmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.",
+            "example": "เตรียมจัดส่ง",
+            "type": "string"
+          },
+          "weightG": {
+            "example": 18000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "shipmentNo",
+          "status",
+          "statusLabelTh",
+          "cartonsCount",
+          "cartons",
+          "weightG",
+          "plannedShipOn",
+          "recipient",
+          "sender",
+          "expiresAt",
+          "pickupConfirmedAt",
+          "canConfirmPickup"
+        ],
+        "type": "object"
       },
       "DueTrigger": {
         "enum": [
@@ -65853,14 +66097,6 @@
             },
             "type": "array"
           },
-          "corrugatedSafeZoneMm": {
-            "description": "C12 (D-460): the safe distance on corrugated board (print profile `corrugated` of `artwork.preflight_rules`), mm; null when the profile sets none (the safe distance above applies)",
-            "example": "5",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "extensions": {
             "description": "Accepted file extensions",
             "example": [
@@ -65891,7 +66127,6 @@
         "required": [
           "bleedMm",
           "safeZoneMm",
-          "corrugatedSafeZoneMm",
           "sizeToleranceMm",
           "maxBytes",
           "extensions",
@@ -68955,6 +69190,123 @@
         ],
         "type": "object"
       },
+      "HandoverCartonDto": {
+        "properties": {
+          "labelCode": {
+            "example": "9F3A0C1B2D4E-01",
+            "type": "string"
+          },
+          "seq": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "seq",
+          "labelCode"
+        ],
+        "type": "object"
+      },
+      "HandoverLinkState": {
+        "description": "`closed` once the trip is delivered, cancelled or returned",
+        "enum": [
+          "active",
+          "expired",
+          "revoked",
+          "closed"
+        ],
+        "type": "string"
+      },
+      "HandoverProvinceDto": {
+        "properties": {
+          "nameEn": {
+            "example": "Songkhla",
+            "type": "string"
+          },
+          "nameTh": {
+            "example": "สงขลา",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nameTh",
+          "nameEn"
+        ],
+        "type": "object"
+      },
+      "HandoverRecipientDto": {
+        "properties": {
+          "line1": {
+            "example": "99/9 ถนนกาญจนวนิช",
+            "type": "string"
+          },
+          "line2": {
+            "example": "ตำบลหาดใหญ่ อำเภอหาดใหญ่",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "example": "สมหญิง ใจดี",
+            "type": "string"
+          },
+          "phone": {
+            "example": "+66810001234",
+            "type": "string"
+          },
+          "postcode": {
+            "example": "90110",
+            "type": "string"
+          },
+          "province": {
+            "$ref": "#/components/schemas/HandoverProvinceDto"
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "line1",
+          "line2",
+          "postcode",
+          "province"
+        ],
+        "type": "object"
+      },
+      "HandoverSenderDto": {
+        "properties": {
+          "name": {
+            "example": "getpack · บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด",
+            "type": "string"
+          },
+          "phone": {
+            "example": "+6620000000",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ],
+        "type": "object"
+      },
+      "HandoverTokenDto": {
+        "properties": {
+          "token": {
+            "description": "The token of the driver handover link `<web>/l/<token>` (starts with `d`)",
+            "example": "dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw",
+            "pattern": "^d[A-Za-z0-9_-]{32}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
       "HealthIndicatorState": {
         "properties": {
           "status": {
@@ -71612,6 +71964,29 @@
         ],
         "type": "object"
       },
+      "IssuedHandoverLinkDto": {
+        "properties": {
+          "expiresAt": {
+            "example": "2026-10-26T16:05:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "token": {
+            "example": "dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw",
+            "type": "string"
+          },
+          "url": {
+            "example": "https://www.getpack.example/l/dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "token",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
       "IssuedStatementDto": {
         "properties": {
           "closingAmount": {
@@ -71881,29 +72256,20 @@
       },
       "JobDestinationDto": {
         "properties": {
+          "code": {
+            "description": "Code within the job (`D1`, `D2` …) by the order’s destination order (P4-D1)",
+            "example": "D1",
+            "type": "string"
+          },
           "id": {
             "description": "Referenced by shipment items (B4.3)",
             "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
             "format": "uuid",
             "type": "string"
           },
-          "line1": {
-            "example": "1 ถนนทดสอบ",
-            "type": "string"
-          },
-          "line2": {
-            "example": null,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "phone": {
-            "example": "+66810001234",
-            "type": "string"
-          },
-          "postcode": {
-            "example": "10110",
+          "postcodePrefix": {
+            "description": "First three digits of the postcode, for shipping cost (P4-D1: never the full postcode)",
+            "example": "101",
             "type": "string"
           },
           "provinceNameEn": {
@@ -71918,11 +72284,6 @@
             "example": 1000,
             "type": "integer"
           },
-          "recipientName": {
-            "description": "Recipient (D-142: name, address and phone only)",
-            "example": "ผู้รับ ทดสอบ",
-            "type": "string"
-          },
           "shippedQuantity": {
             "description": "Pieces on live shipments of this job (not cancelled / returned)",
             "example": 0,
@@ -71931,11 +72292,8 @@
         },
         "required": [
           "id",
-          "recipientName",
-          "phone",
-          "line1",
-          "line2",
-          "postcode",
+          "code",
+          "postcodePrefix",
           "provinceNameTh",
           "provinceNameEn",
           "quantity",
@@ -79120,6 +79478,11 @@
               "null"
             ]
           },
+          "waybillIssued": {
+            "description": "D-462: getpack has issued the carrier waybill (a driver handover link or a fallback-carrier booking) — \"ส่งใบปะหน้าให้ผู้ขนส่งแล้ว\". The recipient’s details go to the carrier only; the factory never receives them.",
+            "example": false,
+            "type": "boolean"
+          },
           "weightG": {
             "example": 18000,
             "type": "integer"
@@ -79150,6 +79513,7 @@
           "cartons",
           "blockedByPayment",
           "carrierRequest",
+          "waybillIssued",
           "nextActions"
         ],
         "type": "object"
@@ -86535,8 +86899,12 @@
             "type": "array"
           },
           "receiverName": {
+            "description": "Who received it. On the partner surface null for a carrier POD (the carrier copies the recipient, P4-D1); a factory POD shows the name the factory recorded",
             "example": "สมหญิง ใจดี",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "signatureFileId": {
             "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006",
@@ -87303,14 +87671,6 @@
             "description": "Published styles in the template library (the count `store.styles.list` shows)",
             "example": 42,
             "type": "integer"
-          },
-          "tolerances": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DefaultTolerancesDto"
-              }
-            ],
-            "description": "D-460 the default tolerances (settings, D-163 / D-186) the \"how we work\" block states; each part null until set. A job’s own tolerance is frozen on its quotation (D-021) and may differ"
           }
         },
         "required": [
@@ -87324,8 +87684,7 @@
           "contact",
           "roadmap",
           "paymentMethods",
-          "issuer",
-          "tolerances"
+          "issuer"
         ],
         "type": "object"
       },
@@ -100121,13 +100480,19 @@
       },
       "ShipPlanDestinationDto": {
         "properties": {
+          "code": {
+            "description": "The destination’s code within the job (`D1`, `D2` …, P4-D1)",
+            "example": "D1",
+            "type": "string"
+          },
           "destinationId": {
             "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
             "format": "uuid",
             "type": "string"
           },
-          "postcode": {
-            "example": "10110",
+          "postcodePrefix": {
+            "description": "First three digits of the postcode (P4-D1)",
+            "example": "101",
             "type": "string"
           },
           "provinceNameTh": {
@@ -100138,10 +100503,6 @@
             "description": "Pieces for this address",
             "example": 600,
             "type": "integer"
-          },
-          "recipientName": {
-            "example": "สมหญิง ใจดี",
-            "type": "string"
           },
           "remainingQuantity": {
             "example": 600,
@@ -100155,8 +100516,8 @@
         },
         "required": [
           "destinationId",
-          "recipientName",
-          "postcode",
+          "code",
+          "postcodePrefix",
           "provinceNameTh",
           "quantity",
           "shippedQuantity",
@@ -100218,6 +100579,45 @@
           "quantityGood",
           "blockedReason",
           "destinations"
+        ],
+        "type": "object"
+      },
+      "ShipmentAddressDto": {
+        "properties": {
+          "line1": {
+            "example": "99/9 ถนนสุขุมวิท",
+            "type": "string"
+          },
+          "line2": {
+            "example": "แขวงคลองตัน เขตคลองเตย",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "example": "+66810001234",
+            "type": "string"
+          },
+          "postcode": {
+            "example": "10110",
+            "type": "string"
+          },
+          "province": {
+            "$ref": "#/components/schemas/GeoRefDto"
+          },
+          "recipientName": {
+            "example": "สมหญิง ใจดี",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipientName",
+          "phone",
+          "line1",
+          "line2",
+          "postcode",
+          "province"
         ],
         "type": "object"
       },
@@ -100302,39 +100702,23 @@
       },
       "ShipmentDestinationDto": {
         "properties": {
-          "line1": {
-            "example": "99/9 ถนนสุขุมวิท",
+          "code": {
+            "description": "The job destination’s code (`D1`, `D2` …) of the trip’s first item (P4-D1)",
+            "example": "D1",
             "type": "string"
           },
-          "line2": {
-            "example": "แขวงคลองตัน เขตคลองเตย",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "phone": {
-            "example": "+66810001234",
-            "type": "string"
-          },
-          "postcode": {
-            "example": "10110",
+          "postcodePrefix": {
+            "description": "First three digits of the postcode (P4-D1)",
+            "example": "101",
             "type": "string"
           },
           "province": {
             "$ref": "#/components/schemas/GeoRefDto"
-          },
-          "recipientName": {
-            "example": "สมหญิง ใจดี",
-            "type": "string"
           }
         },
         "required": [
-          "recipientName",
-          "phone",
-          "line1",
-          "line2",
-          "postcode",
+          "code",
+          "postcodePrefix",
           "province"
         ],
         "type": "object"
@@ -100492,6 +100876,59 @@
         ],
         "type": "string"
       },
+      "ShipmentHandoverSummaryDto": {
+        "properties": {
+          "expiresAt": {
+            "example": "2026-10-26T16:05:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "issuedAt": {
+            "example": "2026-10-19T16:05:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastOpenedAt": {
+            "example": "2026-10-20T09:12:00+07:00",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "openCount": {
+            "description": "Times the driver opened it (each one audited)",
+            "example": 2,
+            "type": "integer"
+          },
+          "pickupConfirmedAt": {
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "state": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HandoverLinkState"
+              }
+            ],
+            "description": "`closed` once the trip is delivered, cancelled or returned",
+            "example": "active"
+          }
+        },
+        "required": [
+          "state",
+          "issuedAt",
+          "expiresAt",
+          "openCount",
+          "lastOpenedAt",
+          "pickupConfirmedAt"
+        ],
+        "type": "object"
+      },
       "ShipmentItemDto": {
         "properties": {
           "deliveredQuantity": {
@@ -100500,6 +100937,11 @@
               "integer",
               "null"
             ]
+          },
+          "destinationCode": {
+            "description": "The destination’s code within its job (`destinations[].code` of the job, P4-D1)",
+            "example": "D1",
+            "type": "string"
           },
           "destinationId": {
             "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
@@ -100538,6 +100980,7 @@
         },
         "required": [
           "destinationId",
+          "destinationCode",
           "jobId",
           "jobNo",
           "orderCode",
@@ -107703,7 +108146,7 @@
             ]
           },
           "destination": {
-            "$ref": "#/components/schemas/ShipmentDestinationDto"
+            "$ref": "#/components/schemas/ShipmentAddressDto"
           },
           "events": {
             "items": {
@@ -287058,11 +287501,13 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "line1": "1 ถนนทดสอบ",
                       "line2": null,
                       "phone": "+66810001234",
                       "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
@@ -303211,11 +303656,13 @@
                       "currentMilestoneKey": "printing",
                       "destinations": [
                         {
+                          "code": "D1",
                           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                           "line1": "1 ถนนทดสอบ",
                           "line2": null,
                           "phone": "+66810001234",
                           "postcode": "10110",
+                          "postcodePrefix": "101",
                           "provinceNameEn": "Bangkok",
                           "provinceNameTh": "กรุงเทพมหานคร",
                           "quantity": 1000,
@@ -303519,11 +303966,13 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "line1": "1 ถนนทดสอบ",
                       "line2": null,
                       "phone": "+66810001234",
                       "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
@@ -303842,11 +304291,13 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "line1": "1 ถนนทดสอบ",
                       "line2": null,
                       "phone": "+66810001234",
                       "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
@@ -304209,11 +304660,13 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "line1": "1 ถนนทดสอบ",
                       "line2": null,
                       "phone": "+66810001234",
                       "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
@@ -304567,11 +305020,13 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "line1": "1 ถนนทดสอบ",
                       "line2": null,
                       "phone": "+66810001234",
                       "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
@@ -330843,10 +331298,12 @@
                       "cartonsCount": 3,
                       "deliveredAt": null,
                       "destination": {
+                        "code": "D1",
                         "line1": "99/9 ถนนสุขุมวิท",
                         "line2": "แขวงคลองตัน เขตคลองเตย",
                         "phone": "+66810001234",
                         "postcode": "10110",
+                        "postcodePrefix": "101",
                         "province": {
                           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                           "nameEn": "Bangkok",
@@ -330868,10 +331325,12 @@
                       "exception": null,
                       "factoryCode": "F-0001",
                       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                      "handover": null,
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                       "items": [
                         {
                           "deliveredQuantity": null,
+                          "destinationCode": "D1",
                           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                           "jobNo": "JOB-2610-0001",
@@ -330898,6 +331357,7 @@
                       "trackingNo": null,
                       "trackingUrl": null,
                       "volumeCm3": 120000,
+                      "waybillIssued": false,
                       "weightG": 18000
                     }
                   ],
@@ -331114,10 +331574,12 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
+                    "code": "D1",
                     "line1": "99/9 ถนนสุขุมวิท",
                     "line2": "แขวงคลองตัน เขตคลองเตย",
                     "phone": "+66810001234",
                     "postcode": "10110",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
@@ -331139,10 +331601,12 @@
                   "exception": null,
                   "factoryCode": "F-0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -331169,6 +331633,7 @@
                   "trackingNo": null,
                   "trackingUrl": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -331410,10 +331875,12 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
+                    "code": "D1",
                     "line1": "99/9 ถนนสุขุมวิท",
                     "line2": "แขวงคลองตัน เขตคลองเตย",
                     "phone": "+66810001234",
                     "postcode": "10110",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
@@ -331435,10 +331902,12 @@
                   "exception": null,
                   "factoryCode": "F-0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -331465,6 +331934,7 @@
                   "trackingNo": "TH0123",
                   "trackingUrl": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -331809,10 +332279,12 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
+                    "code": "D1",
                     "line1": "99/9 ถนนสุขุมวิท",
                     "line2": "แขวงคลองตัน เขตคลองเตย",
                     "phone": "+66810001234",
                     "postcode": "10110",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
@@ -331834,10 +332306,12 @@
                   "exception": null,
                   "factoryCode": "F-0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -331864,6 +332338,7 @@
                   "trackingNo": null,
                   "trackingUrl": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -332183,10 +332658,12 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
+                    "code": "D1",
                     "line1": "99/9 ถนนสุขุมวิท",
                     "line2": "แขวงคลองตัน เขตคลองเตย",
                     "phone": "+66810001234",
                     "postcode": "10110",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
@@ -332208,10 +332685,12 @@
                   "exception": null,
                   "factoryCode": "F-0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -332238,6 +332717,7 @@
                   "trackingNo": null,
                   "trackingUrl": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -332546,10 +333026,12 @@
                     "cartonsCount": 1,
                     "deliveredAt": null,
                     "destination": {
+                      "code": "D1",
                       "line1": "99/9 ถนนสุขุมวิท",
                       "line2": "แขวงคลองตัน เขตคลองเตย",
                       "phone": "+66810001234",
                       "postcode": "10110",
+                      "postcodePrefix": "101",
                       "province": {
                         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                         "nameEn": "Bangkok",
@@ -332571,10 +333053,12 @@
                     "exception": null,
                     "factoryCode": "F-0001",
                     "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                    "handover": null,
                     "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2008",
                     "items": [
                       {
                         "deliveredQuantity": null,
+                        "destinationCode": "D1",
                         "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                         "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                         "jobNo": "JOB-2610-0001",
@@ -332604,6 +333088,7 @@
                     "trackingNo": null,
                     "trackingUrl": null,
                     "volumeCm3": 120000,
+                    "waybillIssued": false,
                     "weightG": 6000
                   },
                   "shipment": {
@@ -332618,10 +333103,12 @@
                     "cartonsCount": 2,
                     "deliveredAt": null,
                     "destination": {
+                      "code": "D1",
                       "line1": "99/9 ถนนสุขุมวิท",
                       "line2": "แขวงคลองตัน เขตคลองเตย",
                       "phone": "+66810001234",
                       "postcode": "10110",
+                      "postcodePrefix": "101",
                       "province": {
                         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                         "nameEn": "Bangkok",
@@ -332643,10 +333130,12 @@
                     "exception": null,
                     "factoryCode": "F-0001",
                     "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                    "handover": null,
                     "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                     "items": [
                       {
                         "deliveredQuantity": null,
+                        "destinationCode": "D1",
                         "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                         "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                         "jobNo": "JOB-2610-0001",
@@ -332673,6 +333162,7 @@
                     "trackingNo": null,
                     "trackingUrl": null,
                     "volumeCm3": 120000,
+                    "waybillIssued": false,
                     "weightG": 18000
                   }
                 },
@@ -333216,10 +333706,12 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
+                    "code": "D1",
                     "line1": "99/9 ถนนสุขุมวิท",
                     "line2": "แขวงคลองตัน เขตคลองเตย",
                     "phone": "+66810001234",
                     "postcode": "10110",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
@@ -333241,10 +333733,12 @@
                   "exception": null,
                   "factoryCode": "F-0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -333271,6 +333765,7 @@
                   "trackingNo": null,
                   "trackingUrl": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -333493,6 +333988,215 @@
         ]
       }
     },
+    "/v1/admin/shipments/{shipmentId}/handover-link": {
+      "post": {
+        "description": "D-462 (sealed carrier label): a random, single-shipment link `<web>/l/<token>` for the carrier / driver, the only place outside getpack staff that shows the recipient’s name, phone and address. Valid until the trip is delivered, cancelled or returned and at most 7 days; issuing again revokes the previous link. The URL and token are returned once (only the hash is kept) — send them to the driver, never to the factory. Packed shipments up to delivery only. Audited (`data_access`); the factory sees only `waybillIssued`.\n\nImplements: D-462, D-050.",
+        "operationId": "admin.shipments.issueHandoverLink",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "expiresAt": "2026-10-26T16:05:00+07:00",
+                  "token": "dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw",
+                  "url": "https://www.getpack.example/l/dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedHandoverLinkDto"
+                }
+              }
+            },
+            "description": "Issued",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "shipments.invalid_status": {
+                    "$ref": "#/components/examples/problem.shipments.invalid_status"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `shipments.invalid_status`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "summary": "Issue or regenerate the driver handover link",
+        "tags": [
+          "admin.logistics"
+        ],
+        "x-required-permissions": [
+          "shipments.manage"
+        ]
+      }
+    },
     "/v1/admin/shipments/{shipmentId}/pod/actions/{decision}": {
       "post": {
         "description": "A staff check of the recorded POD (D-229): `reject` needs a note and raises `shipment.pod_rejected` for follow-up; neither changes the delivery, the tolerance reconciliation or the payout rule (D-022). Reviews are kept; the latest is the POD’s state.\n\nImplements: D-229, D-013, D-022.",
@@ -333571,10 +334275,12 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
+                    "code": "D1",
                     "line1": "99/9 ถนนสุขุมวิท",
                     "line2": "แขวงคลองตัน เขตคลองเตย",
                     "phone": "+66810001234",
                     "postcode": "10110",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
@@ -333596,10 +334302,12 @@
                   "exception": null,
                   "factoryCode": "F-0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -333644,6 +334352,7 @@
                   "trackingNo": null,
                   "trackingUrl": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -333956,10 +334665,12 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
+                    "code": "D1",
                     "line1": "99/9 ถนนสุขุมวิท",
                     "line2": "แขวงคลองตัน เขตคลองเตย",
                     "phone": "+66810001234",
                     "postcode": "10110",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
@@ -333981,10 +334692,12 @@
                   "exception": null,
                   "factoryCode": "F-0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -334021,6 +334734,7 @@
                   "trackingNo": null,
                   "trackingUrl": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -334250,6 +334964,212 @@
           }
         ],
         "summary": "Record a proof of delivery on the factory’s or carrier’s behalf",
+        "tags": [
+          "admin.logistics"
+        ],
+        "x-required-permissions": [
+          "shipments.manage"
+        ]
+      }
+    },
+    "/v1/admin/shipments/{shipmentId}/waybill": {
+      "get": {
+        "description": "D-462: the full address label (100 × 150 mm PDF: getpack as sender, the recipient’s name, phone and address, job numbers, cartons) for the carrier — rendered on demand, never stored as a factory file, metadata stripped, named `<shipmentNo>-waybill.pdf`. Each download is audited (`data_access`).\n\nImplements: D-462, D-050.",
+        "operationId": "admin.shipments.waybill",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "example": "(binary PDF)",
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The waybill PDF",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "provider.unavailable": {
+                    "$ref": "#/components/examples/problem.provider.unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `provider.unavailable`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "summary": "Download the carrier waybill",
         "tags": [
           "admin.logistics"
         ],
@@ -479689,7 +480609,7 @@
     },
     "/v1/partner/factories/{factoryId}/ship-plan": {
       "get": {
-        "description": "Completed jobs whose orders are not delivered yet: per destination the pieces already on live trips and what remains, and whether pickup would be refused today (instalments before shipping, getpack inspection — the checks of dispatch, B3.2 / D-076). Destination contacts only (D-142).\n\nImplements: D-013, D-076, D-142.",
+        "description": "Completed jobs whose orders are not delivered yet: per destination the pieces already on live trips and what remains, and whether pickup would be refused today (instalments before shipping, getpack inspection — the checks of dispatch, B3.2 / D-076). Destinations by code, province and postcode prefix only — never the recipient (P4-D1).\n\nImplements: D-013, D-076, D-142.",
         "operationId": "partner.shipments.shipPlan",
         "parameters": [
           {
@@ -479714,11 +480634,11 @@
                     "blockedReason": null,
                     "destinations": [
                       {
+                        "code": "D1",
                         "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                        "postcode": "10110",
+                        "postcodePrefix": "101",
                         "provinceNameTh": "กรุงเทพมหานคร",
                         "quantity": 600,
-                        "recipientName": "สมหญิง ใจดี",
                         "remainingQuantity": 600,
                         "shippedQuantity": 0
                       }
@@ -481814,15 +482734,12 @@
                       "currentMilestoneKey": "printing",
                       "destinations": [
                         {
+                          "code": "D1",
                           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                          "line1": "1 ถนนทดสอบ",
-                          "line2": null,
-                          "phone": "+66810001234",
-                          "postcode": "10110",
+                          "postcodePrefix": "101",
                           "provinceNameEn": "Bangkok",
                           "provinceNameTh": "กรุงเทพมหานคร",
                           "quantity": 1000,
-                          "recipientName": "ผู้รับ ทดสอบ",
                           "shippedQuantity": 0
                         }
                       ],
@@ -488295,15 +489212,12 @@
                       "currentMilestoneKey": "printing",
                       "destinations": [
                         {
+                          "code": "D1",
                           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                          "line1": "1 ถนนทดสอบ",
-                          "line2": null,
-                          "phone": "+66810001234",
-                          "postcode": "10110",
+                          "postcodePrefix": "101",
                           "provinceNameEn": "Bangkok",
                           "provinceNameTh": "กรุงเทพมหานคร",
                           "quantity": 1000,
-                          "recipientName": "ผู้รับ ทดสอบ",
                           "shippedQuantity": 0
                         }
                       ],
@@ -488739,7 +489653,7 @@
     },
     "/v1/partner/production-jobs/{jobId}": {
       "get": {
-        "description": "Spec, the approved artwork and dieline (download the approved version only), delivery contacts (D-142), milestones.\n\nImplements: D-142, D-075.",
+        "description": "Spec, the approved artwork and dieline (download the approved version only), destinations by code, province and postcode prefix — never the recipient (P4-D1) — and milestones.\n\nImplements: D-142, D-075.",
         "operationId": "partner.production.get",
         "parameters": [
           {
@@ -488772,15 +489686,12 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                      "line1": "1 ถนนทดสอบ",
-                      "line2": null,
-                      "phone": "+66810001234",
-                      "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
-                      "recipientName": "ผู้รับ ทดสอบ",
                       "shippedQuantity": 0
                     }
                   ],
@@ -489059,15 +489970,12 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                      "line1": "1 ถนนทดสอบ",
-                      "line2": null,
-                      "phone": "+66810001234",
-                      "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
-                      "recipientName": "ผู้รับ ทดสอบ",
                       "shippedQuantity": 0
                     }
                   ],
@@ -489416,15 +490324,12 @@
                   "currentMilestoneKey": "printing",
                   "destinations": [
                     {
+                      "code": "D1",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                      "line1": "1 ถนนทดสอบ",
-                      "line2": null,
-                      "phone": "+66810001234",
-                      "postcode": "10110",
+                      "postcodePrefix": "101",
                       "provinceNameEn": "Bangkok",
                       "provinceNameTh": "กรุงเทพมหานคร",
                       "quantity": 1000,
-                      "recipientName": "ผู้รับ ทดสอบ",
                       "shippedQuantity": 0
                     }
                   ],
@@ -490830,15 +491735,12 @@
                     "currentMilestoneKey": "printing",
                     "destinations": [
                       {
+                        "code": "D1",
                         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                        "line1": "1 ถนนทดสอบ",
-                        "line2": null,
-                        "phone": "+66810001234",
-                        "postcode": "10110",
+                        "postcodePrefix": "101",
                         "provinceNameEn": "Bangkok",
                         "provinceNameTh": "กรุงเทพมหานคร",
                         "quantity": 1000,
-                        "recipientName": "ผู้รับ ทดสอบ",
                         "shippedQuantity": 0
                       }
                     ],
@@ -492836,7 +493738,7 @@
     },
     "/v1/partner/shipments": {
       "get": {
-        "description": "Newest first; `view` groups the statuses (open, in transit, delivered, exceptions). Destination contacts only (D-142), no prices; each trip says whether unpaid instalments block pickup and whether a carrier was asked for.\n\nImplements: D-013, D-142.",
+        "description": "Newest first; `view` groups the statuses (open, in transit, delivered, exceptions). Destinations by code, province and postcode prefix — no recipient name, phone or address (P4-D1) — and no prices; each trip says whether unpaid instalments block pickup and whether a carrier was asked for.\n\nImplements: D-013, D-142.",
         "operationId": "partner.shipments.list",
         "parameters": [
           {
@@ -492950,16 +493852,13 @@
                       "cartonsCount": 3,
                       "deliveredAt": null,
                       "destination": {
-                        "line1": "99/9 ถนนสุขุมวิท",
-                        "line2": "แขวงคลองตัน เขตคลองเตย",
-                        "phone": "+66810001234",
-                        "postcode": "10110",
+                        "code": "D1",
+                        "postcodePrefix": "101",
                         "province": {
                           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                           "nameEn": "Bangkok",
                           "nameTh": "กรุงเทพมหานคร"
-                        },
-                        "recipientName": "สมหญิง ใจดี"
+                        }
                       },
                       "events": [
                         {
@@ -492976,6 +493875,7 @@
                       "items": [
                         {
                           "deliveredQuantity": null,
+                          "destinationCode": "D1",
                           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                           "jobNo": "JOB-2610-0001",
@@ -492998,6 +493898,7 @@
                       "statusLabelTh": "พร้อมส่ง",
                       "trackingNo": null,
                       "volumeCm3": 120000,
+                      "waybillIssued": false,
                       "weightG": 18000
                     }
                   ],
@@ -493229,16 +494130,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -493255,6 +494153,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -493277,6 +494176,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -493554,16 +494454,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -493580,6 +494477,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -493602,6 +494500,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -493832,16 +494731,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -493858,6 +494754,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -493880,6 +494777,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -494151,16 +495049,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -494177,6 +495072,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -494199,6 +495095,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -494423,7 +495320,7 @@
     },
     "/v1/partner/shipments/{shipmentId}/actions/ready": {
       "post": {
-        "description": "Generates one 100 × 150 mm label per carton (QR → public tracking, getpack brand only, D-050) and the packing list; the shipping payout is fixed from the factory’s rate card (D-013).\n\nImplements: D-013, D-050.",
+        "description": "Generates one 100 × 150 mm label per carton and the packing list (`<shipmentNo>-labels.pdf`, `<shipmentNo>-packing.pdf`, metadata stripped). D-462: they carry no recipient identity — shipment code, job numbers, carton n/m, destination code (D1 …), province and postcode prefix, and a QR with an opaque tracking token only; the recipient’s address goes to the carrier through getpack’s waybill. getpack brand only (D-050); the shipping payout is fixed from the factory’s rate card (D-013).\n\nImplements: D-013, D-050, D-462.",
         "operationId": "partner.shipments.markReady",
         "parameters": [
           {
@@ -494470,16 +495367,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -494496,6 +495390,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -494518,6 +495413,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -494823,16 +495719,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -494849,6 +495742,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -494871,6 +495765,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -495161,16 +496056,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -495187,6 +496079,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -495209,6 +496102,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -495509,16 +496403,13 @@
                   "cartonsCount": 3,
                   "deliveredAt": null,
                   "destination": {
-                    "line1": "99/9 ถนนสุขุมวิท",
-                    "line2": "แขวงคลองตัน เขตคลองเตย",
-                    "phone": "+66810001234",
-                    "postcode": "10110",
+                    "code": "D1",
+                    "postcodePrefix": "101",
                     "province": {
                       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                       "nameEn": "Bangkok",
                       "nameTh": "กรุงเทพมหานคร"
-                    },
-                    "recipientName": "สมหญิง ใจดี"
+                    }
                   },
                   "events": [
                     {
@@ -495535,6 +496426,7 @@
                   "items": [
                     {
                       "deliveredQuantity": null,
+                      "destinationCode": "D1",
                       "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                       "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                       "jobNo": "JOB-2610-0001",
@@ -495567,6 +496459,7 @@
                   "statusLabelTh": "พร้อมส่ง",
                   "trackingNo": null,
                   "volumeCm3": 120000,
+                  "waybillIssued": false,
                   "weightG": 18000
                 },
                 "schema": {
@@ -537743,7 +538636,6 @@
                       "evaluated": false
                     }
                   ],
-                  "corrugatedSafeZoneMm": "5",
                   "extensions": [
                     ".pdf",
                     ".ai"
@@ -541233,6 +542125,568 @@
         "summary": "getpack’s guarantee",
         "tags": [
           "store.guarantee"
+        ]
+      }
+    },
+    "/v1/store/handover-links/actions/confirm-pickup": {
+      "post": {
+        "description": "D-462: the driver confirms the goods were collected. Optional `scannedTokens` are the tracking tokens read from carton QR codes; one that does not belong to this shipment → 422 `handover.scan_mismatch`. A packed shipment on the factory fleet is picked up through the shipping gate (closed gate → 409 `handover.not_ready`, without saying why); a booked carrier’s pickup still comes from its callbacks. Repeating it is harmless. Audited. Same 404 / 410 rules as opening the link.\n\nImplements: D-462, D-013.",
+        "operationId": "store.handover.confirmPickup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "value": {
+                    "scannedTokens": [
+                      "q3J9f0T1xYk8Zb2mR4sW6uE7vN0aLcDh"
+                    ],
+                    "token": "dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmHandoverPickupDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "canConfirmPickup": false,
+                  "cartons": [
+                    {
+                      "labelCode": "9F3A0C1B2D4E-01",
+                      "seq": 1
+                    },
+                    {
+                      "labelCode": "9F3A0C1B2D4E-02",
+                      "seq": 2
+                    },
+                    {
+                      "labelCode": "9F3A0C1B2D4E-03",
+                      "seq": 3
+                    }
+                  ],
+                  "cartonsCount": 3,
+                  "expiresAt": "2026-10-26T16:05:00+07:00",
+                  "pickupConfirmedAt": "2026-10-20T09:15:00+07:00",
+                  "plannedShipOn": "2026-10-20",
+                  "recipient": {
+                    "line1": "99/9 ถนนกาญจนวนิช",
+                    "line2": "ตำบลหาดใหญ่ อำเภอหาดใหญ่",
+                    "name": "สมหญิง ใจดี",
+                    "phone": "+66810001234",
+                    "postcode": "90110",
+                    "province": {
+                      "nameEn": "Songkhla",
+                      "nameTh": "สงขลา"
+                    }
+                  },
+                  "sender": {
+                    "name": "getpack · บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด",
+                    "phone": "+6620000000"
+                  },
+                  "shipmentNo": "SH-2610-0001",
+                  "status": "picked_up",
+                  "statusLabelTh": "จัดส่งออกแล้ว",
+                  "weightG": 18000
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DriverHandoverDto"
+                }
+              }
+            },
+            "description": "Pickup confirmed",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "http.malformed_json": {
+                    "$ref": "#/components/examples/problem.http.malformed_json"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `http.malformed_json`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "handover.not_ready": {
+                    "$ref": "#/components/examples/problem.handover.not_ready"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `handover.not_ready`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "410": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "handover.expired": {
+                    "$ref": "#/components/examples/problem.handover.expired"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `handover.expired`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "handover.scan_mismatch": {
+                    "$ref": "#/components/examples/problem.handover.scan_mismatch"
+                  },
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `handover.scan_mismatch`, `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Confirm pickup through the handover link",
+        "tags": [
+          "store.handover"
+        ]
+      }
+    },
+    "/v1/store/handover-links/actions/resolve": {
+      "post": {
+        "description": "D-462 (sealed carrier label): the carrier / driver opens `<web>/l/<token>` (token starting with `d`) and sees the recipient’s name, phone and address, the shipment code and its cartons — never the factory, prices or other orders (D-050). The token is sent in the body, not the URL path, so it stays out of access logs. Unknown or regenerated (revoked) links → 404; a trip that is delivered, cancelled or returned, or a link older than 7 days → 410 `handover.expired`. Every open, refused ones included, is an audit row. Rate-limited.\n\nImplements: D-462, D-050.",
+        "operationId": "store.handover.resolve",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "value": {
+                    "token": "dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/HandoverTokenDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "canConfirmPickup": true,
+                  "cartons": [
+                    {
+                      "labelCode": "9F3A0C1B2D4E-01",
+                      "seq": 1
+                    },
+                    {
+                      "labelCode": "9F3A0C1B2D4E-02",
+                      "seq": 2
+                    },
+                    {
+                      "labelCode": "9F3A0C1B2D4E-03",
+                      "seq": 3
+                    }
+                  ],
+                  "cartonsCount": 3,
+                  "expiresAt": "2026-10-26T16:05:00+07:00",
+                  "pickupConfirmedAt": null,
+                  "plannedShipOn": "2026-10-20",
+                  "recipient": {
+                    "line1": "99/9 ถนนกาญจนวนิช",
+                    "line2": "ตำบลหาดใหญ่ อำเภอหาดใหญ่",
+                    "name": "สมหญิง ใจดี",
+                    "phone": "+66810001234",
+                    "postcode": "90110",
+                    "province": {
+                      "nameEn": "Songkhla",
+                      "nameTh": "สงขลา"
+                    }
+                  },
+                  "sender": {
+                    "name": "getpack · บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด",
+                    "phone": "+6620000000"
+                  },
+                  "shipmentNo": "SH-2610-0001",
+                  "status": "ready",
+                  "statusLabelTh": "พร้อมส่ง",
+                  "weightG": 18000
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DriverHandoverDto"
+                }
+              }
+            },
+            "description": "The trip and its recipient",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "http.malformed_json": {
+                    "$ref": "#/components/examples/problem.http.malformed_json"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `http.malformed_json`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "410": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "handover.expired": {
+                    "$ref": "#/components/examples/problem.handover.expired"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `handover.expired`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Open a driver handover link",
+        "tags": [
+          "store.handover"
         ]
       }
     },
@@ -556131,14 +557585,7 @@
                     "tz": "Asia/Bangkok"
                   },
                   "supportReplyMinutes": null,
-                  "templateCount": 42,
-                  "tolerances": {
-                    "colourDeltaE": "3",
-                    "colourDeltaEFlexo": "5",
-                    "quantityPct": "5.00",
-                    "sizeMmMax": "3.00",
-                    "sizeMmMin": "1.00"
-                  }
+                  "templateCount": 42
                 },
                 "schema": {
                   "$ref": "#/components/schemas/PublicConfigDto"
@@ -586773,6 +588220,10 @@
     {
       "description": "getpack’s published guarantee (D-198, D-199, D-260): remedies per claim type and severity, response and decision times, the claim window — the version the claim engine applies.",
       "name": "store.guarantee"
+    },
+    {
+      "description": "Driver handover link (D-462): the carrier sees the recipient of one shipment through a time-limited token — audited, rate-limited.",
+      "name": "store.handover"
     },
     {
       "description": "The shipments of my orders and confirming receipt (D-050, D-081).",

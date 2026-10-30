@@ -193,6 +193,41 @@
         "typedName": "Receiver's name",
         "mode": "How to sign"
       }
+    },
+    "handover": {
+      "title": "Driver handover link",
+      "description": "The driver opens this link to see the recipient's name, phone and address, then confirms the pickup. The factory only sees that a waybill was issued.",
+      "states": {
+        "none": "Not issued",
+        "active": "Active",
+        "expired": "Expired",
+        "revoked": "Revoked",
+        "closed": "Closed"
+      },
+      "none": "No link has been issued to a driver yet.",
+      "issuedAt": "Issued",
+      "expiresAt": "Expires",
+      "opens": "Opened",
+      "openCount": "{count, plural, one {# time} other {# times}}",
+      "lastOpenedAt": "Last opened",
+      "pickupConfirmedAt": "Pickup confirmed",
+      "never": "Never",
+      "notYet": "Not yet",
+      "issue": "Issue link",
+      "reissue": "Issue again",
+      "reissueTitle": "Issue a new link for {no}",
+      "reissueBody": "The current link stops working at once; send the new one to the driver again.",
+      "issuedTitle": "Driver link (shown once)",
+      "copy": "Copy",
+      "copied": "Link copied",
+      "driverOnly": "Send to the driver only. It shows the recipient's name, phone and address; never send it to the factory.",
+      "shownOnce": "Once you leave this page the link can't be shown again; issue a new one if it is lost.",
+      "issuedToast": "Handover link issued",
+      "reissued": "New link issued; the old one no longer works",
+      "failed": "Couldn't issue the link",
+      "waybill": "Download waybill",
+      "waybillFailed": "Couldn't download the waybill",
+      "notIssuable": "A link can be issued once the shipment is packed, until it is delivered."
     }
   },
   "claims": {

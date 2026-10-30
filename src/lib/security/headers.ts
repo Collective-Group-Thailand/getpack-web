@@ -38,11 +38,34 @@ export function securityHeaders(zone: Zone, { isHttps }: SecurityHeaderOptions):
   return headers;
 }
 
-function permissionsPolicy(zone: Zone): string {
-  const camera = zone === "partner" ? "(self)" : "()";
+function permissionsPolicy(zone: Zone, { camera: allowCamera = zone === "partner" } = {}): string {
+  const camera = allowCamera ? "(self)" : "()";
   return [`camera=${camera}`, "microphone=()", "geolocation=()", "payment=()", "usb=()", "interest-cohort=()"].join(
     ", ",
   );
+}
+
+/**
+ * A driver handover page (D-462, sealed carrier label): `/l/d…` on the storefront, with or without the locale
+ * prefix. The token's shape is getpack-api's (`d` + 32 base64url characters, `isDriverToken`).
+ */
+const DRIVER_HANDOVER_PATH = /^(?:\/(?:th|en))?\/l\/d[A-Za-z0-9_-]{32}\/?$/;
+
+export function isDriverHandoverPath(pathname: string): boolean {
+  return DRIVER_HANDOVER_PATH.test(pathname);
+}
+
+/**
+ * What a driver handover page adds on top of the storefront's headers. It shows a recipient's name, phone and
+ * address to whoever holds the link, so no shared or browser cache may keep it and no crawler may index it; and
+ * the driver may scan the cartons' QR codes, so this one storefront page may open the camera.
+ */
+export function driverHandoverHeaders(): Record<string, string> {
+  return {
+    "Cache-Control": "private, no-store, max-age=0",
+    "X-Robots-Tag": "noindex, nofollow",
+    "Permissions-Policy": permissionsPolicy("customer", { camera: true }),
+  };
 }
 
 /** Whether the request reached us over TLS, honouring the proxy in front of the app. */

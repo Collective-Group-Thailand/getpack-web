@@ -108,9 +108,9 @@ export const shipmentHandlers = [
         quantityGood: quantitiesOf(job).good,
         destinations: destinationsOf(order).map((destination) => ({
           destinationId: destination.id,
-          recipientName: destination.recipientName,
+          code: destination.code,
           provinceNameTh: destination.provinceNameTh,
-          postcode: destination.postcode,
+          postcodePrefix: destination.postcodePrefix,
           quantity: destination.quantity,
           shippedQuantity: destination.shippedQuantity,
           remainingQuantity: Math.max(0, destination.quantity - destination.shippedQuantity),
@@ -140,9 +140,7 @@ export const shipmentHandlers = [
       .filter((item) => !view || VIEWS[view](item))
       .filter((item) => !status || item.status === status)
       .filter((item) => !orderId || item.items.some((line) => line.orderId === orderId))
-      .filter((item) =>
-        matchesQuery(q, item.shipmentNo, item.destination.recipientName, ...item.items.map((l) => l.jobNo)),
-      )
+      .filter((item) => matchesQuery(q, item.shipmentNo, ...item.items.map((l) => l.jobNo)))
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
       .map((item) => toPartnerShipmentDto(item, permissions));
     return HttpResponse.json(

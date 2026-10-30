@@ -10,7 +10,7 @@ import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
-import { jobCore, extraOf, ROUTE } from "../partner/jobs";
+import { jobCore, extraOf, ROUTE, staffDestinationsOf } from "../partner/jobs";
 import { staffPersonaOf } from "../auth";
 import { can, type StaffPersona } from "../personas";
 import { bangkokIso, matchesQuery, paginate, problem } from "../support";
@@ -30,6 +30,7 @@ export function toAdminJobDto(order: MockOrder, job: Job, who: StaffPersona | nu
   const inspection = inspections.find((candidate) => candidate.job.id === job.id);
   return {
     ...core,
+    destinations: staffDestinationsOf(order),
     orderId: order.id,
     orderCode: order.orderCode,
     // D-442: anonymised copies of the customer's originals; the mock keeps none.

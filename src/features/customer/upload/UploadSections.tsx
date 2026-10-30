@@ -32,7 +32,8 @@ export async function UploadSections({
   rules,
   maxLabel,
 }: {
-  rules: Schemas["FileCheckRulesDto"] | null;
+  // CONTRACT-SKEW (D-460): `corrugatedSafeZoneMm` is not in the vendored contract yet; read as optional.
+  rules: (Schemas["FileCheckRulesDto"] & { corrugatedSafeZoneMm?: string | null }) | null;
   maxLabel: string | null;
 }) {
   const t = await getTranslations("studio.upload");

@@ -22,6 +22,7 @@ import {
 } from "@/features/partner/ship/actions";
 import { PhotoGrid, ViewFile } from "@/features/partner/viewer";
 import { placeOf, shipmentCodeOf } from "@/features/partner/ship/destination";
+import { WaybillBadge } from "@/features/partner/ship/WaybillBadge";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import { Callout } from "@/ui/components/Callout";
@@ -39,7 +40,8 @@ const linkClass =
   "border-border-strong bg-surface hover:bg-surface-subtle inline-flex min-h-11 md:min-h-10 items-center justify-center gap-2 self-start rounded-lg border px-5 font-medium md:min-h-10 md:px-4";
 
 /**
- * One trip (`partner.shipments.get`): the recipient (D-142), its cartons, labels and packing list
+ * One trip (`partner.shipments.get`): where it goes as a destination code, province and postcode prefix (P4-D1,
+ * D-462 — never the recipient; only whether getpack issued the carrier's waybill), its cartons, labels and packing list
  * once packed, dispatch with the factory's own fleet or a request for getpack's carrier (D-013,
  * D-114), the road's own steps, and the proof of delivery the factory must capture — photos,
  * receiver, signature, delivered pieces per destination — with the order's tolerance result once
@@ -50,7 +52,7 @@ const linkClass =
  */
 export default async function ShipmentPage({ params }: Props) {
   const { shipmentId } = await params;
-  const [t, tDest, tTolerance, tProblems, format, locale, tList] = await Promise.all([
+  const [t, tDest, tTolerance, tProblems, format, locale, tList, tWaybill] = await Promise.all([
     getTranslations("partnerShip.detail"),
     getTranslations("partnerShip.destination"),
     getTranslations("partnerShip.tolerance"),
@@ -58,6 +60,7 @@ export default async function ShipmentPage({ params }: Props) {
     getFormat(),
     getLocale(),
     getTranslations("partnerShip.list.table"),
+    getTranslations("partnerShip.waybill"),
   ]);
   await factoryContext();
   const { contract } = await partnerServerApis();
@@ -93,6 +96,7 @@ export default async function ShipmentPage({ params }: Props) {
   const jobNos = [...new Set(shipment.items.map((item) => item.jobNo))].join(", ");
   const outcome = shipment.items.find((item) => item.toleranceOutcome)?.toleranceOutcome ?? null;
   const dispatch = action("shipment.dispatch");
+  const waybillLabels = { issued: tWaybill("issued"), pending: tWaybill("pending") };
 
   const podOpen =
     action("shipment.record_pod") &&
@@ -194,6 +198,12 @@ export default async function ShipmentPage({ params }: Props) {
         </h2>
         <p className="font-semibold">{place}</p>
         <p className="text-muted text-sm">{tDest("confidential")}</p>
+        {shipment.status !== "cancelled" ? (
+          <div className="border-border mt-2 flex flex-col gap-1 border-t pt-3">
+            <WaybillBadge issued={shipment.waybillIssued} labels={waybillLabels} />
+            <p className="text-muted text-sm">{tWaybill("note")}</p>
+          </div>
+        ) : null}
       </section>
       {/* Destructive, so apart from the dock's steps and last. */}
       {action("shipment.cancel") ? (
@@ -209,7 +219,14 @@ export default async function ShipmentPage({ params }: Props) {
       wide
       title={shipment.shipmentNo}
       back={back}
-      status={<StatusChip map={SHIPMENT_STATUS} value={shipment.status} size="md" />}
+      status={
+        <>
+          <StatusChip map={SHIPMENT_STATUS} value={shipment.status} size="md" />
+          {shipment.status !== "draft" && shipment.status !== "cancelled" ? (
+            <WaybillBadge issued={shipment.waybillIssued} labels={waybillLabels} />
+          ) : null}
+        </>
+      }
       description={t("summary", { jobNo: jobNos, quantity: format.number(pieces), cartons: shipment.cartonsCount })}
     >
       <PartnerStats

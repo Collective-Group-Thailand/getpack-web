@@ -15325,6 +15325,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/shipments/{shipmentId}/handover-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue or regenerate the driver handover link
+         * @description D-462 (sealed carrier label): a random, single-shipment link `<web>/l/<token>` for the carrier / driver, the only place outside getpack staff that shows the recipient’s name, phone and address. Valid until the trip is delivered, cancelled or returned and at most 7 days; issuing again revokes the previous link. The URL and token are returned once (only the hash is kept) — send them to the driver, never to the factory. Packed shipments up to delivery only. Audited (`data_access`); the factory sees only `waybillIssued`.
+         *
+         *     Implements: D-462, D-050.
+         */
+        post: operations["admin.shipments.issueHandoverLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/shipments/{shipmentId}/pod/actions/{decision}": {
         parameters: {
             query?: never;
@@ -15365,6 +15387,28 @@ export interface paths {
          *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
          */
         post: operations["admin.shipments.recordPod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipments/{shipmentId}/waybill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the carrier waybill
+         * @description D-462: the full address label (100 × 150 mm PDF: getpack as sender, the recipient’s name, phone and address, job numbers, cartons) for the carrier — rendered on demand, never stored as a factory file, metadata stripped, named `<shipmentNo>-waybill.pdf`. Each download is audited (`data_access`).
+         *
+         *     Implements: D-462, D-050.
+         */
+        get: operations["admin.shipments.waybill"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -25596,7 +25640,7 @@ export interface paths {
         };
         /**
          * What my factory can ship
-         * @description Completed jobs whose orders are not delivered yet: per destination the pieces already on live trips and what remains, and whether pickup would be refused today (instalments before shipping, getpack inspection — the checks of dispatch, B3.2 / D-076). Destination contacts only (D-142).
+         * @description Completed jobs whose orders are not delivered yet: per destination the pieces already on live trips and what remains, and whether pickup would be refused today (instalments before shipping, getpack inspection — the checks of dispatch, B3.2 / D-076). Destinations by code, province and postcode prefix only — never the recipient (P4-D1).
          *
          *     Implements: D-013, D-076, D-142.
          */
@@ -26454,7 +26498,7 @@ export interface paths {
         };
         /**
          * Get one of my jobs
-         * @description Spec, the approved artwork and dieline (download the approved version only), delivery contacts (D-142), milestones.
+         * @description Spec, the approved artwork and dieline (download the approved version only), destinations by code, province and postcode prefix — never the recipient (P4-D1) — and milestones.
          *
          *     Implements: D-142, D-075.
          */
@@ -26802,7 +26846,7 @@ export interface paths {
         };
         /**
          * List my factory’s shipments
-         * @description Newest first; `view` groups the statuses (open, in transit, delivered, exceptions). Destination contacts only (D-142), no prices; each trip says whether unpaid instalments block pickup and whether a carrier was asked for.
+         * @description Newest first; `view` groups the statuses (open, in transit, delivered, exceptions). Destinations by code, province and postcode prefix — no recipient name, phone or address (P4-D1) — and no prices; each trip says whether unpaid instalments block pickup and whether a carrier was asked for.
          *
          *     Implements: D-013, D-142.
          */
@@ -26898,9 +26942,9 @@ export interface paths {
         put?: never;
         /**
          * Mark a shipment packed and print its labels
-         * @description Generates one 100 × 150 mm label per carton (QR → public tracking, getpack brand only, D-050) and the packing list; the shipping payout is fixed from the factory’s rate card (D-013).
+         * @description Generates one 100 × 150 mm label per carton and the packing list (`<shipmentNo>-labels.pdf`, `<shipmentNo>-packing.pdf`, metadata stripped). D-462: they carry no recipient identity — shipment code, job numbers, carton n/m, destination code (D1 …), province and postcode prefix, and a QR with an opaque tracking token only; the recipient’s address goes to the carrier through getpack’s waybill. getpack brand only (D-050); the shipping payout is fixed from the factory’s rate card (D-013).
          *
-         *     Implements: D-013, D-050.
+         *     Implements: D-013, D-050, D-462.
          */
         post: operations["partner.shipments.markReady"];
         delete?: never;
@@ -30767,6 +30811,50 @@ export interface paths {
         get: operations["store.guarantee.get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/handover-links/actions/confirm-pickup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm pickup through the handover link
+         * @description D-462: the driver confirms the goods were collected. Optional `scannedTokens` are the tracking tokens read from carton QR codes; one that does not belong to this shipment → 422 `handover.scan_mismatch`. A packed shipment on the factory fleet is picked up through the shipping gate (closed gate → 409 `handover.not_ready`, without saying why); a booked carrier’s pickup still comes from its callbacks. Repeating it is harmless. Audited. Same 404 / 410 rules as opening the link.
+         *
+         *     Implements: D-462, D-013.
+         */
+        post: operations["store.handover.confirmPickup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/handover-links/actions/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open a driver handover link
+         * @description D-462 (sealed carrier label): the carrier / driver opens `<web>/l/<token>` (token starting with `d`) and sees the recipient’s name, phone and address, the shipment code and its cartons — never the factory, prices or other orders (D-050). The token is sent in the body, not the URL path, so it stays out of access logs. Unknown or regenerated (revoked) links → 404; a trip that is delivered, cancelled or returned, or a link older than 7 days → 410 `handover.expired`. Every open, refused ones included, is an audit row. Rate-limited.
+         *
+         *     Implements: D-462, D-050.
+         */
+        post: operations["store.handover.resolve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -36425,6 +36513,48 @@ export interface components {
              */
             widthMm: number | null;
         };
+        AdminJobDestinationDto: {
+            /**
+             * @description Code within the job (`D1`, `D2` …) by the order’s destination order (P4-D1)
+             * @example D1
+             */
+            code: string;
+            /**
+             * Format: uuid
+             * @description Referenced by shipment items (B4.3)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2002
+             */
+            id: string;
+            /** @example 1 ถนนทดสอบ */
+            line1: string;
+            /** @example null */
+            line2: string | null;
+            /** @example +66810001234 */
+            phone: string;
+            /** @example 10110 */
+            postcode: string;
+            /**
+             * @description First three digits of the postcode, for shipping cost (P4-D1: never the full postcode)
+             * @example 101
+             */
+            postcodePrefix: string;
+            /** @example Bangkok */
+            provinceNameEn: string;
+            /** @example กรุงเทพมหานคร */
+            provinceNameTh: string;
+            /** @example 1000 */
+            quantity: number;
+            /**
+             * @description Recipient (D-142); never on the partner surface (P4-D1)
+             * @example ผู้รับ ทดสอบ
+             */
+            recipientName: string;
+            /**
+             * @description Pieces on live shipments of this job (not cancelled / returned)
+             * @example 0
+             */
+            shippedQuantity: number;
+        };
         AdminJobDto: {
             /**
              * Format: date-time
@@ -36467,7 +36597,8 @@ export interface components {
              * @example printing
              */
             currentMilestoneKey: string | null;
-            destinations: components["schemas"]["JobDestinationDto"][];
+            /** @description With the recipient’s contact (staff only; the factory sees codes, P4-D1) */
+            destinations: components["schemas"]["AdminJobDestinationDto"][];
             /**
              * Format: uuid
              * @example null
@@ -37889,6 +38020,29 @@ export interface components {
              */
             vatAmount: string;
         };
+        AdminShipmentDestinationDto: {
+            /**
+             * @description The job destination’s code (`D1`, `D2` …) of the trip’s first item (P4-D1)
+             * @example D1
+             */
+            code: string;
+            /** @example 99/9 ถนนสุขุมวิท */
+            line1: string;
+            /** @example แขวงคลองตัน เขตคลองเตย */
+            line2: string | null;
+            /** @example +66810001234 */
+            phone: string;
+            /** @example 10110 */
+            postcode: string;
+            /**
+             * @description First three digits of the postcode (P4-D1)
+             * @example 101
+             */
+            postcodePrefix: string;
+            province: components["schemas"]["GeoRefDto"];
+            /** @example สมหญิง ใจดี */
+            recipientName: string;
+        };
         AdminShipmentDto: {
             /**
              * @description Not picked up yet and an order still owes instalments due before shipping (B3.2)
@@ -37922,7 +38076,8 @@ export interface components {
              * @example null
              */
             deliveredAt: string | null;
-            destination: components["schemas"]["ShipmentDestinationDto"];
+            /** @description With the recipient’s contact (staff only) */
+            destination: components["schemas"]["AdminShipmentDestinationDto"];
             events: components["schemas"]["ShipmentEventDto"][];
             /** @description Failed or returned (D-230) */
             exception: components["schemas"]["ShipmentExceptionDto"] | null;
@@ -37933,6 +38088,8 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f1003
              */
             factoryId: string;
+            /** @description D-462: the latest driver handover link (no token — regenerate to get a new URL); null until issued */
+            handover: components["schemas"]["ShipmentHandoverSummaryDto"] | null;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2001
@@ -37999,6 +38156,11 @@ export interface components {
             trackingUrl: string | null;
             /** @example 120000 */
             volumeCm3: number | null;
+            /**
+             * @description D-462: getpack has issued the carrier waybill (a driver handover link or a fallback-carrier booking) — "ส่งใบปะหน้าให้ผู้ขนส่งแล้ว". The recipient’s details go to the carrier only; the factory never receives them.
+             * @example false
+             */
+            waybillIssued: boolean;
             /** @example 18000 */
             weightG: number;
         };
@@ -44764,6 +44926,20 @@ export interface components {
              */
             referenceFileIds?: string[];
         };
+        ConfirmHandoverPickupDto: {
+            /**
+             * @description Tracking tokens read from carton QR codes (`<web>/track/<token>`), to check the cartons belong to this trip
+             * @example [
+             *       "q3J9f0T1xYk8Zb2mR4sW6uE7vN0aLcDh"
+             *     ]
+             */
+            scannedTokens?: string[];
+            /**
+             * @description The token of the driver handover link `<web>/l/<token>` (starts with `d`)
+             * @example dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw
+             */
+            token: string;
+        };
         ConfirmImportDto: {
             /**
              * Format: uuid
@@ -49115,33 +49291,6 @@ export interface components {
             /** @example 0000000000019 */
             taxId: string;
         };
-        DefaultTolerancesDto: {
-            /**
-             * @description Colour ΔE2000 against the approved proof — `fulfilment.colour_tolerance_delta_e.standard` (D-186)
-             * @example 3
-             */
-            colourDeltaE: string | null;
-            /**
-             * @description Colour ΔE2000 on flexo-printed corrugated board — `fulfilment.colour_tolerance_delta_e.flexo`
-             * @example 5
-             */
-            colourDeltaEFlexo: string | null;
-            /**
-             * @description Quantity ± % (shortage and overage) — `fulfilment.tolerance_default_pct` (D-163); null until set
-             * @example 5.00
-             */
-            quantityPct: string | null;
-            /**
-             * @description Largest of the same; null when none
-             * @example 3.00
-             */
-            sizeMmMax: string | null;
-            /**
-             * @description Smallest size tolerance ± mm over the product kinds that publish one — `fulfilment.dimensional_tolerance_mm` (D-186); null when none
-             * @example 1.00
-             */
-            sizeMmMin: string | null;
-        };
         DefectCountsDto: {
             /** @example 0 */
             critical: number;
@@ -50898,6 +51047,42 @@ export interface components {
             seed?: string;
             /** @example 25 */
             size: number;
+        };
+        DriverHandoverDto: {
+            /** @example true */
+            canConfirmPickup: boolean;
+            cartons: components["schemas"]["HandoverCartonDto"][];
+            /** @example 3 */
+            cartonsCount: number;
+            /**
+             * Format: date-time
+             * @example 2026-10-26T16:05:00+07:00
+             */
+            expiresAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            pickupConfirmedAt: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            plannedShipOn: string | null;
+            recipient: components["schemas"]["HandoverRecipientDto"];
+            /** @description getpack (never the factory, D-050) */
+            sender: components["schemas"]["HandoverSenderDto"];
+            /** @example SH-2610-0001 */
+            shipmentNo: string;
+            /** @example ready */
+            status: components["schemas"]["ShipmentStatus"];
+            /**
+             * @description `status` (ShipmentStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example เตรียมจัดส่ง
+             */
+            statusLabelTh: string;
+            /** @example 18000 */
+            weightG: number;
         };
         /** @enum {string} */
         DueTrigger: "at_checkout" | "before_production" | "before_shipping" | "on_delivery" | "days_after_delivery";
@@ -60857,11 +61042,6 @@ export interface components {
             /** @description The 12 checks, in the page’s order */
             checks: components["schemas"]["FileCheckRuleItemDto"][];
             /**
-             * @description C12 (D-460): the safe distance on corrugated board (print profile `corrugated` of `artwork.preflight_rules`), mm; null when the profile sets none (the safe distance above applies)
-             * @example 5
-             */
-            corrugatedSafeZoneMm: string | null;
-            /**
              * @description Accepted file extensions
              * @example [
              *       ".pdf",
@@ -62259,6 +62439,49 @@ export interface components {
             /** @example 1 */
             versionNo: number;
         };
+        HandoverCartonDto: {
+            /** @example 9F3A0C1B2D4E-01 */
+            labelCode: string;
+            /** @example 1 */
+            seq: number;
+        };
+        /**
+         * @description `closed` once the trip is delivered, cancelled or returned
+         * @enum {string}
+         */
+        HandoverLinkState: "active" | "expired" | "revoked" | "closed";
+        HandoverProvinceDto: {
+            /** @example Songkhla */
+            nameEn: string;
+            /** @example สงขลา */
+            nameTh: string;
+        };
+        HandoverRecipientDto: {
+            /** @example 99/9 ถนนกาญจนวนิช */
+            line1: string;
+            /** @example ตำบลหาดใหญ่ อำเภอหาดใหญ่ */
+            line2: string | null;
+            /** @example สมหญิง ใจดี */
+            name: string;
+            /** @example +66810001234 */
+            phone: string;
+            /** @example 90110 */
+            postcode: string;
+            province: components["schemas"]["HandoverProvinceDto"];
+        };
+        HandoverSenderDto: {
+            /** @example getpack · บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด */
+            name: string;
+            /** @example +6620000000 */
+            phone: string | null;
+        };
+        HandoverTokenDto: {
+            /**
+             * @description The token of the driver handover link `<web>/l/<token>` (starts with `d`)
+             * @example dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw
+             */
+            token: string;
+        };
         HealthIndicatorState: {
             /** @example up */
             status: components["schemas"]["HealthIndicatorStatus"];
@@ -63501,6 +63724,17 @@ export interface components {
             /** @example additional_charge */
             reasonCode: string;
         };
+        IssuedHandoverLinkDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-26T16:05:00+07:00
+             */
+            expiresAt: string;
+            /** @example dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw */
+            token: string;
+            /** @example https://www.getpack.example/l/dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw */
+            url: string;
+        };
         IssuedStatementDto: {
             /** @example 42800.00 */
             closingAmount: string;
@@ -63634,30 +63868,27 @@ export interface components {
         };
         JobDestinationDto: {
             /**
+             * @description Code within the job (`D1`, `D2` …) by the order’s destination order (P4-D1)
+             * @example D1
+             */
+            code: string;
+            /**
              * Format: uuid
              * @description Referenced by shipment items (B4.3)
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2002
              */
             id: string;
-            /** @example 1 ถนนทดสอบ */
-            line1: string;
-            /** @example null */
-            line2: string | null;
-            /** @example +66810001234 */
-            phone: string;
-            /** @example 10110 */
-            postcode: string;
+            /**
+             * @description First three digits of the postcode, for shipping cost (P4-D1: never the full postcode)
+             * @example 101
+             */
+            postcodePrefix: string;
             /** @example Bangkok */
             provinceNameEn: string;
             /** @example กรุงเทพมหานคร */
             provinceNameTh: string;
             /** @example 1000 */
             quantity: number;
-            /**
-             * @description Recipient (D-142: name, address and phone only)
-             * @example ผู้รับ ทดสอบ
-             */
-            recipientName: string;
             /**
              * @description Pieces on live shipments of this job (not cancelled / returned)
              * @example 0
@@ -66789,6 +67020,11 @@ export interface components {
             trackingNo: string | null;
             /** @example 120000 */
             volumeCm3: number | null;
+            /**
+             * @description D-462: getpack has issued the carrier waybill (a driver handover link or a fallback-carrier booking) — "ส่งใบปะหน้าให้ผู้ขนส่งแล้ว". The recipient’s details go to the carrier only; the factory never receives them.
+             * @example false
+             */
+            waybillIssued: boolean;
             /** @example 18000 */
             weightG: number;
         };
@@ -70113,8 +70349,11 @@ export interface components {
              *     ]
              */
             photoFileIds: string[];
-            /** @example สมหญิง ใจดี */
-            receiverName: string;
+            /**
+             * @description Who received it. On the partner surface null for a carrier POD (the carrier copies the recipient, P4-D1); a factory POD shows the name the factory recorded
+             * @example สมหญิง ใจดี
+             */
+            receiverName: string | null;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2006
@@ -70490,8 +70729,6 @@ export interface components {
              * @example 42
              */
             templateCount: number;
-            /** @description D-460 the default tolerances (settings, D-163 / D-186) the "how we work" block states; each part null until set. A job’s own tolerance is frozen on its quotation (D-021) and may differ */
-            tolerances: components["schemas"]["DefaultTolerancesDto"];
         };
         PublicGuaranteeDto: {
             /**
@@ -76418,6 +76655,19 @@ export interface components {
          * @enum {string}
          */
         ShipBlockedReason: "payment_pending" | "inspection_pending";
+        ShipmentAddressDto: {
+            /** @example 99/9 ถนนสุขุมวิท */
+            line1: string;
+            /** @example แขวงคลองตัน เขตคลองเตย */
+            line2: string | null;
+            /** @example +66810001234 */
+            phone: string;
+            /** @example 10110 */
+            postcode: string;
+            province: components["schemas"]["GeoRefDto"];
+            /** @example สมหญิง ใจดี */
+            recipientName: string;
+        };
         ShipmentCarrierQuoteDto: {
             /**
              * @description getpack’s cost (P25), THB; only with `factory_buy_prices.read` (D-141)
@@ -76453,17 +76703,17 @@ export interface components {
             weightG: number | null;
         };
         ShipmentDestinationDto: {
-            /** @example 99/9 ถนนสุขุมวิท */
-            line1: string;
-            /** @example แขวงคลองตัน เขตคลองเตย */
-            line2: string | null;
-            /** @example +66810001234 */
-            phone: string;
-            /** @example 10110 */
-            postcode: string;
+            /**
+             * @description The job destination’s code (`D1`, `D2` …) of the trip’s first item (P4-D1)
+             * @example D1
+             */
+            code: string;
+            /**
+             * @description First three digits of the postcode (P4-D1)
+             * @example 101
+             */
+            postcodePrefix: string;
             province: components["schemas"]["GeoRefDto"];
-            /** @example สมหญิง ใจดี */
-            recipientName: string;
         };
         ShipmentEventDto: {
             /** @example ศูนย์กระจายสินค้าบางนา */
@@ -76519,9 +76769,46 @@ export interface components {
         ShipmentExceptionResolution: "retry" | "return" | "cancel";
         /** @enum {string} */
         ShipmentExceptionStatus: "failed" | "returned";
+        ShipmentHandoverSummaryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-26T16:05:00+07:00
+             */
+            expiresAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-19T16:05:00+07:00
+             */
+            issuedAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T09:12:00+07:00
+             */
+            lastOpenedAt: string | null;
+            /**
+             * @description Times the driver opened it (each one audited)
+             * @example 2
+             */
+            openCount: number;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            pickupConfirmedAt: string | null;
+            /**
+             * @description `closed` once the trip is delivered, cancelled or returned
+             * @example active
+             */
+            state: components["schemas"]["HandoverLinkState"];
+        };
         ShipmentItemDto: {
             /** @example null */
             deliveredQuantity: number | null;
+            /**
+             * @description The destination’s code within its job (`destinations[].code` of the job, P4-D1)
+             * @example D1
+             */
+            destinationCode: string;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2002
@@ -76714,12 +77001,20 @@ export interface components {
         ShippingSuggestionBasis: "customer_rate_less_target_margin" | "target_margin_not_set" | "no_customer_rate";
         ShipPlanDestinationDto: {
             /**
+             * @description The destination’s code within the job (`D1`, `D2` …, P4-D1)
+             * @example D1
+             */
+            code: string;
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2002
              */
             destinationId: string;
-            /** @example 10110 */
-            postcode: string;
+            /**
+             * @description First three digits of the postcode (P4-D1)
+             * @example 101
+             */
+            postcodePrefix: string;
             /** @example กรุงเทพมหานคร */
             provinceNameTh: string;
             /**
@@ -76727,8 +77022,6 @@ export interface components {
              * @example 600
              */
             quantity: number;
-            /** @example สมหญิง ใจดี */
-            recipientName: string;
             /** @example 600 */
             remainingQuantity: number;
             /**
@@ -79967,7 +80260,7 @@ export interface components {
              * @example 2026-10-21T14:05:00+07:00
              */
             deliveredAt: string | null;
-            destination: components["schemas"]["ShipmentDestinationDto"];
+            destination: components["schemas"]["ShipmentAddressDto"];
             events: components["schemas"]["StoreShipmentEventDto"][];
             /**
              * Format: uuid
@@ -173659,11 +173952,13 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "line1": "1 ถนนทดสอบ",
                      *           "line2": null,
                      *           "phone": "+66810001234",
                      *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
@@ -182270,11 +182565,13 @@ export interface operations {
                      *           "currentMilestoneKey": "printing",
                      *           "destinations": [
                      *             {
+                     *               "code": "D1",
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *               "line1": "1 ถนนทดสอบ",
                      *               "line2": null,
                      *               "phone": "+66810001234",
                      *               "postcode": "10110",
+                     *               "postcodePrefix": "101",
                      *               "provinceNameEn": "Bangkok",
                      *               "provinceNameTh": "กรุงเทพมหานคร",
                      *               "quantity": 1000,
@@ -182484,11 +182781,13 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "line1": "1 ถนนทดสอบ",
                      *           "line2": null,
                      *           "phone": "+66810001234",
                      *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
@@ -182702,11 +183001,13 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "line1": "1 ถนนทดสอบ",
                      *           "line2": null,
                      *           "phone": "+66810001234",
                      *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
@@ -182940,11 +183241,13 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "line1": "1 ถนนทดสอบ",
                      *           "line2": null,
                      *           "phone": "+66810001234",
                      *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
@@ -183174,11 +183477,13 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "line1": "1 ถนนทดสอบ",
                      *           "line2": null,
                      *           "phone": "+66810001234",
                      *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
@@ -198137,10 +198442,12 @@ export interface operations {
                      *           "cartonsCount": 3,
                      *           "deliveredAt": null,
                      *           "destination": {
+                     *             "code": "D1",
                      *             "line1": "99/9 ถนนสุขุมวิท",
                      *             "line2": "แขวงคลองตัน เขตคลองเตย",
                      *             "phone": "+66810001234",
                      *             "postcode": "10110",
+                     *             "postcodePrefix": "101",
                      *             "province": {
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *               "nameEn": "Bangkok",
@@ -198162,10 +198469,12 @@ export interface operations {
                      *           "exception": null,
                      *           "factoryCode": "F-0001",
                      *           "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *           "handover": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *           "items": [
                      *             {
                      *               "deliveredQuantity": null,
+                     *               "destinationCode": "D1",
                      *               "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *               "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *               "jobNo": "JOB-2610-0001",
@@ -198192,6 +198501,7 @@ export interface operations {
                      *           "trackingNo": null,
                      *           "trackingUrl": null,
                      *           "volumeCm3": 120000,
+                     *           "waybillIssued": false,
                      *           "weightG": 18000
                      *         }
                      *       ],
@@ -198315,10 +198625,12 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
+                     *         "code": "D1",
                      *         "line1": "99/9 ถนนสุขุมวิท",
                      *         "line2": "แขวงคลองตัน เขตคลองเตย",
                      *         "phone": "+66810001234",
                      *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
@@ -198340,10 +198652,12 @@ export interface operations {
                      *       "exception": null,
                      *       "factoryCode": "F-0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -198370,6 +198684,7 @@ export interface operations {
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -198502,10 +198817,12 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
+                     *         "code": "D1",
                      *         "line1": "99/9 ถนนสุขุมวิท",
                      *         "line2": "แขวงคลองตัน เขตคลองเตย",
                      *         "phone": "+66810001234",
                      *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
@@ -198527,10 +198844,12 @@ export interface operations {
                      *       "exception": null,
                      *       "factoryCode": "F-0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -198557,6 +198876,7 @@ export interface operations {
                      *       "trackingNo": "TH0123",
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -198726,10 +199046,12 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
+                     *         "code": "D1",
                      *         "line1": "99/9 ถนนสุขุมวิท",
                      *         "line2": "แขวงคลองตัน เขตคลองเตย",
                      *         "phone": "+66810001234",
                      *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
@@ -198751,10 +199073,12 @@ export interface operations {
                      *       "exception": null,
                      *       "factoryCode": "F-0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -198781,6 +199105,7 @@ export interface operations {
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -198943,10 +199268,12 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
+                     *         "code": "D1",
                      *         "line1": "99/9 ถนนสุขุมวิท",
                      *         "line2": "แขวงคลองตัน เขตคลองเตย",
                      *         "phone": "+66810001234",
                      *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
@@ -198968,10 +199295,12 @@ export interface operations {
                      *       "exception": null,
                      *       "factoryCode": "F-0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -198998,6 +199327,7 @@ export interface operations {
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -199145,10 +199475,12 @@ export interface operations {
                      *         "cartonsCount": 1,
                      *         "deliveredAt": null,
                      *         "destination": {
+                     *           "code": "D1",
                      *           "line1": "99/9 ถนนสุขุมวิท",
                      *           "line2": "แขวงคลองตัน เขตคลองเตย",
                      *           "phone": "+66810001234",
                      *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "province": {
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *             "nameEn": "Bangkok",
@@ -199170,10 +199502,12 @@ export interface operations {
                      *         "exception": null,
                      *         "factoryCode": "F-0001",
                      *         "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *         "handover": null,
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2008",
                      *         "items": [
                      *           {
                      *             "deliveredQuantity": null,
+                     *             "destinationCode": "D1",
                      *             "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *             "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *             "jobNo": "JOB-2610-0001",
@@ -199203,6 +199537,7 @@ export interface operations {
                      *         "trackingNo": null,
                      *         "trackingUrl": null,
                      *         "volumeCm3": 120000,
+                     *         "waybillIssued": false,
                      *         "weightG": 6000
                      *       },
                      *       "shipment": {
@@ -199217,10 +199552,12 @@ export interface operations {
                      *         "cartonsCount": 2,
                      *         "deliveredAt": null,
                      *         "destination": {
+                     *           "code": "D1",
                      *           "line1": "99/9 ถนนสุขุมวิท",
                      *           "line2": "แขวงคลองตัน เขตคลองเตย",
                      *           "phone": "+66810001234",
                      *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "province": {
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *             "nameEn": "Bangkok",
@@ -199242,10 +199579,12 @@ export interface operations {
                      *         "exception": null,
                      *         "factoryCode": "F-0001",
                      *         "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *         "handover": null,
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *         "items": [
                      *           {
                      *             "deliveredQuantity": null,
+                     *             "destinationCode": "D1",
                      *             "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *             "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *             "jobNo": "JOB-2610-0001",
@@ -199272,6 +199611,7 @@ export interface operations {
                      *         "trackingNo": null,
                      *         "trackingUrl": null,
                      *         "volumeCm3": 120000,
+                     *         "waybillIssued": false,
                      *         "weightG": 18000
                      *       }
                      *     }
@@ -199552,10 +199892,12 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
+                     *         "code": "D1",
                      *         "line1": "99/9 ถนนสุขุมวิท",
                      *         "line2": "แขวงคลองตัน เขตคลองเตย",
                      *         "phone": "+66810001234",
                      *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
@@ -199577,10 +199919,12 @@ export interface operations {
                      *       "exception": null,
                      *       "factoryCode": "F-0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -199607,6 +199951,7 @@ export interface operations {
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -199664,6 +200009,113 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.shipments.issueHandoverLink": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                shipmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Issued */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-26T16:05:00+07:00",
+                     *       "token": "dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw",
+                     *       "url": "https://www.getpack.example/l/dQ2hlY2tUaGlzSXNBRmFrZVRva2VuMDAw"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IssuedHandoverLinkDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipments.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -199757,10 +200209,12 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
+                     *         "code": "D1",
                      *         "line1": "99/9 ถนนสุขุมวิท",
                      *         "line2": "แขวงคลองตัน เขตคลองเตย",
                      *         "phone": "+66810001234",
                      *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
@@ -199782,10 +200236,12 @@ export interface operations {
                      *       "exception": null,
                      *       "factoryCode": "F-0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -199830,6 +200286,7 @@ export interface operations {
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -199989,10 +200446,12 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
+                     *         "code": "D1",
                      *         "line1": "99/9 ถนนสุขุมวิท",
                      *         "line2": "แขวงคลองตัน เขตคลองเตย",
                      *         "phone": "+66810001234",
                      *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
@@ -200014,10 +200473,12 @@ export interface operations {
                      *       "exception": null,
                      *       "factoryCode": "F-0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -200054,6 +200515,7 @@ export interface operations {
                      *       "trackingNo": null,
                      *       "trackingUrl": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -200133,6 +200595,107 @@ export interface operations {
             };
             /** @description Problem: `internal.unexpected` */
             500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.shipments.waybill": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                shipmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The waybill PDF */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example (binary PDF) */
+                    "application/pdf": string;
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `provider.unavailable` */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -278495,11 +279058,11 @@ export interface operations {
                      *         "blockedReason": null,
                      *         "destinations": [
                      *           {
+                     *             "code": "D1",
                      *             "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                     *             "postcode": "10110",
+                     *             "postcodePrefix": "101",
                      *             "provinceNameTh": "กรุงเทพมหานคร",
                      *             "quantity": 600,
-                     *             "recipientName": "สมหญิง ใจดี",
                      *             "remainingQuantity": 600,
                      *             "shippedQuantity": 0
                      *           }
@@ -279618,15 +280181,12 @@ export interface operations {
                      *           "currentMilestoneKey": "printing",
                      *           "destinations": [
                      *             {
+                     *               "code": "D1",
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                     *               "line1": "1 ถนนทดสอบ",
-                     *               "line2": null,
-                     *               "phone": "+66810001234",
-                     *               "postcode": "10110",
+                     *               "postcodePrefix": "101",
                      *               "provinceNameEn": "Bangkok",
                      *               "provinceNameTh": "กรุงเทพมหานคร",
                      *               "quantity": 1000,
-                     *               "recipientName": "ผู้รับ ทดสอบ",
                      *               "shippedQuantity": 0
                      *             }
                      *           ],
@@ -282995,15 +283555,12 @@ export interface operations {
                      *           "currentMilestoneKey": "printing",
                      *           "destinations": [
                      *             {
+                     *               "code": "D1",
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                     *               "line1": "1 ถนนทดสอบ",
-                     *               "line2": null,
-                     *               "phone": "+66810001234",
-                     *               "postcode": "10110",
+                     *               "postcodePrefix": "101",
                      *               "provinceNameEn": "Bangkok",
                      *               "provinceNameTh": "กรุงเทพมหานคร",
                      *               "quantity": 1000,
-                     *               "recipientName": "ผู้รับ ทดสอบ",
                      *               "shippedQuantity": 0
                      *             }
                      *           ],
@@ -283187,15 +283744,12 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                     *           "line1": "1 ถนนทดสอบ",
-                     *           "line2": null,
-                     *           "phone": "+66810001234",
-                     *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
-                     *           "recipientName": "ผู้รับ ทดสอบ",
                      *           "shippedQuantity": 0
                      *         }
                      *       ],
@@ -283382,15 +283936,12 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                     *           "line1": "1 ถนนทดสอบ",
-                     *           "line2": null,
-                     *           "phone": "+66810001234",
-                     *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
-                     *           "recipientName": "ผู้รับ ทดสอบ",
                      *           "shippedQuantity": 0
                      *         }
                      *       ],
@@ -283601,15 +284152,12 @@ export interface operations {
                      *       "currentMilestoneKey": "printing",
                      *       "destinations": [
                      *         {
+                     *           "code": "D1",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                     *           "line1": "1 ถนนทดสอบ",
-                     *           "line2": null,
-                     *           "phone": "+66810001234",
-                     *           "postcode": "10110",
+                     *           "postcodePrefix": "101",
                      *           "provinceNameEn": "Bangkok",
                      *           "provinceNameTh": "กรุงเทพมหานคร",
                      *           "quantity": 1000,
-                     *           "recipientName": "ผู้รับ ทดสอบ",
                      *           "shippedQuantity": 0
                      *         }
                      *       ],
@@ -284328,15 +284876,12 @@ export interface operations {
                      *         "currentMilestoneKey": "printing",
                      *         "destinations": [
                      *           {
+                     *             "code": "D1",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
-                     *             "line1": "1 ถนนทดสอบ",
-                     *             "line2": null,
-                     *             "phone": "+66810001234",
-                     *             "postcode": "10110",
+                     *             "postcodePrefix": "101",
                      *             "provinceNameEn": "Bangkok",
                      *             "provinceNameTh": "กรุงเทพมหานคร",
                      *             "quantity": 1000,
-                     *             "recipientName": "ผู้รับ ทดสอบ",
                      *             "shippedQuantity": 0
                      *           }
                      *         ],
@@ -285534,16 +286079,13 @@ export interface operations {
                      *           "cartonsCount": 3,
                      *           "deliveredAt": null,
                      *           "destination": {
-                     *             "line1": "99/9 ถนนสุขุมวิท",
-                     *             "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *             "phone": "+66810001234",
-                     *             "postcode": "10110",
+                     *             "code": "D1",
+                     *             "postcodePrefix": "101",
                      *             "province": {
                      *               "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *               "nameEn": "Bangkok",
                      *               "nameTh": "กรุงเทพมหานคร"
-                     *             },
-                     *             "recipientName": "สมหญิง ใจดี"
+                     *             }
                      *           },
                      *           "events": [
                      *             {
@@ -285560,6 +286102,7 @@ export interface operations {
                      *           "items": [
                      *             {
                      *               "deliveredQuantity": null,
+                     *               "destinationCode": "D1",
                      *               "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *               "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *               "jobNo": "JOB-2610-0001",
@@ -285582,6 +286125,7 @@ export interface operations {
                      *           "statusLabelTh": "พร้อมส่ง",
                      *           "trackingNo": null,
                      *           "volumeCm3": 120000,
+                     *           "waybillIssued": false,
                      *           "weightG": 18000
                      *         }
                      *       ],
@@ -285705,16 +286249,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -285731,6 +286272,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -285753,6 +286295,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -285891,16 +286434,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -285917,6 +286457,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -285939,6 +286480,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -286064,16 +286606,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -286090,6 +286629,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -286112,6 +286652,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -286253,16 +286794,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -286279,6 +286817,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -286301,6 +286840,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -286442,16 +286982,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -286468,6 +287005,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -286490,6 +287028,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -286648,16 +287187,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -286674,6 +287210,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -286696,6 +287233,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -286841,16 +287379,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -286867,6 +287402,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -286889,6 +287425,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -287034,16 +287571,13 @@ export interface operations {
                      *       "cartonsCount": 3,
                      *       "deliveredAt": null,
                      *       "destination": {
-                     *         "line1": "99/9 ถนนสุขุมวิท",
-                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
-                     *         "phone": "+66810001234",
-                     *         "postcode": "10110",
+                     *         "code": "D1",
+                     *         "postcodePrefix": "101",
                      *         "province": {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
                      *           "nameEn": "Bangkok",
                      *           "nameTh": "กรุงเทพมหานคร"
-                     *         },
-                     *         "recipientName": "สมหญิง ใจดี"
+                     *         }
                      *       },
                      *       "events": [
                      *         {
@@ -287060,6 +287594,7 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
                      *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
                      *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
                      *           "jobNo": "JOB-2610-0001",
@@ -287092,6 +287627,7 @@ export interface operations {
                      *       "statusLabelTh": "พร้อมส่ง",
                      *       "trackingNo": null,
                      *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
                      *       "weightG": 18000
                      *     }
                      */
@@ -312042,7 +312578,6 @@ export interface operations {
                      *           "evaluated": false
                      *         }
                      *       ],
-                     *       "corrugatedSafeZoneMm": "5",
                      *       "extensions": [
                      *         ".pdf",
                      *         ".ai"
@@ -312855,6 +313390,324 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.handover.confirmPickup": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmHandoverPickupDto"];
+            };
+        };
+        responses: {
+            /** @description Pickup confirmed */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canConfirmPickup": false,
+                     *       "cartons": [
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-01",
+                     *           "seq": 1
+                     *         },
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-02",
+                     *           "seq": 2
+                     *         },
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-03",
+                     *           "seq": 3
+                     *         }
+                     *       ],
+                     *       "cartonsCount": 3,
+                     *       "expiresAt": "2026-10-26T16:05:00+07:00",
+                     *       "pickupConfirmedAt": "2026-10-20T09:15:00+07:00",
+                     *       "plannedShipOn": "2026-10-20",
+                     *       "recipient": {
+                     *         "line1": "99/9 ถนนกาญจนวนิช",
+                     *         "line2": "ตำบลหาดใหญ่ อำเภอหาดใหญ่",
+                     *         "name": "สมหญิง ใจดี",
+                     *         "phone": "+66810001234",
+                     *         "postcode": "90110",
+                     *         "province": {
+                     *           "nameEn": "Songkhla",
+                     *           "nameTh": "สงขลา"
+                     *         }
+                     *       },
+                     *       "sender": {
+                     *         "name": "getpack · บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด",
+                     *         "phone": "+6620000000"
+                     *       },
+                     *       "shipmentNo": "SH-2610-0001",
+                     *       "status": "picked_up",
+                     *       "statusLabelTh": "จัดส่งออกแล้ว",
+                     *       "weightG": 18000
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DriverHandoverDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `handover.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `handover.expired` */
+            410: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `handover.scan_mismatch`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.handover.resolve": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HandoverTokenDto"];
+            };
+        };
+        responses: {
+            /** @description The trip and its recipient */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canConfirmPickup": true,
+                     *       "cartons": [
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-01",
+                     *           "seq": 1
+                     *         },
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-02",
+                     *           "seq": 2
+                     *         },
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-03",
+                     *           "seq": 3
+                     *         }
+                     *       ],
+                     *       "cartonsCount": 3,
+                     *       "expiresAt": "2026-10-26T16:05:00+07:00",
+                     *       "pickupConfirmedAt": null,
+                     *       "plannedShipOn": "2026-10-20",
+                     *       "recipient": {
+                     *         "line1": "99/9 ถนนกาญจนวนิช",
+                     *         "line2": "ตำบลหาดใหญ่ อำเภอหาดใหญ่",
+                     *         "name": "สมหญิง ใจดี",
+                     *         "phone": "+66810001234",
+                     *         "postcode": "90110",
+                     *         "province": {
+                     *           "nameEn": "Songkhla",
+                     *           "nameTh": "สงขลา"
+                     *         }
+                     *       },
+                     *       "sender": {
+                     *         "name": "getpack · บริษัท คอลเลคทีฟ กรุ๊ป (ประเทศไทย) จำกัด",
+                     *         "phone": "+6620000000"
+                     *       },
+                     *       "shipmentNo": "SH-2610-0001",
+                     *       "status": "ready",
+                     *       "statusLabelTh": "พร้อมส่ง",
+                     *       "weightG": 18000
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DriverHandoverDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `handover.expired` */
+            410: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -321485,14 +322338,7 @@ export interface operations {
                      *         "tz": "Asia/Bangkok"
                      *       },
                      *       "supportReplyMinutes": null,
-                     *       "templateCount": 42,
-                     *       "tolerances": {
-                     *         "colourDeltaE": "3",
-                     *         "colourDeltaEFlexo": "5",
-                     *         "quantityPct": "5.00",
-                     *         "sizeMmMax": "3.00",
-                     *         "sizeMmMin": "1.00"
-                     *       }
+                     *       "templateCount": 42
                      *     }
                      */
                     "application/json": components["schemas"]["PublicConfigDto"];

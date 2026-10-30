@@ -849,7 +849,7 @@ export function ShipmentsTab({ order }: { order: Order }) {
             {pod ? (
               <Callout
                 tone="success"
-                title={t("pod", { name: pod.receiverName, quantity: format.number(pod.deliveredQuantity) })}
+                title={t("pod", { name: pod.receiverName ?? "—", quantity: format.number(pod.deliveredQuantity) })}
                 className="mt-3"
               >
                 <When at={pod.capturedAt} absoluteOnly />

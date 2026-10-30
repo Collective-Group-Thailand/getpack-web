@@ -22,6 +22,8 @@ import {
   contentSecurityPolicy,
   createNonce,
   CSP_HEADER,
+  driverHandoverHeaders,
+  isDriverHandoverPath,
   isHttpsRequest,
   NONCE_HEADER,
   securityHeaders,
@@ -140,6 +142,10 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
   response.headers.set(CSP_HEADER, csp);
   for (const [name, value] of Object.entries(securityHeaders(zone, { isHttps: isSecure }))) {
     response.headers.set(name, value);
+  }
+  // D-462: the driver handover page shows a recipient to whoever holds its link — never cached, never indexed.
+  if (zone === "customer" && isDriverHandoverPath(pathname)) {
+    for (const [name, value] of Object.entries(driverHandoverHeaders())) response.headers.set(name, value);
   }
   return response;
 }

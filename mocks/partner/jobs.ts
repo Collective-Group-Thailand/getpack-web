@@ -258,19 +258,31 @@ export const setCartonLookup = (lookup: (code: string) => string | null) => {
   cartonJob = lookup;
 };
 
-/** D-142: the recipient's name, delivery address and phone — nothing else about the customer. */
+/** The staff view of a job's destinations (`AdminJobDto`): the factory's fields plus the recipient (D-141). */
+export function staffDestinationsOf(order: MockOrder): Schemas["AdminJobDto"]["destinations"] {
+  return destinationsOf(order).map((destination, index) => {
+    const source = order.destinations[index]!;
+    return {
+      ...destination,
+      recipientName: source.recipientName,
+      phone: source.phone,
+      line1: [source.line1, source.subdistrict, source.district].filter(Boolean).join(" "),
+      line2: source.line2,
+      postcode: source.postcode,
+    };
+  });
+}
+
+/** P4-D1 / D-462: the destination's code, province and postcode prefix — nothing about the recipient. */
 export function destinationsOf(order: MockOrder): Schemas["JobDestinationDto"][] {
-  return order.destinations.map((destination) => {
+  return order.destinations.map((destination, index) => {
     const province = provinceRefOf(destination.postcode, destination.province);
     return {
       id: destination.id,
-      recipientName: destination.recipientName,
-      phone: destination.phone,
-      line1: [destination.line1, destination.subdistrict, destination.district].filter(Boolean).join(" "),
-      line2: destination.line2,
+      code: `D${index + 1}`,
       provinceNameTh: province.nameTh,
       provinceNameEn: province.nameEn,
-      postcode: destination.postcode,
+      postcodePrefix: destination.postcode.slice(0, 3),
       quantity: destination.quantity,
       shippedQuantity: shippedOf(order, destination.id),
     };

@@ -9,6 +9,7 @@ import { ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { CreateShipment } from "@/features/partner/ship/actions";
 import { codeOf, placeOf, shipmentCodeOf } from "@/features/partner/ship/destination";
+import { WaybillBadge } from "@/features/partner/ship/WaybillBadge";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
 import type { Schemas } from "@/lib/api/types";
@@ -92,6 +93,7 @@ export default async function ShipPage({ searchParams }: Props) {
     ),
   ) as Record<View, number | null>;
   const manage = canAt(context, "factory_shipments.manage");
+  const waybillLabels = { issued: t("waybill.issued"), pending: t("waybill.pending") };
   const trips = every.data?.data ?? [];
   const moving = ["picked_up", "in_transit", "out_for_delivery"];
   const glance = {
@@ -305,6 +307,9 @@ export default async function ShipPage({ searchParams }: Props) {
                   cell: (shipment) => (
                     <span className="flex flex-col items-start gap-1">
                       <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
+                      {shipment.status !== "draft" && shipment.status !== "cancelled" ? (
+                        <WaybillBadge issued={shipment.waybillIssued} labels={waybillLabels} />
+                      ) : null}
                       {podDue(shipment) ? (
                         <span className="text-warning-subtle-fg text-sm font-medium">{t("list.podMissing")}</span>
                       ) : null}

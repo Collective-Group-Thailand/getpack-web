@@ -226,7 +226,7 @@ export const fileCheckHandlers = [
       maxBytes: 209_715_200,
       extensions: [".pdf", ".ai"],
       checks: CHECKS.map((check) => ({ check, evaluated: !NOT_EVALUATED.has(check) })),
-    } satisfies Schemas["FileCheckRulesDto"]),
+    } satisfies Schemas["FileCheckRulesDto"] & { corrugatedSafeZoneMm: string }),
   ),
 
   http.get("*/v1/store/file-checks/reorderable", ({ request }) =>

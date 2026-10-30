@@ -112,7 +112,22 @@ export type { Configurator };
 export type SharedQuote = Schemas["SavedQuoteDto"];
 export type SupportChannels = Schemas["StoreSupportChannelsDto"];
 export type FeaturedServices = Schemas["StoreFeaturedServicesDto"];
-export type PublicConfig = Schemas["PublicConfigDto"];
+/** The default tolerances `store.publicConfig.get` states (D-460, C12): decimal strings, null when unset. */
+export interface PublicTolerances {
+  quantityPct: string | null;
+  sizeMmMin: string | null;
+  sizeMmMax: string | null;
+  colourDeltaE: string | null;
+  colourDeltaEFlexo: string | null;
+}
+
+/**
+ * The storefront's public configuration.
+ *
+ * CONTRACT-SKEW (D-460, C12): the vendored contract (getpack-api design/partner-redesign, D-462) does not carry this
+ * field yet; the API branch that adds it sends it, so it is read as optional until both land in one release.
+ */
+export type PublicConfig = Schemas["PublicConfigDto"] & { tolerances?: PublicTolerances | null };
 export type RfqForm = Schemas["StoreRfqFormDto"];
 export type SitemapEntry = Schemas["StoreSitemapEntryDto"];
 

@@ -190,7 +190,8 @@ function preview(body: Schemas["HeroPreviewRequestDto"]): Schemas["HeroPreviewDt
   };
 }
 
-const publicConfig = (): Schemas["PublicConfigDto"] => ({
+// CONTRACT-SKEW (D-460): `tolerances` is not in the vendored contract yet (see PublicConfig).
+const publicConfig = (): Schemas["PublicConfigDto"] & { tolerances: Record<string, string | null> } => ({
   minOrderQty: { custom: 300, readyStock: 1 },
   priceLockDays: 15,
   claimWindowDays: 7,

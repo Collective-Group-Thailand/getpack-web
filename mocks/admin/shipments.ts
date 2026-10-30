@@ -387,6 +387,13 @@ export const factsOf = (item: Shipment): ShipmentFacts => ({
   exceptionResolved: item.resolution !== null,
 });
 
+/** A destination's code within its order's list (`D1` …, P4-D1). */
+function destinationCodeOf(orderId: string, destinationId: string | undefined) {
+  const index =
+    orders.find((order) => order.id === orderId)?.destinations.findIndex((d) => d.id === destinationId) ?? -1;
+  return `D${Math.max(0, index) + 1}`;
+}
+
 /** What the factory and the desk both read the same way. */
 function common(item: Shipment) {
   const facts = factsOf(item);
@@ -405,6 +412,8 @@ function common(item: Shipment) {
         .join(" "),
       line2: item.destination.line2,
       postcode: item.destination.postcode,
+      postcodePrefix: item.destination.postcode.slice(0, 3),
+      code: destinationCodeOf(item.order.id, item.items[0]?.destinationId),
       province: provinceRefOf(item.destination.postcode, item.destination.province),
     },
     items: item.items.map((line) => ({
@@ -412,6 +421,7 @@ function common(item: Shipment) {
       jobNo: line.jobNo,
       orderCode: line.orderCode,
       destinationId: line.destinationId,
+      destinationCode: destinationCodeOf(line.orderId, line.destinationId),
       quantity: line.quantity,
       deliveredQuantity: line.deliveredQuantity,
       toleranceOutcome: reconciliationOf(line.orderId)?.outcome ?? null,
@@ -481,13 +491,23 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
         }
       : null,
     splitFrom: item.splitFrom,
+    // D-462: the mock never issues a driver handover link.
+    handover: null,
+    waybillIssued: false,
     nextActions: adminShipmentActions(factsOf(item), new Set(who?.permissions ?? [])),
   };
 }
 
 /** A shipment as `partner.shipments.*` answers it: the factory's trip, never getpack's costs. */
 export function toPartnerShipmentDto(item: Shipment, permissions: readonly string[]): Schemas["PartnerShipmentDto"] {
-  return { ...common(item), nextActions: partnerShipmentActions(factsOf(item), new Set(permissions)) };
+  const { destination, ...rest } = common(item);
+  // D-462: the factory's trip carries the destination code, province and postcode prefix — never the recipient.
+  return {
+    ...rest,
+    destination: { code: destination.code, postcodePrefix: destination.postcodePrefix, province: destination.province },
+    waybillIssued: false,
+    nextActions: partnerShipmentActions(factsOf(item), new Set(permissions)),
+  };
 }
 
 /* --------------------------------------------------------------------------------- handlers */

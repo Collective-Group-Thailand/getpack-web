@@ -125,7 +125,7 @@
     "delivered": "Delivered",
     "at": "At",
     "photoAlt": "Delivery photo {n}",
-    "recipient": "Recipient",
+    "recipient": "Destination",
     "recipientNote": "Recipient name, address and phone only",
     "packing": "Packing list",
     "events": "Tracking",
@@ -162,7 +162,13 @@
     "weight": "{kg} kg",
     "scan": "Carton code",
     "qr": "Carton code QR, carton {n}",
-    "notPacked": "Not packed yet: the labels come when the shipment is ready"
+    "notPacked": "Not packed yet: the labels come when the shipment is ready",
+    "sender": "From",
+    "senderName": "getpack",
+    "waybill": "Carrier waybill",
+    "waybillBody": "The recipient's address is on the carrier's waybill",
+    "cartonCount": "{n}/{total}",
+    "jobLabel": "Job"
   },
   "ready": {
     "action": "Packed — make labels and packing list",
@@ -194,5 +200,10 @@
   "destination": {
     "code": "Destination {code}",
     "confidential": "getpack keeps the recipient's name, phone and address. The factory sees the destination code, the province and the postcode's first three digits."
+  },
+  "waybill": {
+    "issued": "Waybill sent to the carrier",
+    "pending": "No waybill yet",
+    "note": "The recipient's name, phone and address are on the carrier's waybill, which getpack sends to the carrier directly."
   }
 }
