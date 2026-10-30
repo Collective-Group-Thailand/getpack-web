@@ -10,9 +10,9 @@ import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { ApprovalSimulator } from "./landing/ApprovalSimulator";
+import { BusinessStory } from "./landing/BusinessStory";
 import { ControlDemo } from "./landing/ControlDemo";
 import { DocChecklist } from "./landing/DocChecklist";
-import { OrderIllustration } from "./landing/OrderIllustration";
 import { RoiCalculator } from "./landing/RoiCalculator";
 import { SalesForm } from "./landing/SalesForm";
 import { pricedSamples, sampleOrders } from "./landing/samples.server";
@@ -72,7 +72,7 @@ function SectionHead({ id, title, lead }: { id: string; title: string; lead?: st
 }
 
 /**
- * getpack for business, for a visitor (business pack Phase 1, C10): light hero with the priced-order illustration, who it
+ * getpack for business, for a visitor (business pack Phase 1, C10): light hero with the five-scene story on real prices, who it
  * is for, before → after, the features (ordered by `storefront.roadmap`, all live), the approval simulator on
  * real prices, the catalogue and budget demo, the ROI calculator, the credit path, opening an account with the
  * document checklist, purchasing FAQ, what customers see during production, and the sales form. Every figure is the
@@ -136,7 +136,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
       />
       <JsonLd data={faqPageSchema(faq.map(({ question, answer }) => ({ question, answer })))} />
 
-      {/* The hero (redesign 2026-10-30): light, the order illustration beside the claim — no dark band. */}
+      {/* The hero (redesign 2026-10-30): light, the five-scene story beside the claim — no dark band. */}
       <section aria-labelledby="business-hero" className="bg-surface">
         <div
           className={cn(
@@ -173,7 +173,11 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
               ))}
             </dl>
           </div>
-          <OrderIllustration orders={sampleOrders(products)} creditTerms={t("facts.credit.value")} />
+          <BusinessStory
+            products={products}
+            priceLockDays={config?.priceLockDays ?? null}
+            creditTerms={t("facts.credit.value")}
+          />
         </div>
       </section>
 

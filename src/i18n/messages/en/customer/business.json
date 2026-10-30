@@ -31,7 +31,7 @@
         "label": "Credit terms"
       },
       "free": {
-        "value": "฿0",
+        "value": "Free",
         "label": "To open a company account"
       }
     },
@@ -418,28 +418,109 @@
       "rateLimited": "Too many messages — please wait a moment, or message us on LINE",
       "required": "(required)"
     },
-    "order": {
-      "label": "Illustration of a company purchase order: lines with real prices from the pricing system, the approval path, the tax invoice per branch and credit-term payment",
-      "caption": "Illustration · prices from getpack's pricing system",
-      "before": "Ask 3 suppliers for quotes, wait 2–3 days",
-      "now": "Real price, instantly",
-      "title": "Company purchase order",
-      "po": "Add your company's PO number",
-      "csv": "Imported from CSV · {count} lines",
-      "csvNoCount": "Imported from CSV",
-      "priced": "Prices include VAT, shipping not included · calculated instantly by size, material, print and quantity",
-      "steps": {
-        "buyer": "Buyer",
-        "approver": "Approver",
-        "accountant": "Accounting"
+    "story": {
+      "label": "The getpack company account, scene by scene",
+      "pieces": "{count} pcs",
+      "price": {
+        "label": "Price",
+        "before": "Ask 3 suppliers, wait 2–3 days",
+        "title": "See the real price the moment you pick a product",
+        "query": "Search products",
+        "leadTime": "{days}-day production",
+        "pill": "Real price, no quotation needed",
+        "order": "Order",
+        "toast": "Added to the purchase order"
       },
-      "path": "Waits for approval above the company's limit · every step on record",
+      "approval": {
+        "label": "Approval",
+        "before": "Approvals in chat, impossible to track",
+        "title": "Approved in the system by spending limit, every step on record",
+        "order": "Purchase order · PO number optional",
+        "orderNoAmount": "Company purchase order",
+        "limit": "Limit",
+        "within": "OK",
+        "steps": {
+          "buyer": {
+            "initial": "B",
+            "title": "Purchasing",
+            "body": "Creates the purchase order"
+          },
+          "approver": {
+            "initial": "A",
+            "title": "Approver",
+            "body": "Within the set limit"
+          },
+          "accountant": {
+            "initial": "F",
+            "title": "Accounting",
+            "body": "Waiting for documents"
+          }
+        },
+        "approve": "Approve",
+        "next": "Next",
+        "toast": "Approved",
+        "toastDetail": "Every step on record"
+      },
       "invoice": {
-        "title": "Tax invoice",
-        "body": "Issued to the ordering branch automatically — no corrections later"
+        "label": "Tax invoice",
+        "before": "Invoice to the wrong branch, corrected later",
+        "title": "Tax invoices split by branch, automatically",
+        "branches": {
+          "hq": "Head office",
+          "one": "Branch 1",
+          "two": "Branch 2"
+        },
+        "issuedTo": "Issued to {branch}",
+        "issued": "Issued",
+        "toast": "Issued for every branch",
+        "toastDetail": "No corrections later"
       },
-      "pay": "Paying by",
-      "credit": "Credit terms {terms}"
+      "reorder": {
+        "label": "Reorder",
+        "before": "Every reorder means resending files and specs",
+        "title": "Upload one CSV, reorder many items at once",
+        "file": "reorder-this-month.csv",
+        "pill": "File read",
+        "toast": "Same specs on every line",
+        "toastDetail": "Prices recalculated instantly"
+      },
+      "account": {
+        "label": "Company account",
+        "before": "Cash on every order, documents everywhere",
+        "title": "One account for the team, with {terms} credit terms",
+        "facts": {
+          "lock": {
+            "value": "{days} days",
+            "label": "Price held"
+          },
+          "credit": {
+            "label": "Credit terms"
+          },
+          "free": {
+            "value": "Free",
+            "label": "To open"
+          }
+        },
+        "roles": {
+          "buyer": {
+            "title": "Buyer",
+            "body": "Designs and orders"
+          },
+          "approver": {
+            "title": "Approver",
+            "body": "Approves by limit"
+          },
+          "accountant": {
+            "title": "Accounting",
+            "body": "Invoices and payment"
+          },
+          "admin": {
+            "title": "Admin",
+            "body": "Settings and members"
+          }
+        }
+      },
+      "role": "carousel"
     }
   },
   "dashboard": {

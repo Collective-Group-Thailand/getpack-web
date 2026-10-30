@@ -122,7 +122,7 @@
     "lede": "getpack jobs arrive with checked files and an agreed price. The system — stock, purchasing, production planning, shop floor, QC, delivery, accounting and the general ledger — works for your own customers' jobs too.",
     "apply": "Apply as a partner factory",
     "modulesCta": "See every module",
-    "offerPrice": "฿0",
+    "offerPrice": "Free",
     "offer": "Every module · unlimited users · open an account and sign the partner agreement with getpack",
     "login": "Partner factory sign-in",
     "sources": {
@@ -382,50 +382,97 @@
       "paid": "getpack is the customer's counterparty — your factory is paid by getpack, no chasing",
       "data": "Your factory's details stay confidential, never shown to customers"
     },
-    "hero": {
-      "label": "Illustration of getpack Factory: today's jobs, a new getpack job ready to take, the automatic journal entry and the operator's buttons",
-      "caption": "Illustration · job names are product types from the getpack catalogue",
-      "before": "Licence · set-up · per-user fees",
-      "now": "฿0, unlimited users",
-      "today": "Today's jobs",
-      "tabs": {
-        "all": "All",
-        "getpack": "getpack",
-        "own": "Your customers"
+    "story": {
+      "label": "getpack Factory, scene by scene",
+      "job": {
+        "label": "New job",
+        "before": "Missing files, vague specs, rounds of haggling",
+        "title": "getpack jobs arrive ready to produce",
+        "new": "New job from getpack",
+        "take": "Take job",
+        "points": {
+          "checked": "Files checked",
+          "spec": "Full spec: flute, material, dieline",
+          "price": "Price agreed"
+        },
+        "toast": "Job taken",
+        "toastDetail": "Scheduled automatically"
       },
-      "newJob": "New job from getpack",
-      "take": "Take job",
-      "points": {
-        "checked": "Files checked",
-        "spec": "Full spec",
-        "price": "Price agreed"
+      "board": {
+        "label": "One system",
+        "before": "getpack jobs and your own customers kept apart",
+        "title": "Every job source in one system — your customers stay yours",
+        "today": "Today's jobs",
+        "all": "All",
+        "own": "Your customers",
+        "stages": {
+          "qc": "QC",
+          "running": "Production",
+          "shipping": "Shipping",
+          "billing": "Billing"
+        },
+        "getpack": "getpack"
       },
       "spec": {
-        "flute": "Flute",
-        "material": "Material",
-        "dieline": "Dieline",
-        "colour": "Colour ΔE"
+        "label": "Built for packaging",
+        "before": "Generic ERPs have nowhere to enter a box spec",
+        "title": "Made for packaging factories",
+        "items": {
+          "flute": {
+            "label": "Flute",
+            "value": "B · C · E · BC"
+          },
+          "material": {
+            "label": "Material",
+            "value": "Board and grammage per job"
+          },
+          "dieline": {
+            "label": "Dieline",
+            "value": "Dies kept in the system"
+          },
+          "colour": {
+            "label": "Colour ΔE",
+            "value": "Within tolerance"
+          }
+        },
+        "pill": "Box specs built in"
       },
-      "stage": {
-        "qc": "At QC",
-        "running": "In production"
-      },
-      "journal": {
-        "title": "Posted automatically",
-        "auto": "No re-keying",
-        "debit": "Accounts receivable",
-        "credit": "Sales revenue",
-        "posted": "In the general ledger",
-        "dr": "Dr.",
-        "cr": "Cr."
+      "ledger": {
+        "label": "Accounting",
+        "before": "Re-keying into Excel every month end",
+        "title": "Posted automatically, down to the general ledger",
+        "document": "Billing",
+        "lines": {
+          "debit": {
+            "side": "Dr.",
+            "account": "Accounts receivable"
+          },
+          "credit": {
+            "side": "Cr.",
+            "account": "Sales revenue"
+          },
+          "vat": {
+            "side": "Cr.",
+            "account": "Output VAT"
+          }
+        },
+        "pill": "In the general ledger",
+        "toast": "No re-keying",
+        "toastDetail": "Statements ready every month end"
       },
       "floor": {
-        "title": "Shop floor · die-cutter",
-        "thai": "In Thai",
+        "label": "Shop floor",
+        "before": "Written on paper, passed on by LINE",
+        "title": "Big buttons in Thai — operators use it from day one",
+        "machine": "Die-cutter",
+        "running": "Running",
         "start": "Start",
         "pause": "Pause",
-        "done": "Done"
-      }
+        "done": "Done",
+        "toast": "Photos and QC results",
+        "toastDetail": "From the same screen"
+      },
+      "role": "carousel"
     }
   },
   "legal": {
