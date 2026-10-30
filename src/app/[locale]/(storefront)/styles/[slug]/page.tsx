@@ -23,7 +23,7 @@ import {
   STYLES_HREF,
   styleTopicHref,
 } from "@/features/customer/styles/paths";
-import { shortName, topicsOf } from "@/features/customer/styles/topics";
+import { shortName, topicHeading, topicsOf } from "@/features/customer/styles/topics";
 import { optionSummary } from "@/features/customer/styles/VariantCardFace";
 import { StyleDetailActions } from "@/features/customer/styles/StyleDetailActions";
 import { VariantPicker } from "@/features/customer/styles/VariantPicker";
@@ -32,6 +32,7 @@ import { routing, type Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
 import { breadcrumbSchema, localePath, publicOrigin } from "@/lib/seo";
 import { Badge } from "@/ui/components/Badge";
+import { HubSection, HubSectionStack } from "@/features/customer/products/HubSections";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
@@ -112,7 +113,7 @@ export default async function StylePage({ params, searchParams }: { params: Para
   const short = shortName(name);
   const topics = topicsOf(style.options);
   // "กล่องฝาเสียบมีหน้าต่าง" / "Tuck-end carton with a window".
-  const topicLabel = (id: string) => `${short}${locale === "en" ? " " : ""}${t(`topics.${id}.phrase`)}`;
+  const topicLabel = (id: string) => topicHeading(name, t(`topics.${id}.phrase`), locale);
   const url = `${origin}${getPathname({ href, locale: locale as Locale })}`;
   const rfqCategory = tree.find(
     (c) => c.code === style.category || c.types.some((type) => type.code === style.category),
@@ -127,6 +128,10 @@ export default async function StylePage({ params, searchParams }: { params: Para
       ? t("detail.range", { min: format.number(Math.ceil(min)), max: format.number(Math.floor(max)) })
       : "none";
 
+  // The construction in the page's language: Thai only from `descriptionTh` — `construction` is the API's English
+  // engineering line, so a Thai page without a Thai description shows none rather than English (API data gap).
+  const construction =
+    locale === "en" ? (style.descriptionEn ?? style.construction ?? null) : (style.descriptionTh ?? null);
   const facts = [
     { term: t("detail.code"), description: <span className="tabular-nums">{style.code}</span> },
     ...(style.referenceCode ? [{ term: t("detail.internationalName"), description: style.referenceCode }] : []),
@@ -175,7 +180,7 @@ export default async function StylePage({ params, searchParams }: { params: Para
   ];
 
   return (
-    <div className="max-w-content mx-auto px-5 py-8 pb-28 md:px-8 md:py-12">
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <JsonLd
         data={[
           breadcrumbSchema([
@@ -202,27 +207,93 @@ export default async function StylePage({ params, searchParams }: { params: Para
         label={t("breadcrumbs.library")}
         items={[{ label: t("breadcrumbs.library"), href: STYLES_HREF }, { label: name }]}
       />
-      <header className="mt-4 flex flex-col gap-3">
-        <p className="text-muted text-sm">
-          <span className="tabular-nums">{style.code}</span> · {facetLabel(words, "category", style.category)}
-        </p>
-        <h1 className="text-3xl font-bold md:text-4xl">{name}</h1>
-        <p className="text-muted">{t("card.variants", { count: style.variantCount })}</p>
-        <CompareLimitProvider limit={settings?.compareLimit}>
-          <StyleDetailActions
-            code={style.code}
-            signedIn={signedIn}
-            signInHref={`/sign-in?returnTo=${encodeURIComponent(href)}`}
-          />
-        </CompareLimitProvider>
-      </header>
-
-      <div className="mt-8 scroll-mt-24" id={PICKER}>
+      {/* Project A: the picture beside one configuration panel that starts with the style's head. */}
+      <div className="mt-4 scroll-mt-24" id={PICKER}>
         <VariantPicker
           key={chosen ?? "first"}
           style={style}
           name={name}
           initialCode={chosen}
+          head={
+            <header className="flex flex-col gap-2">
+              <p className="text-muted flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span>
+                  <span className="tabular-nums">{style.code}</span> · {facetLabel(words, "category", style.category)}
+                </span>
+                <span className="bg-primary-subtle text-primary-subtle-fg rounded-control px-2.5 py-0.5 text-xs font-semibold tabular-nums">
+                  {t("card.variants", { count: style.variantCount })}
+                </span>
+              </p>
+              <h1 className="text-[1.625rem] leading-[1.2] font-semibold tracking-tight text-balance md:text-[2rem]">
+                {name}
+              </h1>
+              <CompareLimitProvider limit={settings?.compareLimit}>
+                <StyleDetailActions
+                  code={style.code}
+                  signedIn={signedIn}
+                  signInHref={`/sign-in?returnTo=${encodeURIComponent(href)}`}
+                />
+              </CompareLimitProvider>
+            </header>
+          }
+          besidePanel={
+            topics.length ? (
+              <section
+                aria-labelledby="style-topics"
+                className="border-border bg-surface rounded-panel border p-5 md:p-6"
+              >
+                <h2 id="style-topics" className="mb-3 text-base font-semibold">
+                  {t("detail.optionPages", { name: short })}
+                </h2>
+                <ul className="flex flex-wrap gap-2">
+                  {topics.map((topic) => (
+                    <li key={topic.id}>
+                      <Link
+                        href={styleTopicHref(style.code, name, topic.id)}
+                        className="border-border bg-surface hover:border-primary focus-visible:ring-focus-ring rounded-control inline-flex min-h-10 items-center border px-3.5 text-sm outline-none focus-visible:ring-2"
+                      >
+                        {topicLabel(topic.id)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : undefined
+          }
+          below={
+            <>
+              <section
+                aria-labelledby="style-facts"
+                className="border-border bg-surface rounded-panel border p-5 md:p-6"
+              >
+                <h2 id="style-facts" className="mb-2 text-lg font-semibold">
+                  {t("detail.construction")}
+                </h2>
+                {construction ? <p className="text-muted mb-4 text-sm">{construction}</p> : null}
+                <DescriptionList items={facts} columns={1} />
+              </section>
+              <section
+                aria-labelledby="style-sizes"
+                className="border-border bg-surface rounded-panel border p-5 md:p-6"
+              >
+                <h2 id="style-sizes" className="mb-3 text-lg font-semibold">
+                  {t("detail.sizes")}
+                </h2>
+                <ul className="divide-border m-0 flex list-none flex-col divide-y p-0 text-sm">
+                  {style.sizeRanges.map((r) => (
+                    <li key={r.materialClass} className="py-2.5 tabular-nums first:pt-0 last:pb-0">
+                      {t("detail.size", {
+                        material: facetLabel(words, "materialClass", r.materialClass),
+                        l: range(r.minLMm, r.maxLMm),
+                        w: range(r.minWMm, r.maxWMm),
+                        h: range(r.minHMm, r.maxHMm),
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </>
+          }
           actions={{
             productSlug: style.startingPrice?.catalogProductSlug ?? null,
             rfqHref: quoteHref,
@@ -238,98 +309,51 @@ export default async function StylePage({ params, searchParams }: { params: Para
         />
       </div>
 
-      <div className="mt-10 grid gap-8 md:grid-cols-2">
-        <section aria-labelledby="style-facts">
-          <h2 id="style-facts" className="mb-3 text-lg font-semibold">
-            {t("detail.construction")}
-          </h2>
-          <p className="text-muted mb-4 text-sm">
-            {pick(locale, style.descriptionTh ?? style.construction, style.descriptionEn ?? style.construction)}
-          </p>
-          <DescriptionList items={facts} columns={1} />
-        </section>
-        <section aria-labelledby="style-sizes">
-          <h2 id="style-sizes" className="mb-3 text-lg font-semibold">
-            {t("detail.sizes")}
-          </h2>
-          <ul className="flex flex-col gap-1 text-sm">
-            {style.sizeRanges.map((r) => (
-              <li key={r.materialClass} className="tabular-nums">
-                {t("detail.size", {
-                  material: facetLabel(words, "materialClass", r.materialClass),
-                  l: range(r.minLMm, r.maxLMm),
-                  w: range(r.minWMm, r.maxWMm),
-                  h: range(r.minHMm, r.maxHMm),
-                })}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
       {/* D-410: every option in words and every variant code in the page's text — what a search for a
-          variant finds; the variants themselves are not pages. */}
-      <section aria-labelledby="style-all-options" className="mt-12">
-        <h2 id="style-all-options" className="mb-2 text-lg font-semibold">
-          {t("detail.allOptions")}
-        </h2>
-        <p className="text-muted mb-4 text-sm">
-          {t("detail.allOptionsIntro", { name, axes: style.axes.length, count: style.variantCount })}
-        </p>
-        {style.axes.length ? (
-          <DescriptionList
-            columns={1}
-            items={style.axes.map((axis) => ({
-              term: axisLabel(words, axis.axis),
-              description: axis.values.map((value) => valueLabel(words, axis.axis, value)).join(", "),
-            }))}
-          />
+          variant finds; the variants themselves are not pages. Project A: folded to their headings below the
+          task, still in the HTML for search. */}
+      <HubSectionStack className="mt-12">
+        <HubSection
+          id="style-all-options"
+          collapsible
+          title={t("detail.allOptions")}
+          lede={t("detail.allOptionsIntro", { name, axes: style.axes.length, count: style.variantCount })}
+        >
+          {style.axes.length ? (
+            <DescriptionList
+              columns={1}
+              items={style.axes.map((axis) => ({
+                term: axisLabel(words, axis.axis),
+                description: axis.values.map((value) => valueLabel(words, axis.axis, value)).join(", "),
+              }))}
+            />
+          ) : null}
+        </HubSection>
+        {style.variants.length > 1 ? (
+          <HubSection
+            id="style-all-variants"
+            collapsible
+            title={t("detail.allVariants")}
+            lede={t("detail.allVariantsIntro")}
+          >
+            <ul className="divide-border m-0 grid list-none gap-x-8 p-0 text-sm sm:grid-cols-2">
+              {style.variants.map((variant) => (
+                <li key={variant.code} className="border-border min-w-0 border-b py-2">
+                  <Link
+                    href={`${href}?v=${encodeURIComponent(variant.code)}#${PICKER}`}
+                    rel="nofollow"
+                    scroll={false}
+                    className="text-primary font-medium tabular-nums underline-offset-2 hover:underline"
+                  >
+                    {variant.code}
+                  </Link>{" "}
+                  <span className="text-muted">{optionSummary(words, variant.options)}</span>
+                </li>
+              ))}
+            </ul>
+          </HubSection>
         ) : null}
-      </section>
-
-      {topics.length ? (
-        <section aria-labelledby="style-topics" className="mt-10">
-          <h2 id="style-topics" className="mb-3 text-lg font-semibold">
-            {t("detail.optionPages", { name: short })}
-          </h2>
-          <ul className="flex flex-wrap gap-2">
-            {topics.map((topic) => (
-              <li key={topic.id}>
-                <Link
-                  href={styleTopicHref(style.code, name, topic.id)}
-                  className="border-border hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-control inline-block border px-3 py-1.5 text-sm outline-none focus-visible:ring-2"
-                >
-                  {topicLabel(topic.id)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {style.variants.length > 1 ? (
-        <section aria-labelledby="style-all-variants" className="mt-10">
-          <h2 id="style-all-variants" className="mb-2 text-lg font-semibold">
-            {t("detail.allVariants")}
-          </h2>
-          <p className="text-muted mb-3 text-sm">{t("detail.allVariantsIntro")}</p>
-          <ul className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            {style.variants.map((variant) => (
-              <li key={variant.code} className="min-w-0">
-                <Link
-                  href={`${href}?v=${encodeURIComponent(variant.code)}#${PICKER}`}
-                  rel="nofollow"
-                  scroll={false}
-                  className="text-primary tabular-nums underline underline-offset-2"
-                >
-                  {variant.code}
-                </Link>{" "}
-                <span className="text-muted">{optionSummary(words, variant.options)}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      </HubSectionStack>
     </div>
   );
 }

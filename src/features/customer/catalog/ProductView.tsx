@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { TrackOnView } from "@/features/customer/analytics/TrackOnView";
 import { loadHubItems } from "@/features/customer/products/catalogue.server";
-import { HubSection, MaterialsTable } from "@/features/customer/products/HubSections";
+import { HubSection, HubSectionStack, MaterialsTable } from "@/features/customer/products/HubSections";
 import { QuoteTrayProvider } from "@/features/customer/products/quote-tray";
 import { RfqTray } from "@/features/customer/products/RfqTray";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
@@ -170,8 +170,8 @@ export async function ProductView({
   const sections = [
     ...(sizesShown ? [{ id: "size", label: t("nav.size") }] : []),
     ...(live ? [{ id: "price", label: t("nav.price") }] : []),
-    ...(materialsShown ? [{ id: "materials", label: t("nav.materials") }] : []),
     ...(live && hasDesignPaths(live) ? [{ id: "design", label: t("nav.design") }] : []),
+    ...(materialsShown ? [{ id: "materials", label: t("nav.materials") }] : []),
     ...(live ? [{ id: "how", label: t("nav.how") }] : []),
     ...(faqEntries.length > 0 ? [{ id: "faq", label: t("nav.faq") }] : []),
   ];
@@ -183,7 +183,8 @@ export async function ProductView({
     product.slug,
     startSize ? { size: `${startSize.lengthMm}x${startSize.widthMm}x${startSize.heightMm}` } : {},
   );
-  const fallbackDieline = product.templateAvailability === "drawing" ? "/templates" : "/styles";
+  // `/templates` redirects to the style library (owner decision: no "coming soon" pages), so both go there directly.
+  const fallbackDieline = "/styles";
   const online = product.templateAvailability === "online_template";
   const picture = (
     <ProductPicture
@@ -262,7 +263,7 @@ export async function ProductView({
         <AnchorNav aria-label={t("nav.label")} items={sections} className="mt-10" innerClassName={container} />
       ) : null}
 
-      <div className={`${container} pb-24`}>
+      <div className={`${container} pb-16 md:pb-20`}>
         {sizesShown ? (
           <HubSection
             id="size"
@@ -299,21 +300,27 @@ export async function ProductView({
           </HubSection>
         ) : null}
 
-        {live && materialsShown ? (
-          <MaterialsTable
-            configurators={[live]}
-            section={{ id: "materials", title: t("materials.title"), lede: t("materials.lede") }}
-            after={<PdpPrintNotes configurator={live} />}
-          />
-        ) : null}
-
         {live && hasDesignPaths(live) ? (
           <HubSection id="design" title={t("design.title")} lede={t("design.lede")}>
             <PdpDesignPaths />
           </HubSection>
         ) : null}
 
-        {live ? <PdpOrderFlow configurator={live} /> : null}
+        {/* Project A: the reference rows (materials and print, the order steps) fold to their headings below the
+            task; the section bar opens the one it is sent to. */}
+        {live ? (
+          <HubSectionStack className="mt-14">
+            {materialsShown ? (
+              <MaterialsTable
+                configurators={[live]}
+                section={{ id: "materials", title: t("materials.title"), lede: t("materials.lede") }}
+                after={<PdpPrintNotes configurator={live} />}
+                collapsible
+              />
+            ) : null}
+            <PdpOrderFlow configurator={live} collapsible />
+          </HubSectionStack>
+        ) : null}
 
         <PdpFaq entries={faqEntries} />
 
@@ -410,12 +417,13 @@ async function QuoteBox({
   ]);
   const online = product.templateAvailability === "online_template";
   return (
-    <div className="border-border bg-surface rounded-card flex flex-col gap-4 border p-5">
-      <div>
+    <div className="border-border bg-surface rounded-card flex flex-col gap-5 border p-4 md:p-5">
+      {/* Project A: the price (or "ราคาตามสเปก") on the pale brand tint, the figure in green. */}
+      <div className="bg-primary-subtle rounded-xl p-4 md:p-5">
         {hintPrice ? (
           <p className="m-0 flex flex-wrap items-baseline gap-x-2">
             <span className="text-muted text-sm">{tCatalog("price.fromLabel")}</span>
-            <b className="text-[2.125rem] leading-none font-semibold tracking-tight tabular-nums md:text-[2.625rem]">
+            <b className="text-primary text-[2.125rem] leading-none font-semibold tracking-tight tabular-nums md:text-[2.625rem]">
               {format.thb(hintPrice)}
             </b>
             <span className="text-muted">{tCatalog("price.perPiece")}</span>
@@ -431,8 +439,8 @@ async function QuoteBox({
           </p>
         ) : null}
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <Button asChild size="lg" block className="sm:col-span-2" iconEnd="arrow-right">
+      <div className="flex flex-col gap-2">
+        <Button asChild size="lg" block iconEnd="arrow-right">
           {instant ? (
             <Link href={configureHref(product.slug)}>{t("cta.configure")}</Link>
           ) : (
@@ -442,14 +450,16 @@ async function QuoteBox({
             </Link>
           )}
         </Button>
-        <Button asChild variant="secondary" iconStart={online ? "pen-tool" : "download"}>
-          <Link href={dielineHref}>{online ? t("cta.designOnline") : t("cta.dielineAny")}</Link>
-        </Button>
-        <Button asChild variant="secondary" iconStart="chat">
-          <Link href="/help/chat">{t("cta.ask")}</Link>
-        </Button>
+        <div className="flex flex-wrap justify-center gap-x-1 gap-y-0.5">
+          <Button asChild variant="ghost" size="sm" iconStart={online ? "pen-tool" : "download"}>
+            <Link href={dielineHref}>{online ? t("cta.designOnline") : t("cta.dielineAny")}</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" iconStart="chat">
+            <Link href="/help/chat">{t("cta.ask")}</Link>
+          </Button>
+        </div>
       </div>
-      <div className="text-muted flex flex-col gap-1 text-xs leading-relaxed">
+      <div className="bg-surface-subtle text-muted flex flex-col gap-1 rounded-xl p-4 text-xs leading-relaxed">
         <p className="m-0">{instant ? tCatalog("product.priceNote") : tCatalog("product.rfqNote")}</p>
         {!instant && responseDays ? (
           <p className="m-0">{tCatalog("product.quoteResponse", { days: responseDays })}</p>

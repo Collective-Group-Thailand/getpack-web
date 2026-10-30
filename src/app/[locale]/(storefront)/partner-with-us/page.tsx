@@ -108,7 +108,8 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
       />
       <JsonLd data={faqPageSchema(faq.map(({ question, answer }) => ({ question, answer })))} />
 
-      <section data-theme="dark" aria-labelledby="factory-hero" className="bg-bg text-fg">
+      {/* Project A: a light hero like the rest of the storefront (it was a forced dark band). */}
+      <section aria-labelledby="factory-hero" className="bg-surface border-border text-fg border-b">
         <div
           className={cn(
             HOME_WRAP,
@@ -120,11 +121,11 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               id="factory-hero"
               className="text-[2.25rem] leading-[1.08] font-bold tracking-[-0.03em] text-balance md:text-[3.25rem] xl:text-[3.625rem]"
             >
-              {t("titleStart")} <em className="text-instant not-italic">{t("titleEm")}</em> {t("titleEnd")}
+              {t("titleStart")} <em className="text-primary not-italic">{t("titleEm")}</em> {t("titleEnd")}
             </h1>
             <p className={lede}>{t("lede")}</p>
             <div className="mt-7 flex flex-wrap gap-2.5">
-              <Button asChild size="lg" className="bg-instant text-instant-fg hover:bg-instant/90 w-full sm:w-auto">
+              <Button asChild size="lg" className="w-full sm:w-auto">
                 <TrackedAnchor event="fx_cta" target="apply" href="#apply">
                   {t("apply")}
                 </TrackedAnchor>
@@ -164,10 +165,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                 </span>
               </div>
             ))}
-            <div
-              data-theme="dark"
-              className="bg-bg text-fg border-border rounded-panel flex h-full flex-col gap-1.5 border p-4.5"
-            >
+            <div className="bg-primary-subtle text-fg border-primary/30 rounded-panel flex h-full flex-col gap-1.5 border p-4.5">
               <b className="text-base font-semibold">{t("sources.hub.title")}</b>
               <p className="text-muted text-[13.5px]">{t("sources.hub.body")}</p>
             </div>
@@ -179,7 +177,6 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
             <SectionHead id="factory-modules" title={t("modules.title")} lead={t("modules.lead")} />
             <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {modules.map((module) => {
-                const live = module.status === "live";
                 return (
                   <li
                     key={module.key}
@@ -193,14 +190,6 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                   >
                     <span
                       className={cn(
-                        "rounded-control absolute top-3.5 right-3.5 px-2 py-0.5 text-[11px] font-semibold",
-                        live ? "bg-success-subtle text-success-subtle-fg" : "bg-instant-subtle text-instant-subtle-fg",
-                      )}
-                    >
-                      {live ? t("modules.live") : t("modules.in_development")}
-                    </span>
-                    <span
-                      className={cn(
                         "rounded-control grid size-9.5 place-items-center",
                         module.key === "getpack_jobs"
                           ? "bg-primary-subtle text-primary"
@@ -209,7 +198,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
                     >
                       <Icon name={MODULE_ICONS[module.key]!} size={20} aria-hidden="true" />
                     </span>
-                    <b className="mt-1 pr-24 text-base font-semibold">{t(`modules.items.${module.key}.title`)}</b>
+                    <b className="mt-1 text-base font-semibold">{t(`modules.items.${module.key}.title`)}</b>
                     <p className="text-muted text-[13.5px]">{t(`modules.items.${module.key}.body`)}</p>
                   </li>
                 );
@@ -288,7 +277,6 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </tbody>
             </table>
           </div>
-          <p className="text-muted mt-2.5 text-xs">{t("compare.note")}</p>
         </section>
 
         <section aria-labelledby="factory-tiers" className={SECTION}>
@@ -323,10 +311,10 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
       </div>
 
       <div className={cn(HOME_WRAP, "scroll-mt-24 pt-16")} id="apply">
+        {/* The application on the pale brand tint (no dark block); the form keeps its white fields. */}
         <section
-          data-theme="dark"
           aria-labelledby="factory-apply-title"
-          className="bg-bg text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+          className="bg-primary-subtle text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
         >
           <div>
             <h2
@@ -339,7 +327,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
             <ol aria-label={t("applySection.stepsLabel")} className="mt-5 flex flex-col gap-2.5 text-[14.5px]">
               {(["apply", "agreement", "start"] as const).map((step, index) => (
                 <li key={step} className="flex items-center gap-2.5">
-                  <span className="bg-instant text-instant-fg grid size-7 shrink-0 place-items-center rounded-full text-[13px] font-bold tabular-nums">
+                  <span className="bg-primary text-primary-fg grid size-7 shrink-0 place-items-center rounded-full text-[13px] font-bold tabular-nums">
                     {index + 1}
                   </span>
                   {t(`applySection.steps.${step}`)}
@@ -348,11 +336,11 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
             </ol>
             <ul className="text-muted mt-5 flex flex-col gap-2.5 text-[14.5px]">
               <li className="flex gap-2.5">
-                <Icon name="shield-check" size={18} aria-hidden="true" className="text-instant mt-0.5 shrink-0" />
+                <Icon name="shield-check" size={18} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
                 {t("applySection.confidential")}
               </li>
               <li className="flex gap-2.5">
-                <Icon name="check" size={18} aria-hidden="true" className="text-instant mt-0.5 shrink-0" />
+                <Icon name="check" size={18} aria-hidden="true" className="text-primary mt-0.5 shrink-0" />
                 {t("applySection.assess")}
               </li>
             </ul>
@@ -376,7 +364,7 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
         </section>
       </div>
 
-      <div className={cn(HOME_WRAP, "pb-24")}>
+      <div className={cn(HOME_WRAP, "pb-16 md:pb-20")}>
         <section aria-labelledby="factory-faq" className={SECTION}>
           <SectionHead id="factory-faq" title={t("faq.title")} />
           <div className="grid gap-x-8 md:grid-cols-2">

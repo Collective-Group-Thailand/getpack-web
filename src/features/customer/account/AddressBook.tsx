@@ -13,6 +13,8 @@ import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Sheet } from "@/ui/components/Sheet";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 import { addressLine, type Address, type TaxProfile } from "./address";
 import { AddressForm } from "./AddressForm";
@@ -59,92 +61,160 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
     }
   }
 
-  return (
-    <div className="flex flex-col gap-10">
-      <section aria-labelledby="book-addresses">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="book-addresses" className="text-lg font-semibold">
-            {t("addresses")}
-          </h2>
-          <Button size="sm" iconStart="plus" onClick={() => setEditing({ kind: "address" })}>
-            {t("addAddress")}
-          </Button>
+  // Project B4: each kind of record a panel — its heading with how many and the add button, the records as cards
+  // (the default one outlined in green, with an icon plate) and a dashed tile to add one at the end of the grid.
+  const card = (props: {
+    id: string;
+    icon: "map-pin" | "receipt";
+    title: string;
+    isDefault: boolean;
+    lines: React.ReactNode;
+    onEdit: () => void;
+    onRemove: () => void;
+  }) => (
+    <li
+      key={props.id}
+      className={cn(
+        "bg-surface rounded-card flex min-w-0 flex-col gap-3 border p-4",
+        props.isDefault ? "border-primary" : "border-border",
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <span
+          aria-hidden="true"
+          className={cn(
+            "grid size-10 shrink-0 place-items-center rounded-lg",
+            props.isDefault ? "bg-primary-subtle text-primary-subtle-fg" : "bg-surface-subtle text-muted",
+          )}
+        >
+          <Icon name={props.icon} size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-2 font-semibold">
+            <span className="min-w-0 [overflow-wrap:break-word] break-keep">{props.title}</span>
+            {props.isDefault ? <Badge tone="primary">{t("default")}</Badge> : null}
+          </p>
+          <div className="mt-1 flex flex-col gap-0.5 text-sm">{props.lines}</div>
         </div>
+      </div>
+      <div className="border-border mt-auto flex gap-2 border-t pt-3">
+        <Button size="sm" variant="secondary" iconStart="edit" onClick={props.onEdit}>
+          {t("edit")}
+          <span className="sr-only"> {props.title}</span>
+        </Button>
+        <Button size="sm" variant="ghost" onClick={props.onRemove}>
+          {t("remove")}
+          <span className="sr-only"> {props.title}</span>
+        </Button>
+      </div>
+    </li>
+  );
+  const addTile = (label: string, onClick: () => void) => (
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className="border-border-strong text-muted hover:border-primary hover:text-primary focus-visible:ring-focus-ring rounded-card flex h-full min-h-32 w-full flex-col items-center justify-center gap-2 border border-dashed p-4 text-sm font-medium outline-none focus-visible:ring-2"
+      >
+        <Icon name="plus" size={20} aria-hidden="true" />
+        {label}
+      </button>
+    </li>
+  );
+  const head = (id: string, title: string, count: number, label: string, onAdd: () => void) => (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <h2 id={id} className="flex items-center gap-2 text-lg font-semibold">
+        {title}
+        <span className="text-muted text-sm font-medium tabular-nums">{count}</span>
+      </h2>
+      {/* Empty, the empty state's own button is the way to add — not a second one here. */}
+      {count > 0 ? (
+        <Button size="sm" variant="secondary" iconStart="plus" onClick={onAdd}>
+          {label}
+        </Button>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      <section aria-labelledby="book-addresses" className="border-border bg-surface rounded-card border p-4 sm:p-5">
+        {head("book-addresses", t("addresses"), addresses.length, t("addAddress"), () =>
+          setEditing({ kind: "address" }),
+        )}
         {addresses.length === 0 ? (
-          <EmptyState className="mt-4" icon="map-pin" title={t("noAddresses")} description={t("noAddressesBody")} />
+          <EmptyState
+            icon="map-pin"
+            title={t("noAddresses")}
+            description={t("noAddressesBody")}
+            action={
+              <Button iconStart="plus" onClick={() => setEditing({ kind: "address" })}>
+                {t("addAddress")}
+              </Button>
+            }
+          />
         ) : (
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {addresses.map((address) => (
-              <li key={address.id} className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-4">
-                <p className="flex items-center gap-2 font-semibold">
-                  {address.label}
-                  {address.isDefault ? <Badge tone="primary">{t("default")}</Badge> : null}
-                </p>
-                <p className="text-sm">
-                  {address.recipientName} · {address.phone}
-                </p>
-                <p className="text-muted text-sm">{addressLine(locale, address)}</p>
-                <div className="mt-auto flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditing({ kind: "address", item: address })}>
-                    {t("edit")}
-                    <span className="sr-only"> {address.label}</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setRemoving({ kind: "address", id: address.id, name: address.label })}
-                  >
-                    {t("remove")}
-                    <span className="sr-only"> {address.label}</span>
-                  </Button>
-                </div>
-              </li>
-            ))}
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {addresses.map((address) =>
+              card({
+                id: address.id,
+                icon: "map-pin",
+                title: address.label,
+                isDefault: address.isDefault,
+                lines: (
+                  <>
+                    <span>
+                      {address.recipientName} · <span className="tabular-nums">{address.phone}</span>
+                    </span>
+                    <span className="text-muted">{addressLine(locale, address)}</span>
+                  </>
+                ),
+                onEdit: () => setEditing({ kind: "address", item: address }),
+                onRemove: () => setRemoving({ kind: "address", id: address.id, name: address.label }),
+              }),
+            )}
+            {addTile(t("addAddress"), () => setEditing({ kind: "address" }))}
           </ul>
         )}
       </section>
 
-      <section aria-labelledby="book-tax">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="book-tax" className="text-lg font-semibold">
-            {t("taxProfiles")}
-          </h2>
-          <Button size="sm" iconStart="plus" onClick={() => setEditing({ kind: "tax" })}>
-            {t("addTax")}
-          </Button>
-        </div>
+      <section aria-labelledby="book-tax" className="border-border bg-surface rounded-card border p-4 sm:p-5">
+        {head("book-tax", t("taxProfiles"), taxProfiles.length, t("addTax"), () => setEditing({ kind: "tax" }))}
         {taxProfiles.length === 0 ? (
-          <p className="text-muted mt-4 text-sm">{t("noTax")}</p>
+          <EmptyState
+            icon="receipt"
+            title={t("noTax")}
+            action={
+              <Button iconStart="plus" onClick={() => setEditing({ kind: "tax" })}>
+                {t("addTax")}
+              </Button>
+            }
+          />
         ) : (
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {taxProfiles.map((profile) => (
-              <li key={profile.id} className="bg-surface border-border flex flex-col gap-2 rounded-xl border p-4">
-                <p className="flex items-center gap-2 font-semibold">
-                  {profile.name}
-                  {profile.isDefault ? <Badge tone="primary">{t("default")}</Badge> : null}
-                </p>
-                <p className="text-sm tabular-nums">{formatTaxId(profile.taxId)}</p>
-                <p className="text-muted text-sm">
-                  {profile.branchType === "head_office" ? t("headOffice") : t("branch", { code: profile.branchCode })}
-                  {profile.withholdsTax ? ` · ${t("withholds")}` : ""}
-                </p>
-                <p className="text-muted text-sm">{addressLine(locale, profile)}</p>
-                <div className="mt-auto flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditing({ kind: "tax", item: profile })}>
-                    {t("edit")}
-                    <span className="sr-only"> {profile.name}</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setRemoving({ kind: "tax", id: profile.id, name: profile.name })}
-                  >
-                    {t("remove")}
-                    <span className="sr-only"> {profile.name}</span>
-                  </Button>
-                </div>
-              </li>
-            ))}
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {taxProfiles.map((profile) =>
+              card({
+                id: profile.id,
+                icon: "receipt",
+                title: profile.name,
+                isDefault: profile.isDefault,
+                lines: (
+                  <>
+                    <span className="tabular-nums">{formatTaxId(profile.taxId)}</span>
+                    <span className="text-muted">
+                      {profile.branchType === "head_office"
+                        ? t("headOffice")
+                        : t("branch", { code: profile.branchCode })}
+                      {profile.withholdsTax ? ` · ${t("withholds")}` : ""}
+                    </span>
+                    <span className="text-muted">{addressLine(locale, profile)}</span>
+                  </>
+                ),
+                onEdit: () => setEditing({ kind: "tax", item: profile }),
+                onRemove: () => setRemoving({ kind: "tax", id: profile.id, name: profile.name }),
+              }),
+            )}
+            {addTile(t("addTax"), () => setEditing({ kind: "tax" }))}
           </ul>
         )}
       </section>
@@ -164,6 +234,7 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
         }
         description={editing?.kind === "address" && editing.item ? tAddress("editHint") : undefined}
         closeLabel={tAddress("cancel")}
+        className="[&_[data-form-actions]]:border-border [&_[data-form-actions]]:bg-surface-raised w-[min(36rem,calc(100vw-2rem))] [&_[data-form-actions]]:sticky [&_[data-form-actions]]:bottom-0 [&_[data-form-actions]]:-mx-4 [&_[data-form-actions]]:-mb-4 [&_[data-form-actions]]:border-t [&_[data-form-actions]]:px-4 [&_[data-form-actions]]:py-3"
       >
         {editing?.kind === "address" ? (
           <AddressForm address={editing.item} onSaved={saved} onCancel={() => setEditing(null)} />
@@ -176,6 +247,7 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
           editing?.kind === "tax" && editing.item ? tTax("editTitle", { name: editing.item.name }) : tTax("newTitle")
         }
         closeLabel={tTax("cancel")}
+        className="[&_[data-form-actions]]:border-border [&_[data-form-actions]]:bg-surface-raised w-[min(36rem,calc(100vw-2rem))] [&_[data-form-actions]]:sticky [&_[data-form-actions]]:bottom-0 [&_[data-form-actions]]:-mx-4 [&_[data-form-actions]]:-mb-4 [&_[data-form-actions]]:border-t [&_[data-form-actions]]:px-4 [&_[data-form-actions]]:py-3"
       >
         {editing?.kind === "tax" ? (
           <TaxProfileForm profile={editing.item} onSaved={saved} onCancel={() => setEditing(null)} />

@@ -34,14 +34,21 @@ export function StepCard({ id, number, title, hint, children, className }: StepC
         className,
       )}
     >
-      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h2 id={titleId} className="m-0 flex items-baseline gap-2.5 text-xl font-semibold">
-          <span aria-hidden className="text-primary text-[0.8125rem] tabular-nums">
-            {String(number).padStart(2, "0")}
-          </span>
-          {title}
-        </h2>
-        {hint ? <p className="text-muted m-0 min-w-0 text-sm break-words sm:text-end">{hint}</p> : null}
+      {/* The number in a small brand-tint square, the title beside it and the answer so far under the title —
+          a sequence that reads as numbered steps (Project A), with the hint never squeezed to the edge. */}
+      <header className="border-border mb-5 flex items-start gap-3 border-b pb-4">
+        <span
+          aria-hidden
+          className="bg-primary-subtle text-primary-subtle-fg grid size-8 shrink-0 place-items-center rounded-lg text-[0.8125rem] font-semibold tabular-nums"
+        >
+          {String(number).padStart(2, "0")}
+        </span>
+        <div className="min-w-0">
+          <h2 id={titleId} className="m-0 text-lg leading-snug font-semibold md:text-xl">
+            {title}
+          </h2>
+          {hint ? <p className="text-muted m-0 mt-0.5 min-w-0 text-sm break-words">{hint}</p> : null}
+        </div>
       </header>
       {children}
     </section>

@@ -53,5 +53,6 @@
     "copyName": "{name} (new size)",
     "editedSince": "Edited since — now version {version}",
     "failed": "Could not make the copy — try again"
-  }
+  },
+  "moreActions": "More actions for {name}"
 }

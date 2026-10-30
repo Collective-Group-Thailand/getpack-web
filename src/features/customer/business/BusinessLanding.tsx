@@ -89,7 +89,6 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
   ]);
   const page = await pageContext("/business", t("metaTitle"));
   const applyHref = signedIn ? "/business/apply" : `/sign-in?returnTo=${encodeURIComponent("/business/apply")}`;
-  const roadmap = new Map((config?.roadmap.business ?? []).map((item) => [item.key, item.status]));
   // Without the roadmap the page claims only what the pack calls live, and shows no "เร็ว ๆ นี้" card.
   const features = (config?.roadmap.business ?? [])
     .filter((item) => item.key in FEATURE_ICONS)
@@ -132,8 +131,9 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
       />
       <JsonLd data={faqPageSchema(faq.map(({ question, answer }) => ({ question, answer })))} />
 
-      {/* The hero: the one deliberate dark band, in both themes (the dark token set, scoped). */}
-      <section data-theme="dark" aria-labelledby="business-hero" className="bg-bg text-fg">
+      {/* The hero (Project A): light like the rest of the storefront — the surface with a hairline under it; it was a
+          forced dark band. */}
+      <section aria-labelledby="business-hero" className="bg-surface border-border text-fg border-b">
         <div
           className={cn(
             HOME_WRAP,
@@ -236,15 +236,10 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
                     WIDE.has(feature.key) ? "xl:col-span-3" : "xl:col-span-2",
                   )}
                 >
-                  {feature.soon ? (
-                    <span className="bg-instant-subtle text-instant-subtle-fg rounded-control absolute top-4 right-4 px-2 py-0.5 text-[11px] font-semibold">
-                      {soon}
-                    </span>
-                  ) : null}
                   <span className="bg-primary-subtle text-primary rounded-control grid size-10 place-items-center">
                     <Icon name={FEATURE_ICONS[feature.key]!} size={21} aria-hidden="true" />
                   </span>
-                  <h3 className="mt-1 pr-20 text-[17px] font-semibold">{t(`features.items.${feature.key}.title`)}</h3>
+                  <h3 className="mt-1 text-[17px] font-semibold">{t(`features.items.${feature.key}.title`)}</h3>
                   <p className="text-muted text-sm">{t(`features.items.${feature.key}.body`)}</p>
                   {feature.key === "team" ? (
                     <ul className="mt-1.5 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
@@ -280,8 +275,9 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
           <ControlDemo
             products={products}
             soonLabel={soon}
-            catalogueSoon={roadmap.get("company_catalogue") !== "live"}
-            budgetsSoon={roadmap.get("budgets") !== "live"}
+            // Owner rule (Project A): every module is live — no "เร็ว ๆ นี้" badge anywhere in the storefront.
+            catalogueSoon={false}
+            budgetsSoon={false}
           />
         </section>
 
@@ -351,7 +347,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
                     key={step}
                     className="border-border grid grid-cols-[3rem_minmax(0,1fr)] gap-4 border-b py-4.5 last:border-b-0"
                   >
-                    <span className="bg-fg text-bg rounded-card grid size-12 place-items-center text-lg font-bold tabular-nums">
+                    <span className="bg-primary-subtle text-primary-subtle-fg rounded-card grid size-12 place-items-center text-lg font-bold tabular-nums">
                       {index + 1}
                     </span>
                     <span>
@@ -412,7 +408,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
             ))}
           </ul>
           <div className="border-border bg-instant-subtle/40 rounded-panel mt-3.5 grid items-center gap-5 border p-5.5 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
-            <span data-theme="dark" className="bg-bg text-instant rounded-card grid size-13 place-items-center">
+            <span className="border-border bg-surface text-primary rounded-card grid size-13 place-items-center border">
               <Icon name="factory" size={26} aria-hidden="true" />
             </span>
             <div>
@@ -428,11 +424,11 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
         </section>
       </div>
 
-      <div className={cn(HOME_WRAP, "scroll-mt-24 pt-16 pb-20")} id="sales">
+      <div className={cn(HOME_WRAP, "scroll-mt-24 pt-16 pb-16 md:pb-20")} id="sales">
+        {/* Talk to sales on the pale brand tint (no dark block); the form keeps its white fields. */}
         <section
-          data-theme="dark"
           aria-labelledby="sales-title"
-          className="bg-bg text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+          className="bg-primary-subtle text-fg rounded-panel grid gap-6 overflow-hidden p-5 sm:p-9 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
         >
           <div>
             <h2

@@ -14,7 +14,10 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
+import { Sheet } from "@/ui/components/Sheet";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 type Branch = Schemas["CompanyBranchDto"];
 
@@ -43,6 +46,7 @@ export function BranchesManager({
   const [area, setArea] = useState<ChosenArea | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   async function add(event: React.FormEvent) {
     event.preventDefault();
@@ -74,6 +78,7 @@ export function BranchesManager({
       setLine1("");
       setPostcode("");
       setArea(null);
+      setAdding(false);
       router.refresh();
     } catch (error) {
       toast.error(isApiError(error) ? error.detail : t("failed"));
@@ -94,77 +99,119 @@ export function BranchesManager({
     }
   }
 
+  // Project C: branches as the address book's cards (icon plate; the head office outlined in green) with a dashed
+  // tile to add one, and the form in a side sheet over the list.
   return (
-    <div className="flex flex-col gap-8">
-      <ul className="grid gap-3 md:grid-cols-2">
-        {branches.map((branch) => (
-          <li key={branch.id} className="bg-surface border-border flex flex-col gap-2 rounded-lg border p-4">
-            <div className="flex items-center justify-between gap-2">
-              <p className="font-medium">{branch.name}</p>
-              <Badge tone={branch.branchType === "head_office" ? "primary" : "neutral"}>
-                {branch.branchType === "head_office" ? t("headOffice") : t("code", { code: branch.branchCode })}
-              </Badge>
-            </div>
-            <p className="text-muted text-sm">
-              {[
-                branch.line1,
-                branch.line2,
-                branch.subdistrictNameTh ? pick(locale, branch.subdistrictNameTh, branch.subdistrictNameEn) : null,
-                branch.districtNameTh ? pick(locale, branch.districtNameTh, branch.districtNameEn) : null,
-                pick(locale, branch.provinceNameTh, branch.provinceNameEn),
-                branch.postcode,
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            </p>
-            {canManage && branch.branchType !== "head_office" ? (
-              <Button size="sm" variant="ghost" className="self-start" onClick={() => void remove(branch)}>
-                {t("remove")}
-                <span className="sr-only"> {branch.name}</span>
-              </Button>
-            ) : null}
+    <div className="flex flex-col gap-6">
+      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {branches.map((branch) => {
+          const head = branch.branchType === "head_office";
+          return (
+            <li
+              key={branch.id}
+              className={cn(
+                "bg-surface rounded-card flex min-w-0 flex-col gap-3 border p-4",
+                head ? "border-primary" : "border-border",
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "grid size-10 shrink-0 place-items-center rounded-lg",
+                    head ? "bg-primary-subtle text-primary-subtle-fg" : "bg-surface-subtle text-muted",
+                  )}
+                >
+                  <Icon name="building" size={18} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="flex flex-wrap items-center gap-2 font-semibold">
+                    <span className="min-w-0 [overflow-wrap:break-word] break-keep">{branch.name}</span>
+                    <Badge tone={head ? "primary" : "neutral"}>
+                      {head ? t("headOffice") : t("code", { code: branch.branchCode })}
+                    </Badge>
+                  </p>
+                  <p className="text-muted mt-1 text-sm">
+                    {[
+                      branch.line1,
+                      branch.line2,
+                      branch.subdistrictNameTh
+                        ? pick(locale, branch.subdistrictNameTh, branch.subdistrictNameEn)
+                        : null,
+                      branch.districtNameTh ? pick(locale, branch.districtNameTh, branch.districtNameEn) : null,
+                      pick(locale, branch.provinceNameTh, branch.provinceNameEn),
+                      branch.postcode,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </p>
+                </div>
+              </div>
+              {canManage && !head ? (
+                <div className="border-border mt-auto border-t pt-3">
+                  <Button size="sm" variant="ghost" onClick={() => void remove(branch)}>
+                    {t("remove")}
+                    <span className="sr-only"> {branch.name}</span>
+                  </Button>
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+        {canManage ? (
+          <li>
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="border-border-strong text-muted hover:border-primary hover:text-primary focus-visible:ring-focus-ring rounded-card flex h-full min-h-32 w-full flex-col items-center justify-center gap-2 border border-dashed p-4 text-sm font-medium outline-none focus-visible:ring-2"
+            >
+              <Icon name="plus" size={20} aria-hidden="true" />
+              {t("addTitle")}
+            </button>
           </li>
-        ))}
+        ) : null}
       </ul>
       {canManage ? (
-        <form
-          noValidate
-          onSubmit={(event) => void add(event)}
-          aria-labelledby="branch-add"
-          className="bg-surface border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
+        <Sheet
+          open={adding}
+          onOpenChange={setAdding}
+          title={t("addTitle")}
+          closeLabel={t("addTitle")}
+          className="w-[min(32rem,calc(100vw-2rem))]"
+          footer={
+            <Button type="submit" form="branch-add-form" loading={busy}>
+              {t("add")}
+            </Button>
+          }
         >
-          <h2 id="branch-add" className="text-lg font-semibold">
-            {t("addTitle")}
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t("branchCode")} error={errors.code}>
-              <Input
-                inputMode="numeric"
-                maxLength={5}
-                value={code}
-                onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
-              />
+          <form id="branch-add-form" noValidate onSubmit={(event) => void add(event)} className="flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label={t("branchCode")} error={errors.code}>
+                <Input
+                  inputMode="numeric"
+                  maxLength={5}
+                  value={code}
+                  onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+                />
+              </Field>
+              <Field label={t("name")} error={errors.name}>
+                <Input value={name} onChange={(event) => setName(event.target.value)} />
+              </Field>
+            </div>
+            <PostcodeAreaField
+              postcode={postcode}
+              subdistrictId={area?.subdistrictId ?? ""}
+              errors={{ subdistrict: errors.subdistrict }}
+              onChange={(next) => {
+                setPostcode(next.postcode);
+                setArea(next.area);
+              }}
+            />
+            <Field label={t("address")} error={errors.address}>
+              <Input value={line1} onChange={(event) => setLine1(event.target.value)} />
             </Field>
-            <Field label={t("name")} error={errors.name}>
-              <Input value={name} onChange={(event) => setName(event.target.value)} />
-            </Field>
-          </div>
-          <PostcodeAreaField
-            postcode={postcode}
-            subdistrictId={area?.subdistrictId ?? ""}
-            errors={{ subdistrict: errors.subdistrict }}
-            onChange={(next) => {
-              setPostcode(next.postcode);
-              setArea(next.area);
-            }}
-          />
-          <Field label={t("address")} error={errors.address}>
-            <Input value={line1} onChange={(event) => setLine1(event.target.value)} />
-          </Field>
-          <Button type="submit" className="self-start" loading={busy}>
-            {t("add")}
-          </Button>
-        </form>
+          </form>
+        </Sheet>
       ) : null}
     </div>
   );

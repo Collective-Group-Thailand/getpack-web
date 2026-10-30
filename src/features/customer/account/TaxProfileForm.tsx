@@ -238,7 +238,8 @@ function CreateTaxProfile({
         onCheckedChange={(checked) => setIsDefault(checked === true)}
         label={t("default")}
       />
-      <div className="flex gap-2">
+      {/* `data-form-actions`: a sheet that holds the form keeps these in view at its foot (account book). */}
+      <div data-form-actions className="flex gap-2">
         <Button type="submit" loading={saving}>
           {t("save")}
         </Button>
@@ -386,7 +387,8 @@ function EditTaxProfile({
         onCheckedChange={(checked) => setIsDefault(checked === true)}
         label={t("default")}
       />
-      <div className="flex gap-2">
+      {/* `data-form-actions`: a sheet that holds the form keeps these in view at its foot (account book). */}
+      <div data-form-actions className="flex gap-2">
         <Button type="submit" loading={saving}>
           {t("save")}
         </Button>

@@ -154,7 +154,9 @@ export default async function StylesPage({
   const head = (
     <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,35rem)] lg:items-end lg:gap-x-12">
       <div>
-        <h1 className="text-3xl leading-tight font-bold md:text-[2.5rem]">{t("list.heading")}</h1>
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+          {t("list.heading")}
+        </h1>
         <p className="text-muted mt-2 max-w-2xl">
           {totals ? (
             <b className="text-fg font-semibold tabular-nums">
@@ -186,7 +188,7 @@ export default async function StylesPage({
 
   if (variantsView || !list)
     return (
-      <div className="max-w-nav mx-auto px-5 py-6 pb-28 md:px-8 md:py-8 xl:px-12">
+      <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
         {crumbs}
         {head}
         {totals ? <LibraryViews current="variants" totals={totals} className="mt-5" /> : null}
@@ -273,7 +275,7 @@ export default async function StylesPage({
 
   return (
     <CompareLimitProvider limit={settings?.compareLimit}>
-      <div className="max-w-nav mx-auto px-5 py-6 pb-32 md:px-8 md:py-8 xl:px-12">
+      <div className="max-w-nav mx-auto px-5 pt-6 pb-28 md:px-8 md:pt-8 md:pb-28 xl:px-12">
         <JsonLd
           data={[
             breadcrumbSchema([
@@ -330,7 +332,12 @@ export default async function StylesPage({
         ) : null}
 
         <div className="mt-8 grid gap-x-6 gap-y-8 min-[65rem]:grid-cols-[15rem_minmax(0,1fr)]">
-          <aside className="hidden min-w-0 min-[65rem]:block" aria-labelledby="library-filters">
+          {/* Project A: the filters stay beside the grid while it scrolls — sticky under the header, scrolling inside
+              themselves when longer than the screen — so there is no empty band next to a long grid. */}
+          <aside
+            className="hidden min-w-0 min-[65rem]:sticky min-[65rem]:top-[calc(var(--site-sticky-top)+1rem)] min-[65rem]:block min-[65rem]:max-h-[calc(100dvh-var(--site-sticky-top)-2rem)] min-[65rem]:self-start min-[65rem]:overflow-y-auto min-[65rem]:overscroll-contain min-[65rem]:pe-2"
+            aria-labelledby="library-filters"
+          >
             <div className="mb-3 flex items-center justify-between gap-2">
               <h2 id="library-filters" className="text-base font-semibold">
                 {t("library.filters")}

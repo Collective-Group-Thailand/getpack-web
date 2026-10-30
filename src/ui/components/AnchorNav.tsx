@@ -46,11 +46,16 @@ export function AnchorNav({ items, top, className, innerClassName, ...props }: A
               aria-current={active === item.id ? "true" : undefined}
               onClick={(event) => {
                 event.preventDefault();
+                // A section folded to its heading (`<details>`) opens when the bar sends the reader to it.
+                const folded = document.getElementById(item.id)?.querySelector("details");
+                if (folded && !folded.open) folded.open = true;
                 scrollToStep(item.id);
               }}
               className={cn(
                 "focus-visible:ring-focus-ring inline-flex min-h-9 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap no-underline outline-none focus-visible:ring-2",
-                active === item.id ? "bg-fg text-bg" : "text-muted hover:bg-bg-subtle hover:text-fg",
+                active === item.id
+                  ? "bg-primary-subtle text-primary-subtle-fg"
+                  : "text-muted hover:bg-bg-subtle hover:text-fg",
               )}
             >
               {item.label}

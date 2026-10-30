@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -39,15 +40,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline-offset-4 hover:underline">
-          {t("back", { code: order.orderCode })}
-        </Link>
-        <h1 className="text-title leading-tight">{t("titleFor", { code: order.orderCode })}</h1>
-        {preview ? (
-          <p className="text-muted text-sm">{t("intro", { product: productNameOf(locale, order.summary) })}</p>
-        ) : null}
-      </header>
+      <AccountHeader
+        back={{ href: `/account/orders/${order.id}`, label: t("back", { code: order.orderCode }) }}
+        title={t("titleFor", { code: order.orderCode })}
+        lede={preview ? t("intro", { product: productNameOf(locale, order.summary) }) : undefined}
+      />
       {preview ? (
         <ReorderView
           initial={preview}

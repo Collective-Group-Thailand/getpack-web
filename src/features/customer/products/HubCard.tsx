@@ -123,7 +123,6 @@ export async function HubCard({
       image={src ? { src, alt } : null}
       fallback={{
         family: item.kind === "stock" ? "stock" : productFamilyOf(`${item.productTypeCode ?? ""} ${item.key}`),
-        tone: "kraft",
       }}
       badges={
         item.mode === "instant" ? (
@@ -138,32 +137,36 @@ export async function HubCard({
           />
         ) : undefined
       }
+      // One fixed price slot on every card (Project A): "เริ่ม" and the VAT label on the first line, the figure on
+      // the second, the unit and quantity on the third — so the rows line up across the grid whatever the price. On a phone the slot keeps only its own height, so a quoted card is not half empty.
       price={
-        figures.incl ? (
-          <span className="flex flex-wrap items-baseline gap-x-1.5">
-            <span className="text-muted text-[0.8125rem]">{t("card.from")}</span>
+        <div className="flex flex-col justify-start md:min-h-[4.375rem]">
+          {figures.incl ? (
             <VatFigure
               figures={figures}
               render={(price) => (
                 <>
+                  <span className="text-muted flex items-baseline justify-between gap-2 text-xs">
+                    <span>{t("card.from")}</span>
+                    <span className="whitespace-nowrap">{price.vatLabel}</span>
+                  </span>
                   <span className="text-primary text-xl leading-tight font-semibold tabular-nums md:text-[1.375rem]">
                     {price.amount}
                   </span>
-                  <span className="text-muted text-sm">
+                  <span className="text-muted text-xs tabular-nums">
                     {item.priceQuantity === null
                       ? t("card.perUnitOnly", { unit })
                       : item.kind === "stock"
                         ? t("card.perUnitMin", { unit, quantity: item.priceQuantity })
                         : t("card.perUnit", { unit, quantity: item.priceQuantity })}
                   </span>
-                  <span className="text-muted text-xs">{price.vatLabel}</span>
                 </>
               )}
             />
-          </span>
-        ) : (
-          <span className="text-fg text-sm font-semibold">{fallbackText}</span>
-        )
+          ) : (
+            <span className="text-fg text-sm font-semibold md:pt-[1.125rem]">{fallbackText}</span>
+          )}
+        </div>
       }
       meta={
         moq || lead ? (

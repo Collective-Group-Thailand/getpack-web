@@ -13,7 +13,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 type Reason = Schemas["DocumentCorrectionReason"];
@@ -142,7 +142,7 @@ export function RequestCorrection({ documentId, number, buyer }: { documentId: s
       >
         <div className="flex flex-col gap-4">
           <Field label={t("reason")}>
-            <NativeSelect
+            <SearchableSelect
               value={reason}
               onValueChange={setReason}
               options={REASONS.map((value) => ({ value, label: t(`reasons.${value}`) }))}

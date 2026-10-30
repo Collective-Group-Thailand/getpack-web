@@ -170,17 +170,21 @@ export async function CrossLink({
           </TrackedLink>
         ) : null}
         {quote ? (
-          <div className={`${tile} bg-fg text-fg-inverse`}>
-            <span className="rounded-control grid size-11 place-items-center bg-current/10" aria-hidden="true">
+          // Project A: the pale brand tint marks the way out, not a dark block; the green is the link.
+          <div className={`${tile} bg-primary-subtle text-fg`}>
+            <span
+              className="rounded-control bg-surface text-primary grid size-11 place-items-center"
+              aria-hidden="true"
+            >
               <Icon name="chat" size={22} />
             </span>
             <span className="min-w-0">
               <b className="block text-[1.0625rem] font-semibold">{tCatalog("category.rfqTitle")}</b>
-              <span className="text-sm opacity-75">{tCatalog("category.rfqBody")}</span>
+              <span className="text-muted text-sm">{tCatalog("category.rfqBody")}</span>
             </span>
             <Link
               href={rfqHref(category)}
-              className="bg-surface text-fg rounded-cta inline-flex h-10 items-center justify-center px-4 text-sm font-semibold whitespace-nowrap"
+              className="bg-primary text-primary-fg hover:bg-primary-hover rounded-cta focus-visible:ring-focus-ring inline-flex h-10 items-center justify-center px-4 text-sm font-semibold whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             >
               {tCatalog("category.rfqCta")}
             </Link>

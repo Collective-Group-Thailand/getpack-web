@@ -18,15 +18,17 @@ import { readAccessToken } from "@/lib/auth/session";
  */
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const signedIn = Boolean(readAccessToken(await cookies()));
-  if (!signedIn) return <div className="max-w-content mx-auto px-5 py-8 md:px-8">{children}</div>;
+  if (!signedIn)
+    return <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">{children}</div>;
   const [me, counts, company] = await Promise.all([
     accountMe(),
     getOrderTabCounts().catch(() => null),
     accountCompany(),
   ]);
   return (
-    <div className="max-w-content mx-auto px-5 pt-3 pb-24 md:px-8 lg:pt-7">
-      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-7">
+    // Project B: the storefront's width and gutters; the account menu a sticky column on a wide screen.
+    <div className="max-w-nav mx-auto px-5 pt-3 pb-16 md:px-8 md:pb-20 lg:pt-7 xl:px-12">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:items-start lg:gap-8">
         <AccountNav me={me} todo={counts?.todo ?? 0} company={company} />
         <div className="min-w-0">
           <AccountTabs team={company !== null} />

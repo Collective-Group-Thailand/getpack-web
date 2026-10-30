@@ -17,6 +17,58 @@ import { RequoteButton } from "../RequoteButton";
  * "ตรวจราคาใหม่และชำระ" past it (D-436), else one pay button for the whole group. Figures are the API's
  * (`OrderDto.payment`).
  */
+/** The group's line — "ชำระรวม <group>", its count, amount and deadline, and its one pay (or re-quote) action. */
+export function PayGroupHeader({
+  payment,
+  firstOrderId,
+}: {
+  payment: Schemas["OrderPaymentShareDto"];
+  firstOrderId: string;
+}) {
+  const t = useTranslations("myOrders.list.group");
+  const format = useFormat();
+  const payHref = `/account/orders/${firstOrderId}#payment`;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 px-1.5 py-0.5">
+      <p className="min-w-0 text-sm">
+        <span className="font-semibold tabular-nums">{t("title", { code: payment.groupCode })}</span>{" "}
+        <span className="text-muted text-[0.8125rem] tabular-nums">
+          ·{" "}
+          {[
+            t("count", { count: payment.groupOrderCount }),
+            format.thb(payment.groupGrossAmount),
+            payment.dueAt ? t("dueBy", { date: format.dateTime(payment.dueAt) }) : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </span>
+        {payment.overdue ? (
+          <Badge size="sm" tone="danger" icon="clock" className="ms-1.5 align-middle">
+            {t("late")}
+          </Badge>
+        ) : null}
+      </p>
+      {payment.overdue ? (
+        <RequoteButton
+          size="sm"
+          groupId={payment.groupId}
+          payHref={payHref}
+          onOpen={() => trackAccount("orders_action", { action: "requote", status: "awaiting_payment" })}
+        />
+      ) : (
+        <Button asChild size="sm" iconStart="credit-card">
+          <Link
+            href={payHref}
+            onClick={() => trackAccount("orders_action", { action: "pay", status: "awaiting_payment" })}
+          >
+            {t("pay", { amount: format.thb(payment.groupGrossAmount) })}
+          </Link>
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function PayGroupFrame({
   payment,
   firstOrderId,
@@ -27,50 +79,12 @@ export function PayGroupFrame({
   children: React.ReactNode;
 }) {
   const t = useTranslations("myOrders.list.group");
-  const format = useFormat();
-  const payHref = `/account/orders/${firstOrderId}#payment`;
   return (
     <section
       aria-label={t("label", { code: payment.groupCode })}
       className="border-border-strong rounded-panel flex flex-col gap-2.5 border border-dashed p-2.5 sm:p-3"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 px-1.5 py-0.5">
-        <p className="min-w-0 text-sm">
-          <span className="font-semibold tabular-nums">{t("title", { code: payment.groupCode })}</span>{" "}
-          <span className="text-muted text-[0.8125rem] tabular-nums">
-            ·{" "}
-            {[
-              t("count", { count: payment.groupOrderCount }),
-              format.thb(payment.groupGrossAmount),
-              payment.dueAt ? t("dueBy", { date: format.dateTime(payment.dueAt) }) : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </span>
-          {payment.overdue ? (
-            <Badge size="sm" tone="danger" icon="clock" className="ms-1.5 align-middle">
-              {t("late")}
-            </Badge>
-          ) : null}
-        </p>
-        {payment.overdue ? (
-          <RequoteButton
-            size="sm"
-            groupId={payment.groupId}
-            payHref={payHref}
-            onOpen={() => trackAccount("orders_action", { action: "requote", status: "awaiting_payment" })}
-          />
-        ) : (
-          <Button asChild size="sm" iconStart="credit-card">
-            <Link
-              href={payHref}
-              onClick={() => trackAccount("orders_action", { action: "pay", status: "awaiting_payment" })}
-            >
-              {t("pay", { amount: format.thb(payment.groupGrossAmount) })}
-            </Link>
-          </Button>
-        )}
-      </div>
+      <PayGroupHeader payment={payment} firstOrderId={firstOrderId} />
       {children}
     </section>
   );

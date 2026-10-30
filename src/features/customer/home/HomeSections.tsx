@@ -234,15 +234,11 @@ export async function TemplateGallery({
           ) : null}
         </li>
         {rest.map((style) => card(style))}
-        <li className="bg-sage text-fg-inverse flex min-h-64 flex-col p-6.5">
+        {/* Project A: a pale brand tint carries the offer; the green is the button, not the tile. */}
+        <li className="bg-primary-subtle text-fg flex min-h-64 flex-col p-6.5">
           <h3 className="text-2xl leading-tight">{t.rich("custom.title", br)}</h3>
-          <p className="text-fg-inverse mt-2.5 text-sm leading-relaxed">{t("custom.body")}</p>
-          <Button
-            asChild
-            size="md"
-            variant="secondary"
-            className="border-surface bg-surface text-fg hover:bg-surface/90 mt-auto self-start"
-          >
+          <p className="text-muted mt-2.5 text-sm leading-relaxed">{t("custom.body")}</p>
+          <Button asChild size="md" className="mt-auto self-start">
             <Link href="/account/structural-requests">{t("custom.action")}</Link>
           </Button>
         </li>
@@ -518,9 +514,10 @@ export async function QualityBand({ photo, claimDays }: { photo: HomePhoto | nul
   const t = await getTranslations("home.quality");
   const facts = claimDays !== null ? t("factsClaim", { days: claimDays }) : t("factsNone");
   const shortcut =
-    "border-fg-inverse/25 text-fg-inverse rounded-card block border p-4.5 outline-none hover:border-fg-inverse/60 focus-visible:ring-2 focus-visible:ring-fg-inverse";
+    "border-border bg-surface text-fg rounded-card block border p-4.5 outline-none hover:border-primary focus-visible:ring-2 focus-visible:ring-focus-ring";
+  // Project A: a light band (the pale brand tint) in light mode, never a full-width dark block.
   return (
-    <section aria-labelledby="home-quality" className="bg-sage text-fg-inverse mt-20 min-[1055px]:mt-26">
+    <section aria-labelledby="home-quality" className="bg-primary-subtle text-fg mt-20 min-[1055px]:mt-26">
       {/* Photo | content on large screens, always: without a photo the left cell is an empty panel.
           Content takes 56% so the title keeps to two lines from 1024px up (its second line is ~557px
           at 36px, ~495px at 32px). */}
@@ -530,18 +527,18 @@ export async function QualityBand({ photo, claimDays }: { photo: HomePhoto | nul
             <Photo photo={photo} className="absolute inset-0" />
           </figure>
         ) : (
-          <div aria-hidden="true" className="bg-sage-strong hidden lg:block lg:min-h-[520px]" />
+          <div aria-hidden="true" className="bg-sage-subtle hidden lg:block lg:min-h-[520px]" />
         )}
         {/* The title keeps to two lines — its one break is the copy's: 32px with tighter gutters up to
             1279px, 36px from 1280px. */}
         <div className="w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20 lg:ps-10 lg:pe-8 xl:ps-18 xl:pe-12">
           <h2
             id="home-quality"
-            className="text-fg-inverse max-w-[18em] text-start text-[1.75rem] leading-[1.15] md:text-[2rem] xl:text-[2.25rem]"
+            className="text-fg max-w-[18em] text-start text-[1.75rem] leading-[1.15] md:text-[2rem] xl:text-[2.25rem]"
           >
             {t.rich("title", br)}
           </h2>
-          <p className="text-fg-inverse mt-4.5 max-w-[30em]">{t("body")}</p>
+          <p className="text-muted mt-4.5 max-w-[30em]">{t("body")}</p>
           <ul className="mt-8 grid max-w-[45rem] gap-4 sm:grid-cols-2">
             {(
               [
@@ -552,8 +549,8 @@ export async function QualityBand({ photo, claimDays }: { photo: HomePhoto | nul
               <li key={key}>
                 <Link href={href} className={shortcut}>
                   <b className="block text-base font-semibold">{t(`${key}.title`)}</b>
-                  <span className="text-fg-inverse mt-1 block text-[0.84375rem]">{t(`${key}.body`)}</span>
-                  <span className={cn("mt-3 inline-flex items-center gap-1 text-[0.84375rem]", UNDERLINE)}>
+                  <span className="text-muted mt-1 block text-[0.84375rem]">{t(`${key}.body`)}</span>
+                  <span className={cn("text-primary mt-3 inline-flex items-center gap-1 text-[0.84375rem]", UNDERLINE)}>
                     {t(`${key}.go`)}
                     <Icon name="arrow-right" size={14} aria-hidden="true" />
                   </span>
@@ -561,9 +558,7 @@ export async function QualityBand({ photo, claimDays }: { photo: HomePhoto | nul
               </li>
             ))}
           </ul>
-          <p className="border-fg-inverse/25 text-fg-inverse mt-9 max-w-[45rem] border-t pt-6 text-[0.9375rem]">
-            {facts}
-          </p>
+          <p className="border-border text-muted mt-9 max-w-[45rem] border-t pt-6 text-[0.9375rem]">{facts}</p>
         </div>
       </div>
     </section>

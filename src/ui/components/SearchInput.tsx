@@ -42,6 +42,7 @@ export function SearchInput({
         type="search"
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
+        data-size={inputSize}
         className={cn(controlVariants({ inputSize }), "ps-8 pe-9 [&::-webkit-search-cancel-button]:hidden")}
         {...fieldProps}
         {...props}

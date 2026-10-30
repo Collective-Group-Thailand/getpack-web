@@ -4,6 +4,7 @@ import { DropdownMenu as MenuPrimitive } from "radix-ui";
 
 import { Icon, type IconName } from "../icons";
 import { cn } from "../lib/cn";
+import { MENU_ITEM, POPOVER_SURFACE } from "./menu-surface";
 
 export interface MenuItem {
   /** Stable key, also used as the radio/checkbox value. */
@@ -70,10 +71,7 @@ export function DropdownMenu({
           sideOffset={4}
           collisionPadding={8}
           aria-label={label}
-          className={cn(
-            "z-modal border-border bg-surface-raised shadow-overlay min-w-56 overflow-hidden rounded-lg border p-1",
-            className,
-          )}
+          className={cn(POPOVER_SURFACE, "min-w-56 overflow-hidden p-1", className)}
         >
           {heading ? (
             <>
@@ -96,10 +94,11 @@ export function DropdownMenu({
               );
 
               const itemClassName = cn(
-                "flex w-full cursor-default items-start gap-2 rounded-md px-2 py-2 text-start text-sm outline-none",
-                "data-highlighted:bg-surface-subtle",
+                MENU_ITEM,
+                "w-full text-start data-highlighted:bg-primary-subtle data-highlighted:text-primary-subtle-fg",
                 "data-disabled:pointer-events-none data-disabled:opacity-50",
-                item.tone === "destructive" && "text-danger data-highlighted:bg-danger-subtle",
+                item.tone === "destructive" &&
+                  "text-danger data-highlighted:bg-danger-subtle data-highlighted:text-danger-subtle-fg",
               );
 
               return (

@@ -165,7 +165,8 @@ function CreateAddress({ onSaved, onCancel }: { onSaved: (address: Address) => v
         onCheckedChange={(checked) => set({ isDefault: checked === true })}
         label={t("default")}
       />
-      <div className="flex gap-2">
+      {/* `data-form-actions`: a sheet that holds the form keeps these in view at its foot (account book). */}
+      <div data-form-actions className="flex gap-2">
         <Button type="submit" loading={saving}>
           {t("save")}
         </Button>
@@ -315,7 +316,8 @@ function EditAddress({
         onCheckedChange={(checked) => set({ isDefault: checked === true })}
         label={t("default")}
       />
-      <div className="flex gap-2">
+      {/* `data-form-actions`: a sheet that holds the form keeps these in view at its foot (account book). */}
+      <div data-form-actions className="flex gap-2">
         <Button type="submit" loading={saving}>
           {t("save")}
         </Button>

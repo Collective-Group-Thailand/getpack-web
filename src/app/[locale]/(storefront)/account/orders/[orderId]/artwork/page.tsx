@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -8,7 +9,6 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { findLockedDesignOf } from "@/features/customer/orders/api.server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ARTWORK_STATUS } from "@/domain/status";
-import { Link } from "@/i18n/navigation";
 
 type Params = { orderId: string };
 
@@ -38,15 +38,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <Link href={`/account/orders/${orderId}`} className="text-primary text-sm underline-offset-4 hover:underline">
-          {t("back", { code: artwork.order.orderCode })}
-        </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-title leading-tight">{t("title")}</h1>
-          <StatusChip map={ARTWORK_STATUS} value={artwork.order.artworkStatus} size="md" />
-        </div>
-      </header>
+      <AccountHeader
+        back={{ href: `/account/orders/${orderId}`, label: t("back", { code: artwork.order.orderCode }) }}
+        title={t("title")}
+        status={<StatusChip map={ARTWORK_STATUS} value={artwork.order.artworkStatus} size="md" />}
+      />
       <ArtworkWorkspace initial={artwork} design={design} />
     </div>
   );

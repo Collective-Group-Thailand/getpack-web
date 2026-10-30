@@ -5,7 +5,7 @@ import { useEffect, useRef, useTransition } from "react";
 
 import { useRouter } from "@/i18n/navigation";
 import { IconButton } from "@/ui/components/IconButton";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
 import { trackCatalog } from "@/lib/analytics/catalog";
@@ -17,7 +17,7 @@ export function SortSelect({ params, sorts }: { params: ListParams; sorts: { val
   const router = useRouter();
   const [, startTransition] = useTransition();
   return (
-    <NativeSelect
+    <SearchableSelect
       aria-label={t("sort")}
       className="w-auto min-w-44"
       value={params.sort ?? defaultSort(params)}

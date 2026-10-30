@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { StageTracker } from "@/features/customer/orders/list/StageTracker";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -215,7 +216,9 @@ export default async function Page({
               </Badge>
             ) : null}
           </div>
-          <h1 className="mt-1.5 text-[clamp(1.5rem,2.6vw,2rem)] leading-[1.15] font-bold tracking-[-0.02em]">{name}</h1>
+          <h1 className="mt-1.5 text-[1.625rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2rem]">
+            {name}
+          </h1>
           <p className="text-muted mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[0.84375rem]">
             <span className="text-fg/80 tabular-nums">{order.orderCode}</span>
             <span>{tList("placedOn", { date: format.date(placedAt) })}</span>
@@ -227,72 +230,113 @@ export default async function Page({
             ) : null}
           </p>
         </div>
-        {headerActions.length > 0 || payable || overdue || reorder ? (
-          <div className="flex w-full flex-wrap items-start gap-2 sm:w-auto">
-            {overdue ? (
-              <RequoteButton
-                groupId={order.payment.groupId}
-                payHref={`/account/orders/${order.id}#payment`}
-                autoOpen={query.requote === "1"}
-              />
-            ) : null}
-            {headerActions.length > 0 || payable ? (
-              <OrderActions orderId={order.id} orderCode={order.orderCode} actions={headerActions} payable={payable} />
-            ) : null}
-            {reorder ? (
-              <TrackClicks event="order_reorder" properties={{ status: order.customerStatus }}>
+      </header>
+
+      {/* Project B: one "what to do next" panel under the head — the alerts of the moment (payment not started,
+          company approval, overdue, cancelled, auto-completion) and the actions of the step, the first one primary
+          (pay or re-quote, then what the API offers), reordering last and quiet. Nothing to do: no panel. */}
+      {headerActions.length > 0 ||
+      payable ||
+      overdue ||
+      reorder ||
+      order.cancelledAt ||
+      showAutoComplete(order) ||
+      group?.status === "pending_company_approval" ||
+      (query.payment === "not_started" && payable) ? (
+        <section
+          aria-labelledby="order-next"
+          className={cn(
+            "rounded-panel flex flex-col gap-4 border p-4 sm:p-5",
+            headerActions.length > 0 || payable || overdue
+              ? "border-primary/30 bg-primary-subtle"
+              : "border-border bg-surface",
+          )}
+        >
+          <h2 id="order-next" className="text-[1.0625rem] font-semibold">
+            {headerActions.length > 0 || payable || overdue
+              ? t("detail.todo")
+              : order.customerStatus === "completed"
+                ? t("detail.todoDone")
+                : t("detail.todoOptional")}
+          </h2>
+
+          {query.payment === "not_started" && payable ? (
+            // Checkout placed the order but could not start its payment (round 2, B1).
+            <Callout tone="warning" live title={t("detail.paymentNotStarted.title")}>
+              {t("detail.paymentNotStarted.body")}
+            </Callout>
+          ) : null}
+          {group?.status === "pending_company_approval" ? (
+            // CONTRACT-REQUEST store.order-group-company-approval — the group does not name its approvers yet.
+            <Callout tone="info" icon="stamp" title={t("detail.companyApproval.title")}>
+              {t("detail.companyApproval.body", { date: format.dateTime(group.placedAt) })}
+            </Callout>
+          ) : null}
+          {overdue ? (
+            // D-436: never cancelled for being late — the customer re-quotes, then pays.
+            <Callout
+              tone="warning"
+              icon="clock"
+              title={t("detail.overdue.title", { date: format.dateTime(order.payment.dueAt ?? placedAt) })}
+            >
+              {t("detail.overdue.body")}
+            </Callout>
+          ) : null}
+          {order.cancelledAt ? (
+            <Callout tone="neutral" title={t("detail.cancelled", { date: format.date(order.cancelledAt) })}>
+              {cancelReason ? t("detail.cancelReason", { reason: cancelReason }) : null}
+            </Callout>
+          ) : null}
+          {showAutoComplete(order) ? (
+            <Callout tone="info">
+              {t("detail.autoComplete", {
+                date: format.date(receipt.autoCompleteAt),
+                claim: format.date(receipt.claimWindowEndsAt),
+              })}
+            </Callout>
+          ) : null}
+          {headerActions.length > 0 || payable || overdue || reorder ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {overdue ? (
+                <RequoteButton
+                  groupId={order.payment.groupId}
+                  payHref={`/account/orders/${order.id}#payment`}
+                  autoOpen={query.requote === "1"}
+                />
+              ) : null}
+              {headerActions.length > 0 || payable ? (
                 <OrderActions
                   orderId={order.id}
                   orderCode={order.orderCode}
-                  actions={[reorder]}
-                  // The reorder leads only when nothing else is asked of the customer.
-                  size="md"
+                  actions={headerActions}
+                  payable={payable}
                 />
-              </TrackClicks>
-            ) : null}
-          </div>
-        ) : null}
-      </header>
-
-      {query.payment === "not_started" && payable ? (
-        // Checkout placed the order but could not start its payment (round 2, B1).
-        <Callout tone="warning" live title={t("detail.paymentNotStarted.title")}>
-          {t("detail.paymentNotStarted.body")}
-        </Callout>
-      ) : null}
-      {group?.status === "pending_company_approval" ? (
-        // CONTRACT-REQUEST store.order-group-company-approval — the group does not name its approvers yet.
-        <Callout tone="info" icon="stamp" title={t("detail.companyApproval.title")}>
-          {t("detail.companyApproval.body", { date: format.dateTime(group.placedAt) })}
-        </Callout>
-      ) : null}
-      {overdue ? (
-        // D-436: never cancelled for being late — the customer re-quotes, then pays.
-        <Callout
-          tone="warning"
-          icon="clock"
-          title={t("detail.overdue.title", { date: format.dateTime(order.payment.dueAt ?? placedAt) })}
-        >
-          {t("detail.overdue.body")}
-        </Callout>
-      ) : null}
-      {order.cancelledAt ? (
-        <Callout tone="neutral" title={t("detail.cancelled", { date: format.date(order.cancelledAt) })}>
-          {cancelReason ? t("detail.cancelReason", { reason: cancelReason }) : null}
-        </Callout>
-      ) : null}
-      {showAutoComplete(order) ? (
-        <Callout tone="info">
-          {t("detail.autoComplete", {
-            date: format.date(receipt.autoCompleteAt),
-            claim: format.date(receipt.claimWindowEndsAt),
-          })}
-        </Callout>
+              ) : null}
+              {reorder ? (
+                <TrackClicks event="order_reorder" properties={{ status: order.customerStatus }}>
+                  <OrderActions
+                    orderId={order.id}
+                    orderCode={order.orderCode}
+                    actions={[reorder]}
+                    // The reorder leads only when nothing else is asked of the customer.
+                    size="md"
+                  />
+                </TrackClicks>
+              ) : null}
+            </div>
+          ) : null}
+        </section>
       ) : null}
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_21.25rem]">
         <div className="flex min-w-0 flex-col gap-4">
           <Box id="progress" title={t("detail.timeline")}>
+            {/* The six stages across the card on a wide screen (the list's tracker), the dated journey under it. */}
+            <StageTracker
+              status={order.customerStatus}
+              overdue={overdue}
+              className="border-border hidden border-b pb-4 md:grid"
+            />
             <OrderJourney detail={detail} />
             {/* Who has the artwork step and what happens next (D-438): "ส่งไฟล์งาน" only when it is the customer's. */}
             {order.artworkOwner !== null && !order.cancelledAt ? (
@@ -503,7 +547,10 @@ export default async function Page({
           </Box>
         </div>
 
-        <aside aria-label={t("detail.asideLabel")} className="flex min-w-0 flex-col gap-4">
+        <aside
+          aria-label={t("detail.asideLabel")}
+          className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-[calc(var(--site-sticky-top)+1.25rem)]"
+        >
           <Box id="payment" title={t("detail.paymentShare.title")}>
             <PriceSummary
               rows={[

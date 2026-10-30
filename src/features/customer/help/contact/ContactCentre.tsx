@@ -12,7 +12,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -493,7 +493,7 @@ export function ContactCentre(props: ContactCentreProps) {
                   ) : null}
                   {intent === "business" ? (
                     <Field label={t("volume")}>
-                      <NativeSelect
+                      <SearchableSelect
                         value={fields.volume}
                         onValueChange={(value) => setFields((current) => ({ ...current, volume: value }))}
                         options={VOLUMES.map((value) => ({ value, label: tSales(`volumes.${value}`) }))}
@@ -502,7 +502,7 @@ export function ContactCentre(props: ContactCentreProps) {
                   ) : null}
                   {intent === "partnership" && provinces.length > 0 ? (
                     <Field label={t("province")}>
-                      <NativeSelect
+                      <SearchableSelect
                         value={fields.province}
                         onValueChange={set("province")}
                         options={[{ value: "", label: t("provincePlaceholder") }, ...provinces]}

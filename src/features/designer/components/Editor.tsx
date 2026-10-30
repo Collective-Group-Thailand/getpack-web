@@ -1574,9 +1574,10 @@ export default function Editor({
     <DesignerContext.Provider value={handle}>
       <TooltipProvider>
         <div className="bg-canvas text-fg flex h-dvh flex-col">
-          <header className="bg-neutral text-neutral-fg flex h-14 shrink-0 items-center gap-2 px-3">
+          {/* Project A: a light tool bar over the neutral work area (no dark band); the canvas stays the focus. */}
+          <header className="border-border bg-surface text-fg flex h-14 shrink-0 items-center gap-2 border-b px-3">
             <NextLink href={nav.home} aria-label={tCommon("nav.home")} className="flex shrink-0 items-center gap-2">
-              <BrandLogo height={22} tone="mono" />
+              <BrandLogo height={22} />
             </NextLink>
 
             <input

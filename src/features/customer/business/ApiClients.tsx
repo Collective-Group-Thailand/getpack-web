@@ -17,6 +17,8 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 type Client = Schemas["CompanyApiClientDto"];
 type Scope = Schemas["B2bScope"];
@@ -80,92 +82,115 @@ export function ApiClients({ companyId, initial }: { companyId: string; initial:
 
   return (
     <div className="flex flex-col gap-8">
-      <section
-        aria-labelledby="api-issue"
-        className="bg-surface border-border flex flex-col gap-3 rounded-xl border p-4"
-      >
-        <h2 id="api-issue" className="font-semibold">
-          {t("issueTitle")}
-        </h2>
-        <Field label={t("name")} hint={t("nameHint")}>
-          <Input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
-        </Field>
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-sm font-medium">{t("scopes")}</legend>
-          {SCOPES.map((scope) => (
-            <Checkbox
-              key={scope}
-              label={t(`scope.${scope.replace("b2b_", "").replace(".", "_")}`)}
-              description={scope}
-              checked={scopes.includes(scope)}
-              onCheckedChange={(on) => setScopes((list) => (on ? [...list, scope] : list.filter((s) => s !== scope)))}
-            />
-          ))}
-        </fieldset>
-        <div>
-          <Button loading={busy} disabled={!name.trim() || scopes.length === 0} onClick={() => void issue()}>
-            {t("issue")}
-          </Button>
-        </div>
-        {problem ? <Callout tone="danger" title={problem} /> : null}
-        {issued ? (
-          <Callout tone="warning" title={t("secretOnce")}>
-            <Field label={t("clientId")}>
-              <Input readOnly value={issued.clientId} onFocus={(event) => event.target.select()} />
-            </Field>
-            <Field label={t("clientSecret")} className="mt-2">
-              <Input readOnly value={issued.secret} onFocus={(event) => event.target.select()} />
-            </Field>
-            <Button size="sm" className="mt-2" iconStart="copy" onClick={() => void copy(issued.secret)}>
-              {t("copySecret")}
-            </Button>
-          </Callout>
-        ) : null}
-      </section>
+      {/* Project C: the company's keys as cards, creating one in a side card beside them on a wide screen. */}
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <section aria-labelledby="api-clients" className="flex min-w-0 flex-col gap-3">
+          <h2 id="api-clients" className="text-lg font-semibold">
+            {t("listTitle")}
+          </h2>
+          {initial.length === 0 ? (
+            <div className="border-border bg-surface rounded-card text-muted flex flex-col items-center gap-2 border px-6 py-10 text-center text-sm">
+              <Icon name="key" size={24} aria-hidden="true" />
+              {t("none")}
+            </div>
+          ) : null}
+          <ul className="flex flex-col gap-2">
+            {initial.map((client) => (
+              <li
+                key={client.id}
+                className="bg-surface border-border rounded-card flex flex-wrap items-start justify-between gap-3 border p-4 text-sm"
+              >
+                <div className="flex min-w-0 items-start gap-3">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "grid size-9 shrink-0 place-items-center rounded-lg",
+                      client.status === "active"
+                        ? "bg-primary-subtle text-primary-subtle-fg"
+                        : "bg-surface-subtle text-muted",
+                    )}
+                  >
+                    <Icon name="key" size={16} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-medium">
+                      {client.name} <span className="text-muted text-xs tabular-nums">{client.clientId}</span>
+                    </p>
+                    <p className="text-muted text-xs">
+                      {t("meta", {
+                        owner: client.owner.displayName,
+                        created: format.date(client.createdAt),
+                        used: client.lastUsedAt ? format.dateTime(client.lastUsedAt) : t("neverUsed"),
+                      })}
+                    </p>
+                    <p className="mt-1 flex flex-wrap gap-1">
+                      {client.scopes.map((scope) => (
+                        <Badge key={scope} tone="neutral">
+                          {t(`scope.${scope.replace("b2b_", "").replace(".", "_")}`)}
+                        </Badge>
+                      ))}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge tone={client.status === "active" ? "success" : "neutral"}>
+                    {t(`status.${client.status}`)}
+                  </Badge>
+                  {client.status === "active" ? (
+                    <Button size="sm" variant="ghost" className="text-danger" onClick={() => setRevoking(client)}>
+                      {t("revoke")}
+                      <span className="sr-only"> {client.name}</span>
+                    </Button>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      <section aria-labelledby="api-clients" className="flex flex-col gap-2">
-        <h2 id="api-clients" className="font-semibold">
-          {t("listTitle")}
-        </h2>
-        {initial.length === 0 ? <p className="text-muted text-sm">{t("none")}</p> : null}
-        <ul className="flex flex-col gap-2">
-          {initial.map((client) => (
-            <li
-              key={client.id}
-              className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm"
-            >
-              <div className="min-w-0">
-                <p className="font-medium">
-                  {client.name} <span className="text-muted text-xs tabular-nums">{client.clientId}</span>
-                </p>
-                <p className="text-muted text-xs">
-                  {t("meta", {
-                    owner: client.owner.displayName,
-                    created: format.date(client.createdAt),
-                    used: client.lastUsedAt ? format.dateTime(client.lastUsedAt) : t("neverUsed"),
-                  })}
-                </p>
-                <p className="mt-1 flex flex-wrap gap-1">
-                  {client.scopes.map((scope) => (
-                    <Badge key={scope} tone="neutral">
-                      {t(`scope.${scope.replace("b2b_", "").replace(".", "_")}`)}
-                    </Badge>
-                  ))}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge tone={client.status === "active" ? "success" : "neutral"}>{t(`status.${client.status}`)}</Badge>
-                {client.status === "active" ? (
-                  <Button size="sm" variant="ghost" className="text-danger" onClick={() => setRevoking(client)}>
-                    {t("revoke")}
-                    <span className="sr-only"> {client.name}</span>
-                  </Button>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <section
+          aria-labelledby="api-issue"
+          className="bg-surface border-border rounded-card flex flex-col gap-3 border p-4 sm:p-5 xl:sticky xl:top-[calc(var(--site-sticky-top,0px)+1rem)]"
+        >
+          <h2 id="api-issue" className="text-lg font-semibold">
+            {t("issueTitle")}
+          </h2>
+          <Field label={t("name")} hint={t("nameHint")}>
+            <Input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
+          </Field>
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-sm font-medium">{t("scopes")}</legend>
+            {SCOPES.map((scope) => (
+              <Checkbox
+                key={scope}
+                label={t(`scope.${scope.replace("b2b_", "").replace(".", "_")}`)}
+                description={scope}
+                checked={scopes.includes(scope)}
+                onCheckedChange={(on) => setScopes((list) => (on ? [...list, scope] : list.filter((s) => s !== scope)))}
+              />
+            ))}
+          </fieldset>
+          <div>
+            <Button loading={busy} disabled={!name.trim() || scopes.length === 0} onClick={() => void issue()}>
+              {t("issue")}
+            </Button>
+          </div>
+          {problem ? <Callout tone="danger" title={problem} /> : null}
+          {issued ? (
+            <Callout tone="warning" title={t("secretOnce")}>
+              <Field label={t("clientId")}>
+                <Input readOnly value={issued.clientId} onFocus={(event) => event.target.select()} />
+              </Field>
+              <Field label={t("clientSecret")} className="mt-2">
+                <Input readOnly value={issued.secret} onFocus={(event) => event.target.select()} />
+              </Field>
+              <Button size="sm" className="mt-2" iconStart="copy" onClick={() => void copy(issued.secret)}>
+                {t("copySecret")}
+              </Button>
+            </Callout>
+          ) : null}
+        </section>
+      </div>
 
       <Callout tone="info" title={t("webhooksTitle")}>
         {t("webhooksBody")}

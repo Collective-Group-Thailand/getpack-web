@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { PortalTable } from "@/features/customer/account/PortalTable";
 import { AgentFrame, AgentPager, pageOf } from "@/features/customer/agent/AgentPieces";
 import { getMyStatements, requireAgent } from "@/features/customer/agent/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -21,8 +22,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   await requireCustomer();
   await requireAgent();
   const page = pageOf((await searchParams).page);
-  const [t, format, list] = await Promise.all([
+  const [t, tt, format, list] = await Promise.all([
     getTranslations("agent.statements"),
+    getTranslations("agent.table"),
     getFormat(),
     getMyStatements(page),
   ]);
@@ -40,25 +42,31 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
           }
         />
       ) : (
-        <ul className="divide-border border-border bg-surface divide-y rounded-2xl border">
-          {list.data.map((s) => (
-            <li key={s.id}>
-              <Link
-                href={`/account/agent/statements/${s.id}`}
-                className="hover:bg-bg-subtle flex flex-wrap items-center justify-between gap-3 p-4"
-              >
-                <div>
-                  <p className="font-medium">{format.date(s.periodStart, { style: "month" })}</p>
-                  <p className="text-muted text-xs tabular-nums">{s.statementNo}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold tabular-nums">{format.thb(s.paidAmount ?? s.totalAmount)}</span>
-                  <StatusChip map={AGENT_STATEMENT_STATUS} value={s.status} />
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <PortalTable
+          caption={t("title")}
+          columns={[
+            { key: "period", label: tt("period"), className: "md:w-[34%]" },
+            { key: "number", label: tt("number"), className: "md:whitespace-nowrap" },
+            { key: "amount", label: tt("amount"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "status", label: tt("status"), className: "md:whitespace-nowrap" },
+          ]}
+          rows={list.data.map((s) => ({
+            id: s.id,
+            cells: {
+              period: (
+                <Link
+                  href={`/account/agent/statements/${s.id}`}
+                  className="text-fg font-semibold underline-offset-4 hover:underline"
+                >
+                  {format.date(s.periodStart, { style: "month" })}
+                </Link>
+              ),
+              number: <span className="tabular-nums">{s.statementNo}</span>,
+              amount: <span className="font-semibold">{format.thb(s.paidAmount ?? s.totalAmount)}</span>,
+              status: <StatusChip map={AGENT_STATEMENT_STATUS} value={s.status} />,
+            },
+          }))}
+        />
       )}
       <AgentPager page={page} total={list.meta.total} perPage={list.meta.perPage} path="/account/agent/statements" />
     </AgentFrame>

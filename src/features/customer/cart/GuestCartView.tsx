@@ -25,20 +25,26 @@ export function GuestCartView({ signInHref }: { signInHref: string }) {
 
   if (lines.length === 0) {
     return (
+      // Project A: a centred card — one primary step, signing in as the quiet secondary link.
       <EmptyState
-        className="mt-8"
+        className="mx-auto mt-8 max-w-xl py-14"
         icon="cart"
+        titleAs="h2"
         title={t("emptyTitle")}
         description={t("guest.emptyBody")}
         action={
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button asChild>
-              <Link href="/products">{t("browse")}</Link>
-            </Button>
-            <Button asChild variant="secondary">
-              <Link href={signInHref}>{t("guest.signInForSaved")}</Link>
-            </Button>
-          </div>
+          <Button asChild size="lg">
+            <Link href="/products">{t("browse")}</Link>
+          </Button>
+        }
+        secondary={
+          <Link
+            href={signInHref}
+            className="text-primary inline-flex items-center gap-1.5 font-medium underline-offset-4 hover:underline"
+          >
+            <Icon name="lock" size={14} aria-hidden="true" />
+            {t("guest.signInForSaved")}
+          </Link>
         }
       />
     );

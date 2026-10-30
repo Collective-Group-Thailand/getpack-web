@@ -24,6 +24,7 @@ import { readAccessToken } from "@/lib/auth/session";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 type Params = { category: string };
 /** A calculation id from the configurator, checked for its shape only — the API decides the rest. */
@@ -111,9 +112,29 @@ export default async function Page({
         : null
     : null;
 
+  // "How it works" in three numbered steps: the side panel's head beside the form, above the list of types.
+  const howSteps = (
+    <ol className="m-0 flex list-none flex-col gap-3 p-0 text-sm">
+      {(["step1", "step2", "step3"] as const).map((step, index) => (
+        <li key={step} className="flex items-start gap-3">
+          <span
+            aria-hidden="true"
+            className={cn(
+              "grid size-7 shrink-0 place-items-center rounded-lg text-[0.8125rem] font-semibold tabular-nums",
+              index === 0 ? "bg-primary text-primary-fg" : "bg-primary-subtle text-primary-subtle-fg",
+            )}
+          >
+            {index + 1}
+          </span>
+          <span className={index === 0 ? "pt-1 font-medium" : "text-muted pt-1"}>{t(`how.${step}`)}</span>
+        </li>
+      ))}
+    </ol>
+  );
+
   return (
     <QuoteTrayProvider signedIn={Boolean(readAccessToken(jar))} account={featureFlags.rfqProductRef}>
-      <div className="mx-auto max-w-3xl px-4 py-6 md:py-10">
+      <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
         <Breadcrumbs
           label={tCatalog("breadcrumbs.label")}
           items={[
@@ -125,19 +146,14 @@ export default async function Page({
             { label: t("breadcrumb") },
           ]}
         />
-        <h1 className="mt-4 text-2xl font-bold md:text-3xl">{t("heading", { name })}</h1>
-        <p className="text-muted mt-2">{t("intro")}</p>
-        <ol className="text-muted mt-4 grid gap-2 text-sm sm:grid-cols-3">
-          {(["step1", "step2", "step3"] as const).map((step, index) => (
-            <li key={step} className="bg-surface border-border flex gap-2 rounded-lg border p-3">
-              <span className="text-primary font-semibold tabular-nums">{index + 1}</span>
-              {t(`how.${step}`)}
-            </li>
-          ))}
-        </ol>
+        <h1 className="mt-3 text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+          {t("heading", { name })}
+        </h1>
+        <p className="text-muted mt-2 max-w-[60ch] text-pretty">{t("intro")}</p>
 
         {!type ? (
-          <section aria-labelledby="rfq-types" className="mt-8">
+          <section aria-labelledby="rfq-types" className="mt-8 max-w-3xl">
+            <div className="border-border bg-surface rounded-card mb-8 border p-5">{howSteps}</div>
             <h2 id="rfq-types" className="text-lg font-semibold">
               {t("chooseType")}
             </h2>
@@ -170,6 +186,7 @@ export default async function Page({
               <RfqForm
                 tray={trayItem}
                 productRef={productRef}
+                aside={howSteps}
                 form={withProductChoices(form!, product, tCatalog)}
                 signedIn={Boolean(readAccessToken(jar))}
                 fromProduct={

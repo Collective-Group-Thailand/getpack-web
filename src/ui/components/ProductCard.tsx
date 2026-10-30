@@ -1,6 +1,7 @@
 import { Icon, type IconName } from "../icons";
 import { cn } from "../lib/cn";
-import { kraftOf, ProductIllustration, type ProductFamily } from "./ProductIllustration";
+import { CardImage } from "./CardImage";
+import { kraftOf, LINE_PLATE, ProductIllustration, type ProductFamily } from "./ProductIllustration";
 
 export interface ProductCardImage {
   src: string;
@@ -32,11 +33,12 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
    */
   actions?: React.ReactNode;
   /**
-   * What stands in for a missing photo: the product family's line drawing (or, for a non-product
-   * card, an icon) on a kraft, paper or brand-tint plate, so a grid without photography still
-   * reads as a set rather than as broken images — never a generic box icon (UX audit baseline).
+   * What stands in for a missing photo — or for one that fails to load: the product family's line
+   * drawing (or, for a non-product card, an icon). By default a thin neutral line on a quiet paper
+   * plate (Project A: never an empty grey tile, never a tinted block); `kraft`, `paper` and `primary`
+   * keep the older plates for callers that ask for them — never a generic box icon (UX audit baseline).
    */
-  fallback?: { family?: ProductFamily; icon?: IconName; tone?: "kraft" | "paper" | "primary" };
+  fallback?: { family?: ProductFamily; icon?: IconName; tone?: "line" | "kraft" | "paper" | "primary" };
   /** Image plate proportions: 4:3 for made-to-order types, square for stock items. */
   aspect?: "landscape" | "square";
   /** Badges over the image's top-left corner ("ราคาทันที", "ขอใบเสนอราคา"). */
@@ -124,6 +126,27 @@ export function ProductCard({
   className,
   ...props
 }: ProductCardProps) {
+  const tone = fallback?.tone ?? "line";
+  const plate =
+    tone === "primary"
+      ? "bg-primary-subtle text-primary-subtle-fg"
+      : tone === "paper"
+        ? "bg-bg-subtle text-muted"
+        : tone === "kraft"
+          ? `${kraftOf(fallback?.family ?? "tuck")} text-fg`
+          : LINE_PLATE;
+  const drawing = (
+    <div className={cn("absolute inset-0 flex items-center justify-center p-6", plate)} aria-hidden="true">
+      {fallback?.icon && !fallback.family ? (
+        <Icon name={fallback.icon} size={56} />
+      ) : (
+        <ProductIllustration
+          family={fallback?.family ?? "tuck"}
+          className="duration-base ease-standard max-w-36 transition-transform group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        />
+      )}
+    </div>
+  );
   return (
     <Component
       className={cn(
@@ -138,18 +161,12 @@ export function ProductCard({
           // squeeze its picture — every plate in a row stays the same size.
           "@container relative shrink-0 overflow-hidden",
           aspect === "square" ? "aspect-square" : "aspect-[4/3]",
-          image
-            ? "bg-bg-subtle"
-            : fallback?.tone === "primary"
-              ? "bg-primary-subtle text-primary-subtle-fg"
-              : fallback?.tone === "paper"
-                ? "bg-bg-subtle text-muted"
-                : `${kraftOf(fallback?.family ?? "tuck")} text-fg`,
+          image ? "bg-surface-subtle" : plate,
         )}
       >
         {image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- see the component comment
-          <img
+          <CardImage
+            fallback={drawing}
             src={image.src}
             alt={image.alt}
             width={800}
@@ -160,27 +177,18 @@ export function ProductCard({
             className={cn(
               "duration-base ease-standard h-full w-full transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
               image.fit === "contain"
-                ? cn("object-contain", roomy ? "bg-bg-subtle p-[12%]" : "bg-surface p-4")
+                ? cn("object-contain", roomy ? "bg-surface-subtle p-[12%]" : "bg-surface p-4")
                 : "object-cover",
             )}
           />
         ) : (
-          <div className="flex h-full items-center justify-center p-6" aria-hidden="true">
-            {fallback?.icon && !fallback.family ? (
-              <Icon name={fallback.icon} size={56} />
-            ) : (
-              <ProductIllustration
-                family={fallback?.family ?? "tuck"}
-                className="duration-base ease-standard max-w-36 transition-transform group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-              />
-            )}
-          </div>
+          drawing
         )}
         {hoverImage && image ? (
           <div
             aria-hidden="true"
             data-hover-image=""
-            className="bg-bg-subtle duration-base ease-standard pointer-events-none absolute inset-0 opacity-0 transition-opacity motion-reduce:transition-none [@media(hover:hover)]:group-hover:opacity-100"
+            className="bg-surface-subtle duration-base ease-standard pointer-events-none absolute inset-0 opacity-0 transition-opacity motion-reduce:transition-none [@media(hover:hover)]:group-hover:opacity-100"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- see the component comment */}
             <img
@@ -244,7 +252,10 @@ export function ProductCard({
         {topLine ? <p className="text-muted truncate text-[0.6875rem] tracking-wide">{topLine}</p> : null}
         <Heading
           className={cn(
-            "line-clamp-2 text-sm leading-snug font-semibold md:text-[0.9375rem] [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']",
+            // Up to three lines in a phone's two-column grid (two from `sm`). Thai has no spaces between words and the
+            // browser's dictionary splits unfamiliar ones ("ลิ|ปบาล์ม"): titles break at their spaces (`break-keep`),
+            // and only a run too long for the card breaks inside a word (`overflow-wrap: break-word`).
+            "line-clamp-3 text-sm leading-snug font-semibold [overflow-wrap:break-word] break-keep sm:line-clamp-2 md:text-[0.9375rem] [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']",
             roomy && "text-[0.90625rem] leading-[1.4] md:text-base",
             reserveTitleLines && "min-h-[2lh]",
           )}
@@ -266,14 +277,24 @@ export function ProductCard({
           >
             {footer}
           </div>
-        ) : price || meta || actions || action ? (
+        ) : action ? (
+          // With one call to action (the products hub): the price and the quiet line follow the title's
+          // reserved lines, so they sit on one row across the grid, and the button is pinned to the foot.
+          <>
+            {price ? <div className="pt-2 text-sm tabular-nums">{price}</div> : null}
+            {meta ? <div className="text-muted line-clamp-2 pt-1 text-xs">{meta}</div> : null}
+            {actions ? (
+              <div className="relative z-10 -ms-1.5 mt-1 flex flex-wrap items-center gap-1">{actions}</div>
+            ) : null}
+            <div className="relative z-10 mt-auto flex flex-col pt-3 *:w-full">{action}</div>
+          </>
+        ) : price || meta || actions ? (
           <div className="mt-auto flex flex-col gap-0.5 pt-2">
             {price ? <div className="text-sm tabular-nums">{price}</div> : null}
             {meta ? <div className="text-muted line-clamp-2 text-xs">{meta}</div> : null}
             {actions ? (
               <div className="relative z-10 -ms-1.5 mt-1 flex flex-wrap items-center gap-1">{actions}</div>
             ) : null}
-            {action ? <div className="relative z-10 mt-3 flex flex-col *:w-full">{action}</div> : null}
           </div>
         ) : null}
       </div>

@@ -87,12 +87,13 @@ export function RoiCalculator() {
           </div>
         ))}
       </div>
-      <div aria-live="polite" className="bg-primary text-primary-fg rounded-panel flex flex-col gap-2.5 p-5.5">
-        <span className="text-sm opacity-85">{t("result")}</span>
-        <b className="text-[clamp(1.875rem,4vw,2.75rem)] leading-none font-bold tracking-[-0.02em] tabular-nums">
+      {/* Project A: the result on the pale brand tint, the figure in brand green — not a solid green panel. */}
+      <div aria-live="polite" className="bg-primary-subtle text-fg rounded-panel flex flex-col gap-2.5 p-5.5">
+        <span className="text-muted text-sm">{t("result")}</span>
+        <b className="text-primary text-[clamp(1.875rem,4vw,2.75rem)] leading-none font-bold tracking-[-0.02em] tabular-nums">
           {t("resultValue", { hours: format.number(result.hours) })}
         </b>
-        <dl className="border-primary-fg/25 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1.5 border-t pt-2.5 text-sm tabular-nums opacity-95">
+        <dl className="border-border grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1.5 border-t pt-2.5 text-sm tabular-nums">
           <dt>{t("rowQuotes")}</dt>
           <dd className="text-right font-semibold">{t("rowHours", { n: format.number(result.quoteHours) })}</dd>
           <dt>{t("rowApprovals")}</dt>
@@ -102,8 +103,8 @@ export function RoiCalculator() {
             {t("perYear", { amount: formatTHB(String(result.baht), format.locale, { decimals: 0 }) })}
           </dd>
         </dl>
-        <small className="text-[12.5px] opacity-80">{t("formula")}</small>
-        <small className="text-[12.5px] opacity-80">{t("assumption")}</small>
+        <small className="text-muted text-[12.5px]">{t("formula")}</small>
+        <small className="text-muted text-[12.5px]">{t("assumption")}</small>
       </div>
     </div>
   );

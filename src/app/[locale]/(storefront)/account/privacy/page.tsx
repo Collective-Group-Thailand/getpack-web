@@ -3,8 +3,10 @@ import { getTranslations } from "next-intl/server";
 
 import { getPreferences, getPrivacyRequests } from "@/features/customer/account/api.server";
 import { PrivacySettings } from "@/features/customer/account/PrivacySettings";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { Link } from "@/i18n/navigation";
+import { Button } from "@/ui/components/Button";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.privacy");
@@ -21,13 +23,16 @@ export default async function Page() {
   ]);
   return (
     <div>
-      <h1 className="text-title leading-tight">{t("title")}</h1>
-      <p className="text-muted mt-1 mb-6">
-        {t("intro")}{" "}
-        <Link href="/legal/privacy" className="text-primary underline underline-offset-4">
-          {t("notice")}
-        </Link>
-      </p>
+      <AccountHeader
+        className="mb-6"
+        title={t("title")}
+        lede={t("intro")}
+        actions={
+          <Button asChild variant="secondary" iconStart="document">
+            <Link href="/legal/privacy">{t("notice")}</Link>
+          </Button>
+        }
+      />
       <PrivacySettings consents={consents} requests={requests} />
     </div>
   );

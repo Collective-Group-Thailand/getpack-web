@@ -31,6 +31,7 @@ export function NativeSelect<T extends string = string>({
   return (
     <span className="relative block">
       <select
+        data-size="md"
         className={cn(controlVariants(), "appearance-none pe-9", className)}
         {...fieldProps}
         {...props}

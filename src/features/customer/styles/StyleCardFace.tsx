@@ -90,7 +90,9 @@ export function StyleCardFace({
   className?: string;
 }) {
   const thumb = storeImageSrc(style.thumbnailUrl, "thumb");
-  const instant = style.pricePath === "instant";
+  // "ราคาทันที" only with a price to show (owner decision, Project A review): an instant style the API sent
+  // without a starting price shows no badge and keeps the quotation call to action.
+  const instant = style.pricePath === "instant" && Boolean(words.price);
   return (
     <ProductCard
       as="article"

@@ -129,7 +129,7 @@ export default async function Page({
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
 
   return (
-    <div className="max-w-nav mx-auto px-5 py-6 md:px-8 md:py-10">
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <Breadcrumbs
         label={tCatalog("breadcrumbs.label")}
         items={[
@@ -139,8 +139,10 @@ export default async function Page({
           { label: t("breadcrumb") },
         ]}
       />
-      <h1 className="text-title mt-4 leading-tight">{t("heading", { name })}</h1>
-      <p className="text-muted mt-2 max-w-2xl">{t("intro")}</p>
+      <h1 className="mt-3 text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+        {t("heading", { name })}
+      </h1>
+      <p className="text-muted mt-2 max-w-2xl text-pretty">{t("intro")}</p>
       {share && !shared ? (
         <Callout tone="warning" className="mt-4 max-w-2xl">
           {t("sharedExpired")}

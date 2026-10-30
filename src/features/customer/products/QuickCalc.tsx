@@ -18,6 +18,7 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { trackProducts } from "@/lib/analytics/products";
 import { Button } from "@/ui/components/Button";
+import { LINE_PLATE, ProductIllustration, productFamilyOf } from "@/ui/components/ProductIllustration";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -81,14 +82,15 @@ const plainPercent = (value: string | null | undefined) =>
  * presets, or any quantity within its minimum and maximum) and the outside print, priced the
  * configurator's way (`./calc.ts`). The default spec at a preset reads the cached tier table; anything
  * else is one debounced `calculate` — the same request the configurator sends. The result panel shows
- * the unit price incl. VAT, ก่อน VAT · VAT · รวม as the API sent them, a bar per preset (heights from the
- * API's own `savingPercent`), lead time, MOQ, the guarantee and "ปรับขนาดและสั่งซื้อ" into the configurator
+ * the unit price incl. VAT, ก่อน VAT · VAT · รวม as the API sent them, a tile per preset quantity with its price per
+ * piece (and the API's own `savingPercent`), lead time, MOQ, the guarantee and "ปรับขนาดและสั่งซื้อ" into the configurator
  * with the same choices. Nothing is estimated: a quantity without an instant price says so.
  */
 export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]; guaranteeHref: string }) {
   const t = useTranslations("products.calc");
   const tCatalog = useTranslations("catalog");
   const tConfigurator = useTranslations("configurator.choices");
+  const tQuantity = useTranslations("configurator.quantity");
   const locale = useLocale();
   const format = useFormat();
   const id = useId();
@@ -165,18 +167,26 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
         ? t("printSpots")
         : (inkName(inkId) ?? tConfigurator("print.none"));
 
-  const chip = (pressed: boolean) =>
-    cn(
-      "focus-visible:ring-focus-ring rounded-control inline-flex min-h-9.5 items-center border px-3.5 text-[0.84375rem] font-medium tabular-nums outline-none focus-visible:ring-2",
-      pressed ? "bg-fg text-bg border-fg" : "border-border-strong bg-surface hover:border-fg",
-    );
+  // The quantities offered as tiles: the product's presets within its limits, each with its price per piece from
+  // the same steps the result reads (the tier table, or the live calculation) — never computed here.
+  const presets = configurator
+    ? [...new Set(configurator.quantity.presets)]
+        .sort((x, y) => x - y)
+        .filter((preset) => quantityProblem(configurator, preset) === null)
+    : [];
+  const stepAt = (quantity: number) => steps?.find((candidate) => candidate.quantity === quantity) ?? null;
+  const customOn = custom !== "";
+  const legend = "mb-2.5 text-[0.8125rem] font-semibold";
 
   return (
-    <div className="border-border bg-surface rounded-panel grid grid-cols-1 overflow-hidden border min-[65rem]:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-      <div className="flex flex-col gap-5 p-5 md:p-7">
-        <fieldset>
-          <legend className="mb-2 text-[0.8125rem] font-semibold">{t("product")}</legend>
-          <div className="grid grid-cols-1 gap-2 min-[26rem]:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]">
+    // Two cards side by side from 65rem (stacked below): the options, and the result at its own height, sticky
+    // under the header while the options scroll — never one card split into halves with an empty tinted half.
+    <div className="grid grid-cols-1 items-start gap-4 min-[65rem]:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] min-[65rem]:gap-6">
+      <div className="border-border bg-surface rounded-panel flex min-w-0 flex-col gap-6 border p-5 md:p-7">
+        {/* 1. The product: compact picture chips — one scrolling row on a phone, wrapping from `sm`. */}
+        <fieldset className="min-w-0">
+          <legend className={legend}>{t("product")}</legend>
+          <div className="-mx-5 flex [scrollbar-width:none] gap-2 overflow-x-auto overscroll-x-contain px-5 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
             {products.map((candidate) => {
               const pressed = candidate.slug === slug;
               const src = storeImageSrc(candidate.imageUrl, "thumb");
@@ -192,86 +202,144 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
                     setPrint(null);
                   }}
                   className={cn(
-                    "focus-visible:ring-focus-ring flex min-h-14.5 items-center gap-2.5 rounded-xl border p-2 text-start text-[0.8125rem] leading-snug outline-none focus-visible:ring-2",
+                    "focus-visible:ring-focus-ring rounded-control flex min-h-12 w-[13.5rem] shrink-0 items-center gap-2.5 border py-1.5 ps-1.5 pe-3 text-start text-[0.8125rem] leading-snug font-medium outline-none focus-visible:ring-2 sm:w-auto",
                     pressed
-                      ? "border-primary bg-primary-subtle ring-primary ring-1"
+                      ? "border-primary bg-primary-subtle text-primary-subtle-fg ring-primary ring-1"
                       : "border-border-strong bg-surface hover:border-fg",
                   )}
                 >
-                  <span className="bg-bg-subtle grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg">
+                  <span
+                    className={cn(
+                      "grid size-8 shrink-0 place-items-center overflow-hidden rounded-md",
+                      src ? "bg-surface-subtle" : LINE_PLATE,
+                    )}
+                  >
                     {src ? (
                       // eslint-disable-next-line @next/next/no-img-element -- catalogue images come through the BFF (ProductCard)
-                      <img src={src} alt="" width={40} height={40} loading="lazy" className="size-full object-cover" />
+                      <img src={src} alt="" width={32} height={32} loading="lazy" className="size-full object-cover" />
                     ) : (
-                      <Icon name="box" size={20} className="text-muted" aria-hidden="true" />
+                      <ProductIllustration family={productFamilyOf(candidate.slug)} className="max-w-6" />
                     )}
                   </span>
-                  <span className="line-clamp-3">{pick(locale, candidate.nameTh, candidate.nameEn)}</span>
+                  <span className="min-w-0 [overflow-wrap:break-word] break-keep">
+                    <NameParts name={pick(locale, candidate.nameTh, candidate.nameEn)} />
+                  </span>
                 </button>
               );
             })}
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend className="mb-2 text-[0.8125rem] font-semibold">{t("quantity", { unit })}</legend>
+        {/* 2. The quantity, chosen in one place: a tile per tier with its price per piece (the API's saving under
+            it when the API sent one), then a tile for any other quantity. */}
+        <fieldset className="min-w-0">
+          <legend className={legend}>{t("quantity", { unit })}</legend>
           {configurator ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              {[...new Set(configurator.quantity.presets)]
-                .sort((a, b) => a - b)
-                .filter((preset) => quantityProblem(configurator, preset) === null)
-                .map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    aria-pressed={qty === preset && custom === ""}
-                    onClick={() => {
-                      setQuantity(preset);
-                      setCustom("");
-                    }}
-                    className={chip(qty === preset && custom === "")}
-                  >
-                    {format.number(preset)}
-                  </button>
-                ))}
-              <label className="sr-only" htmlFor={`${id}-qty`}>
-                {t("customQuantity")}
-              </label>
-              <input
-                id={`${id}-qty`}
-                type="number"
-                inputMode="numeric"
-                min={configurator.quantity.min ?? 1}
-                max={configurator.quantity.max ?? undefined}
-                step={1}
-                placeholder={t("customQuantity")}
-                value={custom}
-                aria-invalid={custom !== "" && problem !== null}
-                aria-describedby={problem ? `${id}-qty-problem` : undefined}
-                onChange={(event) => {
-                  setCustom(event.target.value);
-                  const next = Number(event.target.value);
-                  if (event.target.value !== "" && Number.isInteger(next) && next > 0) setQuantity(next);
-                  else if (event.target.value === "") setQuantity(null);
-                }}
-                className="border-border-strong bg-surface rounded-control focus-visible:border-primary focus-visible:ring-focus-ring h-9.5 w-32 border px-2.5 text-[0.84375rem] font-semibold tabular-nums outline-none focus-visible:ring-2"
-              />
-              {problem && custom !== "" ? (
-                <p id={`${id}-qty-problem`} className="text-danger-subtle-fg basis-full text-[0.8125rem]">
+            <>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+                {presets.map((preset) => {
+                  const tier = stepAt(preset);
+                  const pressed = qty === preset && !customOn;
+                  const saving = tier?.instant && tier.unitPrice ? (tier.savingPercent ?? null) : null;
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      aria-pressed={pressed}
+                      onClick={() => {
+                        setQuantity(preset);
+                        setCustom("");
+                      }}
+                      className={cn(
+                        "focus-visible:ring-focus-ring rounded-control flex min-h-16 flex-col items-start justify-center gap-0.5 border px-3 py-2 text-start outline-none focus-visible:ring-2",
+                        pressed
+                          ? "border-primary bg-primary-subtle ring-primary ring-1 ring-inset"
+                          : "border-border-strong bg-surface hover:border-fg",
+                      )}
+                    >
+                      <span className="text-sm font-semibold tabular-nums">
+                        {format.number(preset)} <span className="text-muted text-xs font-normal">{unit}</span>
+                      </span>
+                      <span
+                        className={cn(
+                          "text-[0.8125rem] tabular-nums",
+                          pressed ? "text-primary font-semibold" : "text-muted",
+                          pending && "opacity-60",
+                        )}
+                      >
+                        {tier?.instant && tier.unitPrice ? (
+                          `${format.thb(tier.unitPrice)}${t("perUnit", { unit })}`
+                        ) : tier ? (
+                          t("quoteCta")
+                        ) : steps ? null : (
+                          <span className="bg-bg-subtle inline-block h-3 w-14 animate-pulse rounded-sm align-middle" />
+                        )}
+                      </span>
+                      {saving ? (
+                        <span className="text-primary text-[0.71875rem] leading-tight font-semibold">
+                          {tQuantity("saving", { percent: format.number(saving) })}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+                {/* Any other quantity: a tile like the others — its label, an inline field with the unit after it,
+                    and the minimum under it when the product has one. */}
+                <label
+                  htmlFor={`${id}-qty`}
+                  className={cn(
+                    "rounded-control focus-within:ring-focus-ring flex min-h-16 cursor-text flex-col justify-center gap-0.5 border px-3 py-2 focus-within:ring-2",
+                    customOn
+                      ? "border-primary bg-primary-subtle ring-primary ring-1 ring-inset"
+                      : "border-border-strong bg-surface hover:border-fg",
+                  )}
+                >
+                  <span className="text-muted text-xs leading-tight">{t("customQuantity")}</span>
+                  <span className="flex items-baseline gap-1.5">
+                    <input
+                      id={`${id}-qty`}
+                      type="number"
+                      inputMode="numeric"
+                      min={configurator.quantity.min ?? 1}
+                      max={configurator.quantity.max ?? undefined}
+                      step={1}
+                      value={custom}
+                      aria-invalid={customOn && problem !== null}
+                      aria-describedby={problem ? `${id}-qty-problem` : undefined}
+                      onChange={(event) => {
+                        setCustom(event.target.value);
+                        const next = Number(event.target.value);
+                        if (event.target.value !== "" && Number.isInteger(next) && next > 0) setQuantity(next);
+                        else if (event.target.value === "") setQuantity(null);
+                      }}
+                      className="border-border-strong placeholder:text-muted w-full min-w-0 [appearance:textfield] border-0 border-b bg-transparent p-0 pb-0.5 text-sm font-semibold tabular-nums outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <span className="text-muted shrink-0 text-xs">{unit}</span>
+                  </span>
+                  {configurator.quantity.min ? (
+                    <span className="text-muted text-[0.71875rem] leading-tight">
+                      {t("moq", { quantity: configurator.quantity.min, unit })}
+                    </span>
+                  ) : null}
+                </label>
+              </div>
+              {problem && customOn ? (
+                <p id={`${id}-qty-problem`} className="text-danger-subtle-fg mt-2 text-[0.8125rem]">
                   {problem === "max"
                     ? t("aboveMaximum", { max: configurator.quantity.max ?? 0, unit })
                     : t("belowMinimum", { min: configurator.quantity.min ?? 1, unit })}
                 </p>
               ) : null}
-            </div>
+            </>
           ) : (
-            <Skeleton className="h-9.5 w-full max-w-md" />
+            <Skeleton className="h-16 w-full" />
           )}
         </fieldset>
 
+        {/* 3. The options: the outside print. */}
         {options.length > 0 ? (
-          <fieldset>
-            <legend className="mb-2 text-[0.8125rem] font-semibold">{t("print")}</legend>
+          <fieldset className="min-w-0">
+            <legend className={legend}>{t("print")}</legend>
             <div className="flex flex-wrap gap-1.5">
               {options.map((option) => {
                 const pressed = option.choice === chosenPrint;
@@ -282,7 +350,7 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
                     aria-pressed={pressed}
                     onClick={() => setPrint(option.choice)}
                     className={cn(
-                      "focus-visible:ring-focus-ring rounded-control min-h-8 border px-3.5 text-[0.84375rem] outline-none focus-visible:ring-2",
+                      "focus-visible:ring-focus-ring rounded-control min-h-9.5 border px-3.5 text-[0.84375rem] font-medium outline-none focus-visible:ring-2",
                       pressed
                         ? "bg-primary border-primary text-primary-fg"
                         : "border-border-strong bg-surface text-muted hover:text-fg",
@@ -299,14 +367,19 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
         <p className="text-muted m-0 text-[0.8125rem]">{spec ? t("reference", { spec }) : t("referenceGeneric")}</p>
       </div>
 
-      <div className="bg-fg text-bg flex flex-col gap-4 p-5 md:p-7" aria-live="polite" aria-busy={pending}>
+      {/* 4. The result on the pale brand tint (never a dark panel): the price per piece, the total and its VAT, the
+          facts, the one primary action, the note. Below the options on a phone, its button full width. */}
+      <div
+        className="bg-primary-subtle text-fg border-border rounded-panel flex min-w-0 flex-col gap-5 border p-5 md:p-7 min-[65rem]:sticky min-[65rem]:top-[calc(var(--site-sticky-top)+1.25rem)]"
+        aria-live="polite"
+        aria-busy={pending}
+      >
         {configuratorQuery.isError || live.isError ? (
           <div className="flex flex-col items-start gap-3">
             <p>{t("failed")}</p>
             <Button
               type="button"
               size="sm"
-              className="bg-bg text-fg hover:bg-bg/90"
               onClick={() => {
                 void configuratorQuery.refetch();
                 void live.refetch();
@@ -317,75 +390,52 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
           </div>
         ) : priced && qty !== null ? (
           <>
-            <span className="text-[0.78125rem] opacity-75">
-              {t("summary", { quantity: qty, unit, vat: tCatalog("price.vatIncluded") })}
-            </span>
-            <p className={cn("m-0 flex items-baseline gap-1.5 tabular-nums", pending && "opacity-60")}>
-              <span className="text-[2.5rem] leading-none font-semibold tracking-tight md:text-[3.25rem]">
-                {format.thb(priced.unitPrice)}
+            <div>
+              <span className="text-muted text-[0.8125rem]">
+                {t("summary", { quantity: qty, unit, vat: tCatalog("price.vatIncluded") })}
               </span>
-              <small className="text-base opacity-70">{t("perUnit", { unit })}</small>
-            </p>
-            {steps && steps.length > 1 ? (
-              <ol aria-label={t("barsLabel")} className="m-0 flex h-11 list-none items-end gap-1 p-0">
-                {steps.map((bar) => {
-                  const instant = bar.instant && bar.unitPrice !== null;
-                  // The bar's height is the API's own saving against the smallest quantity (C4-API-2), not maths on prices.
-                  const height = instant ? Math.max(12, 100 - (bar.savingPercent ?? 0)) : 12;
-                  return (
-                    <li
-                      key={bar.quantity}
-                      className={cn(
-                        "flex-1 rounded-t-sm",
-                        bar.quantity === qty ? "bg-primary" : instant ? "bg-bg/25" : "bg-bg/10",
-                      )}
-                      style={{ height: `${height}%` }}
-                    >
-                      <span className="sr-only">
-                        {instant
-                          ? t("barLabel", { quantity: bar.quantity, unit, price: format.thb(bar.unitPrice) })
-                          : t("barNoPrice", { quantity: bar.quantity, unit })}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ol>
-            ) : null}
-            <dl className="border-bg/20 m-0 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 border-t pt-4 text-sm tabular-nums">
+              <p className={cn("m-0 mt-1 flex items-baseline gap-1.5 tabular-nums", pending && "opacity-60")}>
+                <span className="text-primary text-[2.5rem] leading-none font-semibold tracking-tight md:text-[3rem]">
+                  {format.thb(priced.unitPrice)}
+                </span>
+                <small className="text-muted text-base">{t("perUnit", { unit })}</small>
+              </p>
+            </div>
+            <dl className="border-border m-0 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 border-t pt-4 text-sm tabular-nums">
               {priced.netAmount ? (
                 <>
-                  <dt className="opacity-75">{t("netAmount")}</dt>
+                  <dt className="text-muted">{t("netAmount")}</dt>
                   <dd className="m-0 text-end font-medium">{format.thb(priced.netAmount)}</dd>
                 </>
               ) : null}
-              <dt className="opacity-75">{vatRate ? t("vatAmount", { rate: `${vatRate}%` }) : t("vatAmountNoRate")}</dt>
+              <dt className="text-muted">{vatRate ? t("vatAmount", { rate: `${vatRate}%` }) : t("vatAmountNoRate")}</dt>
               <dd className="m-0 text-end font-medium">{format.thb(priced.vatAmount)}</dd>
-              <dt className="opacity-75">{t("grossAmount")}</dt>
+              <dt className="font-semibold">{t("grossAmount")}</dt>
               <dd className="m-0 text-end text-lg font-semibold">{format.thb(priced.grossAmount)}</dd>
               {tooling ? (
                 <>
-                  <dt className="text-[0.8125rem] opacity-75">{t("tooling")}</dt>
-                  <dd className="m-0 text-end text-[0.8125rem] opacity-90">{format.thb(tooling)}</dd>
+                  <dt className="text-muted text-[0.8125rem]">{t("tooling")}</dt>
+                  <dd className="m-0 text-end text-[0.8125rem]">{format.thb(tooling)}</dd>
                 </>
               ) : null}
             </dl>
-            <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1.5 p-0 text-[0.8125rem] opacity-85">
+            <ul className="text-muted m-0 flex list-none flex-wrap gap-x-4 gap-y-1.5 p-0 text-[0.8125rem]">
               {leadDays !== null ? (
                 <li className="inline-flex items-center gap-1.5">
-                  <Icon name="clock" size={16} aria-hidden="true" />
+                  <Icon name="clock" size={16} aria-hidden="true" className="text-primary" />
                   {t("leadTime", { days: leadDays })}
                 </li>
               ) : null}
               {configurator?.quantity.min ? (
                 <li className="inline-flex items-center gap-1.5">
-                  <Icon name="layers" size={16} aria-hidden="true" />
+                  <Icon name="layers" size={16} aria-hidden="true" className="text-primary" />
                   {t("moq", { quantity: configurator.quantity.min, unit })}
                 </li>
               ) : null}
               <li>
                 <Link
                   href={guaranteeHref}
-                  className="focus-visible:ring-focus-ring inline-flex items-center gap-1.5 rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-2"
+                  className="text-primary focus-visible:ring-focus-ring inline-flex items-center gap-1.5 rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-2"
                 >
                   <Icon name="shield" size={16} aria-hidden="true" />
                   {t("warranty")}
@@ -396,7 +446,8 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
               <Button
                 asChild
                 size="lg"
-                className="bg-bg text-fg hover:bg-bg/90 mt-auto"
+                block
+                iconEnd="arrow-right"
                 onClick={() =>
                   trackProducts("products_calc_cta", { product: slug, qty, print: chosenPrint ?? "default" })
                 }
@@ -404,10 +455,10 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
                 <Link href={ctaHref}>{t("cta")}</Link>
               </Button>
             ) : null}
-            <p className="m-0 text-xs opacity-65">
+            <p className="text-muted m-0 text-xs leading-relaxed">
               {t("shippingNote")} ·{" "}
               {shortage && overage ? t("toleranceRange", { shortage, overage }) : t("toleranceNote")}{" "}
-              <Link href={guaranteeHref} className="underline underline-offset-2">
+              <Link href={guaranteeHref} className="text-primary underline underline-offset-2">
                 {t("toleranceLink")}
               </Link>
             </p>
@@ -416,21 +467,38 @@ export function QuickCalc({ products, guaranteeHref }: { products: CalcProduct[]
           <div className="flex flex-col items-start gap-3">
             <p>{t("noPrice")}</p>
             {ctaHref ? (
-              <Button asChild size="sm" className="bg-bg text-fg hover:bg-bg/90">
+              <Button asChild size="lg" block>
                 <Link href={ctaHref}>{t("quoteCta")}</Link>
               </Button>
             ) : null}
           </div>
         ) : (
           <div className="flex flex-col gap-3" aria-label={t("pending")}>
-            <Skeleton className="bg-bg/15 h-4 w-48" />
-            <Skeleton className="bg-bg/15 h-12 w-40" />
-            <Skeleton className="bg-bg/15 h-11 w-full" />
-            <Skeleton className="bg-bg/15 h-24 w-full" />
+            <Skeleton className="bg-surface h-4 w-48" />
+            <Skeleton className="bg-surface h-12 w-40" />
+            <Skeleton className="bg-surface h-24 w-full" />
+            <Skeleton className="bg-surface h-13 w-full" />
             <span className="sr-only">{product ? pick(locale, product.nameTh, product.nameEn) : null}</span>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+/** A product's name with any "(…)" kept whole, so a line never breaks inside the parenthesis. */
+function NameParts({ name }: { name: string }) {
+  return (
+    <>
+      {name.split(/(\([^)]*\))/).map((part, index) =>
+        part.startsWith("(") ? (
+          <span key={index} className="whitespace-nowrap">
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </>
   );
 }

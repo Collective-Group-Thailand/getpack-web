@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { RFQ_BASKET_STATUS } from "@/domain/status";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getBasket } from "@/features/customer/rfq/basket/api.server";
 import { BasketQuotes } from "@/features/customer/rfq/basket/BasketQuotes";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { Link, redirect } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { Callout } from "@/ui/components/Callout";
 
@@ -35,21 +36,18 @@ export default async function Page({
   ]);
   if (!basket) notFound();
   if (basket.status === "draft") return redirect({ href: "/rfq/basket", locale });
+  const meta = [
+    basket.submittedAt ? t("sentAt", { at: format.dateTime(basket.submittedAt) }) : null,
+    basket.deliveryPostcode ? t("deliverTo", { postcode: basket.deliveryPostcode }) : null,
+  ].filter(Boolean);
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/account/rfqs" className="text-primary text-sm underline-offset-4 hover:underline">
-        {t("back")}
-      </Link>
-      <header className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-title leading-tight">{t("sentTitle", { code: basket.basketCode ?? "" })}</h1>
-          <StatusChip map={RFQ_BASKET_STATUS} value={basket.status} size="md" />
-        </div>
-        <p className="text-muted text-sm">
-          {basket.submittedAt ? t("sentAt", { at: format.dateTime(basket.submittedAt) }) : null}
-          {basket.deliveryPostcode ? ` · ${t("deliverTo", { postcode: basket.deliveryPostcode })}` : ""}
-        </p>
-      </header>
+      <AccountHeader
+        back={{ href: "/account/rfqs", label: t("back") }}
+        title={t("sentTitle", { code: basket.basketCode ?? "" })}
+        status={<StatusChip map={RFQ_BASKET_STATUS} value={basket.status} size="md" />}
+        lede={meta.length > 0 ? meta.join(" · ") : undefined}
+      />
       {submitted ? <Callout tone="success" title={t("submitted", { count: basket.items.length })} /> : null}
       <BasketQuotes basket={basket} />
     </div>

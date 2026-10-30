@@ -99,11 +99,12 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
     }
   }
 
+  // Project A: the amount to pay on the pale brand tint — the figure in green, the reference and the status beside it.
   const header = (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="bg-primary-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl px-5 py-4">
       <div>
         <p className="text-muted text-sm">{t("reference", { code: data.referenceCode })}</p>
-        <p className="serif text-4xl tabular-nums">{format.thb(data.cashAmount)}</p>
+        <p className="serif text-primary text-4xl tabular-nums">{format.thb(data.cashAmount)}</p>
         {data.whtAmount !== "0.00" ? (
           <p className="text-muted text-xs">
             {t("withheld", { total: format.thb(data.amount), wht: format.thb(data.whtAmount) })}
@@ -117,10 +118,23 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
   if (data.status === "succeeded") {
     return (
       <div className="flex flex-col gap-6">
-        {header}
-        <Callout tone="success" live title={t("paidTitle")}>
-          {t("paidBody", { date: format.dateTime(data.paidAt) })}
-        </Callout>
+        {/* Paid: one clear status card — the tick, the title, when — then what happens next and the way on. */}
+        <section
+          role="status"
+          aria-live="polite"
+          className="border-border bg-surface rounded-panel flex flex-col items-center gap-3 border px-6 py-8 text-center"
+        >
+          <span
+            aria-hidden="true"
+            className="bg-success-subtle text-success-subtle-fg grid size-14 place-items-center rounded-full"
+          >
+            <Icon name="check" size={28} />
+          </span>
+          <h2 className="text-xl font-semibold">{t("paidTitle")}</h2>
+          <p className="text-muted m-0 text-sm">{t("paidBody", { date: format.dateTime(data.paidAt) })}</p>
+          <p className="serif text-primary m-0 text-3xl tabular-nums">{format.thb(data.cashAmount)}</p>
+          <p className="text-muted m-0 text-xs">{t("reference", { code: data.referenceCode })}</p>
+        </section>
         {data.groupId ? (
           <section aria-labelledby="paid-next" className="flex flex-col gap-3">
             <h2 id="paid-next" className="font-semibold">
@@ -129,11 +143,11 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
             <WhatHappensNext groupId={data.groupId} />
           </section>
         ) : null}
-        <div className="flex flex-wrap gap-3">
-          <Button asChild>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Button asChild size="lg">
             <Link href="/account/orders">{t("toOrders")}</Link>
           </Button>
-          <Button asChild variant="secondary">
+          <Button asChild size="lg" variant="secondary">
             <Link href="/account/instalments">{t("toInstalments")}</Link>
           </Button>
         </div>
@@ -162,50 +176,69 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
       ) : null}
 
       {data.qrPayload && data.status === "pending" ? (
+        // The QR large on white (it must scan in either theme) beside the countdown, the live status and the
+        // numbered steps; stacked on a phone, QR first.
         <section
           aria-labelledby="pay-qr"
-          className="bg-surface border-border flex flex-col items-center gap-3 rounded-2xl border p-6 text-center"
+          className="bg-surface border-border rounded-panel grid items-center gap-6 border p-5 md:grid-cols-[auto_minmax(0,1fr)] md:p-7"
         >
-          <h2 id="pay-qr" className="font-semibold">
-            {t("qrTitle")}
-          </h2>
-          <QRCode
-            value={data.qrPayload}
-            size={240}
-            label={t("qrAlt", { amount: format.thb(data.cashAmount) })}
-            className="rounded-lg bg-white p-2"
-          />
-          {left !== null && data.expiresAt ? (
-            <div className="flex items-center gap-3">
-              <ProgressRing
-                value={lifeLeft(data.createdAt, data.expiresAt, left)}
-                size={40}
-                stroke={4}
-                tone={left < 15 * 60_000 ? "warning" : "primary"}
+          <div className="flex flex-col items-center gap-2">
+            <QRCode
+              value={data.qrPayload}
+              size={260}
+              label={t("qrAlt", { amount: format.thb(data.cashAmount) })}
+              className="border-border rounded-xl border bg-white p-3"
+            />
+          </div>
+          <div className="flex flex-col gap-4">
+            <h2 id="pay-qr" className="text-lg font-semibold">
+              {t("qrTitle")}
+            </h2>
+            {left !== null && data.expiresAt ? (
+              <div className="flex items-center gap-3">
+                <ProgressRing
+                  value={lifeLeft(data.createdAt, data.expiresAt, left)}
+                  size={40}
+                  stroke={4}
+                  tone={left < 15 * 60_000 ? "warning" : "primary"}
+                />
+                <p className="text-start tabular-nums" aria-live="off">
+                  {(() => {
+                    const parts = timeLeft(left);
+                    return parts.kind === "hours"
+                      ? t("countdownHours", {
+                          hours: parts.hours,
+                          minutes: parts.minutes,
+                          until: format.dateTime(data.expiresAt),
+                        })
+                      : t("countdown", { minutes: parts.minutes, seconds: parts.seconds });
+                  })()}
+                </p>
+              </div>
+            ) : null}
+            <p className="bg-surface-subtle flex items-center gap-2 rounded-lg px-3 py-2 text-sm" aria-live="polite">
+              <Icon
+                name="spinner"
+                size={16}
+                className="text-primary animate-spin motion-reduce:animate-none"
+                aria-hidden="true"
               />
-              <p className="text-start tabular-nums" aria-live="off">
-                {(() => {
-                  const parts = timeLeft(left);
-                  return parts.kind === "hours"
-                    ? t("countdownHours", {
-                        hours: parts.hours,
-                        minutes: parts.minutes,
-                        until: format.dateTime(data.expiresAt),
-                      })
-                    : t("countdown", { minutes: parts.minutes, seconds: parts.seconds });
-                })()}
-              </p>
-            </div>
-          ) : null}
-          <p className="text-muted flex items-center gap-2 text-sm" aria-live="polite">
-            <Icon name="spinner" size={16} className="animate-spin" aria-hidden="true" />
-            {t("waiting")}
-          </p>
-          <ol className="text-muted list-decimal ps-5 text-start text-sm">
-            <li>{t("qrStep1")}</li>
-            <li>{t("qrStep2")}</li>
-            <li>{t("qrStep3")}</li>
-          </ol>
+              {t("waiting")}
+            </p>
+            <ol className="m-0 flex list-none flex-col gap-2.5 p-0 text-start text-sm">
+              {(["qrStep1", "qrStep2", "qrStep3"] as const).map((step, index) => (
+                <li key={step} className="flex items-start gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="bg-primary-subtle text-primary-subtle-fg grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums"
+                  >
+                    {index + 1}
+                  </span>
+                  <span className="text-muted pt-0.5">{t(step)}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
       ) : null}
 

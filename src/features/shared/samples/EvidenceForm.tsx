@@ -10,7 +10,7 @@ import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
-import { Select } from "@/ui/components/Select";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 const MM = /^\d{1,4}(\.\d)?$/;
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -62,7 +62,7 @@ export function EvidenceForm({
   return (
     <div className="flex flex-col gap-4">
       <Field label={t("basis")}>
-        <Select
+        <SearchableSelect
           value={basis}
           onValueChange={setBasis}
           options={(["internal", "external", "over_crease"] as const).map((value) => ({

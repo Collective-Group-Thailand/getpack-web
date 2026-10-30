@@ -18,7 +18,6 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { FilePickButton } from "@/ui/components/FilePickButton";
 import { Input } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
@@ -416,7 +415,7 @@ function Rules({ data, canEdit, run, api }: { data: Branding; canEdit: boolean; 
               <tr key={rule.docKind} className="border-border border-t">
                 <td className="py-2 pe-3">{t(`kinds.${rule.docKind}`)}</td>
                 <td className="py-2 pe-3">
-                  <NativeSelect
+                  <SearchableSelect
                     aria-label={`${t("signatory")} — ${t(`kinds.${rule.docKind}`)}`}
                     value={rule.signatoryId ?? none}
                     disabled={!canEdit}
@@ -459,7 +458,7 @@ function Preview({ data, api }: { data: Branding; api: Api }) {
     <SectionCard title={t("title")} body={t("body")}>
       <div className="flex flex-wrap items-end gap-3">
         <Field label={tRules("docKind")} className="min-w-64">
-          <NativeSelect
+          <SearchableSelect
             value={kind}
             onValueChange={(value) => setKind(value as DocKind)}
             options={data.rules.map((rule) => ({ value: rule.docKind, label: tRules(`kinds.${rule.docKind}`) }))}

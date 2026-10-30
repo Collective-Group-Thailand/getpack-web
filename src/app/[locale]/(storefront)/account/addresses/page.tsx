@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { AddressBook } from "@/features/customer/account/AddressBook";
 import { getAddressBook } from "@/features/customer/account/api.server";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,8 +17,7 @@ export default async function Page() {
   const [t, { addresses, taxProfiles }] = await Promise.all([getTranslations("account.book"), getAddressBook()]);
   return (
     <div>
-      <h1 className="text-title leading-tight">{t("title")}</h1>
-      <p className="text-muted mt-1 mb-6">{t("intro")}</p>
+      <AccountHeader className="mb-6" title={t("title")} lede={t("intro")} />
       <AddressBook addresses={addresses} taxProfiles={taxProfiles} />
     </div>
   );

@@ -122,7 +122,7 @@ export function PdpGallery({ photos, fallback }: { photos: readonly PdpPhoto[]; 
 
   return (
     <div className="flex flex-col gap-2.5 min-[1040px]:sticky min-[1040px]:top-[calc(var(--site-sticky-top)+1.25rem)]">
-      <div className="bg-bg-subtle rounded-panel relative grid aspect-square place-items-center overflow-hidden">
+      <div className="bg-surface-subtle border-border rounded-panel relative grid aspect-square place-items-center overflow-hidden border">
         {main}
       </div>
       {views.length > 1 ? (

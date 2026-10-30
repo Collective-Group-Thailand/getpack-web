@@ -74,5 +74,17 @@ export function variantIn(topic: Topic, options: Record<string, unknown>): boole
 /** A style's short name for a page title: without its parenthesised gloss ("กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)"). */
 export const shortName = (name: string) => name.replace(/\s*\([^)]*\)\s*/g, " ").trim();
 
+/**
+ * "กล่องฝาเสียบมีหน้าต่าง" / "Tuck-end carton with a window": the style's short name and the feature's phrase —
+ * once. A style whose own name already says the feature ("กล่องเมลเลอร์ปิดด้วยเทปกาวในตัว") keeps its name as is,
+ * rather than repeating the phrase ("…ปิดด้วยเทปกาวในตัวปิดด้วยเทปกาวในตัว", live review R1).
+ */
+export function topicHeading(name: string, phrase: string, locale: string): string {
+  const short = shortName(name);
+  const fold = (text: string) => text.replace(/\s+/g, "").toLowerCase();
+  if (phrase && fold(short).includes(fold(phrase))) return short;
+  return `${short}${locale === "en" ? " " : ""}${phrase}`;
+}
+
 /** Where a style's option page lives: under its own page. */
 export const topicHref = (styleHref: string, topic: string) => `${styleHref}/${topic}`;

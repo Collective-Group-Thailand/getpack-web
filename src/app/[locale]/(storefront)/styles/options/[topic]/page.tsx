@@ -70,7 +70,7 @@ export default async function TopicHubPage({ params }: { params: Params }) {
   const [axis, values] = Object.entries(topic.options)[0]!;
 
   return (
-    <div className="max-w-content mx-auto px-5 py-8 pb-28 md:px-8 md:py-12">
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <JsonLd
         data={[
           breadcrumbSchema([{ name: t("breadcrumbs.library"), url: absolute(STYLES_HREF) }, { name: title }]),
@@ -100,24 +100,32 @@ export default async function TopicHubPage({ params }: { params: Params }) {
         label={t("breadcrumbs.library")}
         items={[{ label: t("breadcrumbs.library"), href: STYLES_HREF }, { label: title }]}
       />
-      <header className="mt-4 max-w-3xl">
-        <h1 className="text-3xl font-bold md:text-4xl">{title}</h1>
-        <p className="text-primary mt-2 text-lg font-semibold">
-          {t("useCasePage.count", { styles: styles.length, count })}
-        </p>
-        <p className="text-muted mt-2">{t(`topics.${topic.id}.about`)}</p>
-        <Button asChild variant="secondary" className="mt-4">
+      <header className="mt-3 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+        <div className="max-w-3xl">
+          <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+            {title}
+          </h1>
+          <p className="text-muted mt-2 text-pretty">
+            <b className="text-fg font-semibold tabular-nums">
+              {t("useCasePage.count", { styles: styles.length, count })}
+            </b>{" "}
+            {t(`topics.${topic.id}.about`)}
+          </p>
+        </div>
+        <Button asChild variant="secondary" iconEnd="arrow-right">
           <Link href={variantsHref({ option: values.map((v) => `${axis}:${v}`) })} rel="nofollow">
             {t("list.viewVariants")}
           </Link>
         </Button>
       </header>
 
-      <section aria-labelledby="hub-styles" className="mt-8">
-        <h2 id="hub-styles" className="mb-4 text-lg font-semibold">
-          {t("topicPage.styles", { phrase: t(`topics.${topic.id}.phrase`) })}
-        </h2>
-        <StyleCardGrid styles={styles} label={title} hrefOf={(s, name) => styleTopicHref(s.code, name, topic.id)} />
+      <section aria-label={t("topicPage.styles", { phrase: t(`topics.${topic.id}.phrase`) })} className="mt-6">
+        <StyleCardGrid
+          styles={styles}
+          label={title}
+          defaultSort="name"
+          hrefOf={(s, name) => styleTopicHref(s.code, name, topic.id)}
+        />
       </section>
       <LibraryLinks except={{ topic: topic.id }} />
     </div>

@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const issuerName = (locale === "en" ? issuer?.legalNameEn : issuer?.legalNameTh) ?? issuer?.legalNameTh ?? null;
 
   return (
-    <div className="max-w-nav mx-auto px-4 pt-1 pb-8 md:px-5 min-[65rem]:px-6">
+    <div className="max-w-nav mx-auto px-5 pt-1 pb-8 md:px-8 xl:px-12">
       <h1 className="sr-only">{t("title")}</h1>
       <CheckoutView
         cart={cart}

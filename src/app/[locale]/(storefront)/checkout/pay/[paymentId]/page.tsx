@@ -36,14 +36,14 @@ export default async function Page({ params }: { params: Promise<{ paymentId: st
     : null;
 
   return (
-    <div className="max-w-content mx-auto px-5 py-8 md:px-8">
-      <h1 className="text-title leading-tight">{t("title")}</h1>
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
+      <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight md:text-[2.25rem]">{t("title")}</h1>
       <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
         <PaymentPanel initial={payment} />
         {group ? (
           <aside
             aria-labelledby="pay-for"
-            className="border-border bg-surface rounded-card h-fit border px-6 py-5.5 lg:sticky lg:top-20"
+            className="border-border bg-surface rounded-panel h-fit border px-6 py-5.5 lg:sticky lg:top-[calc(var(--site-sticky-top)+1.25rem)]"
           >
             <h2 id="pay-for" className="text-[15px] font-bold">
               {t("payingFor")}

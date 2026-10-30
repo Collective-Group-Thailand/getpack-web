@@ -30,98 +30,109 @@ export default async function QuoteLinkPage({ params }: { params: Promise<{ toke
     [p.address, p.taxId ? t("taxId", { id: p.taxId }) : null, p.phone].filter(Boolean).join(" · ");
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 md:py-12">
-      <header className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-        <div className="flex items-center gap-3">
-          {quote.sellerLogoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL from the API
-            <img src={quote.sellerLogoUrl} alt="" className="h-14 w-auto" />
-          ) : null}
-          <div>
-            <p className="text-lg font-semibold">{quote.seller.name}</p>
-            <p className="text-muted text-sm">{party(quote.seller)}</p>
+    // Project A: the quotation as a document — one white sheet with the seller, the buyer, the lines and the totals —
+    // and the answer (accept / decline, or where it stands) in its own card under it.
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 pt-6 pb-16 md:pt-10 md:pb-20">
+      <article className="border-border bg-surface rounded-panel shadow-card flex flex-col gap-6 border p-5 sm:p-8 md:p-10">
+        <header className="border-border grid gap-4 border-b pb-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="flex items-center gap-3">
+            {quote.sellerLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL from the API
+              <img src={quote.sellerLogoUrl} alt="" className="h-14 w-auto" />
+            ) : null}
+            <div>
+              <p className="text-lg font-semibold">{quote.seller.name}</p>
+              <p className="text-muted text-sm">{party(quote.seller)}</p>
+            </div>
           </div>
-        </div>
-        <div className="sm:text-end">
-          <h1 className="text-2xl font-semibold">{t("title")}</h1>
-          <p className="tabular-nums">
-            {quote.quoteNo}
-            {quote.revision > 1 ? ` (${t("revision", { n: quote.revision })})` : ""}
-          </p>
-        </div>
-      </header>
+          <div className="sm:text-end">
+            <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+            <p className="text-muted tabular-nums">
+              {quote.quoteNo}
+              {quote.revision > 1 ? ` (${t("revision", { n: quote.revision })})` : ""}
+            </p>
+          </div>
+        </header>
 
-      <section className="bg-surface border-border grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
-        <div>
-          <p className="text-muted text-sm">{t("to")}</p>
-          <p className="font-medium">{quote.buyer.name}</p>
-          <p className="text-muted text-sm">{party(quote.buyer)}</p>
+        <section className="bg-surface-subtle grid gap-3 rounded-xl p-4 sm:grid-cols-2">
+          <div>
+            <p className="text-muted text-sm">{t("to")}</p>
+            <p className="font-medium">{quote.buyer.name}</p>
+            <p className="text-muted text-sm">{party(quote.buyer)}</p>
+          </div>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-muted">{t("date")}</dt>
+            <dd>{format.date(quote.quoteDate)}</dd>
+            <dt className="text-muted">{t("validUntil")}</dt>
+            <dd>{format.date(quote.validUntil)}</dd>
+            <dt className="text-muted">{t("terms")}</dt>
+            <dd>{t("days", { n: quote.paymentTermDays })}</dd>
+            {quote.leadTimeDays != null ? (
+              <>
+                <dt className="text-muted">{t("leadTime")}</dt>
+                <dd>{t("days", { n: quote.leadTimeDays })}</dd>
+              </>
+            ) : null}
+          </dl>
+        </section>
+
+        <div
+          className="border-border overflow-x-auto rounded-xl border"
+          tabIndex={0}
+          role="region"
+          aria-label={t("lines")}
+        >
+          <table className="w-full min-w-[34rem] text-sm">
+            <caption className="sr-only">{t("lines")}</caption>
+            <thead>
+              <tr className="border-border bg-surface-subtle text-muted border-b text-start">
+                <th className="px-4 py-2.5 text-start font-medium">{t("item")}</th>
+                <th className="px-4 py-2.5 text-end font-medium">{t("quantity")}</th>
+                <th className="px-4 py-2.5 text-end font-medium">{t("price")}</th>
+                <th className="px-4 py-2.5 text-end font-medium">{t("amount")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quote.lines.map((line) => (
+                <tr key={line.id} className="border-border border-b last:border-b-0">
+                  <td className="px-4 py-3">{line.description || line.item?.name}</td>
+                  <td className="px-4 py-3 text-end whitespace-nowrap tabular-nums">
+                    {Number(line.quantity).toLocaleString("th-TH")} {tUnits(line.unit as never)}
+                  </td>
+                  <td className="px-4 py-3 text-end tabular-nums">{format.thb(line.unitPrice)}</td>
+                  <td className="px-4 py-3 text-end tabular-nums">{format.thb(line.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-muted">{t("date")}</dt>
-          <dd>{format.date(quote.quoteDate)}</dd>
-          <dt className="text-muted">{t("validUntil")}</dt>
-          <dd>{format.date(quote.validUntil)}</dd>
-          <dt className="text-muted">{t("terms")}</dt>
-          <dd>{t("days", { n: quote.paymentTermDays })}</dd>
-          {quote.leadTimeDays != null ? (
+        <dl className="ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 tabular-nums">
+          <dt className="text-muted">{t("subtotal")}</dt>
+          <dd className="text-end">{format.thb(quote.subtotal)}</dd>
+          {quote.vatMode !== "none" ? (
             <>
-              <dt className="text-muted">{t("leadTime")}</dt>
-              <dd>{t("days", { n: quote.leadTimeDays })}</dd>
+              <dt className="text-muted">{t("vat", { rate: Number(quote.vatRatePct) })}</dt>
+              <dd className="text-end">{format.thb(quote.vatAmount)}</dd>
             </>
           ) : null}
+          <dt className="border-border mt-1 border-t pt-2 font-semibold">{t("total")}</dt>
+          <dd className="border-border text-primary mt-1 border-t pt-2 text-end text-xl font-semibold">
+            {format.thb(quote.total)}
+          </dd>
+          <dd className="text-muted col-span-2 text-end text-sm">{t("inWords", { words: quote.totalInWords })}</dd>
         </dl>
-      </section>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <caption className="sr-only">{t("lines")}</caption>
-          <thead>
-            <tr className="border-border border-b text-start">
-              <th className="py-2 text-start font-medium">{t("item")}</th>
-              <th className="py-2 text-end font-medium">{t("quantity")}</th>
-              <th className="py-2 text-end font-medium">{t("price")}</th>
-              <th className="py-2 text-end font-medium">{t("amount")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quote.lines.map((line) => (
-              <tr key={line.id} className="border-border border-b">
-                <td className="py-2">{line.description || line.item?.name}</td>
-                <td className="py-2 text-end whitespace-nowrap tabular-nums">
-                  {Number(line.quantity).toLocaleString("th-TH")} {tUnits(line.unit as never)}
-                </td>
-                <td className="py-2 text-end tabular-nums">{format.thb(line.unitPrice)}</td>
-                <td className="py-2 text-end tabular-nums">{format.thb(line.amount)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <dl className="ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 tabular-nums">
-        <dt className="text-muted">{t("subtotal")}</dt>
-        <dd className="text-end">{format.thb(quote.subtotal)}</dd>
-        {quote.vatMode !== "none" ? (
-          <>
-            <dt className="text-muted">{t("vat", { rate: Number(quote.vatRatePct) })}</dt>
-            <dd className="text-end">{format.thb(quote.vatAmount)}</dd>
-          </>
+        {quote.terms ? (
+          <section>
+            <h2 className="font-semibold">{t("conditions")}</h2>
+            <p className="text-muted text-sm whitespace-pre-line">{quote.terms}</p>
+          </section>
         ) : null}
-        <dt className="font-semibold">{t("total")}</dt>
-        <dd className="text-end text-lg font-semibold">{format.thb(quote.total)}</dd>
-        <dd className="text-muted col-span-2 text-end text-sm">{t("inWords", { words: quote.totalInWords })}</dd>
-      </dl>
-      {quote.terms ? (
-        <section>
-          <h2 className="font-semibold">{t("conditions")}</h2>
-          <p className="text-muted text-sm whitespace-pre-line">{quote.terms}</p>
-        </section>
-      ) : null}
+      </article>
 
       {quote.status === "sent" ? (
         <QuoteAnswer token={token} quoteNo={quote.quoteNo} />
       ) : (
-        <p className="bg-surface border-border rounded-xl border p-4 font-medium" role="status">
+        <p className="bg-primary-subtle rounded-panel flex items-center gap-2.5 p-5 font-medium" role="status">
           {quote.status === "accepted"
             ? t("acceptedBy", {
                 name: quote.acceptedName ?? "",

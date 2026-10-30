@@ -9,7 +9,7 @@ import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
 import type { BoxStyleId } from "@/features/designer/types";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Button } from "@/ui/components/Button";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -219,9 +219,9 @@ export function Workspace({
           ) : null}
           {sizes.length ? (
             <div className="w-full sm:w-auto">
-              <NativeSelect
+              <SearchableSelect
                 aria-label={t("orderSize")}
-                className="h-8 text-[0.8125rem]"
+                size="sm"
                 value={check.spec.sizeCode ?? ""}
                 onValueChange={(value) => onSpec({ sizeCode: value || null })}
                 options={[

@@ -17,6 +17,7 @@ import { ContactSide } from "@/features/customer/help/contact/ContactSide";
 import { INTENTS, type Intent } from "@/features/customer/help/contact/intents";
 import { TeamStatus } from "@/features/customer/help/contact/TeamStatus";
 import { TrackBox } from "@/features/customer/help/contact/TrackBox";
+import { realIssuer } from "@/features/customer/help/contact/issuer";
 import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { Link } from "@/i18n/navigation";
@@ -63,10 +64,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
   const initialIntent: Intent = (INTENTS as readonly string[]).includes(wanted) ? (wanted as Intent) : "order";
   const openingHours = schemaOpeningHours(config?.supportHours);
   const page = await pageContext("/contact", t("crumb"));
-  const issuer =
-    locale === "en"
-      ? (config?.issuer.legalNameEn ?? config?.issuer.legalNameTh ?? null)
-      : (config?.issuer.legalNameTh ?? null);
+  // The entity settings, or nothing while they are still the seed's placeholders (no fake legal data on the page).
+  const entity = realIssuer(config?.issuer);
+  const issuer = locale === "en" ? (entity?.legalNameEn ?? entity?.legalNameTh ?? null) : (entity?.legalNameTh ?? null);
   const contactPoints = channels
     ? [
         ...(channels.phone
@@ -81,7 +81,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
   const methods = (config?.paymentMethods ?? []).map((method) => tPay(method));
 
   return (
-    <div className={cn(HOME_WRAP, "pb-24")}>
+    <div className={cn(HOME_WRAP, "pb-16 md:pb-20")}>
       <JsonLd data={page.breadcrumb} />
       <JsonLd
         data={{
@@ -100,14 +100,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
           },
         }}
       />
-      <header className="pt-9 md:pt-11">
+      <header className="pt-6 md:pt-8">
         <Breadcrumbs
           label={page.crumbLabel}
           items={page.crumbs.map((crumb) => ({ label: crumb.name, href: crumb.url }))}
         />
         <div className="mt-3 grid items-end gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem]">
           <div>
-            <h1 className="text-[clamp(2.125rem,4.2vw,3.375rem)] leading-[1.08] font-bold tracking-[-0.03em]">
+            <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
               {t("title")}
             </h1>
             <p className="text-muted mt-2.5 max-w-[60ch]">{t("intro")}</p>
@@ -132,7 +132,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
           value: province.code,
           label: pick(locale, province.nameTh, province.nameEn),
         }))}
-        side={<ContactSide channels={channels} issuer={config?.issuer ?? null} />}
+        side={<ContactSide channels={channels} issuer={entity} />}
       />
 
       <section aria-labelledby="contact-more" className="pt-14">

@@ -8,7 +8,7 @@ import type { StylesT } from "./labels";
 import { VariantCardFace, variantWords } from "./VariantCardFace";
 
 /** A variant card rendered in the browser — for the pages "show more" brings in. */
-export default function VariantCardView({ card }: { card: StyleVariantCard }) {
+export default function VariantCardView({ card, layout }: { card: StyleVariantCard; layout?: "card" | "row" }) {
   const t = useTranslations("styles") as unknown as StylesT;
-  return <VariantCardFace card={card} words={variantWords(card, useLocale(), t)} />;
+  return <VariantCardFace card={card} words={variantWords(card, useLocale(), t)} layout={layout} />;
 }

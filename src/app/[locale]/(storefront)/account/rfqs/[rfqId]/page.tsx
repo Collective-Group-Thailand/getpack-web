@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
+import { Panel } from "@/features/customer/account/Panel";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getMyRfq, specInWords } from "@/features/customer/rfq/api.server";
 import { DeclineRfq } from "@/features/customer/rfq/DeclineRfq";
@@ -11,7 +13,6 @@ import { RfqThread } from "@/features/customer/rfq/RfqThread";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { RFQ_STATUS } from "@/domain/status";
-import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
@@ -50,21 +51,18 @@ export default async function Page({
   const { rfq, accepted, form } = found;
   const dimensions = [rfq.lengthMm, rfq.widthMm, rfq.heightMm].filter((value): value is number => value !== null);
 
+  const canDecline = rfq.nextActions.some((action) => action.key === "rfq.decline" && !action.disabledReason);
+
   return (
     <div>
-      <Link href="/account/rfqs" className="text-primary text-sm underline-offset-4 hover:underline">
-        {t("back")}
-      </Link>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <h1 className="text-title leading-tight">{t("heading", { type: rfq.productTypeName })}</h1>
-        <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
-      </div>
-      <div className="mt-1 flex flex-wrap items-center gap-3">
-        <p className="text-muted text-sm tabular-nums">{rfq.rfqCode}</p>
-        {rfq.nextActions.some((action) => action.key === "rfq.decline" && !action.disabledReason) ? (
-          <DeclineRfq rfqId={rfq.id} rfqCode={rfq.rfqCode} />
-        ) : null}
-      </div>
+      <AccountHeader
+        back={{ href: "/account/rfqs", label: t("back") }}
+        title={t("heading", { type: rfq.productTypeName })}
+        status={<StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />}
+        actions={canDecline ? <DeclineRfq rfqId={rfq.id} rfqCode={rfq.rfqCode} /> : null}
+      >
+        <p className="text-muted mt-1.5 text-sm tabular-nums">{rfq.rfqCode}</p>
+      </AccountHeader>
 
       {submitted ? (
         <Callout tone="success" live className="mt-4">
@@ -86,30 +84,27 @@ export default async function Page({
         </Callout>
       ) : null}
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="flex flex-col gap-10">
-          <section aria-labelledby="rfq-quotes">
-            <h2 id="rfq-quotes" className="mb-4 text-lg font-semibold">
-              {t("quotesTitle")}
-            </h2>
+      {/* Project B3: the quotes (what the customer decides on) and the conversation as panels, the request
+          itself in a sticky side panel. */}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <Panel id="rfq-quotes" title={t("quotesTitle")} tint={rfq.status === "quoted"}>
             <RfqQuotes rfq={rfq} accepted={accepted} />
-          </section>
-          <section aria-labelledby="rfq-thread">
-            <h2 id="rfq-thread" className="mb-4 text-lg font-semibold">
-              {t("threadTitle")}
-            </h2>
+          </Panel>
+          <Panel id="rfq-thread" title={t("threadTitle")}>
             <RfqThread
               rfqId={rfq.id}
               messages={rfq.messages}
               askedForInfo={rfq.status === "need_info"}
               canPost={rfq.nextActions.some((action) => action.key === "rfq.post_message" && !action.disabledReason)}
             />
-          </section>
+          </Panel>
         </div>
-        <section aria-labelledby="rfq-spec">
-          <h2 id="rfq-spec" className="mb-4 text-lg font-semibold">
-            {t("specTitle")}
-          </h2>
+        <Panel
+          id="rfq-spec"
+          title={t("specTitle")}
+          className="lg:sticky lg:top-[calc(var(--site-sticky-top,0px)+1rem)]"
+        >
           <DescriptionList
             items={[
               ...specInWords(rfq, form, locale, { yes: t("yes"), no: t("no") }),
@@ -148,7 +143,7 @@ export default async function Page({
               </ul>
             </div>
           ) : null}
-        </section>
+        </Panel>
       </div>
     </div>
   );

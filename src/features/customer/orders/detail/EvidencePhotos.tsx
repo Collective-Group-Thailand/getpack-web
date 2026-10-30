@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { trackAccount } from "@/lib/analytics/account";
+import { CardImage } from "@/ui/components/CardImage";
 import { Dialog } from "@/ui/components/Dialog";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Icon } from "@/ui/icons";
@@ -30,7 +31,7 @@ export function EvidencePhotos({ fileIds, kind }: { fileIds: string[]; kind: "pr
                 setOpen(id);
                 trackAccount("order_photo_open", { kind });
               }}
-              className="border-border bg-bg-subtle focus-visible:ring-focus-ring rounded-control grid h-[4.5rem] w-24 place-items-center overflow-hidden border outline-none focus-visible:ring-2"
+              className="border-border bg-surface-subtle focus-visible:ring-focus-ring rounded-control grid h-[4.5rem] w-24 place-items-center overflow-hidden border outline-none focus-visible:ring-2"
             >
               <Thumb fileId={id} alt={t(kind, { n: index + 1 })} />
             </button>
@@ -55,8 +56,16 @@ export function EvidencePhotos({ fileIds, kind }: { fileIds: string[]; kind: "pr
 function Thumb({ fileId, alt }: { fileId: string; alt: string }) {
   const url = useFileUrl(fileId);
   if (!url) return <Skeleton className="size-full" />;
-  // eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL, not an optimisable asset
-  return <img src={url} alt={alt} className="size-full object-cover" loading="lazy" />;
+  // A file that cannot be read shows a quiet photo mark, never the browser's broken image with its alt text.
+  return (
+    <CardImage
+      src={url}
+      alt={alt}
+      className="size-full object-cover"
+      loading="lazy"
+      fallback={<Icon name="image" size={20} aria-hidden="true" className="text-muted" />}
+    />
+  );
 }
 
 function Large({ fileId, alt }: { fileId: string; alt: string }) {

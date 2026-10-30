@@ -77,6 +77,7 @@
   "fileProof": "This proof is the file {name}",
   "fileDownload": "Download the proof",
   "fileOpen": "Open the proof",
+  "fileReviewHint": "Open the proof file and check every page, then approve or ask for changes in the panel.",
   "loadingPage": "Loading the proof…",
   "approveIntro": "Check the text, the artwork against the dieline, the colours and the size before you approve.",
   "decisionAt": "On {date}",

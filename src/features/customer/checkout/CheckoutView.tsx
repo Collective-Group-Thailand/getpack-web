@@ -562,7 +562,7 @@ export function CheckoutView({
         inPage={["address", "payment", "review"]}
         onSelect={(selected) => go(selected)}
       />
-      <div className="grid items-start gap-8 pt-4 pb-28 min-[1100px]:grid-cols-[minmax(0,1fr)_23.75rem] sm:pb-24">
+      <div className="grid items-start gap-8 pt-4 pb-28 min-[1100px]:grid-cols-[minmax(0,1fr)_23.75rem] sm:pb-16">
         <div ref={mainRef} className="flex min-w-0 flex-col gap-4">
           {cart.items.some((item) => !item.priceLocked || item.pendingReprice) ? (
             <Callout tone="warning">
@@ -912,7 +912,8 @@ export function CheckoutView({
                   {tFlow("review.title")}
                 </h2>
                 <p className="text-muted m-0 mt-1 mb-4 text-sm">{tFlow("review.sub")}</p>
-                <dl className="m-0 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-[8.75rem_minmax(0,1fr)]">
+                {/* Project A: one row per fact, hairlines between rows, the label column fixed so the answers align. */}
+                <dl className="[&>dt]:border-border sm:[&>dd]:border-border m-0 grid grid-cols-1 gap-x-6 text-sm sm:grid-cols-[10rem_minmax(0,1fr)] [&>dd]:pb-3 sm:[&>dd]:border-t sm:[&>dd]:pt-3 sm:[&>dd:first-of-type]:border-t-0 sm:[&>dd:first-of-type]:pt-0 [&>dt]:border-t [&>dt]:pt-3 [&>dt]:pb-0.5 sm:[&>dt]:pb-3 [&>dt:first-of-type]:border-t-0 [&>dt:first-of-type]:pt-0">
                   <dt className="text-muted">{tFlow("review.items")}</dt>
                   <dd className="m-0">
                     <ul className="m-0 flex list-none flex-col gap-1 p-0">

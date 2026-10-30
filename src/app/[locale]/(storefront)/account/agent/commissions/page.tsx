@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { PortalTable } from "@/features/customer/account/PortalTable";
+import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { AgentFrame, AgentPager, pageOf } from "@/features/customer/agent/AgentPieces";
-import { getMyCommissions, requireAgent } from "@/features/customer/agent/api.server";
+import { getAgent, getMyCommissions, requireAgent } from "@/features/customer/agent/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
@@ -24,13 +26,44 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   await requireCustomer();
   await requireAgent();
   const page = pageOf((await searchParams).page);
-  const [t, format, list] = await Promise.all([
+  const [t, tt, tHome, format, list, agent] = await Promise.all([
     getTranslations("agent.commissions"),
+    getTranslations("agent.table"),
+    getTranslations("agent.home"),
     getFormat(),
     getMyCommissions(page),
+    getAgent(),
   ]);
   return (
     <AgentFrame title={t("title")} intro={t("intro")}>
+      {/* Project B4: the money by status on top, as the API totals it. */}
+      <SummaryCards
+        items={[
+          {
+            key: "earned",
+            label: tHome("earned"),
+            value: format.thb(agent.totals.earned),
+            hint: tHome("earnedHint"),
+            icon: "coins",
+            highlight: true,
+          },
+          {
+            key: "pending",
+            label: tHome("pending"),
+            value: format.thb(agent.totals.pending),
+            hint: tHome("pendingHint"),
+            icon: "hourglass",
+          },
+          {
+            key: "statemented",
+            label: tHome("statemented"),
+            value: format.thb(agent.totals.statemented),
+            hint: tHome("statementedHint"),
+            icon: "document",
+          },
+          { key: "paid", label: tHome("paidThisYear"), value: format.thb(agent.totals.paidThisYear), icon: "wallet" },
+        ]}
+      />
       {list.data.length === 0 ? (
         <EmptyState
           icon="coins"
@@ -43,16 +76,32 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
           }
         />
       ) : (
-        <ul className="divide-border border-border bg-surface divide-y rounded-2xl border">
-          {list.data.map((entry) => (
-            <li key={entry.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div className="min-w-0">
-                <p className="font-medium">
-                  {t(`kinds.${entry.kind}`)}
-                  {entry.orderCode ? <span className="text-sm tabular-nums"> {entry.orderCode}</span> : null}
-                  {entry.customerName ? <span className="text-muted"> · {entry.customerName}</span> : null}
-                </p>
-                <p className="text-muted text-xs">
+        <PortalTable
+          caption={t("title")}
+          columns={[
+            { key: "item", label: tt("item"), className: "md:w-[30%]" },
+            { key: "detail", label: tt("detail") },
+            { key: "date", label: tt("date") },
+            { key: "amount", label: tt("amount"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "status", label: tt("status"), className: "md:whitespace-nowrap" },
+          ]}
+          rows={list.data.map((entry) => ({
+            id: entry.id,
+            phoneSubtitle: entry.customerName,
+            cells: {
+              item: (
+                <span className="block min-w-0">
+                  <span className="block font-semibold">
+                    {t(`kinds.${entry.kind}`)}
+                    {entry.orderCode ? <span className="font-normal tabular-nums"> {entry.orderCode}</span> : null}
+                  </span>
+                  {entry.customerName ? (
+                    <span className="text-muted hidden text-xs font-normal md:block">{entry.customerName}</span>
+                  ) : null}
+                </span>
+              ),
+              detail: (
+                <span className="text-muted text-xs">
                   {entry.kind === "order"
                     ? t("detail", {
                         base: format.thb(entry.baseAmount),
@@ -63,24 +112,26 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
                   {entry.capAmount !== null && entry.kind === "order"
                     ? ` · ${t("cap", { amount: format.thb(entry.capAmount) })}`
                     : ""}
-                </p>
-                <p className="text-muted text-xs">
+                </span>
+              ),
+              date: (
+                <span className="text-sm">
                   {entry.status === "pending" && entry.availableAt
                     ? t("availableAt", { date: format.date(entry.availableAt) })
                     : entry.statementNo
                       ? t("onStatement", { no: entry.statementNo })
                       : format.date(entry.createdAt)}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={`font-semibold tabular-nums ${Number(entry.amount) < 0 ? "text-danger" : ""}`}>
+                </span>
+              ),
+              amount: (
+                <span className={`font-semibold ${Number(entry.amount) < 0 ? "text-danger" : ""}`}>
                   {format.thb(entry.amount)}
                 </span>
-                <StatusChip map={AGENT_COMMISSION_STATUS} value={entry.status} />
-              </div>
-            </li>
-          ))}
-        </ul>
+              ),
+              status: <StatusChip map={AGENT_COMMISSION_STATUS} value={entry.status} />,
+            },
+          }))}
+        />
       )}
       <AgentPager page={page} total={list.meta.total} perPage={list.meta.perPage} path="/account/agent/commissions" />
     </AgentFrame>

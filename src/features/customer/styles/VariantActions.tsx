@@ -30,6 +30,8 @@ export interface VariantActionsProps {
   onAction?: (action: "design" | "cart" | "quote") => void;
   /** The studio button's words, when the page wants other than the default ("เริ่มออกแบบแบบนี้" in the quick view). */
   designLabel?: string;
+  /** Only the one primary action (a phone's bottom bar, `MobileActionBar`): no notes, no secondary. */
+  primaryOnly?: boolean;
 }
 
 /**
@@ -46,6 +48,7 @@ export function VariantActions({
   onAction,
   designLabel,
   quoteResponseDays = null,
+  primaryOnly = false,
 }: VariantActionsProps) {
   const t = useTranslations("styles.detail");
   const router = useRouter();
@@ -96,6 +99,23 @@ export function VariantActions({
     </Button>
   );
 
+  if (primaryOnly)
+    // The same primary as below: configure when priced at once, else the studio — or, when the studio cannot
+    // open this variant, the quotation.
+    return instant ? (
+      <Button asChild block>
+        <Link href={configureHref(productSlug!)} onClick={() => onAction?.("cart")}>
+          {t("configure")}
+        </Link>
+      </Button>
+    ) : noStudio === variant.code ? (
+      quote
+    ) : (
+      <Button block iconStart="sparkles" loading={opening} onClick={() => void openStudio()}>
+        {designLabel ?? t("designInStudio")}
+      </Button>
+    );
+
   return (
     <div className="flex flex-col gap-2">
       {!instant ? (
@@ -106,7 +126,8 @@ export function VariantActions({
           <p className="text-muted text-sm">{t("rfqNote")}</p>
         </>
       ) : null}
-      <div className="flex flex-wrap gap-2">
+      {/* Stacked and full width: the primary first, the other an outline under it (Project A). */}
+      <div className="flex flex-col gap-2 *:w-full">
         {instant ? (
           <Button asChild>
             <Link href={configureHref(productSlug!)} onClick={() => onAction?.("cart")}>

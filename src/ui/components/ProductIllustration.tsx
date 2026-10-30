@@ -46,15 +46,23 @@ export function productFamilyOf(code: string | null | undefined): ProductFamily 
   return "tuck";
 }
 
+/*
+ * A plate may restyle the drawing through two custom properties, so one set of drawings serves both
+ * plates: `--pi-stroke` (line weight) and `--pi-shade` (the shaded faces' fill). Unset, the drawing is
+ * the kraft-shaded original; ProductCard's neutral plate sets a thinner line and a paper shade.
+ */
 const STROKE = {
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.6,
+  strokeWidth: "var(--pi-stroke, 1.6)",
   strokeLinejoin: "round" as const,
   strokeLinecap: "round" as const,
 };
 const PAPER = { ...STROKE, fill: "var(--color-surface)" };
-const SHADE = { ...STROKE, fill: "color-mix(in oklab, var(--color-kraft-strong) 55%, var(--color-surface))" };
+const SHADE = {
+  ...STROKE,
+  fill: "var(--pi-shade, color-mix(in oklab, var(--color-kraft-strong) 55%, var(--color-surface)))",
+};
 
 /** An isometric box: top face, left face, right face — the building block most families share. */
 function Box({ x, y, w, d, h }: { x: number; y: number; w: number; d: number; h: number }) {
@@ -209,6 +217,13 @@ export function OpenBoxIllustration({ className }: { className?: string }) {
 }
 
 /**
+ * The neutral plate's look for a drawing (Project A): a thin line in the muted ink on a quiet paper
+ * plate, the shaded faces a step off the paper — no colour, so a grid without photos reads as calm
+ * line art rather than as tinted tiles. Classes for the plate that holds the drawing.
+ */
+export const LINE_PLATE = "bg-surface-subtle text-muted [--pi-stroke:1.2] [--pi-shade:var(--color-bg-subtle)]";
+
+/**
  * One of two flat fills (design language v3: sage well or kraft), chosen by the family so a
  * product looks the same everywhere — wherever a product has no photo, never an icon.
  */
@@ -218,14 +233,14 @@ export function kraftOf(family: string): "bg-sage-subtle" | "bg-kraft" {
   return (["bg-sage-subtle", "bg-kraft"] as const)[hash % 2]!;
 }
 
-/** A small kraft plate holding a family's drawing — a cart or order line without a photo. */
+/** A small neutral plate holding a family's line drawing — a cart or order line without a photo (Project A). */
 export function ProductThumb({ family, className }: { family: ProductFamily; className?: string }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        kraftOf(family),
-        "rounded-thumb text-fg flex size-16 shrink-0 items-center justify-center",
+        LINE_PLATE,
+        "rounded-thumb border-border flex size-16 shrink-0 items-center justify-center border",
         className,
       )}
     >
@@ -234,13 +249,10 @@ export function ProductThumb({ family, className }: { family: ProductFamily; cla
   );
 }
 
-/** A 4:3 kraft plate holding a family's drawing — a card's picture when there is no photo. */
+/** A 4:3 neutral plate holding a family's line drawing — a picture when there is no photo (Project A). */
 export function ProductPlate({ family, className }: { family: ProductFamily; className?: string }) {
   return (
-    <div
-      aria-hidden="true"
-      className={cn(kraftOf(family), "text-fg flex aspect-[4/3] items-center justify-center p-6", className)}
-    >
+    <div aria-hidden="true" className={cn(LINE_PLATE, "flex aspect-[4/3] items-center justify-center p-6", className)}>
       <ProductIllustration family={family} className="max-w-32" />
     </div>
   );

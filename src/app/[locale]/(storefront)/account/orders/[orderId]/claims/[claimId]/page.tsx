@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -6,7 +7,6 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getClaimTimeline, getMyClaim } from "@/features/customer/fulfilment/api.server";
 import { ClaimTimeline } from "@/features/customer/fulfilment/ClaimTimeline";
 import { ClaimThread } from "@/features/customer/fulfilment/ClaimThread";
-import { Link } from "@/i18n/navigation";
 
 type Params = { orderId: string; claimId: string };
 
@@ -36,12 +36,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-3">
-        <Link href={`/account/orders/${orderId}`} className="text-primary text-sm underline-offset-4 hover:underline">
-          {t("back", { code: claim.orderCode })}
-        </Link>
-        <h1 className="text-title leading-tight">{t("title", { claim: claim.claimNo })}</h1>
-      </header>
+      <AccountHeader
+        back={{ href: `/account/orders/${orderId}`, label: t("back", { code: claim.orderCode }) }}
+        title={t("title", { claim: claim.claimNo })}
+      />
       {timeline ? <ClaimTimeline timeline={timeline} /> : null}
       <ClaimThread initial={claim} />
     </div>

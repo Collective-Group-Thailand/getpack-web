@@ -18,15 +18,21 @@ export default async function LiffLayout({ children }: { children: React.ReactNo
       <a href="#liff-main" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50">
         {t("skip")}
       </a>
-      <header className="border-border bg-surface sticky top-0 z-30 border-b">
-        <div className="mx-auto flex h-12 max-w-xl items-center gap-2 px-4">
-          <Link href="/liff" className="font-sans font-semibold">
+      {/* Project D: a slim bar under LINE's own title bar — the brand and where you are, nothing to tap but home. */}
+      <header className="border-border bg-surface sticky top-0 z-30 border-b pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex h-11 max-w-xl items-center gap-2 px-4">
+          <Link
+            href="/liff"
+            className="focus-visible:ring-focus-ring rounded-control -ms-1 inline-flex min-h-11 items-center px-1 font-sans text-[1.0625rem] font-semibold outline-none focus-visible:ring-2"
+          >
             {BRAND_NAME}
           </Link>
-          <span className="text-muted text-sm">{t("tagline")}</span>
+          <span className="bg-primary-subtle text-primary-subtle-fg rounded-control px-2 py-0.5 text-xs font-medium">
+            {t("tagline")}
+          </span>
         </div>
       </header>
-      <main id="liff-main" className="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-24">
+      <main id="liff-main" className="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-[calc(var(--mobile-tab-h)+1.5rem)]">
         {children}
       </main>
       <LiffNav />

@@ -22,7 +22,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 
 const SYSTEMS = ["spreadsheet", "accounting", "erp", "none"] as const;
@@ -142,7 +142,7 @@ export function FactoryApplyForm({
       </Field>
       {provinces.length > 0 ? (
         <Field label={t("province")} required requiredLabel={required} error={errors.province}>
-          <NativeSelect
+          <SearchableSelect
             value={province}
             onValueChange={setProvince}
             options={[{ value: "", label: t("provincePlaceholder") }, ...provinces]}
@@ -173,7 +173,7 @@ export function FactoryApplyForm({
         </div>
       ) : null}
       <Field label={t("system")} className="sm:col-span-2">
-        <NativeSelect
+        <SearchableSelect
           value={system}
           onValueChange={setSystem}
           options={SYSTEMS.map((value) => ({ value, label: t(`systems.${value}`) }))}

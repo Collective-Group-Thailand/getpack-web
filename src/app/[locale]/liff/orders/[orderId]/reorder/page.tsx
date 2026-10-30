@@ -3,11 +3,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getReorder } from "@/features/customer/fulfilment/api.server";
 import { ReorderView } from "@/features/customer/fulfilment/ReorderView";
+import { LiffHeader } from "@/features/customer/liff/LiffHeader";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { specLinesOf } from "@/features/customer/orders/summary";
-import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,10 +29,10 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
   const summary = detail?.order.summary;
   return (
     <div className="flex flex-col gap-4">
-      <Link href={`/liff/orders/${orderId}`} className="text-primary text-sm">
-        {preview ? t("back", { code: preview.orderCode }) : t("title")}
-      </Link>
-      <h1 className="text-xl font-bold">{preview ? t("titleFor", { code: preview.orderCode }) : t("title")}</h1>
+      <LiffHeader
+        back={{ href: `/liff/orders/${orderId}`, label: preview ? t("back", { code: preview.orderCode }) : t("title") }}
+        title={preview ? t("titleFor", { code: preview.orderCode }) : t("title")}
+      />
       {preview && summary ? (
         <ReorderView
           initial={preview}

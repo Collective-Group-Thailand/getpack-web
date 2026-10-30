@@ -57,7 +57,8 @@ export function PriceSummary({ rows, total, footnote, emphasis = "default", clas
           <dd
             className={cn(
               "shrink-0 text-end tabular-nums",
-              emphasis === "strong" ? "text-xl leading-tight font-semibold" : "text-lg font-bold",
+              // Project A: the amount to pay is the one price in brand green on a summary.
+              emphasis === "strong" ? "text-primary text-xl leading-tight font-semibold" : "text-lg font-bold",
             )}
           >
             {total.value}

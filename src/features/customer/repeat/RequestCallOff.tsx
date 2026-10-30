@@ -20,9 +20,33 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
  */
 export function RequestCallOff({ quoteId, optionId, label }: { quoteId: string; optionId: string; label: string }) {
   const t = useTranslations("account.callOffs.request");
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button size="sm" variant="ghost" iconStart="calendar" onClick={() => setOpen(true)}>
+        {t("open")}
+        <span className="sr-only"> {label}</span>
+      </Button>
+      <RequestCallOffDialog quoteId={quoteId} optionId={optionId} open={open} onOpenChange={setOpen} />
+    </>
+  );
+}
+
+/** The request itself, opened from the button above or from a saved quotation's row menu. */
+export function RequestCallOffDialog({
+  quoteId,
+  optionId,
+  open,
+  onOpenChange,
+}: {
+  quoteId: string;
+  optionId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const t = useTranslations("account.callOffs.request");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [months, setMonths] = useState("6");
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -44,13 +68,9 @@ export function RequestCallOff({ quoteId, optionId, label }: { quoteId: string; 
 
   return (
     <>
-      <Button size="sm" variant="ghost" iconStart="calendar" onClick={() => setOpen(true)}>
-        {t("open")}
-        <span className="sr-only"> {label}</span>
-      </Button>
       <Dialog
         open={open}
-        onOpenChange={(next) => !next && !busy && setOpen(false)}
+        onOpenChange={(next) => !next && !busy && onOpenChange(false)}
         title={t("title")}
         description={t("body")}
         closeLabel={tCommon("actions.close")}

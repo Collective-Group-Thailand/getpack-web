@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { ApiClients } from "@/features/customer/business/ApiClients";
 import { requireMember } from "@/features/customer/business/guard.server";
 import { serverApi } from "@/lib/api/server";
@@ -26,10 +27,7 @@ export default async function Page() {
     : [];
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-title leading-tight">{t("title")}</h1>
-        <p className="text-muted mt-2">{t("intro")}</p>
-      </header>
+      <AccountHeader title={t("title")} lede={t("intro")} />
       {company.can.manageSettings ? (
         <ApiClients companyId={company.id} initial={clients} />
       ) : (

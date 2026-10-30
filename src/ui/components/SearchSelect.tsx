@@ -1,12 +1,13 @@
 "use client";
 
 import { Popover as PopoverPrimitive } from "radix-ui";
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { Icon } from "../icons";
 import { cn } from "../lib/cn";
 import { useFieldProps } from "./Field";
 import { controlVariants } from "./Input";
+import { MENU_ITEM, MENU_ITEM_ACTIVE, POPOVER_SURFACE } from "./menu-surface";
 
 export interface SearchSelectOption<T extends string = string> {
   value: T;
@@ -24,13 +25,31 @@ export interface SearchSelectProps<T extends string = string> {
   placeholder?: string;
   /** Copy from `src/i18n`: the search box's placeholder and the no-match line. */
   labels: { search: string; empty: string };
-  /** Hide the search box for very short lists (it still opens the same list). Default: shown from 6 options. */
+  /** Type-to-filter for long lists only (it still opens the same list). Default: from 11 options (more than 10). */
   searchFrom?: number;
+  /** `sm` for a dense tool panel; every form field is `md` (44 px in the storefront). */
+  size?: "sm" | "md";
   name?: string;
   disabled?: boolean;
   className?: string;
   "aria-label"?: string;
 }
+
+const COARSE = "(pointer: coarse)";
+const coarseQuery = () => (typeof window.matchMedia === "function" ? window.matchMedia(COARSE) : null);
+const subscribeCoarse = (onChange: () => void) => {
+  const query = coarseQuery();
+  if (!query) return () => {};
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+};
+/** A touch screen picks from the phone's own picker; the server and the first paint assume a pointer. */
+const useCoarsePointer = () =>
+  useSyncExternalStore(
+    subscribeCoarse,
+    () => coarseQuery()?.matches ?? false,
+    () => false,
+  );
 
 /** Thai and English matched without case or tone-mark fuss: lower-cased, whitespace collapsed. */
 const fold = (text: string) => text.toLocaleLowerCase("th").replace(/\s+/g, " ").trim();
@@ -50,7 +69,8 @@ export function SearchSelect<T extends string = string>({
   options,
   placeholder,
   labels,
-  searchFrom = 6,
+  searchFrom = 11,
+  size = "md",
   name,
   disabled,
   className,
@@ -64,6 +84,7 @@ export function SearchSelect<T extends string = string>({
   const listRef = useRef<HTMLUListElement>(null);
   const chosen = options.find((option) => option.value === value) ?? null;
   const searchable = options.length >= searchFrom;
+  const coarse = useCoarsePointer();
 
   const shown = useMemo(() => {
     const q = fold(query);
@@ -100,6 +121,47 @@ export function SearchSelect<T extends string = string>({
     }
   }
 
+  // The one select field (owner request 2026-10-30): on a touch screen the platform's own <select> — the phone's
+  // picker is the best list there is — dressed exactly as the button below; on a desktop the listbox popover,
+  // with type-to-filter once the list is long.
+  if (coarse)
+    return (
+      <span className={cn("relative block", className)}>
+        <select
+          id={fieldProps.id}
+          aria-describedby={fieldProps["aria-describedby"]}
+          aria-invalid={fieldProps["aria-invalid"]}
+          aria-label={props["aria-label"]}
+          name={name}
+          disabled={disabled ?? fieldProps.disabled}
+          data-size={size}
+          value={value ?? ""}
+          onChange={(event) => {
+            const option = options.find((item) => item.value === event.target.value);
+            if (option) onValueChange?.(option.value);
+          }}
+          className={cn(controlVariants({ inputSize: size }), "appearance-none pe-9", !chosen && "text-muted")}
+        >
+          {!chosen ? (
+            <option value="" disabled hidden>
+              {placeholder ?? ""}
+            </option>
+          ) : null}
+          {options.map((option) => (
+            <option key={option.value} value={option.value} disabled={option.disabled}>
+              {option.description ? `${option.label} · ${option.description}` : option.label}
+            </option>
+          ))}
+        </select>
+        <Icon
+          name="chevron-down"
+          size={18}
+          aria-hidden="true"
+          className="text-muted pointer-events-none absolute end-3 top-1/2 -translate-y-1/2"
+        />
+      </span>
+    );
+
   return (
     <PopoverPrimitive.Root
       open={open}
@@ -112,6 +174,8 @@ export function SearchSelect<T extends string = string>({
       }}
     >
       <PopoverPrimitive.Trigger asChild>
+        {/* The button stands for the field, so it carries the field's error state as every other control does. */}
+        {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props */}
         <button
           type="button"
           id={fieldProps.id}
@@ -121,7 +185,12 @@ export function SearchSelect<T extends string = string>({
           aria-haspopup="listbox"
           aria-expanded={open}
           disabled={disabled ?? fieldProps.disabled}
-          className={cn(controlVariants(), "flex items-center justify-between gap-2 text-start", className)}
+          data-size={size}
+          className={cn(
+            controlVariants({ inputSize: size }),
+            "flex items-center justify-between gap-2 text-start",
+            className,
+          )}
         >
           {/* Muted, not subtle: this is text in a button, not a native placeholder, so it needs 4.5:1. */}
           <span className={cn("min-w-0 truncate", !chosen && "text-muted")}>{chosen?.label ?? placeholder}</span>
@@ -140,7 +209,8 @@ export function SearchSelect<T extends string = string>({
             (listRef.current?.parentElement?.querySelector("input") ?? listRef.current)?.focus();
           }}
           className={cn(
-            "z-modal border-border bg-surface-raised shadow-overlay flex flex-col rounded-lg border",
+            POPOVER_SURFACE,
+            "flex flex-col",
             "max-h-(--radix-popover-content-available-height) w-(--radix-popover-trigger-width) min-w-56",
           )}
         >
@@ -193,8 +263,8 @@ export function SearchSelect<T extends string = string>({
                   onPointerMove={() => !option.disabled && setActive(option.value)}
                   onClick={() => pick(option)}
                   className={cn(
-                    "flex cursor-default items-start gap-2 rounded-md px-2 py-2 text-sm",
-                    option.value === active && "bg-primary-subtle text-primary-subtle-fg",
+                    MENU_ITEM,
+                    option.value === active && MENU_ITEM_ACTIVE,
                     option.disabled && "pointer-events-none opacity-50",
                   )}
                 >

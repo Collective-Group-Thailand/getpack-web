@@ -119,115 +119,152 @@ export function BasketDraft({ initial }: { initial: Basket }) {
     );
 
   return (
-    <form noValidate onSubmit={(event) => void submit(event)} className="flex flex-col gap-6">
-      <section aria-labelledby="basket-items">
-        <h2 id="basket-items" className="text-lg font-semibold">
-          {t("items", { count: basket.items.length })}
-        </h2>
-        <ol className="mt-3 flex flex-col gap-3">
-          {basket.items.map((item, index) => {
-            const facts = itemFacts(item);
-            // D-447 §10.9: a product put in from the quote tray waits for its form; the link opens it.
-            const waiting = lineTrayItem(item);
-            return (
-              <li
-                key={item.id}
-                className="bg-surface border-border flex flex-wrap items-start justify-between gap-3 rounded-xl border p-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium">
-                    {index + 1}.{" "}
-                    {item.product
-                      ? pick(locale, item.product.nameTh, item.product.nameEn)
-                      : pick(locale, item.productType.nameTh, item.productType.nameEn)}
-                  </p>
-                  {waiting ? (
-                    <p className="text-muted text-sm">
-                      {t("pending")}
-                      {" · "}
-                      <Link href={trayItemHref(waiting)} className="text-primary font-medium underline">
-                        {t("fill")}
-                      </Link>
-                    </p>
-                  ) : (
-                    <p className="text-muted text-sm">
-                      {facts.size
-                        ? t("size", {
-                            l: format.number(facts.size[0]),
-                            w: format.number(facts.size[1]),
-                            h: facts.size[2] === null ? "—" : format.number(facts.size[2]),
-                          })
-                        : t("noSize")}
-                      {" · "}
-                      {t("quantities", { list: facts.quantities.map((q) => format.number(q)).join(", ") })}
-                      {" · "}
-                      {t("answers", { count: facts.answers })}
-                    </p>
-                  )}
-                  {itemError(errors, index) ? (
-                    <p className="text-danger mt-1 text-sm">{itemError(errors, index)}</p>
-                  ) : null}
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  iconStart="trash"
-                  loading={busy === item.id}
-                  onClick={() => void remove(item.id)}
-                  aria-label={t("removeItem", { n: index + 1 })}
+    // Project A: the items and the details on the left, the send panel sticky on the right (a bar at the foot
+    // of a phone's screen) — one primary button, discarding kept apart as a quiet action.
+    <form
+      noValidate
+      onSubmit={(event) => void submit(event)}
+      className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8"
+    >
+      <div className="flex min-w-0 flex-col gap-6">
+        <section aria-labelledby="basket-items">
+          <h2 id="basket-items" className="text-lg font-semibold">
+            {t("items", { count: basket.items.length })}
+          </h2>
+          <ol className="mt-3 flex flex-col gap-3">
+            {basket.items.map((item, index) => {
+              const facts = itemFacts(item);
+              // D-447 §10.9: a product put in from the quote tray waits for its form; the link opens it.
+              const waiting = lineTrayItem(item);
+              return (
+                <li
+                  key={item.id}
+                  className="bg-surface border-border rounded-card flex items-start gap-3.5 border p-4 md:p-5"
                 >
-                  {t("remove")}
-                </Button>
-              </li>
-            );
-          })}
-        </ol>
-        <Button asChild variant="link" className="mt-2 px-0">
-          <Link href="/products">{t("addMore")}</Link>
+                  <span
+                    aria-hidden="true"
+                    className="bg-primary-subtle text-primary-subtle-fg grid size-8 shrink-0 place-items-center rounded-lg text-[0.8125rem] font-semibold tabular-nums"
+                  >
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">
+                      <span className="sr-only">{index + 1}. </span>
+                      {item.product
+                        ? pick(locale, item.product.nameTh, item.product.nameEn)
+                        : pick(locale, item.productType.nameTh, item.productType.nameEn)}
+                    </p>
+                    {waiting ? (
+                      <p className="text-muted text-sm">
+                        {t("pending")}
+                        {" · "}
+                        <Link href={trayItemHref(waiting)} className="text-primary font-medium underline">
+                          {t("fill")}
+                        </Link>
+                      </p>
+                    ) : (
+                      <p className="text-muted text-sm">
+                        {facts.size
+                          ? t("size", {
+                              l: format.number(facts.size[0]),
+                              w: format.number(facts.size[1]),
+                              h: facts.size[2] === null ? "—" : format.number(facts.size[2]),
+                            })
+                          : t("noSize")}
+                        {" · "}
+                        {t("quantities", { list: facts.quantities.map((q) => format.number(q)).join(", ") })}
+                        {" · "}
+                        {t("answers", { count: facts.answers })}
+                      </p>
+                    )}
+                    {itemError(errors, index) ? (
+                      <p className="text-danger mt-1 text-sm">{itemError(errors, index)}</p>
+                    ) : null}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    iconStart="trash"
+                    loading={busy === item.id}
+                    onClick={() => void remove(item.id)}
+                    aria-label={t("removeItem", { n: index + 1 })}
+                  >
+                    {t("remove")}
+                  </Button>
+                </li>
+              );
+            })}
+          </ol>
+          <Button asChild variant="link" className="mt-2 px-0">
+            <Link href="/products">{t("addMore")}</Link>
+          </Button>
+        </section>
+
+        <section
+          aria-labelledby="basket-details"
+          className="border-border bg-surface rounded-card flex flex-col gap-4 border p-5 md:p-6"
+        >
+          <h2 id="basket-details" className="text-lg font-semibold">
+            {t("details")}
+          </h2>
+          <p className="text-muted text-sm">{t("detailsHint")}</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("postcode")} error={errors.deliveryPostcode} required requiredLabel={t("required")}>
+              <Input
+                inputMode="numeric"
+                autoComplete="postal-code"
+                maxLength={5}
+                value={postcode}
+                onChange={(event) => setPostcode(event.target.value.trim())}
+              />
+            </Field>
+            <Field label={t("targetDate")} hint={t("targetDateHint")}>
+              <Input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
+            </Field>
+          </div>
+          <Field label={t("notes")}>
+            <Textarea rows={3} maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} />
+          </Field>
+        </section>
+
+        {pending ? <Callout tone="warning" title={t("pendingHint")} /> : null}
+        {failure ? <Callout tone="danger" title={failure} /> : null}
+        {/* Discarding, apart from sending: here on a phone (the bar holds only the send button), in the panel above. */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-muted self-start lg:hidden"
+          onClick={() => setDiscarding(true)}
+          disabled={busy !== null}
+        >
+          {t("discard")}
         </Button>
-      </section>
+      </div>
 
-      <section aria-labelledby="basket-details" className="flex flex-col gap-4">
-        <h2 id="basket-details" className="text-lg font-semibold">
-          {t("details")}
-        </h2>
-        <p className="text-muted text-sm">{t("detailsHint")}</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("postcode")} error={errors.deliveryPostcode} required requiredLabel={t("required")}>
-            <Input
-              inputMode="numeric"
-              autoComplete="postal-code"
-              maxLength={5}
-              value={postcode}
-              onChange={(event) => setPostcode(event.target.value.trim())}
-            />
-          </Field>
-          <Field label={t("targetDate")} hint={t("targetDateHint")}>
-            <Input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
-          </Field>
-        </div>
-        <Field label={t("notes")}>
-          <Textarea rows={3} maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} />
-        </Field>
-      </section>
-
-      {pending ? <Callout tone="warning" title={t("pendingHint")} /> : null}
-      {failure ? <Callout tone="danger" title={failure} /> : null}
-
-      <div className="bg-surface border-border sticky bottom-0 flex flex-wrap items-center gap-3 border-t py-3 md:static md:border-0">
+      <aside className="border-border bg-surface z-sticky lg:rounded-card flex flex-col gap-3 max-lg:sticky max-lg:bottom-(--mobile-tab-h) max-lg:-mx-5 max-lg:border-t max-lg:px-5 max-lg:py-3 md:max-lg:bottom-0 md:max-lg:-mx-8 md:max-lg:px-8 lg:sticky lg:top-[calc(var(--site-sticky-top)+1.25rem)] lg:border lg:p-5">
+        <p className="text-muted text-sm max-lg:hidden">{t("items", { count: basket.items.length })}</p>
         <Button
           type="submit"
           size="lg"
+          block
           loading={busy === "submit"}
           disabled={pending || (busy !== null && busy !== "submit")}
         >
           {t("submit", { count: basket.items.length })}
         </Button>
-        <Button type="button" variant="ghost" onClick={() => setDiscarding(true)} disabled={busy !== null}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-muted self-center max-lg:hidden"
+          onClick={() => setDiscarding(true)}
+          disabled={busy !== null}
+        >
           {t("discard")}
         </Button>
-      </div>
+      </aside>
 
       <AlertDialog
         open={discarding}

@@ -22,8 +22,14 @@ export function LibraryToolbar({
   copyLink: ReactNode;
   sort: ReactNode;
 }) {
+  // Project A: from a tablet up the toolbar sticks under the site header while the results scroll, on the
+  // page's own paper (edge to edge on a tablet; within the results column beside the filter sidebar). On a
+  // phone it wraps to several rows, so it stays in the flow there.
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+    <div
+      className="md:bg-bg/95 md:border-border md:z-sticky flex flex-wrap items-center gap-x-4 gap-y-3 md:sticky md:-mx-8 md:border-b md:px-8 md:py-3 md:backdrop-blur min-[65rem]:mx-0 min-[65rem]:px-0"
+      style={{ top: "var(--site-sticky-top)" }}
+    >
       <h2 id="library-results" className="me-auto text-xl font-semibold tabular-nums" aria-live="polite">
         {count}
       </h2>

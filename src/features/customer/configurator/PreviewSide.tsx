@@ -49,11 +49,12 @@ export function PreviewSide({ title, dimensions, rows }: PreviewSideProps) {
     <div className="border-border bg-surface flex flex-col gap-3 border-t p-4 text-sm min-[1100px]:border-s min-[1100px]:border-t-0">
       <h3 className="m-0 text-sm font-semibold">{title}</h3>
       {sizes.length > 0 ? (
-        <dl className="m-0 grid grid-cols-[5rem_1fr] gap-x-1 gap-y-1 tabular-nums">
+        // Label above value (Project A), the value and its unit kept on one line ("140 × 97.5 × 60 มม.").
+        <dl className="m-0 flex flex-col gap-2 tabular-nums">
           {sizes.map((row) => (
-            <div key={row.label} className="contents">
-              <dt className="text-muted">{row.label}</dt>
-              <dd className="m-0">{row.value}</dd>
+            <div key={row.label}>
+              <dt className="text-muted text-xs">{row.label}</dt>
+              <dd className="m-0 font-medium whitespace-nowrap">{row.value}</dd>
             </div>
           ))}
         </dl>
@@ -64,10 +65,10 @@ export function PreviewSide({ title, dimensions, rows }: PreviewSideProps) {
         </p>
       ) : null}
       {rows.length > 0 ? (
-        <dl className="m-0 grid grid-cols-[5rem_1fr] gap-x-1 gap-y-1">
+        <dl className="border-border m-0 flex flex-col gap-2 border-t pt-3">
           {rows.map((row) => (
-            <div key={row.label} className="contents">
-              <dt className="text-muted">{row.label}</dt>
+            <div key={row.label}>
+              <dt className="text-muted text-xs">{row.label}</dt>
               <dd className="m-0 break-words">{row.value}</dd>
             </div>
           ))}

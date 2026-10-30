@@ -4,7 +4,7 @@ import master from "../../../../docs/design-tool/style-library-master.json" with
 import th from "../../../i18n/messages/th/customer/styles.json" with { type: "json" };
 import en from "../../../i18n/messages/en/customer/styles.json" with { type: "json" };
 
-import { shortName, topicFilter, topicsOf, TOPICS, variantIn } from "./topics";
+import { shortName, topicFilter, topicHeading, topicsOf, TOPICS, variantIn } from "./topics";
 import { USE_CASES } from "./use-cases";
 
 describe("option topics (D-410)", () => {
@@ -54,5 +54,18 @@ describe("option topics (D-410)", () => {
   it("shortens a style's name for a title", () => {
     expect(shortName("กล่องฝาเสียบ (ปรับฝาบน-ล่างได้)")).toBe("กล่องฝาเสียบ");
     expect(shortName("Pillow box")).toBe("Pillow box");
+  });
+});
+
+describe("topicHeading", () => {
+  it("adds the feature's phrase to the short name", () => {
+    expect(topicHeading("กล่องฝาเสียบ (Tuck end)", "มีหน้าต่าง", "th")).toBe("กล่องฝาเสียบมีหน้าต่าง");
+    expect(topicHeading("Tuck-end carton", "with a window", "en")).toBe("Tuck-end carton with a window");
+  });
+
+  it("does not repeat a phrase the name already says", () => {
+    expect(topicHeading("กล่องเมลเลอร์ปิดด้วยเทปกาวในตัว", "ปิดด้วยเทปกาวในตัว", "th")).toBe(
+      "กล่องเมลเลอร์ปิดด้วยเทปกาวในตัว",
+    );
   });
 });

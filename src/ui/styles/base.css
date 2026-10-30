@@ -120,23 +120,20 @@
   }
 
   /* Placeholders are decorative text: the token is gated at 3:1, not 4.5:1. */
+  /* A hint, not a value: the field's own size (never larger), normal weight and spacing, in the muted ink —
+   * a field's bold or tracking (a phone number) never carries over to its example (owner feedback 2026-10-30). */
   ::placeholder {
-    color: var(--color-subtle);
+    color: var(--color-muted);
     opacity: 1;
-    /* A hint, not a value: a step below the control's own text, which Thai in Anuphan
-     * otherwise matches in weight and reads as already filled in (owner feedback 2026-10-14). */
-    font-size: 0.9375em;
+    font-size: 1em;
+    font-weight: 400;
+    letter-spacing: normal;
   }
 
   /*
    * Storefront controls at 15 px on a desktop: 16 px Thai in a 40-px control crowds its box.
    * A phone keeps 16 px — iOS Safari zooms into any smaller control on focus.
    */
-  @media (min-width: 768px) {
-    [data-zone="customer"] :is(input, textarea, select)[data-size="md"] {
-      font-size: 0.9375rem;
-    }
-  }
 
   ::selection {
     background-color: var(--color-primary-subtle);
@@ -364,9 +361,11 @@
   }
 }
 
-/* The product page's phone buy bar (pdp redesign, `PdpMobileBar`): the page ends above it, so it covers nothing. */
+/* The product page's phone buy bar (pdp redesign, `PdpMobileBar`) and the other pages' bottom action bar
+   (`MobileActionBar`): the page ends above it, so it covers nothing. */
 @media (max-width: 47.999rem) {
-  body:has([data-pdp-bar]) {
+  body:has([data-pdp-bar]),
+  body:has([data-mobile-bar]) {
     padding-bottom: 4.5rem;
   }
 }
@@ -569,4 +568,53 @@
 }
 :root[data-vat-basis="excl"] [data-vat-figure="excl"] {
   display: contents;
+}
+
+/*
+ * One text size for every storefront field (owner feedback 2026-10-30): 16 px on a phone — iOS Safari zooms into
+ * any smaller control on focus — and 15 px from md, whatever utility the field carries (`text-base` on the product
+ * and styles searches, `text-lg` on the sign-in phone). The placeholder follows at 1em. Unlayered on purpose, so
+ * it wins over the utilities layer. Number steppers and one-time-code boxes keep their own sizes.
+ */
+[data-zone="customer"]
+  :is(
+    input:is(
+      [type="text"],
+      [type="search"],
+      [type="email"],
+      [type="tel"],
+      [type="url"],
+      [type="password"],
+      [type="date"],
+      :not([type])
+    ),
+    textarea,
+    select,
+    button[aria-haspopup="listbox"]
+  ):not([autocomplete="one-time-code"]) {
+  font-size: 1rem;
+}
+/* Every standard field — a text input, a select (native or the listbox button) — is 44 px tall in the storefront. */
+[data-zone="customer"] :is(input, select, button[aria-haspopup="listbox"], [data-field-part])[data-size="md"] {
+  height: 2.75rem;
+}
+@media (width >= 48rem) {
+  [data-zone="customer"]
+    :is(
+      input:is(
+        [type="text"],
+        [type="search"],
+        [type="email"],
+        [type="tel"],
+        [type="url"],
+        [type="password"],
+        [type="date"],
+        :not([type])
+      ),
+      textarea,
+      select,
+      button[aria-haspopup="listbox"]
+    ):not([autocomplete="one-time-code"]) {
+    font-size: 0.9375rem;
+  }
 }

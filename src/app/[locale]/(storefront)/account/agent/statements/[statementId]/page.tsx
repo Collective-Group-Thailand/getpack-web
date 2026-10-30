@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { CertificateButton } from "@/features/customer/agent/AgentActions";
+import { PortalTable } from "@/features/customer/account/PortalTable";
+import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { AgentFrame } from "@/features/customer/agent/AgentPieces";
 import { getMyStatement, requireAgent } from "@/features/customer/agent/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -21,44 +23,70 @@ export default async function Page({ params }: { params: Promise<{ statementId: 
   await requireCustomer();
   await requireAgent();
   const { statementId } = await params;
-  const [t, tc, format, s] = await Promise.all([
+  const [t, tc, tt, tNav, format, s] = await Promise.all([
     getTranslations("agent.statements"),
     getTranslations("agent.commissions"),
+    getTranslations("agent.table"),
+    getTranslations("agent.nav"),
     getFormat(),
     getMyStatement(statementId),
   ]);
   if (!s) notFound();
   return (
     <AgentFrame
+      back={{ href: "/account/agent/statements", label: tNav("statements") }}
       title={t("detailTitle", { period: format.date(s.periodStart, { style: "month" }) })}
+      status={<StatusChip map={AGENT_STATEMENT_STATUS} value={s.status} size="md" />}
       intro={s.statementNo}
       actions={s.hasWhtCertificate ? <CertificateButton statementId={s.id} /> : null}
     >
-      <DescriptionList
+      {/* Project B4: the three amounts as summary cards (what is transferred on the tint), the dates beside the
+          entries. */}
+      <SummaryCards
+        columns={3}
         items={[
-          { term: t("status"), description: <StatusChip map={AGENT_STATEMENT_STATUS} value={s.status} /> },
-          { term: t("total"), description: format.thb(s.totalAmount) },
-          { term: t("wht"), description: format.thb(s.whtAmount) },
-          { term: t("paid"), description: format.thb(s.paidAmount) },
-          { term: t("approvedAt"), description: format.date(s.approvedAt) },
-          { term: t("paidAt"), description: format.date(s.paidAt) },
+          { key: "paid", label: t("paid"), value: format.thb(s.paidAmount), icon: "wallet", highlight: true },
+          { key: "total", label: t("total"), value: format.thb(s.totalAmount), icon: "coins" },
+          { key: "wht", label: t("wht"), value: format.thb(s.whtAmount), icon: "receipt" },
         ]}
       />
-      <ul className="divide-border border-border bg-surface divide-y rounded-2xl border">
-        {s.entries.map((entry) => (
-          <li key={entry.id} className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
-            <span>
-              {tc(`kinds.${entry.kind}`)}
-              {entry.orderCode ? <span className="tabular-nums"> {entry.orderCode}</span> : null}
-              {entry.customerName ? <span className="text-muted"> · {entry.customerName}</span> : null}
-            </span>
-            <span className="flex items-center gap-3">
-              <span className="font-semibold tabular-nums">{format.thb(entry.amount)}</span>
-              <StatusChip map={AGENT_COMMISSION_STATUS} value={entry.status} />
-            </span>
-          </li>
-        ))}
-      </ul>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <PortalTable
+          caption={t("detailTitle", { period: format.date(s.periodStart, { style: "month" }) })}
+          columns={[
+            { key: "item", label: tt("item"), className: "md:w-[50%]" },
+            { key: "amount", label: tt("amount"), numeric: true, className: "md:whitespace-nowrap" },
+            { key: "status", label: tt("status"), className: "md:whitespace-nowrap" },
+          ]}
+          rows={s.entries.map((entry) => ({
+            id: entry.id,
+            phoneSubtitle: entry.customerName,
+            cells: {
+              item: (
+                <span className="block min-w-0">
+                  <span className="block font-semibold">
+                    {tc(`kinds.${entry.kind}`)}
+                    {entry.orderCode ? <span className="font-normal tabular-nums"> {entry.orderCode}</span> : null}
+                  </span>
+                  {entry.customerName ? (
+                    <span className="text-muted hidden text-xs font-normal md:block">{entry.customerName}</span>
+                  ) : null}
+                </span>
+              ),
+              amount: <span className="font-semibold">{format.thb(entry.amount)}</span>,
+              status: <StatusChip map={AGENT_COMMISSION_STATUS} value={entry.status} />,
+            },
+          }))}
+        />
+        <div className="border-border bg-surface rounded-card border p-4">
+          <DescriptionList
+            items={[
+              { term: t("approvedAt"), description: format.date(s.approvedAt) },
+              { term: t("paidAt"), description: format.date(s.paidAt) },
+            ]}
+          />
+        </div>
+      </div>
     </AgentFrame>
   );
 }

@@ -4,9 +4,9 @@ import { getTranslations } from "next-intl/server";
 
 import { getMyArtwork } from "@/features/customer/artwork/api.server";
 import { ProofViewer } from "@/features/customer/artwork/ProofViewer";
+import { LiffHeader } from "@/features/customer/liff/LiffHeader";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
-import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("proof");
@@ -21,12 +21,12 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
   if (!artwork) notFound();
   return (
     <div className="flex flex-col gap-4">
-      <Link href={`/liff/orders/${orderId}`} className="text-primary text-sm">
-        {t("back")}
-      </Link>
-      <h1 className="text-xl font-bold">{t("titleFor", { code: artwork.order.orderCode })}</h1>
+      <LiffHeader
+        back={{ href: `/liff/orders/${orderId}`, label: t("back") }}
+        title={t("titleFor", { code: artwork.order.orderCode })}
+      />
       {artwork.proofs.length === 0 ? (
-        <p className="text-muted">{t("noneHint")}</p>
+        <p className="border-border bg-surface rounded-card text-muted border p-4">{t("noneHint")}</p>
       ) : (
         <ProofViewer initial={artwork} version={null} />
       )}

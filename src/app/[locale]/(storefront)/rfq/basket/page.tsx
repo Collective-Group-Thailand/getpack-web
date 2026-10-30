@@ -20,10 +20,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ a
     searchParams,
   ]);
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
+    <div className="max-w-nav mx-auto flex w-full flex-col gap-6 px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <header>
-        <h1 className="text-title leading-tight">{t("title")}</h1>
-        <p className="text-muted mt-1">{t("intro")}</p>
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance md:text-[2.25rem]">
+          {t("title")}
+        </h1>
+        <p className="text-muted mt-2 max-w-[60ch] text-pretty">{t("intro")}</p>
       </header>
       {added ? <Callout tone="success" title={t("added")} /> : null}
       <BasketDraft initial={basket} />

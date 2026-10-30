@@ -45,13 +45,13 @@ export function CheckoutStepper({
                 className={cn(
                   "grid size-6.5 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums",
                   done && "bg-primary text-primary-fg",
-                  isCurrent && "bg-fg text-bg",
+                  isCurrent && "bg-primary text-primary-fg",
                   !done && !isCurrent && "bg-bg-subtle text-muted",
                 )}
               >
                 {done ? <Icon name="check" size={14} /> : index + 1}
               </span>
-              <span className="truncate max-sm:sr-only">{t(`steps.${step}`)}</span>
+              <span className="leading-tight max-sm:sr-only">{t(`steps.${step}`)}</span>
               {done ? <span className="sr-only">{t("stepState.done")}</span> : null}
               {!open && !isCurrent ? <span className="sr-only">{t("stepState.locked")}</span> : null}
             </>
@@ -60,7 +60,9 @@ export function CheckoutStepper({
             "flex min-h-12 w-full min-w-0 items-center gap-2.5 px-4 py-3 text-start text-sm font-medium max-sm:justify-center",
             "focus-visible:ring-focus-ring outline-none focus-visible:ring-2 focus-visible:ring-inset",
             done ? "text-fg/80" : "text-muted",
-            isCurrent && "bg-primary-subtle text-fg",
+            // The current step: the brand tint with a green rule under it (Project A), never a black chip.
+            isCurrent &&
+              "bg-primary-subtle text-fg after:bg-primary relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5",
           );
           return (
             <li key={step} className="border-border min-w-0 flex-1 border-e last:border-e-0">

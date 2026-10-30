@@ -6,11 +6,13 @@ import { pick } from "@/features/customer/catalog/localize";
 import { getFormat } from "@/features/shared/format/server";
 import { axisLabel, facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { COMPARE_LIMIT } from "@/features/customer/styles/compare-limit";
+import { illustrationOf } from "@/features/customer/styles/illustration";
 import { styleHref, STYLES_HREF } from "@/features/customer/styles/paths";
 import { Link } from "@/i18n/navigation";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { LINE_PLATE, ProductIllustration, ProductPlate } from "@/ui/components/ProductIllustration";
 
 type SearchParams = Promise<{ codes?: string | string[] }>;
 
@@ -92,39 +94,74 @@ export default async function ComparePage({
     },
   ];
 
+  // The empty state's picture: as many dashed slots as can be compared, each with a thin-line box — "up to N side
+  // by side" without a word of new copy (Project A). Decorative.
+  const slots = (
+    <span aria-hidden="true" className="mb-2 flex gap-3">
+      {Array.from({ length: Math.min(limit, 4) }, (_, index) => (
+        <span
+          key={index}
+          className={`${LINE_PLATE} rounded-control grid h-20 w-16 place-items-center border border-dashed border-current md:h-24 md:w-20`}
+        >
+          <ProductIllustration family={(["tuck", "shipping", "rigid", "food"] as const)[index]!} className="max-w-11" />
+        </span>
+      ))}
+    </span>
+  );
+
   return (
-    <div className="max-w-content mx-auto px-5 py-8 md:px-8 md:py-12">
+    <div className="max-w-nav mx-auto px-5 pt-6 pb-16 md:px-8 md:pt-8 md:pb-20 xl:px-12">
       <Breadcrumbs
         label={t("breadcrumbs.library")}
         items={[{ label: t("breadcrumbs.library"), href: STYLES_HREF }, { label: t("compare.heading") }]}
       />
-      <h1 className="mt-4 text-3xl font-bold">{t("compare.heading")}</h1>
+      <h1 className="mt-3 text-[1.75rem] leading-[1.15] font-semibold tracking-tight md:text-[2.25rem]">
+        {t("compare.heading")}
+      </h1>
       {list.length === 0 ? (
         <EmptyState
-          className="mt-8"
-          icon="columns"
+          className="mx-auto mt-8 max-w-xl py-14"
+          illustration={slots}
+          titleAs="h2"
           title={t("compare.emptyTitle")}
           description={t("compare.emptyBody", { limit })}
           action={
-            <Button asChild variant="secondary">
+            <Button asChild size="lg">
               <Link href={STYLES_HREF}>{t("compare.back")}</Link>
             </Button>
           }
         />
       ) : (
-        <div className="mt-8 overflow-x-auto">
+        // One card: a picture and the name over each column, the attribute column pinned while a phone scrolls the
+        // table sideways, a hairline between rows.
+        <div
+          className="border-border bg-surface rounded-panel mt-6 overflow-x-auto border"
+          tabIndex={0}
+          role="region"
+          aria-label={t("compare.heading")}
+        >
           <table className="w-full min-w-[40rem] border-collapse text-sm">
             <caption className="sr-only">{t("compare.heading")}</caption>
             <thead>
               <tr>
-                <th scope="col" className="text-muted w-40 p-3 text-start font-medium">
+                <th
+                  scope="col"
+                  className="bg-surface text-muted sticky start-0 z-[1] w-40 p-4 text-start align-bottom font-medium"
+                >
                   {t("compare.attribute")}
                 </th>
                 {list.map((s) => {
                   const name = pick(locale, s.nameTh, s.nameEn);
                   return (
-                    <th key={s.code} scope="col" className="p-3 text-start align-top font-semibold">
-                      <Link href={styleHref(s.code, name)} className="text-primary underline-offset-2 hover:underline">
+                    <th key={s.code} scope="col" className="min-w-52 p-4 text-start align-top font-semibold">
+                      <span className="rounded-control border-border mb-3 block overflow-hidden border">
+                        <ProductPlate family={illustrationOf(s)} className="p-4" />
+                      </span>
+                      <span className="text-muted block text-xs font-normal tabular-nums">{s.code}</span>
+                      <Link
+                        href={styleHref(s.code, name)}
+                        className="text-fg hover:text-primary mt-0.5 block leading-snug underline-offset-2 hover:underline"
+                      >
                         {name}
                       </Link>
                     </th>
@@ -135,11 +172,14 @@ export default async function ComparePage({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.key} className="border-border border-t">
-                  <th scope="row" className="text-muted p-3 text-start align-top font-normal">
+                  <th
+                    scope="row"
+                    className="bg-surface text-muted sticky start-0 z-[1] p-4 text-start align-top font-normal"
+                  >
                     {row.label}
                   </th>
                   {list.map((s) => (
-                    <td key={s.code} className="p-3 align-top">
+                    <td key={s.code} className="p-4 align-top">
                       {row.cell(s)}
                     </td>
                   ))}

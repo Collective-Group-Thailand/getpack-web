@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import common from "@/i18n/messages/th/common/common.json";
 import styles from "@/i18n/messages/th/customer/styles.json";
 
 import { CopyLinkButton, SortSelect } from "./LibraryControls";
@@ -14,7 +15,7 @@ const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn() }));
 vi.mock("@/ui/components/Toast", () => ({ toast }));
 
 const wrap = (node: React.ReactNode) => (
-  <NextIntlClientProvider locale="th" messages={{ styles }}>
+  <NextIntlClientProvider locale="th" messages={{ common, styles }}>
     {node}
   </NextIntlClientProvider>
 );
@@ -26,18 +27,24 @@ beforeEach(() => {
 });
 
 describe("the toolbar's controls", () => {
+  // The shared select field (a listbox button on a desktop pointer, the phone's own picker on touch).
+  const trigger = () => screen.getByRole("button", { name: styles.library.sort });
+
   it("offers exactly the orders the API supports, popular first", () => {
     render(wrap(<SortSelect params={emptyParams()} sorts={sorts} />));
+    expect(trigger()).toHaveTextContent("เรียง: ยอดนิยม");
+    fireEvent.click(trigger());
     const options = screen.getAllByRole("option").map((o) => o.textContent);
     expect(options).toEqual(["ยอดนิยม", "มาใหม่", "ราคาทันทีก่อน", "ชื่อ ก–ฮ"].map((l) => `เรียง: ${l}`));
-    expect(screen.getByRole("combobox")).toHaveValue("popular");
   });
 
   it("replaces the URL with the chosen order and leaves the default out", () => {
     render(wrap(<SortSelect params={readParams({ use: "gift" })} sorts={sorts} />));
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new" } });
+    fireEvent.click(trigger());
+    fireEvent.click(screen.getByRole("option", { name: "เรียง: มาใหม่" }));
     expect(router.replace).toHaveBeenCalledWith("/styles?use=gift&sort=new", { scroll: false });
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "popular" } });
+    fireEvent.click(trigger());
+    fireEvent.click(screen.getByRole("option", { name: "เรียง: ยอดนิยม" }));
     expect(router.replace).toHaveBeenLastCalledWith("/styles?use=gift", { scroll: false });
   });
 

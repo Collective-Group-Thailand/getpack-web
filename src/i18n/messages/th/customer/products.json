@@ -119,7 +119,9 @@
     "emptyReset": "ดูสินค้าทั้งหมด",
     "searchEmptyTitle": "ไม่พบสินค้าที่ตรงกับ “{q}”",
     "uncategorised": "อื่น ๆ",
-    "categoryPage": "ดูหน้าหมวด{name}ทั้งหมด"
+    "categoryPage": "ดูหน้าหมวด{name}ทั้งหมด",
+    "moreCategories": "อีก {count, number} หมวด",
+    "fewerCategories": "แสดงน้อยลง"
   },
   "card": {
     "instantBadge": "ราคาทันที",

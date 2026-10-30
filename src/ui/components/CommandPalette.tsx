@@ -154,7 +154,7 @@ export function CommandPalette({
               aria-autocomplete="list"
               autoComplete="off"
               spellCheck={false}
-              className="placeholder:text-subtle h-12 flex-1 bg-transparent text-base outline-none"
+              className="placeholder:text-muted h-12 flex-1 bg-transparent text-base outline-none"
               placeholder={placeholder}
               value={value}
               onChange={(event) => {

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
@@ -29,6 +29,17 @@ describe("ProductCard", () => {
     const { container } = render(<ProductCard title={<a href="#p">ป้ายแท็ก</a>} image={null} />);
     expect(container.querySelector("img")).toBeNull();
     expect(container.querySelector('[aria-hidden="true"] svg')).not.toBeNull();
+  });
+
+  it("never leaves an empty plate: a picture that fails to load gives way to the line drawing", () => {
+    const { container } = render(
+      <ProductCard title={<a href="#p">กล่องไปรษณีย์</a>} image={{ src: "/missing.jpg", alt: "กล่องไปรษณีย์" }} />,
+    );
+    fireEvent.error(screen.getByAltText("กล่องไปรษณีย์"));
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector('[aria-hidden="true"] svg')).not.toBeNull();
+    // The link still names the product.
+    expect(screen.getByRole("link", { name: "กล่องไปรษณีย์" })).toBeInTheDocument();
   });
 
   it("loads an above-the-fold image eagerly and the rest lazily", () => {

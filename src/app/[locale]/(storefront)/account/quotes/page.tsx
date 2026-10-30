@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
+import { TabBar } from "@/features/customer/account/AccountTabs";
 import { getSavedQuotes } from "@/features/customer/account/api.server";
 import { PortalTable } from "@/features/customer/account/PortalTable";
+import { QuoteRowActions } from "@/features/customer/account/QuoteRowActions";
+import { customerStatusLabel } from "@/features/customer/account/status-label";
+import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { configureHref } from "@/features/customer/catalog/paths";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
-import { RequestCallOff } from "@/features/customer/repeat/RequestCallOff";
-import { RequestSample } from "@/features/customer/samples/RequestSample";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { QUOTE_STATUS } from "@/domain/status";
@@ -25,14 +28,95 @@ export async function generateMetadata(): Promise<Metadata> {
  * product and spec lines (`summary`), and reopens in the configurator of its product, where it is
  * priced again at today's prices.
  */
-export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
-  const [, { locale }] = await Promise.all([requireCustomer(), params]);
-  const [t, format, quotes] = await Promise.all([getTranslations("account.quotes"), getFormat(), getSavedQuotes()]);
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const [, { locale }, search] = await Promise.all([requireCustomer(), params, searchParams]);
+  const [t, tHome, tTabs, tStatus, format, all] = await Promise.all([
+    getTranslations("account.quotes"),
+    getTranslations("account.home"),
+    getTranslations("account.tabs"),
+    getTranslations("status"),
+    getFormat(),
+    getSavedQuotes(),
+  ]);
+
+  // Project B2: the figures on top (quotes whose price still holds, and the first of them to lapse; ordered;
+  // expired), then the statuses present as tabs over the table.
+  const open = all.filter((quote) => quote.status === "saved" || quote.status === "shared");
+  const firstToLapse = open.map((quote) => quote.validUntil).sort()[0];
+  const countOf = (status: string) => all.filter((quote) => quote.status === status).length;
+  const statuses = (Object.keys(QUOTE_STATUS) as (keyof typeof QUOTE_STATUS)[]).filter((status) => countOf(status) > 0);
+  const status = statuses.find((value) => value === search.status);
+  const quotes = status ? all.filter((quote) => quote.status === status) : all;
 
   return (
     <div>
-      <h1 className="text-title leading-tight">{t("title")}</h1>
-      <p className="text-muted mt-1">{t("intro")}</p>
+      <AccountHeader
+        title={t("title")}
+        lede={t("intro")}
+        actions={
+          <Button asChild iconStart="plus">
+            <Link href="/products">{t("browse")}</Link>
+          </Button>
+        }
+      />
+      {all.length > 0 ? (
+        <>
+          <SummaryCards
+            className="mt-6"
+            columns={3}
+            items={[
+              {
+                key: "open",
+                label: tHome("openQuotes"),
+                value: format.number(open.length),
+                hint: firstToLapse ? tHome("lockedUntil", { date: format.date(firstToLapse) }) : undefined,
+                icon: "receipt",
+                highlight: true,
+              },
+              {
+                key: "converted",
+                label: customerStatusLabel(tStatus, QUOTE_STATUS, "converted"),
+                value: format.number(countOf("converted")),
+                icon: "check",
+              },
+              {
+                key: "expired",
+                label: customerStatusLabel(tStatus, QUOTE_STATUS, "expired"),
+                value: format.number(countOf("expired")),
+                icon: "clock",
+              },
+            ]}
+          />
+          {statuses.length > 1 ? (
+            <TabBar
+              className="mt-6"
+              label={t("table.status")}
+              items={[
+                {
+                  key: "all",
+                  href: "/account/quotes",
+                  label: tTabs("all"),
+                  current: !status,
+                  count: all.length,
+                },
+                ...statuses.map((value) => ({
+                  key: value,
+                  href: `/account/quotes?status=${value}`,
+                  label: customerStatusLabel(tStatus, QUOTE_STATUS, value),
+                  current: status === value,
+                  count: countOf(value),
+                })),
+              ]}
+            />
+          ) : null}
+        </>
+      ) : null}
       {quotes.length === 0 ? (
         <EmptyState
           className="mt-8"
@@ -47,15 +131,20 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         />
       ) : (
         <PortalTable
-          className="mt-6"
+          className="mt-4"
           caption={t("table.caption")}
           columns={[
-            { key: "product", label: t("table.product"), className: "md:min-w-[13rem]" },
+            { key: "product", label: t("table.product"), className: "md:w-[40%] md:min-w-[13rem]" },
             { key: "quantity", label: t("table.quantity"), numeric: true, className: "md:whitespace-nowrap" },
             { key: "price", label: t("table.price"), numeric: true, className: "md:whitespace-nowrap" },
-            { key: "validUntil", label: t("table.validUntil") },
-            { key: "status", label: t("table.status") },
-            { key: "actions", label: t("table.actions"), srOnly: true, className: "text-end" },
+            { key: "validUntil", label: t("table.validUntil"), className: "md:min-w-[7.5rem] md:whitespace-nowrap" },
+            { key: "status", label: t("table.status"), className: "md:whitespace-nowrap" },
+            {
+              key: "actions",
+              label: t("table.actions"),
+              srOnly: true,
+              className: "text-end md:w-px md:whitespace-nowrap",
+            },
           ]}
           rows={quotes.map((quote) => {
             const option = quote.options[0];
@@ -77,7 +166,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                       </span>
                     ) : null}
                     {specs ? (
-                      <span className="text-muted mt-0.5 line-clamp-2 text-xs font-normal" title={specs}>
+                      <span className="text-muted mt-0.5 line-clamp-1 text-xs font-normal" title={specs}>
                         {specs}
                       </span>
                     ) : null}
@@ -95,20 +184,17 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 validUntil: format.date(quote.validUntil),
                 status: <StatusChip map={QUOTE_STATUS} value={quote.status} />,
                 actions: (
-                  <span className="flex flex-wrap justify-end gap-2">
-                    {quote.status === "saved" ? <RequestSample quoteId={quote.id} label={label} /> : null}
-                    {quote.status === "saved" && option ? (
-                      <RequestCallOff quoteId={quote.id} optionId={option.id} label={label} />
-                    ) : null}
-                    {quote.summary.product && quote.source === "instant" ? (
-                      <Button asChild size="sm" variant="secondary">
-                        <Link href={`${configureHref(quote.summary.product.slug)}?quote=${quote.id}`}>
-                          {t("reopen")}
-                          <span className="sr-only"> {label}</span>
-                        </Link>
-                      </Button>
-                    ) : null}
-                  </span>
+                  <QuoteRowActions
+                    quoteId={quote.id}
+                    optionId={quote.status === "saved" && option ? option.id : null}
+                    label={label}
+                    canSample={quote.status === "saved"}
+                    reopenHref={
+                      quote.summary.product && quote.source === "instant"
+                        ? `${configureHref(quote.summary.product.slug)}?quote=${quote.id}`
+                        : null
+                    }
+                  />
                 ),
               },
             };

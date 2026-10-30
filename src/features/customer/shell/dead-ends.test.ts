@@ -9,8 +9,6 @@ import { describe, expect, it } from "vitest";
  */
 const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/shared/shell/NotificationBell.tsx": "inside the bell's popover; closing it is the next step",
-  "src/app/[locale]/(storefront)/account/referral/page.tsx": "the invite link and its copy button are above it",
-  "src/features/customer/account/AddressBook.tsx": "the add-address form is right below it",
 };
 
 const CUSTOMER = ["src/app/[[]locale]/**/*.tsx", "src/features/customer/**/*.tsx", "src/features/shared/**/*.tsx"];

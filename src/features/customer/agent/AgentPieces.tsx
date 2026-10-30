@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AccountHeader } from "@/features/customer/account/AccountHeader";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import type { Schemas } from "@/lib/api/types";
@@ -14,29 +15,27 @@ export async function AgentFrame({
   title,
   intro,
   actions,
+  back,
+  status,
   children,
 }: {
   title: string;
   intro?: string;
   actions?: React.ReactNode;
+  /** A detail page's way back (Project B4). */
+  back?: { href: string; label: string };
+  status?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-title leading-tight">{title}</h1>
-          {intro ? <p className="text-muted mt-1">{intro}</p> : null}
-        </div>
-        {actions}
-      </div>
+      <AccountHeader back={back} title={title} status={status} lede={intro} actions={actions} />
       <AgentNav />
       {children}
     </div>
   );
 }
 
-/** A plan's terms in plain words (D-418, D-419), from the API's figures. */
 export async function PlanTerms({ terms }: { terms: Terms }) {
   const [t, format] = await Promise.all([getTranslations("agent.terms"), getFormat()]);
   return (
