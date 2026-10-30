@@ -33,7 +33,7 @@ export default async function EditProductionOrderPage({ params }: { params: Prom
   });
   const back = { href: `/planning/orders/${moId}`, label: read.data?.order.moNo ?? t("pageTitle") };
   return (
-    <PartnerPage wide title={read.data ? t("heading", { no: read.data.order.moNo }) : t("pageTitle")} back={back}>
+    <PartnerPage full title={read.data ? t("heading", { no: read.data.order.moNo }) : t("pageTitle")} back={back}>
       {read.data ? <MoEditForm {...read.data} /> : <PageError error={read.error} />}
     </PartnerPage>
   );

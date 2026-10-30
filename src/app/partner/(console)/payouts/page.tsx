@@ -5,8 +5,8 @@ import { getTranslations } from "next-intl/server";
 import { PAYABLE_STATUS, PAYOUT_ITEM_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { termsFrom, TermsHelp } from "@/features/partner/terms";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
+import { ListToolbar, Row, RowList, ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
@@ -40,6 +40,7 @@ export default async function PayoutsPage({ searchParams }: Props) {
   const t = await getTranslations("partnerBilling.payouts");
   const format = await getFormat();
   const tTerms = await getTranslations("partner.terms");
+  const tBilling = await getTranslations("partnerBilling");
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
@@ -82,26 +83,28 @@ export default async function PayoutsPage({ searchParams }: Props) {
       description={t("body")}
       actions={
         <>
-          <Button asChild variant="secondary" size="md" iconStart="calendar">
+          <Button asChild variant="secondary" size="lg" iconStart="calendar">
             <Link href="/payouts/calendar">{t("calendarLink")}</Link>
           </Button>
-          <Button asChild variant="secondary" size="md" iconStart="spreadsheet">
+          <Button asChild variant="secondary" size="lg" iconStart="spreadsheet">
             <Link href="/payouts/statement">{t("statementLink")}</Link>
           </Button>
         </>
       }
-      wide
+      full
     >
       {summary.data ? (
         <section aria-label={t("summary.label")} className="flex flex-col gap-2">
-          <StatStrip
+          <PartnerStats
             label={t("summary.label")}
+            columns={4}
             items={[
               {
                 key: "owed",
                 label: t("summary.owed"),
                 value: format.thb(summary.data.period.closing),
                 hint: t("summary.asOf", { date: format.date(summary.data.period.to) }),
+                highlight: true,
               },
               { key: "earned", label: t("summary.earned"), value: format.thb(summary.data.period.earned) },
               { key: "paid", label: t("summary.paid"), value: format.thb(summary.data.period.paid) },
@@ -128,16 +131,18 @@ export default async function PayoutsPage({ searchParams }: Props) {
       />
       <PartnerSection title={t("scheduleTitle")} description={t("scheduleBody")}>
         {schedule.data ? (
-          <ViewTabs
-            label={t("views.label")}
-            current={view}
-            items={VIEWS.map((item) => ({
-              key: item,
-              href: item === "due" ? "/payouts" : `/payouts?view=${item}`,
-              label: t(`views.${item}`),
-              count: schedule.data!.data.filter((row) => inView(item, row)).length,
-            }))}
-          />
+          <ListToolbar>
+            <ViewTabs
+              label={t("views.label")}
+              current={view}
+              items={VIEWS.map((item) => ({
+                key: item,
+                href: item === "due" ? "/payouts" : `/payouts?view=${item}`,
+                label: t(`views.${item}`),
+                count: schedule.data!.data.filter((row) => inView(item, row)).length,
+              }))}
+            />
+          </ListToolbar>
         ) : null}
         {schedule.data && sameTerms ? (
           <p className="text-muted text-sm">
@@ -166,6 +171,7 @@ export default async function PayoutsPage({ searchParams }: Props) {
                 ...(["advance", "goods_receipt", "retention"] as const).map((source) => ({
                   key: source,
                   header: t(`sources.${source}`),
+                  align: "end" as const,
                   cell: (row: ScheduleData[number]) => {
                     const item = row.items.find((candidate) => candidate.source === source);
                     if (!item)
@@ -177,7 +183,7 @@ export default async function PayoutsPage({ searchParams }: Props) {
                     return (
                       <span
                         className={cn(
-                          "flex flex-col items-start gap-0.5",
+                          "flex flex-col items-end gap-0.5 max-lg:items-start",
                           // A cancelled advance (paid with the balance instead) is history, not money due.
                           item.status === "cancelled" && "text-muted",
                         )}
@@ -222,7 +228,21 @@ export default async function PayoutsPage({ searchParams }: Props) {
               ]}
             />
           ) : (
-            <EmptyState icon="wallet" title={view === "due" ? t("views.dueEmpty") : t("scheduleEmpty")} />
+            <EmptyState
+              icon="wallet"
+              title={view === "due" ? t("views.dueEmpty") : t("scheduleEmpty")}
+              action={
+                view !== "all" ? (
+                  <Button asChild variant="secondary" iconEnd="arrow-right">
+                    <Link href="/payouts?view=all">{t("views.all")}</Link>
+                  </Button>
+                ) : (
+                  <Button asChild variant="secondary" iconStart="receipt">
+                    <Link href="/billing">{tBilling("title")}</Link>
+                  </Button>
+                )
+              }
+            />
           )
         ) : (
           <PageError error={schedule.error} />
@@ -232,33 +252,37 @@ export default async function PayoutsPage({ searchParams }: Props) {
       <PartnerSection title={t("historyTitle")}>
         {history.data ? (
           history.data.length ? (
-            <ul className="flex flex-col gap-2">
+            <RowList label={t("historyTitle")}>
               {history.data.map((payout) => (
-                <li key={payout.id}>
-                  <Link
-                    href={`/payouts/${payout.id}`}
-                    className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 flex-wrap items-center gap-2 rounded-xl border p-3"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-semibold tabular-nums">{payout.pvNumber ?? t("noPv")}</span>
-                      <span className="text-muted text-sm">
-                        {t(`kinds.${payout.kind}`)} ·{" "}
-                        {payout.paidOn
-                          ? t("paidTo", {
-                              date: format.date(payout.paidOn),
-                              last4: payout.bankAccountLast4 ?? "—",
-                            })
-                          : t("payOn", { date: format.date(payout.payOn) })}
-                      </span>
-                    </span>
-                    <span className="text-lg font-semibold tabular-nums">{format.thb(payout.cashAmount)}</span>
-                    <StatusChip map={PAYOUT_ITEM_STATUS} value={payout.status} />
-                  </Link>
-                </li>
+                <Row
+                  key={payout.id}
+                  href={`/payouts/${payout.id}`}
+                  icon="coins"
+                  title={
+                    <>
+                      <span className="tabular-nums">{payout.pvNumber ?? t("noPv")}</span>
+                      <StatusChip map={PAYOUT_ITEM_STATUS} value={payout.status} />
+                    </>
+                  }
+                  meta={`${t(`kinds.${payout.kind}`)} · ${
+                    payout.paidOn
+                      ? t("paidTo", { date: format.date(payout.paidOn), last4: payout.bankAccountLast4 ?? "—" })
+                      : t("payOn", { date: format.date(payout.payOn) })
+                  }`}
+                  aside={<span className="font-semibold">{format.thb(payout.cashAmount)}</span>}
+                />
               ))}
-            </ul>
+            </RowList>
           ) : (
-            <EmptyState icon="coins" title={t("historyEmpty")} />
+            <EmptyState
+              icon="coins"
+              title={t("historyEmpty")}
+              action={
+                <Button asChild variant="secondary" iconStart="spreadsheet">
+                  <Link href="/payouts/statement">{t("statementLink")}</Link>
+                </Button>
+              }
+            />
           )
         ) : (
           <PageError error={history.error} />

@@ -19,11 +19,13 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { Field, FormSection } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
+import { cn } from "@/ui/lib/cn";
 
 type Shift = Schemas["ErpShiftDto"];
 type Skill = Schemas["ErpOperatorSkillDto"];
@@ -242,46 +244,87 @@ export function ShiftDialog({ shift, onClose }: { shift?: Shift; onClose: () => 
 }
 
 /** The page's shift list with add / edit (D-380). */
+/** "Add a shift" for the list toolbar: the button and its dialog, apart from the list it adds to. */
+export function ShiftAdd() {
+  const t = useTranslations("partnerInsight.people.shifts");
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button iconStart="plus" onClick={() => setOpen(true)}>
+        {t("add")}
+      </Button>
+      {open ? <ShiftDialog onClose={() => setOpen(false)} /> : null}
+    </>
+  );
+}
+
 export function ShiftManager({ shifts, canEdit }: { shifts: Shift[]; canEdit: boolean }) {
   const t = useTranslations("partnerInsight.people.shifts");
   const tDay = useTranslations("partnerInsight.days");
   const [open, setOpen] = useState<Shift | "new" | null>(null);
+  // Monday first, as a factory's week is read; the API numbers days 0 (Sunday) – 6.
+  const week = [1, 2, 3, 4, 5, 6, 0];
+  const add = canEdit ? (
+    <Button iconStart="plus" onClick={() => setOpen("new")}>
+      {t("add")}
+    </Button>
+  ) : null;
   return (
     <div className="flex flex-col gap-3">
       {shifts.length ? (
-        <ul className="border-border divide-border divide-y rounded-xl border">
-          {shifts.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium">
-                  {s.name} {s.status === "archived" ? <Badge tone="neutral">{t("archived")}</Badge> : null}
-                </p>
-                <p className="text-muted text-sm">
+        <>
+          <ul className="border-border bg-surface divide-border divide-y overflow-hidden rounded-xl border">
+            {shifts.map((s) => (
+              <li
+                key={s.id}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-4 py-3.5 md:grid-cols-[minmax(10rem,1fr)_minmax(9rem,auto)_auto_auto]"
+              >
+                <div className="min-w-0">
+                  <p className="flex flex-wrap items-center gap-2 font-semibold">
+                    {s.name}
+                    {s.status === "archived" ? <Badge tone="neutral">{t("archived")}</Badge> : null}
+                  </p>
+                  {s.note ? <p className="text-muted text-sm">{s.note}</p> : null}
+                </div>
+                <p className="col-start-1 tabular-nums md:col-start-2">
                   {t("hours", {
                     start: s.startTime,
                     end: s.endTime,
                     hours: (s.minutes / 60).toFixed(1).replace(/\.0$/, ""),
-                  })}{" "}
-                  · {s.days.map((d) => tDay(String(d))).join(" ")}
-                  {s.note ? ` · ${s.note}` : ""}
+                  })}
                 </p>
-              </div>
-              {canEdit ? (
-                <Button size="sm" variant="secondary" iconStart="edit" onClick={() => setOpen(s)}>
-                  {t("edit")}
-                </Button>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+                {/* The week as seven squares: the shift's working days filled, the rest left blank. */}
+                <ul aria-label={t("days")} className="col-start-1 flex gap-1 md:col-start-3">
+                  {week.map((d) => {
+                    const on = s.days.includes(d);
+                    return (
+                      <li
+                        key={d}
+                        aria-hidden={!on}
+                        className={cn(
+                          "rounded-thumb flex size-8 items-center justify-center text-xs font-medium",
+                          on ? "bg-primary-subtle text-primary-subtle-fg" : "text-subtle border-border border",
+                        )}
+                      >
+                        {tDay(String(d))}
+                      </li>
+                    );
+                  })}
+                </ul>
+                {canEdit ? (
+                  <span className="col-start-2 row-span-3 row-start-1 self-center md:col-start-4 md:row-span-1">
+                    <Button size="sm" variant="secondary" iconStart="edit" onClick={() => setOpen(s)}>
+                      {t("edit")}
+                    </Button>
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
-        <p className="text-muted">{t("empty")}</p>
+        <EmptyState icon="clock" title={t("empty")} action={add ?? undefined} />
       )}
-      {canEdit ? (
-        <Button variant="secondary" iconStart="plus" className="self-start" onClick={() => setOpen("new")}>
-          {t("add")}
-        </Button>
-      ) : null}
       {open ? <ShiftDialog shift={open === "new" ? undefined : open} onClose={() => setOpen(null)} /> : null}
     </div>
   );
@@ -329,69 +372,105 @@ export function SkillManager({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {skills.length ? (
-        <ul className="border-border divide-border divide-y rounded-xl border">
-          {skills.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium">{s.user.name}</p>
-                <p className="text-muted text-sm">
+        <div className="border-border bg-surface overflow-hidden rounded-xl border">
+          <div
+            aria-hidden
+            className="border-border bg-surface-subtle text-muted hidden grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_8rem_minmax(0,1fr)_2.5rem] gap-3 border-b px-4 py-2.5 text-sm font-medium md:grid"
+          >
+            <span>{t("person")}</span>
+            <span>{t("machine")}</span>
+            <span>{t("level")}</span>
+            <span>{t("certifiedOn")}</span>
+            <span />
+          </div>
+          <ul className="divide-border divide-y">
+            {skills.map((s) => (
+              <li
+                key={s.id}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 px-4 py-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_8rem_minmax(0,1fr)_2.5rem]"
+              >
+                <span className="font-medium break-keep">{s.user.name}</span>
+                <span className="text-muted md:text-fg col-start-1 text-sm md:col-start-2 md:text-base">
                   {s.machine.name}
-                  {s.certifiedOn ? ` · ${t("certified", { date: format.date(s.certifiedOn) })}` : ""}
-                </p>
-              </div>
-              <Badge tone={s.level === "expert" ? "success" : s.level === "competent" ? "info" : "neutral"}>
-                {tLevel(s.level)}
-              </Badge>
-              {canEdit ? (
-                <IconButton
-                  name="trash"
-                  size="sm"
-                  label={t("remove", { name: s.user.name, machine: s.machine.name })}
-                  onClick={() =>
-                    void run(() => erpDelete(factoryId, "/operator-skills/{skillId}", { skillId: s.id }), t("removed"))
-                  }
-                />
-              ) : null}
-            </li>
-          ))}
-        </ul>
+                </span>
+                <span className="col-start-1 md:col-start-3">
+                  <Badge tone={s.level === "expert" ? "success" : s.level === "competent" ? "info" : "neutral"}>
+                    {tLevel(s.level)}
+                  </Badge>
+                </span>
+                <span className="text-muted col-start-1 text-sm tabular-nums md:col-start-4">
+                  {s.certifiedOn ? format.date(s.certifiedOn) : "—"}
+                </span>
+                {canEdit ? (
+                  <span className="col-start-2 row-span-4 row-start-1 self-center md:col-start-5 md:row-span-1">
+                    <IconButton
+                      name="trash"
+                      size="sm"
+                      label={t("remove", { name: s.user.name, machine: s.machine.name })}
+                      onClick={() =>
+                        void run(
+                          () => erpDelete(factoryId, "/operator-skills/{skillId}", { skillId: s.id }),
+                          t("removed"),
+                        )
+                      }
+                    />
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : (
-        <p className="text-muted">{t("empty")}</p>
+        <EmptyState
+          icon="users"
+          title={t("empty")}
+          action={
+            canEdit ? (
+              <Button asChild variant="secondary" iconStart="plus">
+                <a href="#skill-add">{t("addTitle")}</a>
+              </Button>
+            ) : undefined
+          }
+        />
       )}
       {canEdit ? (
-        <div className="border-border grid gap-3 rounded-xl border p-4 md:grid-cols-4">
-          <Field label={t("person")}>
-            <Select
-              value={userId || null}
-              placeholder={t("choose")}
-              onValueChange={setUserId}
-              options={people.map((p) => ({ value: p.id, label: p.label }))}
-            />
-          </Field>
-          <Field label={t("machine")}>
-            <Select
-              value={machineId || null}
-              placeholder={t("choose")}
-              onValueChange={setMachineId}
-              options={machines.map((m) => ({ value: m.id, label: m.label }))}
-            />
-          </Field>
-          <Field label={t("level")}>
-            <Select
-              value={level}
-              onValueChange={(v) => setLevel(v as Level)}
-              options={(["learner", "competent", "expert"] as const).map((l) => ({ value: l, label: tLevel(l) }))}
-            />
-          </Field>
-          <Field label={t("certifiedOn")}>
-            <Input type="date" value={certified} onChange={(e) => setCertified(e.target.value)} />
-          </Field>
-          <Button iconStart="save" loading={busy} className="self-start md:col-span-4" onClick={() => void save()}>
-            {t("save")}
-          </Button>
-        </div>
+        <FormSection card title={t("addTitle")} className="scroll-mt-20">
+          <div id="skill-add" className="grid gap-4 md:grid-cols-4">
+            <Field label={t("person")}>
+              <Select
+                value={userId || null}
+                placeholder={t("choose")}
+                onValueChange={setUserId}
+                options={people.map((p) => ({ value: p.id, label: p.label }))}
+              />
+            </Field>
+            <Field label={t("machine")}>
+              <Select
+                value={machineId || null}
+                placeholder={t("choose")}
+                onValueChange={setMachineId}
+                options={machines.map((m) => ({ value: m.id, label: m.label }))}
+              />
+            </Field>
+            <Field label={t("level")}>
+              <Select
+                value={level}
+                onValueChange={(v) => setLevel(v as Level)}
+                options={(["learner", "competent", "expert"] as const).map((l) => ({ value: l, label: tLevel(l) }))}
+              />
+            </Field>
+            <Field label={t("certifiedOn")}>
+              <Input type="date" value={certified} onChange={(e) => setCertified(e.target.value)} />
+            </Field>
+          </div>
+          <div>
+            <Button iconStart="save" loading={busy} onClick={() => void save()}>
+              {t("save")}
+            </Button>
+          </div>
+        </FormSection>
       ) : null}
     </div>
   );

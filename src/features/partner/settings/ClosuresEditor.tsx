@@ -63,33 +63,41 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
 
   return (
     <div className="flex flex-col gap-4">
-      {days.length === 0 ? <p className="text-muted text-sm">{t("none")}</p> : null}
-      <ul className="flex flex-col gap-2">
-        {days.map((d) => (
-          <li
-            key={`${d.day}-${d.kind}`}
-            className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
-          >
-            <span>{t("row", { date: dayText(d.day), name: d.nameTh })}</span>
-            <span className="flex items-center gap-2">
-              <Badge tone={d.kind === "closure" ? "warning" : "neutral"}>{t(`kinds.${d.kind}`)}</Badge>
-              {editable && d.kind === "closure" ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-danger min-h-11 md:min-h-10"
-                  onClick={() => void remove(d.day)}
-                >
-                  {t("remove")}
-                  <span className="sr-only"> {dayText(d.day)}</span>
-                </Button>
-              ) : null}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {days.length === 0 ? (
+        <p className="border-border text-muted rounded-xl border border-dashed px-4 py-5 text-center text-sm">
+          {t("none")}
+        </p>
+      ) : (
+        <ul className="border-border bg-surface divide-border divide-y overflow-hidden rounded-xl border">
+          {days.map((d) => (
+            <li
+              key={`${d.day}-${d.kind}`}
+              className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm"
+            >
+              <span className="flex min-w-0 flex-col">
+                <span className="font-medium tabular-nums">{dayText(d.day)}</span>
+                <span className="text-muted break-keep">{d.nameTh}</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <Badge tone={d.kind === "closure" ? "warning" : "neutral"}>{t(`kinds.${d.kind}`)}</Badge>
+                {editable && d.kind === "closure" ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-danger min-h-11 md:min-h-10"
+                    onClick={() => void remove(d.day)}
+                  >
+                    {t("remove")}
+                    <span className="sr-only"> {dayText(d.day)}</span>
+                  </Button>
+                ) : null}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       {editable ? (
-        <div className="border-border flex flex-col gap-3 rounded-lg border p-3">
+        <div className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4">
           <Field label={t("day")}>
             <Input type="date" value={day} min={bangkokToday(1)} onChange={(event) => setDay(event.target.value)} />
           </Field>
@@ -103,6 +111,8 @@ export function ClosuresEditor({ days }: { days: Schemas["CalendarDayDto"][] }) 
           </Field>
           <div>
             <Button
+              variant="secondary"
+              iconStart="plus"
               className="min-h-11 md:min-h-10"
               loading={busy}
               disabled={!day || !name.trim()}

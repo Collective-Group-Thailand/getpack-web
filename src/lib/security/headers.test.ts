@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ZONES } from "@/lib/zones";
 
 import { contentSecurityPolicy, cspDirectives } from "./csp";
-import { isHttpsRequest, securityHeaders } from "./headers";
+import { driverHandoverHeaders, isDriverHandoverPath, isHttpsRequest, securityHeaders } from "./headers";
 
 const options = { nonce: "test-nonce", isDev: false, origins: {} };
 
@@ -175,5 +175,32 @@ describe("sign-in origins", () => {
       expect(directives["frame-src"]).toEqual(["'self'"]);
       expect(directives["connect-src"]).not.toContain("https://identitytoolkit.googleapis.com");
     }
+  });
+});
+
+describe("driver handover page (D-463)", () => {
+  const token = `d${"A1b2C3d4_-".repeat(3)}xy`;
+
+  it("matches /l/d… with or without the locale prefix", () => {
+    expect(isDriverHandoverPath(`/l/${token}`)).toBe(true);
+    expect(isDriverHandoverPath(`/en/l/${token}`)).toBe(true);
+    expect(isDriverHandoverPath(`/th/l/${token}/`)).toBe(true);
+  });
+
+  it("leaves notification links and other pages alone", () => {
+    expect(isDriverHandoverPath(`/l/s${token.slice(1)}`)).toBe(false);
+    expect(isDriverHandoverPath(`/l/${token}x`)).toBe(false);
+    expect(isDriverHandoverPath(`/track/${token}`)).toBe(false);
+    expect(isDriverHandoverPath(`/l/${token}/more`)).toBe(false);
+  });
+
+  it("is never cached or indexed, and may open the camera for the carton QR", () => {
+    const headers = driverHandoverHeaders();
+    expect(headers["Cache-Control"]).toContain("no-store");
+    expect(headers["X-Robots-Tag"]).toBe("noindex, nofollow");
+    expect(headers["Permissions-Policy"]).toContain("camera=(self)");
+    expect(headers["Permissions-Policy"]).toContain("microphone=()");
+    // The rest of the storefront still may not.
+    expect(securityHeaders("customer", { isHttps: true })["Permissions-Policy"]).toContain("camera=()");
   });
 });

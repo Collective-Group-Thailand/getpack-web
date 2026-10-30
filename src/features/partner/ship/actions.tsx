@@ -54,7 +54,8 @@ export function CreateShipment({
 }: {
   jobId: string;
   jobNo: string;
-  destination: { id: string; recipientName: string; place: string; left: number };
+  /** The destination as the factory sees it (P4-01): its code within the job and its province · postcode prefix. */
+  destination: { id: string; label: string; place: string; left: number };
 }) {
   const t = useTranslations("partnerShip.create");
   const format = useFormat();
@@ -141,7 +142,7 @@ export function CreateShipment({
     <>
       <Button size="lg" iconStart="truck" className="w-full" onClick={() => setOpen(true)}>
         {t("open")}
-        <span className="sr-only"> {destination.recipientName}</span>
+        <span className="sr-only"> {destination.label}</span>
       </Button>
       <Sheet
         open={open}
@@ -153,7 +154,7 @@ export function CreateShipment({
         <form id={`ship-${jobId}-${destination.id}`} onSubmit={(event) => void create(event)} noValidate>
           <div className="flex flex-col gap-5">
             <div className="border-border bg-surface-subtle rounded-xl border p-3">
-              <p className="font-medium">{destination.recipientName}</p>
+              <p className="font-medium">{destination.label}</p>
               <p className="text-muted text-sm">{destination.place}</p>
             </div>
             <div className="grid grid-cols-3 gap-2">

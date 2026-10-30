@@ -5,15 +5,17 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ERP_PURCHASE_ORDER_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain } from "@/features/partner/erp/format";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerErp.purchasing"))("title") };
@@ -33,10 +35,11 @@ export default async function PurchasingPage({
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "open";
   const page = pageOf(query.page);
   const q = query.q?.trim() || undefined;
-  const [t, tCommon, format, locale, context] = await Promise.all([
+  const [t, tCommon, format, tStock, locale, context] = await Promise.all([
     getTranslations("partnerErp.purchasing"),
     getTranslations("partnerErp.common"),
     getFormat(),
+    getTranslations("partnerErp.stock"),
     getLocale(),
     factoryContext(),
   ]);
@@ -67,6 +70,20 @@ export default async function PurchasingPage({
             ).data!,
         )
       : null;
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const counts = await viewTotals(VIEWS, async (key) =>
+    key === "receipts"
+      ? (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/goods-receipts", {
+            params: { path, query: { perPage: 1, ...(q ? { q } : {}) } },
+          })
+        ).data
+      : (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/purchase-orders", {
+            params: { path, query: { perPage: 1, ...(key === "all" ? {} : { status: key }), ...(q ? { q } : {}) } },
+          })
+        ).data,
+  );
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/purchasing${queryOf({ view: next === "open" ? undefined : next, ...extra })}`;
   const pagination = {
@@ -82,6 +99,25 @@ export default async function PurchasingPage({
       full
       title={t("title")}
       description={t("body")}
+      // The steps before an order — requests and quotes from suppliers — are their own lists, one link away.
+      meta={
+        <nav aria-label={t("views.label")} className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <Link
+            className="text-primary inline-flex min-h-11 items-center gap-1.5 font-medium underline-offset-4 hover:underline md:min-h-8"
+            href="/purchasing/requests"
+          >
+            <Icon name="checklist" size={16} aria-hidden />
+            {t("views.requests")}
+          </Link>
+          <Link
+            className="text-primary inline-flex min-h-11 items-center gap-1.5 font-medium underline-offset-4 hover:underline md:min-h-8"
+            href="/purchasing/rfqs"
+          >
+            <Icon name="scale" size={16} aria-hidden />
+            {t("views.rfqs")}
+          </Link>
+        </nav>
+      }
       actions={
         canDraft ? (
           <>
@@ -95,24 +131,22 @@ export default async function PurchasingPage({
         ) : undefined
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={[
-          ...VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) })),
-          { key: "requests", href: "/purchasing/requests", label: t("views.requests") },
-          { key: "rfqs", href: "/purchasing/rfqs", label: t("views.rfqs") },
-        ]}
-      />
-      <SearchBar
-        id="po-q"
-        action="/purchasing"
-        hidden={{ view: view === "open" ? undefined : view }}
-        q={q}
-        label={t("searchLabel")}
-        placeholder={t("searchPlaceholder")}
-        button={tCommon("search")}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key, { q }), label: t(`views.${key}`), count: counts[key] }))}
+        />
+        <SearchBar
+          id="po-q"
+          action="/purchasing"
+          hidden={{ view: view === "open" ? undefined : view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
+      </ListToolbar>
       {orders ? (
         orders.data ? (
           <>
@@ -122,7 +156,24 @@ export default async function PurchasingPage({
               rowKey={(po) => po.id}
               rowHref={(po) => `/purchasing/${po.id}`}
               rowTone={(po) => (po.late ? "danger" : undefined)}
-              empty={<EmptyState icon="cart" title={t("empty")} description={t("emptyBody")} />}
+              empty={
+                <EmptyState
+                  icon="cart"
+                  title={t("empty")}
+                  description={t("emptyBody")}
+                  action={
+                    canDraft ? (
+                      <Button asChild variant="secondary" iconStart="plus">
+                        <Link href="/purchasing/new">{t("new")}</Link>
+                      </Button>
+                    ) : view !== "all" ? (
+                      <Button asChild variant="secondary" iconEnd="arrow-right">
+                        <Link href={href("all")}>{t("views.all")}</Link>
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              }
               columns={[
                 {
                   key: "no",
@@ -187,7 +238,17 @@ export default async function PurchasingPage({
             rows={receipts.data.data}
             rowKey={(gr) => gr.id}
             rowHref={(gr) => `/purchasing/receipts/${gr.id}`}
-            empty={<EmptyState icon="package-check" title={t("emptyReceipts")} />}
+            empty={
+              <EmptyState
+                icon="package-check"
+                title={t("emptyReceipts")}
+                action={
+                  <Button asChild variant="secondary" iconStart="package-check">
+                    <Link href="/stock/receive">{tStock("actions.receive")}</Link>
+                  </Button>
+                }
+              />
+            }
             columns={[
               {
                 key: "no",

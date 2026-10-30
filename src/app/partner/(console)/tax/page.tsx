@@ -6,16 +6,18 @@ import { ERP_WHT_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain } from "@/features/partner/erp/format";
 import { queryOf } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
+import { PeriodPicker, stepLabel } from "@/features/partner/period";
+import { FilterLinks, ListToolbar, ViewTabs } from "@/features/partner/rows";
+import { Statement } from "@/features/partner/statement";
 import { TaxExports } from "@/features/partner/sales/TaxForms";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Input } from "@/ui/components/Input";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerSales.tax"))("title") };
@@ -63,6 +65,15 @@ export default async function TaxPage({
   const path = { factoryId: context.factoryId };
   const href = (next: View, extra: Record<string, string | undefined> = {}) =>
     `/tax${queryOf({ view: next === "vat" ? undefined : next, month, ...extra })}`;
+  const monthLabel = format.date(`${month}-01`, { style: "month" });
+  // An empty month offers the month before — the usual reason a register is empty is the month not being over.
+  const earlier = (
+    <Button asChild variant="secondary" iconStart="chevron-left">
+      <Link href={href(view, { month: shift(month, -1), form: view === "wht" ? form : undefined })}>
+        {stepLabel(t("prevMonth"))}
+      </Link>
+    </Button>
+  );
 
   let body: React.ReactNode;
   if (view === "vat") {
@@ -75,20 +86,26 @@ export default async function TaxPage({
     });
     body = both.data ? (
       <>
+        <PartnerStats
+          label={t("views.vat")}
+          columns={4}
+          items={[
+            { key: "sn", label: t("vat30.salesNet"), value: format.thb(both.data.sales.net) },
+            { key: "sv", label: t("vat30.outputVat"), value: format.thb(both.data.sales.vat) },
+            { key: "pn", label: t("vat30.purchaseNet"), value: format.thb(both.data.purchase.net) },
+            { key: "pv", label: t("vat30.inputVat"), value: format.thb(both.data.purchase.vat) },
+          ]}
+        />
         {(["sales", "purchase"] as const).map((kind) => {
           const report = both.data![kind];
           return (
-            <PartnerSection
-              key={kind}
-              title={t(`vat.${kind}`)}
-              description={t("vat.totals", { net: format.thb(report.net), vat: format.thb(report.vat) })}
-            >
+            <PartnerSection key={kind} title={t(`vat.${kind}`)} description={monthLabel}>
               <PartnerTable
                 caption={t(`vat.${kind}`)}
                 rows={report.rows}
                 rowKey={(row) => `${row.kind}-${row.sourceId}`}
                 rowHref={(row) => SOURCE_HREF[row.kind]?.(row.sourceId) ?? `/tax${queryOf({ month })}`}
-                empty={<EmptyState icon="receipt" title={t("vat.empty")} />}
+                empty={<EmptyState icon="receipt" title={t("vat.empty")} action={earlier} />}
                 columns={[
                   {
                     key: "d",
@@ -129,23 +146,30 @@ export default async function TaxPage({
     );
     body = v.data ? (
       <>
-        {!v.data.vatRegistered ? <p className="text-muted">{t("vat30.notRegistered")}</p> : null}
-        <StatStrip
-          label={t("vat30.title")}
-          items={[
-            { key: "sn", label: t("vat30.salesNet"), value: format.thb(v.data.salesNet) },
-            { key: "ov", label: t("vat30.outputVat"), value: format.thb(v.data.outputVat) },
-            { key: "pn", label: t("vat30.purchaseNet"), value: format.thb(v.data.purchaseNet) },
-            { key: "iv", label: t("vat30.inputVat"), value: format.thb(v.data.inputVat) },
-            {
-              key: "pay",
-              label: v.data.vatPayable.startsWith("-") ? t("vat30.credit") : t("vat30.payable"),
-              value: format.thb(v.data.vatPayable.replace(/^-/, "")),
-              hint: t("vat30.due", { date: format.date(v.data.dueOn) }),
-              tone: "warning",
-            },
-          ]}
-        />
+        {!v.data.vatRegistered ? <Callout tone="info" title={t("vat30.notRegistered")} /> : null}
+        {/* The ภ.พ.30 as the form reads: sales and their tax, purchases and theirs, then what is paid or carried. */}
+        <div className="max-w-3xl">
+          <Statement
+            caption={t("vat30.title")}
+            title={t("vat30.title")}
+            period={`${monthLabel} · ${t("vat30.due", { date: format.date(v.data.dueOn) })}`}
+            headers={{ label: t("vat.kind"), amount: tCommon("amount") }}
+            rows={[
+              { key: "s", kind: "heading", label: t("vat.sales") },
+              { key: "sn", label: t("vat30.salesNet"), amount: format.thb(v.data.salesNet) },
+              { key: "ov", label: t("vat30.outputVat"), amount: format.thb(v.data.outputVat) },
+              { key: "p", kind: "heading", label: t("vat.purchase") },
+              { key: "pn", label: t("vat30.purchaseNet"), amount: format.thb(v.data.purchaseNet) },
+              { key: "iv", label: t("vat30.inputVat"), amount: format.thb(v.data.inputVat) },
+              {
+                key: "pay",
+                kind: "total",
+                label: v.data.vatPayable.startsWith("-") ? t("vat30.credit") : t("vat30.payable"),
+                amount: format.thb(v.data.vatPayable.replace(/^-/, "")),
+              },
+            ]}
+          />
+        </div>
         <p className="text-muted text-sm">{t("vat30.note")}</p>
       </>
     ) : (
@@ -162,7 +186,7 @@ export default async function TaxPage({
     );
     body = (
       <>
-        <ViewTabs
+        <FilterLinks
           label={t("wht.forms")}
           current={form}
           items={(["pnd53", "pnd3"] as const).map((f) => ({
@@ -172,19 +196,28 @@ export default async function TaxPage({
           }))}
         />
         {w.data ? (
-          <PartnerSection
-            title={t(`wht.${form}`)}
-            description={t("wht.totals", {
-              base: format.thb(w.data.baseAmount),
-              wht: format.thb(w.data.whtAmount),
-              due: format.date(w.data.dueOn),
-            })}
-          >
+          <PartnerStats
+            label={t(`wht.${form}`)}
+            columns={2}
+            items={[
+              { key: "b", label: t("wht.base"), value: format.thb(w.data.baseAmount) },
+              {
+                key: "w",
+                label: t("wht.wht"),
+                value: format.thb(w.data.whtAmount),
+                hint: t("vat30.due", { date: format.date(w.data.dueOn) }),
+                highlight: true,
+              },
+            ]}
+          />
+        ) : null}
+        {w.data ? (
+          <PartnerSection title={t(`wht.${form}`)} description={monthLabel}>
             <PartnerTable
               caption={t(`wht.${form}`)}
               rows={w.data.rows}
               rowKey={(row) => `${row.certNo}-${row.incomeType}-${row.ratePct}`}
-              empty={<EmptyState icon="stamp" title={t("wht.empty")} />}
+              empty={<EmptyState icon="stamp" title={t("wht.empty")} action={earlier} />}
               columns={[
                 {
                   key: "no",
@@ -226,7 +259,18 @@ export default async function TaxPage({
         rows={list.data.data}
         rowKey={(row) => row.id}
         rowHref={(row) => `/tax/certificates/${row.id}`}
-        empty={<EmptyState icon="stamp" title={t("certificates.empty")} description={t("certificates.emptyBody")} />}
+        empty={
+          <EmptyState
+            icon="stamp"
+            title={t("certificates.empty")}
+            description={t("certificates.emptyBody")}
+            action={
+              <Button asChild variant="secondary" iconEnd="arrow-right">
+                <Link href="/payables?view=payments">{t("certificates.fromPayments")}</Link>
+              </Button>
+            }
+          />
+        }
         columns={[
           {
             key: "no",
@@ -257,43 +301,32 @@ export default async function TaxPage({
 
   return (
     <PartnerPage full title={t("title")} description={t("body")}>
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      <form className="flex flex-wrap items-end gap-2" action="/tax">
-        {view !== "vat" ? <input type="hidden" name="view" value={view} /> : null}
-        {view === "wht" ? <input type="hidden" name="form" value={form} /> : null}
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">{t("month")}</span>
-          <Input type="month" name="month" defaultValue={month} className="w-48" />
-        </label>
-        <Button type="submit" variant="secondary">
-          {t("show")}
-        </Button>
-        <nav aria-label={t("monthNav")} className="flex gap-2">
-          <Link
-            className="text-link text-sm underline"
-            href={href(view, { month: shift(month, -1), form: view === "wht" ? form : undefined })}
-          >
-            {t("prevMonth")}
-          </Link>
-          {month < thisMonth() ? (
-            <Link
-              className="text-link text-sm underline"
-              href={href(view, { month: shift(month, 1), form: view === "wht" ? form : undefined })}
-            >
-              {t("nextMonth")}
-            </Link>
-          ) : null}
-        </nav>
-        {view === "certificates" ? (
-          <Link className="text-link ms-auto text-sm underline" href="/payables?view=payments">
-            {t("certificates.fromPayments")}
-          </Link>
-        ) : null}
-      </form>
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
+        />
+        <PeriodPicker
+          action="/tax"
+          label={t("monthNav")}
+          hidden={{ view: view === "vat" ? undefined : view, form: view === "wht" ? form : undefined }}
+          fields={[{ name: "month", label: t("month"), value: month, type: "month" }]}
+          submit={t("show")}
+          prev={{
+            href: href(view, { month: shift(month, -1), form: view === "wht" ? form : undefined }),
+            label: stepLabel(t("prevMonth")),
+          }}
+          {...(month < thisMonth()
+            ? {
+                next: {
+                  href: href(view, { month: shift(month, 1), form: view === "wht" ? form : undefined }),
+                  label: stepLabel(t("nextMonth")),
+                },
+              }
+            : {})}
+        />
+      </ListToolbar>
       {body}
     </PartnerPage>
   );

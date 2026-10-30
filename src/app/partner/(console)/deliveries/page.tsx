@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { ERP_DELIVERY_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { Row, RowList, ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, Row, RowList, ViewTabs } from "@/features/partner/rows";
 import { pagerLabels } from "@/features/partner/sales/view";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,17 +44,23 @@ export default async function DeliveriesPage({
     factoryContext(),
   ]);
   const { contract } = await partnerServerApis();
-  const list = await attempt(
-    async () =>
-      (
-        await contract.GET("/v1/partner/factories/{factoryId}/erp/delivery-notes", {
-          params: {
-            path: { factoryId: context.factoryId },
-            query: { perPage: PER_PAGE, page, ...(view === "all" ? {} : { status: view }), ...(q ? { q } : {}) },
-          },
-        })
-      ).data!,
-  );
+  const read = (view: View, perPage: number) =>
+    contract.GET("/v1/partner/factories/{factoryId}/erp/delivery-notes", {
+      params: {
+        path: { factoryId: context.factoryId },
+        query: {
+          perPage,
+          page: perPage === 1 ? 1 : page,
+          ...(view === "all" ? {} : { status: view }),
+          ...(q ? { q } : {}),
+        },
+      },
+    });
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const [list, counts] = await Promise.all([
+    attempt(async () => (await read(view, PER_PAGE)).data!),
+    viewTotals(VIEWS, async (key) => (await read(key, 1)).data),
+  ]);
   // What is still to deliver: confirmed orders not fully delivered — where a new delivery note starts.
   const toDeliver =
     view === "draft" && canAt(context, "factory_delivery.manage")
@@ -92,20 +101,22 @@ export default async function DeliveriesPage({
           </RowList>
         </PartnerSection>
       ) : null}
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      <SearchBar
-        id="do-q"
-        action="/deliveries"
-        hidden={{ view: view === "draft" ? undefined : view }}
-        q={q}
-        label={t("searchLabel")}
-        placeholder={t("searchPlaceholder")}
-        button={tCommon("search")}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key, { q }), label: t(`views.${key}`), count: counts[key] }))}
+        />
+        <SearchBar
+          id="do-q"
+          action="/deliveries"
+          hidden={{ view: view === "draft" ? undefined : view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
+      </ListToolbar>
       {list.data ? (
         <>
           <PartnerTable
@@ -113,7 +124,18 @@ export default async function DeliveriesPage({
             rows={list.data.data}
             rowKey={(row) => row.id}
             rowHref={(row) => `/deliveries/${row.id}`}
-            empty={<EmptyState icon="truck" title={t("empty")} description={t("emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="truck"
+                title={t("empty")}
+                description={t("emptyBody")}
+                action={
+                  <Button asChild variant="secondary" iconEnd="arrow-right">
+                    <Link href="/sales-orders">{t("toOrders")}</Link>
+                  </Button>
+                }
+              />
+            }
             columns={[
               {
                 key: "no",

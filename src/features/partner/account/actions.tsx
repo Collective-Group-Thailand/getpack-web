@@ -15,7 +15,9 @@ import { Button } from "@/ui/components/Button";
 import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { Field } from "@/ui/components/Field";
+import { IconButton } from "@/ui/components/IconButton";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Skeleton } from "@/ui/components/Skeleton";
@@ -328,8 +330,9 @@ export function EditUser({ user }: { user: User }) {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
 
-  if (user.isSelf) return <p className="text-muted text-sm">{t("self")}</p>;
-  if (user.roles.includes("factory_owner")) return <p className="text-muted text-sm">{t("ownerManaged")}</p>;
+  if (user.isSelf) return <p className="text-muted text-sm whitespace-nowrap">{t("self")}</p>;
+  if (user.roles.includes("factory_owner"))
+    return <p className="text-muted text-sm whitespace-nowrap">{t("ownerManaged")}</p>;
 
   const setUserRoles = async (next: StaffRole[], done: string) => {
     await browserApi().PUT("/v1/partner/factories/{factoryId}/users/{userId}/roles", {
@@ -343,20 +346,36 @@ export function EditUser({ user }: { user: User }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {active ? (
-        <div className="flex flex-wrap gap-2">
-          <Button size="md" variant="secondary" iconStart="edit" onClick={() => setEditing(true)}>
-            {t("editRoles")}
-          </Button>
-          <Button size="md" variant="ghost" onClick={() => setConfirm("deactivate")}>
-            {t("deactivate")}
-          </Button>
-        </div>
-      ) : (
-        <Button size="md" variant="secondary" className="self-start" onClick={() => setConfirm("reactivate")}>
-          {t("reactivate")}
-        </Button>
-      )}
+      {/* One quiet "⋯" per row (a dense desk table): the roles first, switching the person off last and in red. */}
+      <DropdownMenu
+        label={user.displayName}
+        align="end"
+        items={
+          active
+            ? [
+                { id: "roles", label: t("editRoles"), icon: "edit", onSelect: () => setEditing(true) },
+                {
+                  id: "deactivate",
+                  label: t("deactivate"),
+                  icon: "user-x",
+                  tone: "destructive",
+                  separatorBefore: true,
+                  onSelect: () => setConfirm("deactivate"),
+                },
+              ]
+            : [
+                {
+                  id: "reactivate",
+                  label: t("reactivate"),
+                  icon: "user-plus",
+                  onSelect: () => setConfirm("reactivate"),
+                },
+              ]
+        }
+        trigger={
+          <IconButton name="more" size="sm" variant="ghost" label={`${t("table.manage")} ${user.displayName}`} />
+        }
+      />
       {/* The roles open in a dialog: a table row stays a row instead of growing a form inside a cell. */}
       <Dialog
         open={editing}

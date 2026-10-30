@@ -48,38 +48,65 @@ export function ActionBar({
   actions,
   offered,
   failed,
+  layout = "row",
+  children,
 }: {
   actions: ActionSpec[];
   offered: NextAction[];
   failed: string;
+  /**
+   * `panel`: a record page's sticky next-steps panel — one full-width stack, only the first primary action filled,
+   * the rest outlined, anything destructive last. `row` (default): buttons side by side as declared.
+   */
+  layout?: "row" | "panel";
+  /** Extra controls (a link, a dialog trigger) placed after the primary action and before anything destructive. */
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
   const [refresh] = useRefresh();
   const [open, setOpen] = useState<string | null>(null);
   const keys = new Set(offered.filter((a) => !a.disabledReason).map((a) => a.key));
-  const shown = actions.filter((a) => a.always || keys.has(a.key));
-  if (!shown.length) return null;
-  const current = shown.find((a) => a.key === open);
+  const offeredNow = actions.filter((a) => a.always || keys.has(a.key));
+  const firstPrimary = offeredNow.find((a) => a.variant === "primary")?.key;
+  const destructive = offeredNow.filter((a) => a.variant === "destructive");
+  const shown =
+    layout === "panel"
+      ? [
+          ...offeredNow.filter((a) => a.key === firstPrimary),
+          ...offeredNow.filter((a) => a.key !== firstPrimary && a.variant !== "destructive"),
+        ]
+      : offeredNow;
+  if (!offeredNow.length && !children) return null;
+  const current = offeredNow.find((a) => a.key === open);
+  const variantOf = (action: ActionSpec) =>
+    layout === "panel" && action.variant === "primary" && action.key !== firstPrimary
+      ? "secondary"
+      : (action.variant ?? "secondary");
+  const button = (action: ActionSpec) =>
+    action.href ? (
+      <Button key={action.key} asChild size="lg" variant={variantOf(action)} iconStart={action.icon}>
+        <Link href={action.href}>{action.label}</Link>
+      </Button>
+    ) : (
+      <Button
+        key={action.key}
+        size="lg"
+        variant={variantOf(action)}
+        iconStart={action.icon}
+        onClick={() => setOpen(action.key)}
+      >
+        {action.label}
+      </Button>
+    );
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {shown.map((action) =>
-        action.href ? (
-          <Button key={action.key} asChild size="lg" variant={action.variant ?? "secondary"} iconStart={action.icon}>
-            <Link href={action.href}>{action.label}</Link>
-          </Button>
-        ) : (
-          <Button
-            key={action.key}
-            size="lg"
-            variant={action.variant ?? "secondary"}
-            iconStart={action.icon}
-            onClick={() => setOpen(action.key)}
-          >
-            {action.label}
-          </Button>
-        ),
-      )}
+    <div
+      {...(layout === "panel" ? { "data-fill": "row" } : {})}
+      className={layout === "panel" ? "flex flex-col gap-2" : "flex flex-wrap gap-2"}
+    >
+      {shown.map(button)}
+      {children}
+      {layout === "panel" ? destructive.map(button) : null}
       {current?.confirm && current.run ? (
         <ConfirmAction
           open

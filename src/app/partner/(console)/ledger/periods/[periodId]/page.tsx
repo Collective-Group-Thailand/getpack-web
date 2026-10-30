@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { PERIOD_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PeriodActions } from "@/features/partner/ledger/LedgerActions";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -61,7 +61,7 @@ export default async function PeriodPage({ params }: { params: Promise<{ periodI
     wht: `/tax?view=wht&month=${period.month}`,
     bank: "/ledger/bank",
     depreciation: "/ledger/assets",
-    open_wip: "/planning/orders",
+    open_wip: "/planning",
   };
   return (
     <PartnerPage
@@ -69,84 +69,96 @@ export default async function PeriodPage({ params }: { params: Promise<{ periodI
       title={t("title", { month: monthLabel })}
       description={t("body")}
       back={{ href: "/ledger", label: t("back") }}
-      meta={<StatusChip map={PERIOD_STATUS} value={period.status} size="md" />}
+      status={<StatusChip map={PERIOD_STATUS} value={period.status} size="md" />}
     >
-      <PeriodActions period={period} />
-      <p className={c.canClose ? "text-success font-medium" : "text-warning font-medium"}>
-        {c.canClose ? t("canClose") : t("cannotClose")}
-      </p>
-      <PartnerSection title={t("checks")}>
-        <PartnerTable
-          caption={t("checks")}
-          rows={c.checks}
-          rowKey={(row) => row.key}
-          rowTone={(row) => (row.ok ? undefined : row.blocking ? "danger" : "warning")}
-          columns={[
-            {
-              key: "n",
-              header: t("checks"),
-              primary: true,
-              cell: (row) => <span>{t(`names.${row.key}` as never)}</span>,
-            },
-            {
-              key: "e",
-              header: t("expected"),
-              align: "end",
-              hideOnPhone: true,
-              cell: (row) => (row.expected === null ? "—" : format.thb(row.expected)),
-            },
-            {
-              key: "a",
-              header: t("actual"),
-              align: "end",
-              hideOnPhone: true,
-              cell: (row) => (row.actual === null ? "—" : format.thb(row.actual)),
-            },
-            {
-              key: "d",
-              header: t("difference"),
-              align: "end",
-              cell: (row) => (row.difference === null ? "—" : format.thb(row.difference)),
-            },
-            {
-              key: "s",
-              header: tc("status"),
-              cell: (row) => (
-                <Badge tone={row.ok ? "success" : row.blocking ? "danger" : "warning"}>
-                  {row.ok ? (row.blocking ? t("ok") : t("info")) : t("fail")}
-                </Badge>
-              ),
-            },
-            {
-              key: "x",
-              header: tc("description"),
-              hideOnPhone: true,
-              cell: (row) => (
-                <span className="flex flex-col gap-1 text-sm">
-                  <span className="text-muted">{row.detail}</span>
-                  {!row.ok && t.has(`fix.${row.key}` as never) ? <span>{t(`fix.${row.key}` as never)}</span> : null}
-                </span>
-              ),
-            },
-            {
-              key: "f",
-              header: t("fixColumn"),
-              cell: (row) =>
-                FIX[row.key] && (!row.ok || !row.blocking) ? (
-                  <Link className="text-link text-sm whitespace-nowrap underline" href={FIX[row.key]!}>
-                    {t("open")}
-                  </Link>
-                ) : null,
-            },
-          ]}
-        />
-        {c.openProductionOrders ? (
-          <p className="text-muted text-sm">{t("openOrders", { n: c.openProductionOrders })}</p>
-        ) : null}
-      </PartnerSection>
-      <Button asChild variant="secondary" iconStart="list-ordered" className="self-start">
-        <Link href={`/ledger/journals?month=${period.month}`}>{t("journals", { month: monthLabel })}</Link>
-      </Button>
+      {/* The checklist on the left; whether the month can close, and the close itself, in a panel that stays in view. */}
+      <PartnerDetail
+        aside={
+          <ActionPanel
+            id="period-next"
+            tone={c.canClose ? "primary" : "neutral"}
+            title={c.canClose ? t("canClose") : t("cannotClose")}
+          >
+            <PeriodActions period={period} layout="panel" />
+            <div data-fill="row" className="flex flex-col gap-2">
+              <Button asChild size="lg" variant="secondary" iconStart="list-ordered">
+                <Link href={`/ledger/journals?month=${period.month}`}>{t("journals", { month: monthLabel })}</Link>
+              </Button>
+            </div>
+          </ActionPanel>
+        }
+      >
+        <PartnerSection title={t("checks")}>
+          <PartnerTable
+            caption={t("checks")}
+            rows={c.checks}
+            rowKey={(row) => row.key}
+            rowTone={(row) => (row.ok ? undefined : row.blocking ? "danger" : "warning")}
+            columns={[
+              {
+                key: "n",
+                header: t("checks"),
+                primary: true,
+                // What the check compares, and how to put it right, under its name — not a narrow column of its own.
+                cell: (row) => (
+                  <span className="flex min-w-0 flex-col gap-1">
+                    <span className="font-medium">{t(`names.${row.key}` as never)}</span>
+                    {row.detail ? <span className="text-muted text-sm font-normal">{row.detail}</span> : null}
+                    {!row.ok && t.has(`fix.${row.key}` as never) ? (
+                      <span className="text-sm font-normal">{t(`fix.${row.key}` as never)}</span>
+                    ) : null}
+                  </span>
+                ),
+              },
+              {
+                key: "e",
+                header: t("expected"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => (row.expected === null ? "—" : format.thb(row.expected)),
+              },
+              {
+                key: "a",
+                header: t("actual"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (row) => (row.actual === null ? "—" : format.thb(row.actual)),
+              },
+              {
+                key: "d",
+                header: t("difference"),
+                align: "end",
+                cell: (row) => (row.difference === null ? "—" : format.thb(row.difference)),
+              },
+              {
+                key: "s",
+                header: tc("status"),
+                cell: (row) => (
+                  <Badge tone={row.ok ? "success" : row.blocking ? "danger" : "warning"}>
+                    {row.ok ? (row.blocking ? t("ok") : t("info")) : t("fail")}
+                  </Badge>
+                ),
+              },
+              {
+                key: "f",
+                header: t("fixColumn"),
+                cell: (row) =>
+                  FIX[row.key] && (!row.ok || !row.blocking) ? (
+                    <Link
+                      className="text-primary text-sm font-medium whitespace-nowrap underline-offset-4 hover:underline"
+                      href={FIX[row.key]!}
+                    >
+                      {t("open")}
+                    </Link>
+                  ) : null,
+              },
+            ]}
+          />
+          {c.openProductionOrders ? (
+            <p className="text-muted text-sm">{t("openOrders", { n: c.openProductionOrders })}</p>
+          ) : null}
+        </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

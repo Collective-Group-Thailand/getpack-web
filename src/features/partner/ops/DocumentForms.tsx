@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { useErpCall } from "@/features/partner/erp/call";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { signedUrl } from "@/features/partner/viewer";
 import { ConfirmAction } from "@/features/shared/actions";
@@ -14,7 +15,7 @@ import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
@@ -73,6 +74,7 @@ export function DocumentForm({
 }) {
   const t = useTranslations("partnerOps.documents");
   const tCommon = useTranslations("partnerErp.common");
+  const tShared = useTranslations("partnerOps.shared");
   const router = useRouter();
   const { factoryId } = useFactory();
   const { call, busy } = useErpCall();
@@ -154,106 +156,154 @@ export function DocumentForm({
     }
   }
 
+  // Numbered sections on the left, what the record will say on the right (with the one save) — the ERP form frame.
+  const step = (n: number) => (doc ? n - 1 : n);
+  const target = targetOptions.find((o) => o.value === linkId)?.label;
+  const linkLabel =
+    linkType === NONE
+      ? t("links.none")
+      : target
+        ? tShared("labelled", { label: t(`links.${linkType}`), value: target })
+        : t(`links.${linkType}`);
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
-      {doc ? null : (
-        <Field label={t("form.file")} required requiredLabel={tCommon("required")} error={errors.file}>
-          <FileDropzone
-            accept={ACCEPT}
-            maxBytes={MAX_BYTES}
-            onFiles={(files) => {
-              const first = files[0] ?? null;
-              setFile(first);
-              if (first && !title) setTitle(first.name.replace(/\.[^.]+$/, ""));
-            }}
-            labels={labels}
-          />
-        </Field>
-      )}
-      <Field label={t("form.title")} required requiredLabel={tCommon("required")} error={errors.title}>
-        <Input
-          value={title}
-          maxLength={200}
-          placeholder={t("form.titlePlaceholder")}
-          onChange={(event) => setTitle(event.target.value)}
-        />
-      </Field>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label={t("form.category")}>
-          <Select
-            value={category}
-            onValueChange={(value) => setCategory(value as Category)}
-            options={DOC_CATEGORIES.map((c) => ({ value: c, label: t(`categories.${c}`) }))}
-          />
-        </Field>
-        <Field label={t("form.folder")}>
-          <Select
-            value={folderId}
-            onValueChange={setFolderId}
-            options={[
-              { value: NO_FOLDER, label: t("form.noFolder") },
-              ...folders.map((f) => ({ value: f.id, label: f.name })),
-            ]}
-          />
-        </Field>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label={t("form.linkType")}>
-          <Select
-            value={linkType}
-            onValueChange={(value) => {
-              setLinkType(value as LinkType | typeof NONE);
-              setLinkId(fixed && fixed.type === value ? fixed.id : "");
-            }}
-            options={[
-              { value: NONE, label: t("links.none") },
-              ...linkTypes.map((type) => ({ value: type, label: t(`links.${type}`) })),
-            ]}
-          />
-        </Field>
-        {linkType === NONE ? null : (
-          <Field label={t("form.linkTarget")} error={errors.link}>
-            <Select
-              value={linkId || null}
-              placeholder={t("form.linkTarget")}
-              onValueChange={setLinkId}
-              options={targetOptions}
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tCommon("sections.summary")}
+            action={
+              <Button type="submit" size="xl" iconStart="save" loading={busy}>
+                {t("form.save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                ...(doc ? [] : [{ key: "file", label: t("form.file"), value: file?.name ?? "" }]),
+                { key: "title", label: t("form.title"), value: title.trim() },
+                { key: "category", label: t("form.category"), value: t(`categories.${category}`) },
+                {
+                  key: "folder",
+                  label: t("form.folder"),
+                  value:
+                    folderId === NO_FOLDER ? t("form.noFolder") : (folders.find((f) => f.id === folderId)?.name ?? ""),
+                },
+                { key: "link", label: t("form.linkType"), value: linkLabel },
+                { key: "expires", label: t("form.expiresOn"), value: expiresOn },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        {doc ? null : (
+          <FormSection card step={1} title={t("form.file")}>
+            <Field label={t("form.file")} required requiredLabel={tCommon("required")} error={errors.file}>
+              <FileDropzone
+                accept={ACCEPT}
+                maxBytes={MAX_BYTES}
+                onFiles={(files) => {
+                  const first = files[0] ?? null;
+                  setFile(first);
+                  if (first && !title) setTitle(first.name.replace(/\.[^.]+$/, ""));
+                }}
+                labels={labels}
+              />
+            </Field>
+          </FormSection>
+        )}
+        <FormSection card step={step(2)} title={tCommon("sections.details")}>
+          <Field label={t("form.title")} required requiredLabel={tCommon("required")} error={errors.title}>
+            <Input
+              value={title}
+              maxLength={200}
+              placeholder={t("form.titlePlaceholder")}
+              onChange={(event) => setTitle(event.target.value)}
             />
           </Field>
-        )}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label={t("form.expiresOn")}>
-          <Input type="date" value={expiresOn} onChange={(event) => setExpiresOn(event.target.value)} />
-        </Field>
-        <Field label={t("form.remindDays")}>
-          <NumberInput
-            min={0}
-            max={365}
-            step={1}
-            disabled={!expiresOn}
-            value={remindDays}
-            onChange={(event) => setRemindDays(event.target.value)}
-          />
-        </Field>
-      </div>
-      <Field label={t("form.tags")} hint={t("form.tagsHint")}>
-        <Input value={tags} maxLength={300} onChange={(event) => setTags(event.target.value)} />
-      </Field>
-      <Field label={t("form.note")}>
-        <Textarea rows={3} maxLength={2000} value={note} onChange={(event) => setNote(event.target.value)} />
-      </Field>
-      <div>
-        <Button type="submit" size="lg" iconStart="save" loading={busy}>
-          {t("form.save")}
-        </Button>
-      </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("form.category")}>
+              <Select
+                value={category}
+                onValueChange={(value) => setCategory(value as Category)}
+                options={DOC_CATEGORIES.map((c) => ({ value: c, label: t(`categories.${c}`) }))}
+              />
+            </Field>
+            <Field label={t("form.folder")}>
+              <Select
+                value={folderId}
+                onValueChange={setFolderId}
+                options={[
+                  { value: NO_FOLDER, label: t("form.noFolder") },
+                  ...folders.map((f) => ({ value: f.id, label: f.name })),
+                ]}
+              />
+            </Field>
+          </div>
+          <Field label={t("form.tags")} hint={t("form.tagsHint")}>
+            <Input value={tags} maxLength={300} onChange={(event) => setTags(event.target.value)} />
+          </Field>
+        </FormSection>
+        <FormSection card step={step(3)} title={tCommon("sections.affected")}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("form.linkType")}>
+              <Select
+                value={linkType}
+                onValueChange={(value) => {
+                  setLinkType(value as LinkType | typeof NONE);
+                  setLinkId(fixed && fixed.type === value ? fixed.id : "");
+                }}
+                options={[
+                  { value: NONE, label: t("links.none") },
+                  ...linkTypes.map((type) => ({ value: type, label: t(`links.${type}`) })),
+                ]}
+              />
+            </Field>
+            {linkType === NONE ? null : (
+              <Field label={t("form.linkTarget")} error={errors.link}>
+                <Select
+                  value={linkId || null}
+                  placeholder={t("form.linkTarget")}
+                  onValueChange={setLinkId}
+                  options={targetOptions}
+                />
+              </Field>
+            )}
+          </div>
+        </FormSection>
+        <FormSection card step={step(4)} title={t("form.expiresOn")}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("form.expiresOn")}>
+              <Input type="date" value={expiresOn} onChange={(event) => setExpiresOn(event.target.value)} />
+            </Field>
+            <Field label={t("form.remindDays")}>
+              <NumberInput
+                min={0}
+                max={365}
+                step={1}
+                disabled={!expiresOn}
+                value={remindDays}
+                onChange={(event) => setRemindDays(event.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label={t("form.note")}>
+            <Textarea rows={3} maxLength={2000} value={note} onChange={(event) => setNote(event.target.value)} />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
 
 /** Upload a new version (D-356): a renewed certificate or a revised drawing, with its new expiry. */
-export function NewVersionButton({ doc }: { doc: Doc }) {
+export function NewVersionButton({
+  doc,
+  variant = "primary",
+}: {
+  doc: Doc;
+  /** "secondary" under the panel's filled primary. */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("partnerOps.documents");
   const tCommon = useTranslations("partnerErp.common");
   const { factoryId } = useFactory();
@@ -268,7 +318,7 @@ export function NewVersionButton({ doc }: { doc: Doc }) {
 
   return (
     <>
-      <Button iconStart="upload" onClick={() => setOpen(true)}>
+      <Button variant={variant} iconStart="upload" onClick={() => setOpen(true)}>
         {t("newVersion")}
       </Button>
       {open ? (
@@ -332,13 +382,24 @@ export function NewVersionButton({ doc }: { doc: Doc }) {
 }
 
 /** Open a stored file through a short-lived signed link. */
-export function OpenFileButton({ fileId, label }: { fileId: string; label: string }) {
+export function OpenFileButton({
+  fileId,
+  label,
+  variant = "secondary",
+  size = "sm",
+}: {
+  fileId: string;
+  label: string;
+  /** "primary" in a record's action panel, where opening the file is the page's job. */
+  variant?: "primary" | "secondary";
+  size?: "sm" | "lg";
+}) {
   const tCommon = useTranslations("partnerErp.common");
   const [busy, setBusy] = useState(false);
   return (
     <Button
-      variant="secondary"
-      size="sm"
+      variant={variant}
+      size={size}
       iconStart="download"
       loading={busy}
       onClick={async () => {

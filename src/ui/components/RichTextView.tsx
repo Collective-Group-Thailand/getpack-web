@@ -23,6 +23,38 @@ export interface RichTextViewProps {
   /** The zone's locale-aware link, for links inside the site (`/products/...`). */
   linkAs?: LinkLike;
   className?: string;
+  /** Gives each `h2`/`h3` the id `richTextHeadings` lists, so a table of contents can link to it. */
+  anchorHeadings?: boolean;
+}
+
+/** One section heading of a rich-text body: the id `RichTextView anchorHeadings` gives it, its words and level. */
+export interface RichTextHeading {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
+const plainText = (node: RichTextNode): string =>
+  node.type === "text" ? (node.text ?? "") : (node.content ?? []).filter(isNode).map(plainText).join("");
+
+function headingNodes(doc: unknown): Map<RichTextNode, RichTextHeading> {
+  const found = new Map<RichTextNode, RichTextHeading>();
+  const walk = (node: RichTextNode) => {
+    if (node.type === "heading") {
+      const level = Math.min(4, Math.max(2, Number(node.attrs?.level ?? 2)));
+      const text = plainText(node).trim();
+      if (level <= 3 && text) found.set(node, { id: `section-${found.size + 1}`, text, level: level as 2 | 3 });
+      return;
+    }
+    (node.content ?? []).filter(isNode).forEach(walk);
+  };
+  if (isNode(doc)) walk(doc);
+  return found;
+}
+
+/** The `h2`/`h3` headings of a body, in order — for a table of contents beside the article. */
+export function richTextHeadings(doc: unknown): RichTextHeading[] {
+  return [...headingNodes(doc).values()];
 }
 
 /** Only these reach an `href`: a `javascript:` link in stored content must not become a link. */
@@ -77,13 +109,15 @@ function renderText(node: RichTextNode, key: number, linkAs?: LinkLike): React.R
   return <Fragment key={key}>{out}</Fragment>;
 }
 
-function renderNodes(nodes: unknown, linkAs?: LinkLike): React.ReactNode {
+type Anchors = Map<RichTextNode, RichTextHeading> | undefined;
+
+function renderNodes(nodes: unknown, linkAs?: LinkLike, anchors?: Anchors): React.ReactNode {
   if (!Array.isArray(nodes)) return null;
-  return nodes.filter(isNode).map((node, index) => renderNode(node, index, linkAs));
+  return nodes.filter(isNode).map((node, index) => renderNode(node, index, linkAs, anchors));
 }
 
-function renderNode(node: RichTextNode, key: number, linkAs?: LinkLike): React.ReactNode {
-  const children = renderNodes(node.content, linkAs);
+function renderNode(node: RichTextNode, key: number, linkAs?: LinkLike, anchors?: Anchors): React.ReactNode {
+  const children = renderNodes(node.content, linkAs, anchors);
   switch (node.type) {
     case "text":
       return renderText(node, key, linkAs);
@@ -93,7 +127,11 @@ function renderNode(node: RichTextNode, key: number, linkAs?: LinkLike): React.R
       // The page owns its one `h1` (design-system.md §6); content headings start at `h2`.
       const level = Math.min(4, Math.max(2, Number(node.attrs?.level ?? 2)));
       const Heading = `h${level}` as "h2" | "h3" | "h4";
-      return <Heading key={key}>{children}</Heading>;
+      return (
+        <Heading key={key} id={anchors?.get(node)?.id}>
+          {children}
+        </Heading>
+      );
     }
     case "bulletList":
       return <ul key={key}>{children}</ul>;
@@ -141,7 +179,7 @@ function renderNode(node: RichTextNode, key: number, linkAs?: LinkLike): React.R
  * Nothing is injected as HTML: every node becomes a React element, so stored content cannot
  * smuggle markup or script, and links are limited to `http(s)`, `mailto`, `tel` and paths.
  */
-export function RichTextView({ doc, linkAs, className }: RichTextViewProps) {
+export function RichTextView({ doc, linkAs, className, anchorHeadings = false }: RichTextViewProps) {
   if (!isNode(doc) || doc.type !== "doc") return null;
   return (
     <div
@@ -150,7 +188,7 @@ export function RichTextView({ doc, linkAs, className }: RichTextViewProps) {
         className,
       )}
     >
-      {renderNodes(doc.content, linkAs)}
+      {renderNodes(doc.content, linkAs, anchorHeadings ? headingNodes(doc) : undefined)}
     </div>
   );
 }

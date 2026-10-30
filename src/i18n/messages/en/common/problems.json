@@ -1,4 +1,14 @@
 {
+  "advisory": {
+    "choice_mismatch": "The material does not match the board chosen from the recommendation",
+    "choice_required": "Choose a board from the recommendation before saving the quotation",
+    "disabled": "Board advice is not switched on yet",
+    "not_configured": "Board advice is not set up yet",
+    "not_supported": "Board advice covers supported corrugated boxes only",
+    "acknowledgement_required": "Acknowledge this board's cautions before choosing it",
+    "option_unknown": "That board is not part of this advice",
+    "material_not_board": "Board strength sheets are for corrugated boards only"
+  },
   "agents": {
     "agent_inactive": "Agent not active",
     "agreement_missing": "No agent agreement yet",
@@ -54,6 +64,13 @@
     "preflight_blocked": "Preflight blocked",
     "preflight_pending": "Preflight running"
   },
+  "assistant": {
+    "not_cleared": "The assistant has not passed the required evaluation and cannot be switched on",
+    "disabled": "The AI assistant is not available yet. Talk to the team instead.",
+    "not_configured": "The AI assistant is not set up yet. Talk to the team instead.",
+    "session_ended": "This conversation has ended. Ask again to start a new one.",
+    "rate_limited": "Too many questions just now. Wait a moment and try again."
+  },
   "auth": {
     "account_inactive": "Account inactive",
     "account_locked": "Account temporarily locked",
@@ -76,12 +93,31 @@
     "identity_last_method": "Last sign-in method",
     "identity_not_unlinkable": "Sign-in method cannot be removed"
   },
+  "b2b": {
+    "client_limit": "The company already has the most active keys allowed",
+    "client_revoked": "This key is already revoked"
+  },
   "banking": {
     "duplicate_import": "Already imported",
     "gl_account_invalid": "GL account not usable",
     "line_already_matched": "Line already matched",
     "match_amount_mismatch": "Amounts differ",
     "statement_invalid": "Statement not readable"
+  },
+  "bff": {
+    "unknown_path": "This address is not available here",
+    "body_too_large": "What was sent is too large",
+    "csrf_header_missing": "Request refused for security",
+    "origin_missing": "Request refused for security",
+    "origin_invalid": "Request refused for security",
+    "origin_mismatch": "Request refused for security",
+    "upstream_unreachable": "The service could not be reached"
+  },
+  "call_offs": {
+    "already_requested": "This quotation already has a call-off agreement",
+    "invalid_status": "This agreement's status does not allow that",
+    "quote_not_eligible": "This quotation cannot have a call-off agreement",
+    "release_quantity": "The quantity must be at least the minimum per release and at most what is left"
   },
   "cart": {
     "design_option_unavailable": "Design option not available",
@@ -150,12 +186,18 @@
     "precondition_required": "This page is out of date. Refresh it and try again.",
     "stale": "Someone changed this before you. Refresh to see the latest, then try again."
   },
+  "configurations": {
+    "converted": "This draft has already been converted and can't change"
+  },
   "consent": {
     "purpose_unavailable": "Consent text not available"
   },
   "conversations": {
     "closed": "Conversation closed",
     "unreachable": "Customer unreachable"
+  },
+  "deep_links": {
+    "expired": "This link has expired. Open the same thing from your account."
   },
   "design_services": {
     "fee_changed": "Revision fee changed",
@@ -173,12 +215,23 @@
     "share_scope": "This link does not allow that. Editing through a link is for members of the design's company",
     "comment_not_thread": "Only a thread's first comment can be resolved"
   },
+  "dielines": {
+    "material_class_not_offered": "This style is not offered in that material class",
+    "not_drawable": "This style cannot be drawn as a dieline",
+    "size_out_of_range": "These sizes are outside the style's range",
+    "rate_limited": "Too many downloads — wait a moment and try again"
+  },
   "discount_memos": {
     "not_usable": "Memo cannot be used",
     "within_cs_limit": "Within the CS limit"
   },
   "discounts": {
     "cs_limit_exceeded": "Above the CS discount limit"
+  },
+  "documents": {
+    "image_not_usable": "Image cannot be used",
+    "signatory_exists": "Already a signatory",
+    "signatory_not_eligible": "Cannot be a signatory"
   },
   "drawing": {
     "engine_unavailable": "Drawing engine unavailable",
@@ -225,8 +278,14 @@
     "support_grant_active": "Support already has access — revoke it first",
     "support_not_granted": "The owner has not granted access, or it has expired"
   },
+  "etax": {
+    "nothing_to_send": "No e-Tax e-mail to send"
+  },
   "factory_users": {
     "role_not_allowed": "Role not allowed"
+  },
+  "feature_flags": {
+    "dev_only": "This flag is for development only and cannot be switched on here"
   },
   "file": {
     "infected": "File blocked",
@@ -235,6 +294,13 @@
     "type_not_allowed": "File type not allowed",
     "upload_incomplete": "Upload incomplete"
   },
+  "file_checks": {
+    "not_ready": "The file is still being checked",
+    "blocking": "The file has something to fix",
+    "spec_missing": "No product and size chosen",
+    "quote_mismatch": "The price is not for the chosen product",
+    "in_cart": "This file is already in the cart"
+  },
   "fixed_assets": {
     "account_invalid": "Account not allowed here",
     "already_disposed": "Asset already disposed",
@@ -242,6 +308,15 @@
     "cost_exceeds_bill": "Cost exceeds the bill",
     "depreciation_pending": "Depreciation not up to date",
     "run_exists": "Depreciation already run"
+  },
+  "guarantee": {
+    "version_pending": "A version already waits for approval",
+    "version_not_proposed": "This version is no longer waiting for approval"
+  },
+  "handover": {
+    "expired": "The handover link has expired",
+    "not_ready": "Not ready to ship: contact the getpack team",
+    "scan_mismatch": "A scanned carton is not from this shipment"
   },
   "http": {
     "bad_request": "Something in the request is missing or wrong. Check it and try again.",
@@ -369,6 +444,11 @@
     "print_combination_invalid": "Invalid print choice",
     "vat_rate_missing": "VAT rate not set"
   },
+  "privacy": {
+    "deletion_blocked": "Data cannot be deleted yet",
+    "request_closed": "Request already answered",
+    "request_open": "Request already open"
+  },
   "production": {
     "already_released": "Already released",
     "below_margin_floor": "Below the margin floor",
@@ -430,6 +510,9 @@
     "not_approved": "Refund not approved",
     "not_refundable": "Not refundable"
   },
+  "reorders": {
+    "suggestion_decided": "This suggestion has already been handled"
+  },
   "reports": {
     "recipient_not_allowed": "Recipient not allowed",
     "schedule_state": "The schedule is already in that state"
@@ -449,6 +532,17 @@
     "quote_not_open": "Quotation not open",
     "consultation_not_open": "Consultation not open",
     "reminder_recent": "Reminder sent recently"
+  },
+  "rfq_baskets": {
+    "changed": "Something in the basket changed. Check it again, then send.",
+    "not_submitted": "This basket has not been sent yet. Send it before accepting quotes."
+  },
+  "samples": {
+    "evidence_missing": "A measured size, the material used and at least one photo are needed",
+    "invalid_status": "This sample's status does not allow that",
+    "evidence_recorded": "This sample's evidence is already recorded",
+    "exists": "This order already has a sample in progress",
+    "freight_unavailable": "The sample's delivery cannot be priced yet"
   },
   "service": {
     "unavailable": "Service unavailable"
@@ -479,68 +573,27 @@
     "version_not_proposed": "Not in approval",
     "version_open": "Version already open"
   },
-  "tax": {
-    "gl_difference": "Tax report does not agree with the GL",
-    "report_not_draft": "Tax report already final",
-    "report_not_final": "Tax report not final",
-    "report_not_payable": "Nothing to pay on this report"
-  },
-  "validation": {
-    "failed": "Some fields need fixing — see the message under each."
-  },
-  "bff": {
-    "unknown_path": "This address is not available here",
-    "body_too_large": "What was sent is too large",
-    "csrf_header_missing": "Request refused for security",
-    "origin_missing": "Request refused for security",
-    "origin_invalid": "Request refused for security",
-    "origin_mismatch": "Request refused for security",
-    "upstream_unreachable": "The service could not be reached"
-  },
-  "privacy": {
-    "deletion_blocked": "Data cannot be deleted yet",
-    "request_closed": "Request already answered",
-    "request_open": "Request already open"
-  },
-  "support": {
-    "contact_required": "Contact details required",
-    "callback_unavailable": "A call back is not available then — pick one of the days and times offered",
-    "ticket_not_found": "Request not found — check the number and the phone or e-mail you sent it with"
-  },
   "specs": {
     "basis_not_accepted": "This product does not take that measurement basis",
     "caliper_missing": "The material's thickness is unknown, so the size cannot be converted — enter the inside size or choose another material",
     "unit_not_accepted": "Sizes are accepted in millimetres only"
   },
-  "assistant": {
-    "not_cleared": "The assistant has not passed the required evaluation and cannot be switched on",
-    "disabled": "The AI assistant is not available yet. Talk to the team instead.",
-    "not_configured": "The AI assistant is not set up yet. Talk to the team instead.",
-    "session_ended": "This conversation has ended. Ask again to start a new one.",
-    "rate_limited": "Too many questions just now. Wait a moment and try again."
+  "structural_requests": {
+    "invalid_transition": "This request is at a step where that cannot be done"
   },
-  "feature_flags": {
-    "dev_only": "This flag is for development only and cannot be switched on here"
-  },
-  "advisory": {
-    "choice_mismatch": "The material does not match the board chosen from the recommendation",
-    "choice_required": "Choose a board from the recommendation before saving the quotation",
-    "disabled": "Board advice is not switched on yet",
-    "not_configured": "Board advice is not set up yet",
-    "not_supported": "Board advice covers supported corrugated boxes only",
-    "acknowledgement_required": "Acknowledge this board's cautions before choosing it",
-    "option_unknown": "That board is not part of this advice",
-    "material_not_board": "Board strength sheets are for corrugated boards only"
-  },
-  "samples": {
-    "evidence_missing": "A measured size, the material used and at least one photo are needed",
-    "invalid_status": "This sample's status does not allow that",
-    "evidence_recorded": "This sample's evidence is already recorded",
-    "exists": "This order already has a sample in progress",
-    "freight_unavailable": "The sample's delivery cannot be priced yet"
-  },
-  "configurations": {
-    "converted": "This draft has already been converted and can't change"
+  "studio": {
+    "spec_mismatch": "The spec does not match this design's box",
+    "spec_missing": "This design has no spec to price yet",
+    "rate_limited": "Priced too often, wait a moment",
+    "right_not_required": "This mark needs no declaration",
+    "checks_not_run": "This version has not been checked yet",
+    "block_not_acknowledgeable": "Must be fixed; it cannot be accepted",
+    "checks_not_ready": "This design has not passed its checks",
+    "print_unavailable": "Print files cannot be made automatically for this box style yet",
+    "quote_not_of_version": "The quotation is not for this version",
+    "renders_missing": "The artwork of this version has not been sent",
+    "template_not_editable": "The template isn't in a state that allows this",
+    "maker_checker": "A template is approved by someone other than its author"
   },
   "styles": {
     "variant_not_found": "This style was not found",
@@ -558,66 +611,18 @@
     "capability_decided": "This capability is already decided",
     "site_visit_not_passed": "Verify only against a passing site visit"
   },
-  "studio": {
-    "spec_mismatch": "The spec does not match this design's box",
-    "spec_missing": "This design has no spec to price yet",
-    "rate_limited": "Priced too often, wait a moment",
-    "right_not_required": "This mark needs no declaration",
-    "checks_not_run": "This version has not been checked yet",
-    "block_not_acknowledgeable": "Must be fixed; it cannot be accepted",
-    "checks_not_ready": "This design has not passed its checks",
-    "print_unavailable": "Print files cannot be made automatically for this box style yet",
-    "quote_not_of_version": "The quotation is not for this version",
-    "renders_missing": "The artwork of this version has not been sent",
-    "template_not_editable": "The template isn't in a state that allows this",
-    "maker_checker": "A template is approved by someone other than its author"
+  "support": {
+    "contact_required": "Contact details required",
+    "callback_unavailable": "A call back is not available then — pick one of the days and times offered",
+    "ticket_not_found": "Request not found — check the number and the phone or e-mail you sent it with"
   },
-  "dielines": {
-    "material_class_not_offered": "This style is not offered in that material class",
-    "not_drawable": "This style cannot be drawn as a dieline",
-    "size_out_of_range": "These sizes are outside the style's range",
-    "rate_limited": "Too many downloads — wait a moment and try again"
+  "tax": {
+    "gl_difference": "Tax report does not agree with the GL",
+    "report_not_draft": "Tax report already final",
+    "report_not_final": "Tax report not final",
+    "report_not_payable": "Nothing to pay on this report"
   },
-  "call_offs": {
-    "already_requested": "This quotation already has a call-off agreement",
-    "invalid_status": "This agreement's status does not allow that",
-    "quote_not_eligible": "This quotation cannot have a call-off agreement",
-    "release_quantity": "The quantity must be at least the minimum per release and at most what is left"
-  },
-  "reorders": {
-    "suggestion_decided": "This suggestion has already been handled"
-  },
-  "b2b": {
-    "client_limit": "The company already has the most active keys allowed",
-    "client_revoked": "This key is already revoked"
-  },
-  "rfq_baskets": {
-    "changed": "Something in the basket changed. Check it again, then send.",
-    "not_submitted": "This basket has not been sent yet. Send it before accepting quotes."
-  },
-  "deep_links": {
-    "expired": "This link has expired. Open the same thing from your account."
-  },
-  "structural_requests": {
-    "invalid_transition": "This request is at a step where that cannot be done"
-  },
-  "guarantee": {
-    "version_pending": "A version already waits for approval",
-    "version_not_proposed": "This version is no longer waiting for approval"
-  },
-  "documents": {
-    "image_not_usable": "Image cannot be used",
-    "signatory_exists": "Already a signatory",
-    "signatory_not_eligible": "Cannot be a signatory"
-  },
-  "etax": {
-    "nothing_to_send": "No e-Tax e-mail to send"
-  },
-  "file_checks": {
-    "not_ready": "The file is still being checked",
-    "blocking": "The file has something to fix",
-    "spec_missing": "No product and size chosen",
-    "quote_mismatch": "The price is not for the chosen product",
-    "in_cart": "This file is already in the cart"
+  "validation": {
+    "failed": "Some fields need fixing — see the message under each."
   }
 }

@@ -6,7 +6,7 @@ import { AppShell } from "@/ui/components/AppShell";
 
 import { PartnerBottomNav } from "./PartnerBottomNav";
 import { PartnerSidebar } from "./PartnerSidebar";
-import { partnerBottomItems, partnerSidebar } from "./sidebar";
+import { partnerBottomItems, partnerSections } from "./sidebar";
 import { PartnerTopbar } from "./PartnerTopbar";
 
 /**
@@ -25,7 +25,7 @@ export async function PartnerShell({ context, children }: { context: FactoryCont
   const t = await getTranslations("partner.nav");
   const can = (permission: string) => context.actor.permissions.includes(permission);
   const status = context.factory?.status;
-  const groups = partnerSidebar(status, context.roles, can);
+  const sections = partnerSections(status, context.roles, can);
   const bottom = partnerBottomItems(status, context.roles, can);
   const tRoles = await getTranslations("partner.shell.roles");
   const tStatusNs = await getTranslations("status");
@@ -42,7 +42,7 @@ export async function PartnerShell({ context, children }: { context: FactoryCont
       header={<PartnerTopbar context={context} />}
       sidebar={
         <PartnerSidebar
-          groups={groups}
+          sections={sections}
           factory={{ name: factoryName, status: status ? tStatus(status) : null }}
           user={{ name: context.actor.displayName, roles: roleNames }}
         />

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
@@ -12,7 +13,7 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
@@ -51,6 +52,7 @@ export function StockMoveForm({
 }) {
   const t = useTranslations("partnerErp.move");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
   const { factoryId } = useFactory();
   const router = useRouter();
   const main = warehouses.find((warehouse) => warehouse.isDefault) ?? warehouses[0];
@@ -161,72 +163,104 @@ export function StockMoveForm({
 
   if (mode === "transfer" && warehouses.length < 2) return <p className="text-muted">{t("noWarehouses")}</p>;
 
+  const warehouseName = (id: string) => warehouses.find((w) => w.id === id)?.name ?? "";
   return (
-    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-5" noValidate>
-      {KINDS[mode].length ? (
-        <div className="flex flex-col gap-2">
-          <SegmentedControl
-            label={t("kind")}
-            size="xl"
-            value={kind}
-            onValueChange={(next) => setKind(next)}
-            options={KINDS[mode].map((value) => ({ value, label: t(`kinds.${value}`) }))}
-          />
-          {mode === "count" ? (
-            <p className="text-muted text-sm">{t(`kindHints.${kind as "count" | "adjustment" | "opening"}`)}</p>
-          ) : null}
-        </div>
-      ) : null}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={mode === "transfer" ? t("from") : tCommon("warehouse")}>
-          <Select value={warehouseId} onValueChange={setWarehouseId} options={warehouseOptions} />
-        </Field>
-        {mode === "transfer" ? (
-          <Field label={t("to")}>
-            <Select
-              value={toWarehouseId}
-              onValueChange={setToWarehouseId}
-              options={warehouseOptions.filter((option) => option.value !== warehouseId)}
+    <form onSubmit={(event) => void submit(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("submit")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                ...(KINDS[mode].length ? [{ key: "kind", label: t("kind"), value: t(`kinds.${kind}`) }] : []),
+                {
+                  key: "from",
+                  label: mode === "transfer" ? t("from") : tCommon("warehouse"),
+                  value: warehouseName(warehouseId),
+                },
+                ...(mode === "transfer" ? [{ key: "to", label: t("to"), value: warehouseName(toWarehouseId) }] : []),
+                {
+                  key: "lines",
+                  label: tSections("lines"),
+                  value: String(lines.filter((line) => line.itemId).length),
+                },
+              ]}
             />
-          </Field>
-        ) : null}
-        {mode === "issue" ? (
-          <Field label={t("reference")}>
-            <Input
-              value={reference}
-              placeholder={t("referencePlaceholder")}
-              onChange={(event) => setReference(event.target.value)}
-            />
-          </Field>
-        ) : null}
-      </div>
-      <LinesEditor
-        items={items}
-        lines={lines}
-        onChange={setLines}
-        errors={errors}
-        locale={locale}
-        signed={signed}
-        quantityLabel={kind === "count" ? t("countedQty") : kind === "adjustment" ? t("deltaQty") : undefined}
-        quantityPlaceholder={kind === "adjustment" ? t("deltaPlaceholder") : undefined}
-        {...(kind === "opening" ? { withPrice: t("unitCost", { unit: tCommon("unit") }) } : {})}
-      />
-      <Field
-        label={t("reason")}
-        required={kind === "count" || kind === "adjustment"}
-        requiredLabel={tCommon("required")}
-        error={reasonError}
+          </FormSummary>
+        }
       >
-        <Textarea
-          rows={2}
-          value={reason}
-          placeholder={t("reasonPlaceholder")}
-          onChange={(event) => setReason(event.target.value)}
-        />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("submit")}
-      </Button>
+        <FormSection card step={1} title={tSections("where")}>
+          {KINDS[mode].length ? (
+            <div className="flex flex-col gap-2">
+              <SegmentedControl
+                label={t("kind")}
+                size="xl"
+                value={kind}
+                onValueChange={(next) => setKind(next)}
+                options={KINDS[mode].map((value) => ({ value, label: t(`kinds.${value}`) }))}
+              />
+              {mode === "count" ? (
+                <p className="text-muted text-sm">{t(`kindHints.${kind as "count" | "adjustment" | "opening"}`)}</p>
+              ) : null}
+            </div>
+          ) : null}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={mode === "transfer" ? t("from") : tCommon("warehouse")}>
+              <Select value={warehouseId} onValueChange={setWarehouseId} options={warehouseOptions} />
+            </Field>
+            {mode === "transfer" ? (
+              <Field label={t("to")}>
+                <Select
+                  value={toWarehouseId}
+                  onValueChange={setToWarehouseId}
+                  options={warehouseOptions.filter((option) => option.value !== warehouseId)}
+                />
+              </Field>
+            ) : null}
+            {mode === "issue" ? (
+              <Field label={t("reference")}>
+                <Input
+                  value={reference}
+                  placeholder={t("referencePlaceholder")}
+                  onChange={(event) => setReference(event.target.value)}
+                />
+              </Field>
+            ) : null}
+          </div>
+        </FormSection>
+        <FormSection card step={2} title={tSections("lines")}>
+          <LinesEditor
+            items={items}
+            lines={lines}
+            onChange={setLines}
+            errors={errors}
+            locale={locale}
+            signed={signed}
+            quantityLabel={kind === "count" ? t("countedQty") : kind === "adjustment" ? t("deltaQty") : undefined}
+            quantityPlaceholder={kind === "adjustment" ? t("deltaPlaceholder") : undefined}
+            {...(kind === "opening" ? { withPrice: t("unitCost", { unit: tCommon("unit") }) } : {})}
+          />
+          <Field
+            label={t("reason")}
+            required={kind === "count" || kind === "adjustment"}
+            requiredLabel={tCommon("required")}
+            error={reasonError}
+          >
+            <Textarea
+              rows={2}
+              value={reason}
+              placeholder={t("reasonPlaceholder")}
+              onChange={(event) => setReason(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

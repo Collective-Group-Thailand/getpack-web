@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { LedgerSettingsForm, ProposeAccountChange } from "@/features/partner/ledger/LedgerForms";
 import { ledgerAccounts } from "@/features/partner/ledger/server";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { ChangeDecision } from "@/features/partner/ledger/LedgerActions";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,16 +46,50 @@ export default async function AccountsPage({
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const canConfigure = canAt(context, "factory_ledger.configure");
+  // The lists' counts as the API gives them, so a tab says how many rows it opens; settings is a form, not a list.
+  const counts = await viewTotals(["chart", "changes", "rules"] as const, async (key) =>
+    key === "chart"
+      ? (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/accounts", {
+            params: { path, query: { perPage: 1, ...(query.q ? { q: query.q } : {}) } },
+          })
+        ).data
+      : key === "changes"
+        ? (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/account-changes", {
+              params: { path, query: { perPage: 1 } },
+            })
+          ).data
+        : {
+            meta: {
+              total: (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/rules", { params: { path } }))
+                .data!.length,
+            },
+          },
+  );
   const tabs = (
-    <ViewTabs
-      label={t("views.label")}
-      current={view}
-      items={VIEWS.map((key) => ({
-        key,
-        href: `/ledger/accounts${queryOf({ view: key === "chart" ? undefined : key })}`,
-        label: t(`views.${key}`),
-      }))}
-    />
+    <ListToolbar>
+      <ViewTabs
+        label={t("views.label")}
+        current={view}
+        items={VIEWS.map((key) => ({
+          key,
+          href: `/ledger/accounts${queryOf({ view: key === "chart" ? undefined : key, q: key === "chart" ? query.q : undefined })}`,
+          label: t(`views.${key}`),
+          count: key === "settings" ? undefined : counts[key],
+        }))}
+      />
+      {view === "chart" ? (
+        <SearchBar
+          id="account-search"
+          action="/ledger/accounts"
+          q={query.q}
+          label={t("search")}
+          placeholder={t("searchPlaceholder")}
+          button={t("searchButton")}
+        />
+      ) : null}
+    </ListToolbar>
   );
   const all =
     canConfigure && (view === "chart" || view === "changes")
@@ -65,7 +103,7 @@ export default async function AccountsPage({
       actions={canConfigure && view !== "settings" && view !== "rules" ? <ProposeAccountChange accounts={all} /> : null}
     >
       {tabs}
-      <p className="text-muted text-sm">{tc("cpaCaveat")}</p>
+      <Callout tone="info" icon="info" title={tc("cpaCaveat")} />
       {body}
     </PartnerPage>
   );
@@ -159,7 +197,17 @@ export default async function AccountsPage({
             rows={read.data.data}
             rowKey={(row) => row.id}
             rowTone={(row) => (row.status === "proposed" ? "warning" : undefined)}
-            empty={<EmptyState icon="layers" title={t("changesEmpty")} />}
+            empty={
+              <EmptyState
+                icon="layers"
+                title={t("changesEmpty")}
+                action={
+                  <Button asChild variant="secondary" iconEnd="arrow-right">
+                    <Link href="/ledger/accounts">{t("views.chart")}</Link>
+                  </Button>
+                }
+              />
+            }
             columns={[
               { key: "k", header: t("kind"), primary: true, cell: (row) => t(`kinds.${row.kind}` as never) },
               {
@@ -215,14 +263,6 @@ export default async function AccountsPage({
   );
   return page$(
     <>
-      <SearchBar
-        id="account-search"
-        action="/ledger/accounts"
-        q={query.q}
-        label={t("search")}
-        placeholder={t("searchPlaceholder")}
-        button={t("searchButton")}
-      />
       {read.data ? (
         <>
           <PartnerTable

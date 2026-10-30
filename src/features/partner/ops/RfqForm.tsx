@@ -7,13 +7,15 @@ import { useState } from "react";
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { useErpCall } from "@/features/partner/erp/call";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { isZero, plainNumber, QTY_PATTERN, trimZeros } from "@/features/partner/erp/format";
 import { type Line, type LineErrors, LinesEditor, newLine, type PickItem } from "@/features/partner/erp/LinesEditor";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 
 type Rfq = Schemas["ErpRfqDto"];
@@ -41,6 +43,8 @@ export function RfqForm({
 }) {
   const t = useTranslations("partnerOps.rfqs.form");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { call, busy } = useErpCall();
@@ -111,69 +115,97 @@ export function RfqForm({
   }
 
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <Field label={t("subject")} required requiredLabel={tCommon("required")} error={formErrors.title}>
-        <Input value={title} placeholder={t("subjectPlaceholder")} onChange={(event) => setTitle(event.target.value)} />
-      </Field>
-      <LinesEditor
-        items={items}
-        lines={lines}
-        onChange={setLines}
-        errors={errors}
-        locale={locale}
-        quantityLabel={t("quantity")}
-      />
-      <fieldset className="flex flex-col gap-2">
-        <legend className="font-semibold">{t("suppliers")}</legend>
-        <p className="text-muted text-sm">{t("suppliersHint")}</p>
-        {formErrors.suppliers ? <p className="text-danger text-sm">{formErrors.suppliers}</p> : null}
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {suppliers.map((s) => (
-            <Checkbox
-              key={s.id}
-              label={s.name}
-              description={s.code}
-              checked={picked.has(s.id)}
-              disabled={!picked.has(s.id) && picked.size >= 20}
-              onCheckedChange={(checked) => {
-                const next = new Set(picked);
-                if (checked === true) next.add(s.id);
-                else next.delete(s.id);
-                setPicked(next);
-              }}
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "subject", label: t("subject"), value: title.trim() },
+                { key: "lines", label: tSections("lines"), value: String(lines.filter((line) => line.itemId).length) },
+                { key: "suppliers", label: t("suppliers"), value: String(picked.size) },
+                { key: "quoteBy", label: t("quoteBy"), value: quoteBy ? format.date(quoteBy) : "" },
+              ]}
             />
-          ))}
-        </div>
-      </fieldset>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("quoteBy")}>
-          <Input
-            type="date"
-            min={bangkokToday()}
-            value={quoteBy}
-            onChange={(event) => setQuoteBy(event.target.value)}
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("lines")}>
+          <Field label={t("subject")} required requiredLabel={tCommon("required")} error={formErrors.title}>
+            <Input
+              value={title}
+              placeholder={t("subjectPlaceholder")}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </Field>
+          <LinesEditor
+            items={items}
+            lines={lines}
+            onChange={setLines}
+            errors={errors}
+            locale={locale}
+            quantityLabel={t("quantity")}
           />
-        </Field>
-        <Field label={t("neededBy")}>
-          <Input
-            type="date"
-            min={bangkokToday()}
-            value={neededBy}
-            onChange={(event) => setNeededBy(event.target.value)}
-          />
-        </Field>
-      </div>
-      <Field label={t("note")}>
-        <Textarea
-          rows={2}
-          value={note}
-          placeholder={t("notePlaceholder")}
-          onChange={(event) => setNote(event.target.value)}
-        />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+        </FormSection>
+        <FormSection card step={2} title={t("suppliers")} description={t("suppliersHint")}>
+          <fieldset className="flex flex-col gap-2">
+            <legend className="sr-only">{t("suppliers")}</legend>
+            {formErrors.suppliers ? <p className="text-danger text-sm">{formErrors.suppliers}</p> : null}
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {suppliers.map((s) => (
+                <Checkbox
+                  key={s.id}
+                  label={s.name}
+                  description={s.code}
+                  checked={picked.has(s.id)}
+                  disabled={!picked.has(s.id) && picked.size >= 20}
+                  onCheckedChange={(checked) => {
+                    const next = new Set(picked);
+                    if (checked === true) next.add(s.id);
+                    else next.delete(s.id);
+                    setPicked(next);
+                  }}
+                />
+              ))}
+            </div>
+          </fieldset>
+        </FormSection>
+        <FormSection card step={3} title={tSections("references")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("quoteBy")}>
+              <Input
+                type="date"
+                min={bangkokToday()}
+                value={quoteBy}
+                onChange={(event) => setQuoteBy(event.target.value)}
+              />
+            </Field>
+            <Field label={t("neededBy")}>
+              <Input
+                type="date"
+                min={bangkokToday()}
+                value={neededBy}
+                onChange={(event) => setNeededBy(event.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label={t("note")}>
+            <Textarea
+              rows={2}
+              value={note}
+              placeholder={t("notePlaceholder")}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

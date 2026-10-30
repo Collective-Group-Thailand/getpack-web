@@ -558,6 +558,23 @@
 }
 
 /*
+ * A stack of a panel's actions that must fill it (a job's accept / reject): every big action and button in it takes
+ * the panel's whole width and one height, whatever the desk sizes above say (they size a lone button to its words).
+ */
+:is([data-zone="partner"], [data-zone="admin"]) main [data-fill] > :is([data-big], [data-size]) {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 4rem;
+  height: auto;
+  align-self: stretch;
+}
+/* A desk panel's stack (an ERP document's actions, a form's save): the same full width at the ordinary control height. */
+:is([data-zone="partner"], [data-zone="admin"]) main [data-fill="row"] > :is([data-big], [data-size]) {
+  min-height: 2.75rem;
+}
+
+/*
  * "ราคารวม VAT / ไม่รวม VAT" (owner decision D-447, DECISIONS-STAGE-A §10.6). A price the API sent with both figures
  * draws both, marked `data-vat-figure`; the reader's choice sits on the root as `data-vat-basis` (set by the switch,
  * VAT-inclusive by default) and hides the other figure. Unlayered, so it wins over the `contents` utility.

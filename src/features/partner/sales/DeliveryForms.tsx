@@ -7,12 +7,13 @@ import { useState } from "react";
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { formatQty, isZero, plainNumber, QTY_PATTERN, trimZeros } from "@/features/partner/erp/format";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { problemMessage } from "@/features/shared/actions";
 import { newIdempotencyKey } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
@@ -29,6 +30,7 @@ type Delivery = Schemas["ErpDeliveryNoteDto"];
 export function DeliveryForm({ order, locale }: { order: SalesOrder; locale: string }) {
   const t = useTranslations("partnerSales.deliveries.form");
   const tCommon = useTranslations("partnerSales.common");
+  const tSections = useTranslations("partnerSales.form.sections");
   const tUnits = useTranslations("partnerErp.common.units");
   const { factoryId } = useFactory();
   const router = useRouter();
@@ -51,6 +53,8 @@ export function DeliveryForm({ order, locale }: { order: SalesOrder; locale: str
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [key] = useState(newIdempotencyKey);
+  // How many lines this delivery carries so far: a count of what was typed, nothing summed.
+  const chosen = Object.values(qty).filter((v) => Number(v) > 0).length;
 
   if (!open.length) return <p className="text-muted">{t("nothingLeft")}</p>;
 
@@ -93,61 +97,80 @@ export function DeliveryForm({ order, locale }: { order: SalesOrder; locale: str
   }
 
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <ol className="flex flex-col gap-3">
-        {open.map(({ line, left }) => (
-          <li
-            key={line.id}
-            className="border-border bg-surface grid gap-3 rounded-xl border p-3 md:grid-cols-[1fr_14rem] md:p-4"
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
           >
-            <div className="flex flex-col">
-              <span className="font-medium">{line.description || line.item?.name}</span>
-              <span className="text-muted text-sm">
-                {t("left", {
-                  ordered: formatQty(line.quantity, locale),
-                  delivered: formatQty(line.deliveredQty, locale),
-                  left: formatQty(left, locale),
-                  unit: tUnits(line.unit as never),
-                })}
-              </span>
-            </div>
-            <Field label={t("shipNow")} error={errors[line.id]}>
-              <NumberInput
-                step="any"
-                min={0}
-                unit={tUnits(line.unit as never)}
-                value={qty[line.id] ?? ""}
-                onChange={(event) => setQty({ ...qty, [line.id]: event.target.value })}
+            <SummaryRows
+              rows={[
+                { key: "lines", label: tSections("lines"), value: String(chosen) },
+                { key: "on", label: t("deliverOn"), value: deliverOn },
+                { key: "vehicle", label: t("vehicle"), value: vehicle.trim() },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("lines")}>
+          <ol className="divide-border border-border flex flex-col divide-y rounded-xl border">
+            {open.map(({ line, left }) => (
+              <li key={line.id} className="grid gap-3 p-3 md:grid-cols-[1fr_14rem] md:items-end md:p-4">
+                <div className="flex flex-col">
+                  <span className="font-medium">{line.description || line.item?.name}</span>
+                  <span className="text-muted text-sm">
+                    {t("left", {
+                      ordered: formatQty(line.quantity, locale),
+                      delivered: formatQty(line.deliveredQty, locale),
+                      left: formatQty(left, locale),
+                      unit: tUnits(line.unit as never),
+                    })}
+                  </span>
+                </div>
+                <Field label={t("shipNow")} error={errors[line.id]}>
+                  <NumberInput
+                    step="any"
+                    min={0}
+                    unit={tUnits(line.unit as never)}
+                    value={qty[line.id] ?? ""}
+                    onChange={(event) => setQty({ ...qty, [line.id]: event.target.value })}
+                  />
+                </Field>
+              </li>
+            ))}
+          </ol>
+        </FormSection>
+        <FormSection card step={2} title={tSections("delivery")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("deliverOn")}>
+              <Input
+                type="date"
+                value={deliverOn}
+                onChange={(event) => setDeliverOn(event.target.value || bangkokToday())}
               />
             </Field>
-          </li>
-        ))}
-      </ol>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("deliverOn")}>
-          <Input
-            type="date"
-            value={deliverOn}
-            onChange={(event) => setDeliverOn(event.target.value || bangkokToday())}
-          />
-        </Field>
-        <Field label={t("vehicle")}>
-          <Input
-            value={vehicle}
-            placeholder={t("vehiclePlaceholder")}
-            onChange={(event) => setVehicle(event.target.value)}
-          />
-        </Field>
-      </div>
-      <Field label={t("shipTo")}>
-        <Textarea rows={2} value={shipTo} onChange={(event) => setShipTo(event.target.value)} />
-      </Field>
-      <Field label={t("note")}>
-        <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+            <Field label={t("vehicle")}>
+              <Input
+                value={vehicle}
+                placeholder={t("vehiclePlaceholder")}
+                onChange={(event) => setVehicle(event.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label={t("shipTo")}>
+            <Textarea rows={2} value={shipTo} onChange={(event) => setShipTo(event.target.value)} />
+          </Field>
+          <Field label={t("note")}>
+            <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
@@ -156,7 +179,16 @@ export function DeliveryForm({ order, locale }: { order: SalesOrder; locale: str
  * What can be done with a delivery note now (D-362): issue it (stock leaves at cost), record that the customer
  * received it, invoice it, cancel it (an issued one returns the stock), print it.
  */
-export function DeliveryActions({ delivery, etag }: { delivery: Delivery; etag: string | null }) {
+export function DeliveryActions({
+  delivery,
+  etag,
+  layout,
+}: {
+  delivery: Delivery;
+  etag: string | null;
+  /** `panel` on the delivery note's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerSales.deliveries.actions");
   const tCommon = useTranslations("partnerSales.common");
   const { factoryId } = useFactory();
@@ -196,6 +228,7 @@ export function DeliveryActions({ delivery, etag }: { delivery: Delivery; etag: 
   return (
     <>
       <SalesActions
+        layout={layout}
         offered={delivery.nextActions}
         etag={etag}
         actions={[

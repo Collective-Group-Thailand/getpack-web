@@ -36,7 +36,12 @@ export default async function StockIssuePage({ searchParams }: { searchParams: P
   ]);
   const tIssue = await getTranslations("partnerErp.issueFor");
   return (
-    <PartnerPage title={t("issueTitle")} description={t("issueBody")} back={{ href: "/stock", label: tStock("title") }}>
+    <PartnerPage
+      wide
+      title={t("issueTitle")}
+      description={t("issueBody")}
+      back={{ href: "/stock", label: tStock("title") }}
+    >
       {orders.length ? (
         <PartnerSection title={tIssue("title")} description={tIssue("body")}>
           <RowList label={tIssue("title")}>

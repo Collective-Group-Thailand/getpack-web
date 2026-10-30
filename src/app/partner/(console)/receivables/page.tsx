@@ -4,9 +4,10 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_RECEIPT_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage } from "@/features/partner/frame";
-import { StatStrip, ViewTabs } from "@/features/partner/rows";
+import { PageError, PartnerPage, PartnerStats } from "@/features/partner/frame";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { pagerLabels } from "@/features/partner/sales/view";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -34,9 +35,10 @@ export default async function ReceivablesPage({
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "aging";
   const page = pageOf(query.page);
   const q = query.q?.trim() || undefined;
-  const [t, tCommon, format, context] = await Promise.all([
+  const [t, tCommon, tInvoices, format, context] = await Promise.all([
     getTranslations("partnerSales.receivables"),
     getTranslations("partnerSales.common"),
+    getTranslations("partnerSales.invoices"),
     getFormat(),
     factoryContext(),
   ]);
@@ -46,46 +48,53 @@ export default async function ReceivablesPage({
     `/receivables${queryOf({ view: next === "aging" ? undefined : next, ...extra })}`;
   const labels = await pagerLabels();
   const manage = canAt(context, "factory_receivables.manage");
+  // The aging is the page's headline whichever list is open: what is owed, how old, what falls due this week.
+  const aging = await attempt(
+    async () =>
+      (await contract.GET("/v1/partner/factories/{factoryId}/erp/receivables/aging", { params: { path } })).data!,
+  );
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const totals = await viewTotals(["receipts", "billing"] as const, async (key) =>
+    key === "receipts"
+      ? (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/receipts", {
+            params: { path, query: { perPage: 1, ...(q ? { q } : {}) } },
+          })
+        ).data
+      : (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/billing-notes", {
+            params: { path, query: { perPage: 1, ...(q ? { q } : {}) } },
+          })
+        ).data,
+  );
+  const counts: Record<View, number | null> = { aging: aging.data?.customers.length ?? null, ...totals };
+  const newReceipt = (
+    <Button asChild variant="secondary" iconStart="coins">
+      <Link href="/receivables/receipts/new">{t("newReceipt")}</Link>
+    </Button>
+  );
 
   let body: React.ReactNode;
   if (view === "aging") {
-    const aging = await attempt(
-      async () =>
-        (await contract.GET("/v1/partner/factories/{factoryId}/erp/receivables/aging", { params: { path } })).data!,
-    );
     body = aging.data ? (
       <>
-        <StatStrip
-          label={t("aging.summary")}
-          items={[
-            { key: "total", label: t("aging.total"), value: format.thb(aging.data.totals.total) },
-            { key: "current", label: t("aging.current"), value: format.thb(aging.data.totals.current) },
-            {
-              key: "overdue",
-              label: t("aging.over90"),
-              value: format.thb(aging.data.totals.over90),
-              tone: aging.data.totals.over90 !== "0.00" ? "danger" : "neutral",
-            },
-            { key: "soon", label: t("aging.dueSoon"), value: format.thb(aging.data.dueSoon) },
-            ...(aging.data.refundsDue !== "0.00"
-              ? [
-                  {
-                    key: "refunds",
-                    label: t("aging.refundsDue"),
-                    value: format.thb(aging.data.refundsDue),
-                    tone: "warning" as const,
-                  },
-                ]
-              : []),
-          ]}
-        />
         <PartnerTable
           caption={t("aging.title", { date: format.date(aging.data.asOf) })}
           rows={aging.data.customers}
           rowKey={(row) => row.customer.id}
           rowHref={(row) => `/invoices?view=open&q=${encodeURIComponent(row.customer.code)}`}
           rowTone={(row) => (row.buckets.over90 !== "0.00" || row.buckets.d61_90 !== "0.00" ? "danger" : undefined)}
-          empty={<EmptyState icon="coins" title={t("aging.empty")} />}
+          empty={
+            <EmptyState
+              icon="coins"
+              title={t("aging.empty")}
+              action={
+                <Button asChild variant="secondary" iconStart="receipt">
+                  <Link href="/invoices?view=all">{tInvoices("title")}</Link>
+                </Button>
+              }
+            />
+          }
           columns={[
             { key: "c", header: tCommon("customer"), primary: true, cell: (row) => row.customer.name },
             {
@@ -145,7 +154,7 @@ export default async function ReceivablesPage({
           rows={list.data.data}
           rowKey={(row) => row.id}
           rowHref={(row) => `/receivables/receipts/${row.id}`}
-          empty={<EmptyState icon="coins" title={t("receiptsEmpty")} />}
+          empty={<EmptyState icon="coins" title={t("receiptsEmpty")} action={manage && !q ? newReceipt : undefined} />}
           columns={[
             {
               key: "no",
@@ -203,7 +212,19 @@ export default async function ReceivablesPage({
           rows={list.data.data}
           rowKey={(row) => row.id}
           rowHref={(row) => `/receivables/billing/${row.id}`}
-          empty={<EmptyState icon="document" title={t("billingEmpty")} />}
+          empty={
+            <EmptyState
+              icon="document"
+              title={t("billingEmpty")}
+              action={
+                manage && !q ? (
+                  <Button asChild variant="secondary" iconStart="document">
+                    <Link href="/receivables/billing/new">{t("newBilling")}</Link>
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
           columns={[
             {
               key: "no",
@@ -263,22 +284,56 @@ export default async function ReceivablesPage({
         ) : undefined
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      {view !== "aging" ? (
-        <SearchBar
-          id="ar-q"
-          action="/receivables"
-          hidden={{ view }}
-          q={q}
-          label={t("searchLabel")}
-          placeholder={t("searchPlaceholder")}
-          button={tCommon("search")}
+      {aging.data ? (
+        <PartnerStats
+          label={t("aging.summary")}
+          columns={aging.data.refundsDue !== "0.00" ? 5 : 4}
+          items={[
+            { key: "total", label: t("aging.total"), value: format.thb(aging.data.totals.total), highlight: true },
+            { key: "current", label: t("aging.current"), value: format.thb(aging.data.totals.current) },
+            { key: "soon", label: t("aging.dueSoon"), value: format.thb(aging.data.dueSoon) },
+            {
+              key: "over90",
+              label: t("aging.over90"),
+              value: format.thb(aging.data.totals.over90),
+              ...(aging.data.totals.over90 !== "0.00" ? { tone: "danger" as const, icon: "warning" as const } : {}),
+            },
+            ...(aging.data.refundsDue !== "0.00"
+              ? [
+                  {
+                    key: "refunds",
+                    label: t("aging.refundsDue"),
+                    value: format.thb(aging.data.refundsDue),
+                    tone: "warning" as const,
+                  },
+                ]
+              : []),
+          ]}
         />
       ) : null}
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: href(key, key === "aging" ? {} : { q }),
+            label: t(`views.${key}`),
+            count: counts[key],
+          }))}
+        />
+        {view !== "aging" ? (
+          <SearchBar
+            id="ar-q"
+            action="/receivables"
+            hidden={{ view }}
+            q={q}
+            label={t("searchLabel")}
+            placeholder={t("searchPlaceholder")}
+            button={tCommon("search")}
+          />
+        ) : null}
+      </ListToolbar>
       {body}
     </PartnerPage>
   );

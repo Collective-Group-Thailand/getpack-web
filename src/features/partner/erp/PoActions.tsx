@@ -59,7 +59,8 @@ export function PoActions({ order, etag }: { order: Po; etag: string | null }) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    // The purchase order page's sticky action panel: one full-width stack, cancelling last.
+    <div data-fill="row" className="flex flex-col gap-2">
       {has("erp_po.receive") ? (
         <Button asChild size="lg" iconStart="package-check">
           <Link href={`/stock/receive?po=${order.id}`}>{tStatus("receiveGoods")}</Link>

@@ -6,11 +6,13 @@ import { useState } from "react";
 
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 
@@ -40,6 +42,8 @@ export function ProductionOrderForm({
 }) {
   const t = useTranslations("partnerFactory.orders.form");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { call, busy } = useErpCall();
@@ -93,83 +97,127 @@ export function ProductionOrderForm({
     }
   }
 
+  const recipe = own.find((r) => r.id === recipeId);
+  const unitLabel = product ? tCommon(`units.${product.baseUnit}` as never) : "";
+
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <SegmentedControl
-        label={t("source")}
-        size="md"
-        value={source}
-        onValueChange={setSource}
-        options={(["stock", "sales_order"] as const).map((s) => ({ value: s, label: t(`sources.${s}`) }))}
-      />
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("product")} required requiredLabel={tCommon("required")} error={errors.item}>
-          <Select
-            value={itemId || null}
-            placeholder={tCommon("selectItem")}
-            onValueChange={(id) => {
-              setItemId(id);
-              setRecipeId("");
-            }}
-            options={items.map((i) => ({ value: i.id, label: i.name, description: i.sku }))}
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "source", label: t("source"), value: t(`sources.${source}`) },
+                { key: "product", label: t("product"), value: product?.name ?? "" },
+                {
+                  key: "qty",
+                  label: t("quantity"),
+                  value: quantity ? tCommon("inUnit", { qty: quantity, unit: unitLabel }) : "",
+                },
+                { key: "recipe", label: t("recipe"), value: itemId ? (recipe?.name ?? t("recipeAuto")) : "" },
+                { key: "due", label: t("dueOn"), value: dueOn ? format.date(dueOn) : "" },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("item")}>
+          <SegmentedControl
+            label={t("source")}
+            size="md"
+            value={source}
+            onValueChange={setSource}
+            options={(["stock", "sales_order"] as const).map((s) => ({ value: s, label: t(`sources.${s}`) }))}
           />
-        </Field>
-        <Field label={t("quantity")} required requiredLabel={tCommon("required")} error={errors.quantity}>
-          <NumberInput
-            step="any"
-            min={0}
-            unit={product ? tCommon(`units.${product.baseUnit}` as never) : undefined}
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
-          />
-        </Field>
-        <Field label={t("recipe")} hint={own.length ? t("recipeHint") : itemId ? t("noRecipe") : undefined}>
-          <Select
-            value={recipeId || "auto"}
-            onValueChange={(id) => setRecipeId(id === "auto" ? "" : id)}
-            options={[{ value: "auto", label: t("recipeAuto") }, ...own.map((r) => ({ value: r.id, label: r.name }))]}
-          />
-        </Field>
-        <Field label={t("title")} hint={t("titleHint")}>
-          <Input value={title} placeholder={product?.name ?? ""} onChange={(event) => setTitle(event.target.value)} />
-        </Field>
-        <Field label={t("startOn")}>
-          <Input
-            type="date"
-            min={bangkokToday()}
-            value={startOn}
-            onChange={(event) => setStartOn(event.target.value)}
-          />
-        </Field>
-        <Field label={t("dueOn")}>
-          <Input
-            type="date"
-            min={startOn || bangkokToday()}
-            value={dueOn}
-            onChange={(event) => setDueOn(event.target.value)}
-          />
-        </Field>
-        <Field label={t("priority")} hint={t("priorityHint")}>
-          <Select
-            value={priority}
-            onValueChange={setPriority}
-            options={["0", "3", "5", "9"].map((p) => ({ value: p, label: t(`priorities.${p}`) }))}
-          />
-        </Field>
-        <Field label={tCommon("warehouse")}>
-          <Select
-            value={warehouseId}
-            onValueChange={setWarehouseId}
-            options={warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))}
-          />
-        </Field>
-      </div>
-      <Field label={t("note")}>
-        <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
-      </Field>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("product")} required requiredLabel={tCommon("required")} error={errors.item}>
+              <Select
+                value={itemId || null}
+                placeholder={tCommon("selectItem")}
+                onValueChange={(id) => {
+                  setItemId(id);
+                  setRecipeId("");
+                }}
+                options={items.map((i) => ({ value: i.id, label: i.name, description: i.sku }))}
+              />
+            </Field>
+            <Field label={t("quantity")} required requiredLabel={tCommon("required")} error={errors.quantity}>
+              <NumberInput
+                step="any"
+                min={0}
+                unit={product ? unitLabel : undefined}
+                value={quantity}
+                onChange={(event) => setQuantity(event.target.value)}
+              />
+            </Field>
+            <Field label={t("recipe")} hint={own.length ? t("recipeHint") : itemId ? t("noRecipe") : undefined}>
+              <Select
+                value={recipeId || "auto"}
+                onValueChange={(id) => setRecipeId(id === "auto" ? "" : id)}
+                options={[
+                  { value: "auto", label: t("recipeAuto") },
+                  ...own.map((r) => ({ value: r.id, label: r.name })),
+                ]}
+              />
+            </Field>
+            <Field label={t("title")} hint={t("titleHint")}>
+              <Input
+                value={title}
+                placeholder={product?.name ?? ""}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </Field>
+          </div>
+        </FormSection>
+        <FormSection card step={2} title={tSections("schedule")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("startOn")}>
+              <Input
+                type="date"
+                min={bangkokToday()}
+                value={startOn}
+                onChange={(event) => setStartOn(event.target.value)}
+              />
+            </Field>
+            <Field label={t("dueOn")}>
+              <Input
+                type="date"
+                min={startOn || bangkokToday()}
+                value={dueOn}
+                onChange={(event) => setDueOn(event.target.value)}
+              />
+            </Field>
+            <Field label={t("priority")} hint={t("priorityHint")}>
+              <Select
+                value={priority}
+                onValueChange={setPriority}
+                options={["0", "3", "5", "9"].map((p) => ({ value: p, label: t(`priorities.${p}`) }))}
+              />
+            </Field>
+          </div>
+        </FormSection>
+        <FormSection card step={3} title={tSections("notes")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={tCommon("warehouse")}>
+              <Select
+                value={warehouseId}
+                onValueChange={setWarehouseId}
+                options={warehouses.map((w) => ({ value: w.id, label: w.name, description: w.code }))}
+              />
+            </Field>
+          </div>
+          <Field label={t("note")}>
+            <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

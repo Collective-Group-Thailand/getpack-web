@@ -4,10 +4,11 @@ import { getTranslations } from "next-intl/server";
 
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatQty } from "@/features/partner/erp/format";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
-import { StatStrip } from "@/features/partner/rows";
+import { Composition } from "@/features/partner/charts";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
+import { Button } from "@/ui/components/Button";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerInsight.costs"))("orderTitle") };
@@ -41,37 +42,48 @@ export default async function JobCostPage({ params }: { params: Promise<{ orderI
   return (
     <PartnerPage
       full
-      title={`${c.productionOrder.number} · ${c.title}`}
+      title={c.productionOrder.number}
       back={back}
-      description={t("orderBody", {
+      description={`${c.title} · ${t("orderBody", {
         good: formatQty(c.goodQty, format.locale),
         scrap: formatQty(c.scrapQty, format.locale),
-      })}
-      meta={
-        <Link className="text-link text-sm underline" href={`/planning/orders/${c.productionOrder.id}`}>
-          {t("openOrder")}
-        </Link>
+      })}`}
+      actions={
+        <Button asChild variant="secondary" iconStart="gantt">
+          <Link href={`/planning/orders/${c.productionOrder.id}`}>{t("openOrder")}</Link>
+        </Button>
       }
     >
-      <StatStrip
+      <PartnerStats
         label={t("totals")}
+        columns={5}
         items={[
-          { key: "m", label: t("material"), value: format.thb(c.material) },
-          { key: "mc", label: t("machine"), value: format.thb(c.machine) },
-          { key: "l", label: t("labour"), value: format.thb(c.labour) },
-          { key: "o", label: t("overhead"), value: format.thb(c.overhead) },
           {
             key: "t",
             label: t("total"),
             value: format.thb(c.total),
             hint: c.unitCost ? t("perUnit", { cost: format.thb(Number(c.unitCost).toFixed(4)) }) : undefined,
-            tone: "success",
+            highlight: true,
           },
+          { key: "m", label: t("material"), value: format.thb(c.material) },
+          { key: "mc", label: t("machine"), value: format.thb(c.machine) },
+          { key: "l", label: t("labour"), value: format.thb(c.labour) },
+          { key: "o", label: t("overhead"), value: format.thb(c.overhead) },
+        ]}
+      />
+      <Composition
+        label={t("totals")}
+        parts={[
+          { key: "m", label: t("material"), value: Number(c.material), display: format.thb(c.material) },
+          { key: "mc", label: t("machine"), value: Number(c.machine), display: format.thb(c.machine) },
+          { key: "l", label: t("labour"), value: Number(c.labour), display: format.thb(c.labour) },
+          { key: "o", label: t("overhead"), value: Number(c.overhead), display: format.thb(c.overhead) },
         ]}
       />
       <PartnerSection
         title={t("operations")}
-        description={t("minutes", { run: c.runMinutes, planned: c.plannedMinutes })}
+        id="operations"
+        description={t("minutes", { run: format.number(c.runMinutes), planned: format.number(c.plannedMinutes) })}
       >
         <PartnerTable
           caption={t("operations")}

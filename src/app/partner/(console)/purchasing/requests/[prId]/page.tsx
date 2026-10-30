@@ -6,7 +6,7 @@ import { ERP_PURCHASE_REQUEST_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatQty } from "@/features/partner/erp/format";
 import { RequestActions } from "@/features/partner/erp/RequestActions";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -48,91 +48,101 @@ export default async function PurchaseRequestPage({ params }: { params: Promise<
   const pr = read.data;
   const unit = (code: string) => tCommon(`units.${code}` as never);
 
+  const tNext = await getTranslations("partnerSales.common");
   return (
     <PartnerPage
-      wide
+      full
       title={pr.prNo}
       back={back}
-      meta={<StatusChip map={ERP_PURCHASE_REQUEST_STATUS} value={pr.status} />}
-      actions={
-        <>
-          {pr.status === "approved" && canAt(context, "factory_procurement.manage") ? (
-            <Button asChild size="lg" variant="secondary" iconStart="scale">
-              <Link href={`/purchasing/rfqs/new?request=${pr.id}`}>{tRfq("fromRequest")}</Link>
-            </Button>
-          ) : null}
-          <RequestActions request={pr} />
-        </>
-      }
+      status={<StatusChip map={ERP_PURCHASE_REQUEST_STATUS} value={pr.status} />}
     >
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: t("table.by"), description: pr.requestedBy },
-            { term: t("table.source"), description: t(`sources.${pr.source}` as never) },
-            { term: t("table.neededBy"), description: format.date(pr.neededBy) },
-            { term: t("table.estimate"), description: <strong>{format.thb(pr.estimatedTotal)}</strong> },
-            { term: t("submittedAt"), description: pr.submittedAt ? format.dateTime(pr.submittedAt) : "—" },
-            {
-              term: t("decided"),
-              description: pr.decidedAt
-                ? `${pr.decidedBy ?? ""} · ${format.dateTime(pr.decidedAt)}${pr.decisionNote ? ` — ${pr.decisionNote}` : ""}`
-                : (pr.decisionNote ?? "—"),
-            },
-            { term: t("note"), description: pr.note ?? "—" },
-          ]}
-        />
-      </Card>
-      <PartnerSection title={t("linesTitle")} description={t("linesBody")}>
-        <PartnerTable
-          caption={t("linesTitle")}
-          rows={pr.lines}
-          rowKey={(line) => line.id}
-          columns={[
-            {
-              key: "item",
-              header: tCommon("item"),
-              primary: true,
-              cell: (line) => (
-                <Link href={`/stock/items/${line.item.id}`} className="underline-offset-4 hover:underline">
-                  {line.item.name}
-                </Link>
-              ),
-            },
-            {
-              key: "qty",
-              header: tCommon("quantity"),
-              align: "end",
-              cell: (line) =>
-                tCommon("inUnit", { qty: formatQty(line.quantity, locale), unit: unit(line.item.baseUnit) }),
-            },
-            { key: "supplier", header: t("table.supplier"), cell: (line) => line.supplier?.name ?? t("usualSupplier") },
-            {
-              key: "amount",
-              header: t("table.estimate"),
-              align: "end",
-              hideOnPhone: true,
-              cell: (line) => (line.estimatedAmount ? format.thb(line.estimatedAmount) : "—"),
-            },
-            {
-              key: "po",
-              header: t("table.po"),
-              cell: (line) =>
-                line.purchaseOrder ? (
-                  <Link
-                    href={`/purchasing/${line.purchaseOrder.id}`}
-                    className="tabular-nums underline-offset-4 hover:underline"
-                  >
-                    {line.purchaseOrder.code || t("draftPo")}
+      <PartnerDetail
+        aside={
+          <ActionPanel id="next-steps" tone="neutral" title={tNext("nextSteps")}>
+            <RequestActions request={pr} layout="panel" />
+            {pr.status === "approved" && canAt(context, "factory_procurement.manage") ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                <Button asChild variant="secondary" iconStart="scale">
+                  <Link href={`/purchasing/rfqs/new?request=${pr.id}`}>{tRfq("fromRequest")}</Link>
+                </Button>
+              </div>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: t("table.by"), description: pr.requestedBy },
+              { term: t("table.source"), description: t(`sources.${pr.source}` as never) },
+              { term: t("table.neededBy"), description: format.date(pr.neededBy) },
+              { term: t("table.estimate"), description: <strong>{format.thb(pr.estimatedTotal)}</strong> },
+              { term: t("submittedAt"), description: pr.submittedAt ? format.dateTime(pr.submittedAt) : "—" },
+              {
+                term: t("decided"),
+                description: pr.decidedAt
+                  ? `${pr.decidedBy ?? ""} · ${format.dateTime(pr.decidedAt)}${pr.decisionNote ? ` — ${pr.decisionNote}` : ""}`
+                  : (pr.decisionNote ?? "—"),
+              },
+              { term: t("note"), description: pr.note ?? "—" },
+            ]}
+          />
+        </Card>
+        <PartnerSection title={t("linesTitle")} description={t("linesBody")}>
+          <PartnerTable
+            caption={t("linesTitle")}
+            rows={pr.lines}
+            rowKey={(line) => line.id}
+            columns={[
+              {
+                key: "item",
+                header: tCommon("item"),
+                primary: true,
+                cell: (line) => (
+                  <Link href={`/stock/items/${line.item.id}`} className="underline-offset-4 hover:underline">
+                    {line.item.name}
                   </Link>
-                ) : (
-                  "—"
                 ),
-            },
-          ]}
-        />
-      </PartnerSection>
+              },
+              {
+                key: "qty",
+                header: tCommon("quantity"),
+                align: "end",
+                cell: (line) =>
+                  tCommon("inUnit", { qty: formatQty(line.quantity, locale), unit: unit(line.item.baseUnit) }),
+              },
+              {
+                key: "supplier",
+                header: t("table.supplier"),
+                cell: (line) => line.supplier?.name ?? t("usualSupplier"),
+              },
+              {
+                key: "amount",
+                header: t("table.estimate"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (line) => (line.estimatedAmount ? format.thb(line.estimatedAmount) : "—"),
+              },
+              {
+                key: "po",
+                header: t("table.po"),
+                cell: (line) =>
+                  line.purchaseOrder ? (
+                    <Link
+                      href={`/purchasing/${line.purchaseOrder.id}`}
+                      className="tabular-nums underline-offset-4 hover:underline"
+                    >
+                      {line.purchaseOrder.code || t("draftPo")}
+                    </Link>
+                  ) : (
+                    "—"
+                  ),
+              },
+            ]}
+          />
+        </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

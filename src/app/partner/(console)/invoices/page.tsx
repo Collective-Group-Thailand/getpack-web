@@ -4,9 +4,10 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_ISSUED_STATUS, ERP_SALES_INVOICE_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { pagerLabels } from "@/features/partner/sales/view";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -69,6 +70,21 @@ export default async function InvoicesPage({
             ).data!,
         )
       : null;
+  // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+  const counts = await viewTotals(VIEWS, async (key) =>
+    key === "notes"
+      ? (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-notes", {
+            params: { path, query: { perPage: 1, ...(q ? { q } : {}) } },
+          })
+        ).data
+      : (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/sales-invoices", {
+            params: { path, query: { perPage: 1, ...(key === "all" ? {} : { status: key }), ...(q ? { q } : {}) } },
+          })
+        ).data,
+  );
+  const canIssue = canAt(context, "factory_receivables.manage");
   const href = (next: View, extra: Record<string, string | number | undefined> = {}) =>
     `/invoices${queryOf({ view: next === "open" ? undefined : next, ...extra })}`;
   const labels = await pagerLabels();
@@ -79,27 +95,29 @@ export default async function InvoicesPage({
       title={t("title")}
       description={t("body")}
       actions={
-        canAt(context, "factory_receivables.manage") ? (
+        canIssue ? (
           <Button asChild size="lg" iconStart="plus">
             <Link href="/invoices/new">{t("new")}</Link>
           </Button>
         ) : undefined
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      <SearchBar
-        id="iv-q"
-        action="/invoices"
-        hidden={{ view: view === "open" ? undefined : view }}
-        q={q}
-        label={t("searchLabel")}
-        placeholder={t("searchPlaceholder")}
-        button={tCommon("search")}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key, { q }), label: t(`views.${key}`), count: counts[key] }))}
+        />
+        <SearchBar
+          id="iv-q"
+          action="/invoices"
+          hidden={{ view: view === "open" ? undefined : view }}
+          q={q}
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          button={tCommon("search")}
+        />
+      </ListToolbar>
       {invoices ? (
         invoices.data ? (
           <>
@@ -109,7 +127,24 @@ export default async function InvoicesPage({
               rowKey={(row) => row.id}
               rowHref={(row) => `/invoices/${row.id}`}
               rowTone={(row) => (row.overdue ? "danger" : undefined)}
-              empty={<EmptyState icon="receipt" title={t("empty")} description={t("emptyBody")} />}
+              empty={
+                <EmptyState
+                  icon="receipt"
+                  title={t("empty")}
+                  description={t("emptyBody")}
+                  action={
+                    view !== "all" ? (
+                      <Button asChild variant="secondary" iconEnd="arrow-right">
+                        <Link href={href("all")}>{t("views.all")}</Link>
+                      </Button>
+                    ) : canIssue ? (
+                      <Button asChild variant="secondary" iconStart="plus">
+                        <Link href="/invoices/new">{t("new")}</Link>
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              }
               columns={[
                 {
                   key: "no",
@@ -173,7 +208,17 @@ export default async function InvoicesPage({
             rows={notes.data.data}
             rowKey={(row) => row.id}
             rowHref={(row) => `/invoices/notes/${row.id}`}
-            empty={<EmptyState icon="receipt" title={t("emptyNotes")} />}
+            empty={
+              <EmptyState
+                icon="receipt"
+                title={t("emptyNotes")}
+                action={
+                  <Button asChild variant="secondary" iconEnd="arrow-right">
+                    <Link href={href("all")}>{t("views.all")}</Link>
+                  </Button>
+                }
+              />
+            }
             columns={[
               {
                 key: "no",

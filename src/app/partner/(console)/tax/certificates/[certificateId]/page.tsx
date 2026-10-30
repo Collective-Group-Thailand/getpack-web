@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ERP_WHT_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain } from "@/features/partner/erp/format";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { WhtActions } from "@/features/partner/sales/TaxForms";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -48,57 +48,69 @@ export default async function CertificatePage({ params }: Props) {
       </PartnerPage>
     );
   const c = read.data;
+  const tNext = await getTranslations("partnerSales.common");
   return (
     <PartnerPage
       full
       title={c.certNo}
       description={tTax(`wht.${c.form}`)}
       back={back}
-      meta={<StatusChip map={ERP_WHT_STATUS} value={c.status} />}
+      status={<StatusChip map={ERP_WHT_STATUS} value={c.status} />}
     >
-      <WhtActions certificate={c} />
-      {c.voidReason ? (
-        <Callout tone="danger" title={t("voidedTitle")}>
-          {c.voidReason}
-        </Callout>
-      ) : null}
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: t("payee"), description: `${c.payee.name}${c.payee.taxId ? ` · ${c.payee.taxId}` : ""}` },
-            {
-              term: t("payment"),
-              description: (
-                <Link className="text-link underline" href={`/payables/payments/${c.payment.id}`}>
-                  {c.payment.code}
-                </Link>
-              ),
-            },
-            { term: t("paidOn"), description: format.date(c.paidOn) },
-            { term: tTax("wht.base"), description: format.thb(c.baseAmount) },
-            { term: tTax("wht.wht"), description: format.thb(c.whtAmount) },
-          ]}
-        />
-      </Card>
-      <PartnerSection title={t("linesTitle")}>
-        <PartnerTable
-          caption={t("linesTitle")}
-          rows={c.lines}
-          rowKey={(row) => String(row.lineNo)}
-          columns={[
-            {
-              key: "i",
-              header: tTax("wht.income"),
-              primary: true,
-              cell: (row) => `${tIncome(row.incomeType)}${row.description ? ` — ${row.description}` : ""}`,
-            },
-            { key: "r", header: t("form.rate"), align: "end", cell: (row) => `${formatPlain(row.ratePct, locale)}%` },
-            { key: "b", header: tTax("wht.base"), align: "end", cell: (row) => format.thb(row.baseAmount) },
-            { key: "w", header: tTax("wht.wht"), align: "end", cell: (row) => format.thb(row.whtAmount) },
-          ]}
-        />
-      </PartnerSection>
+      <PartnerDetail
+        aside={
+          <ActionPanel id="next-steps" tone="neutral" title={tNext("nextSteps")}>
+            <dl className="border-border grid grid-cols-[1fr_auto] items-baseline gap-x-3 border-b pb-3">
+              <dt className="text-muted text-sm">{tTax("wht.wht")}</dt>
+              <dd className="text-end text-xl font-semibold tabular-nums">{format.thb(c.whtAmount)}</dd>
+            </dl>
+            <WhtActions certificate={c} layout="panel" />
+          </ActionPanel>
+        }
+      >
+        {c.voidReason ? (
+          <Callout tone="danger" title={t("voidedTitle")}>
+            {c.voidReason}
+          </Callout>
+        ) : null}
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: t("payee"), description: `${c.payee.name}${c.payee.taxId ? ` · ${c.payee.taxId}` : ""}` },
+              {
+                term: t("payment"),
+                description: (
+                  <Link className="text-primary underline" href={`/payables/payments/${c.payment.id}`}>
+                    {c.payment.code}
+                  </Link>
+                ),
+              },
+              { term: t("paidOn"), description: format.date(c.paidOn) },
+              { term: tTax("wht.base"), description: format.thb(c.baseAmount) },
+              { term: tTax("wht.wht"), description: format.thb(c.whtAmount) },
+            ]}
+          />
+        </Card>
+        <PartnerSection title={t("linesTitle")}>
+          <PartnerTable
+            caption={t("linesTitle")}
+            rows={c.lines}
+            rowKey={(row) => String(row.lineNo)}
+            columns={[
+              {
+                key: "i",
+                header: tTax("wht.income"),
+                primary: true,
+                cell: (row) => `${tIncome(row.incomeType)}${row.description ? ` — ${row.description}` : ""}`,
+              },
+              { key: "r", header: t("form.rate"), align: "end", cell: (row) => `${formatPlain(row.ratePct, locale)}%` },
+              { key: "b", header: tTax("wht.base"), align: "end", cell: (row) => format.thb(row.baseAmount) },
+              { key: "w", header: tTax("wht.wht"), align: "end", cell: (row) => format.thb(row.whtAmount) },
+            ]}
+          />
+        </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

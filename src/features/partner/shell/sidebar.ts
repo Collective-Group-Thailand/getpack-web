@@ -556,6 +556,47 @@ export function partnerSidebar(
   })).filter((group) => group.items.length > 0);
 }
 
+export type SidebarSectionKey = "getpack" | "erp";
+
+export interface SidebarSection {
+  key: SidebarSectionKey;
+  groups: SidebarGroup[];
+}
+
+/** The work with getpack (P4-04): what most floor roles use all day, in this order. */
+const GETPACK_ITEMS: readonly SidebarItemKey[] = [
+  "today",
+  "jobs",
+  "floor",
+  "qc",
+  "samples",
+  "ship",
+  "claims",
+  "billing",
+  "payouts",
+];
+
+/**
+ * The sidebar in two labelled sections (P4-04): "งานกับ getpack" — the day's getpack work as one list — and
+ * "ERP ของโรงงาน", the factory's own system in its usual groups. Which items show is still the roles' (`sidebarItems`).
+ */
+export function partnerSections(
+  status: string | undefined,
+  roles: readonly string[],
+  can: (permission: string) => boolean,
+): SidebarSection[] {
+  const groups = partnerSidebar(status, roles, can);
+  const all = groups.flatMap((group) => group.items);
+  const getpack = GETPACK_ITEMS.flatMap((key) => all.filter((item) => item.key === key));
+  const erp = groups
+    .map((group) => ({ ...group, items: group.items.filter((item) => !GETPACK_ITEMS.includes(item.key)) }))
+    .filter((group) => group.items.length > 0);
+  return [
+    ...(getpack.length ? [{ key: "getpack" as const, groups: [{ key: "daily" as const, items: getpack }] }] : []),
+    ...(erp.length ? [{ key: "erp" as const, groups: erp }] : []),
+  ];
+}
+
 /**
  * The phone's bottom bar: up to four of the role's daily destinations, then "เพิ่มเติม" for the rest
  * — so a QC inspector gets the QC queue, not the owner's billing.

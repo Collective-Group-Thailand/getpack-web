@@ -6,11 +6,13 @@ import { useState } from "react";
 
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -55,6 +57,8 @@ export function InvoiceForm({
 }) {
   const t = useTranslations("partnerFactory.payables.form");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { call, busy } = useErpCall();
@@ -143,150 +147,182 @@ export function InvoiceForm({
     }
   }
 
+  const supplierName = order?.supplier.name ?? suppliers.find((s) => s.id === supplierId)?.name ?? "";
+
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      <Field label={t("purchaseOrder")} hint={t("purchaseOrderHint")}>
-        <Select
-          value={order?.id ?? NONE}
-          onValueChange={choose}
-          options={[
-            { value: NONE, label: t("noPurchaseOrder") },
-            ...orders.map((po) => ({ value: po.id, label: `${po.poNo ?? ""} · ${po.supplier.name}` })),
-          ]}
-        />
-      </Field>
-      <div className="grid gap-4 md:grid-cols-2">
-        {order ? (
-          <Field label={t("supplier")}>
-            <Input value={order.supplier.name} readOnly />
-          </Field>
-        ) : (
-          <Field label={t("supplier")} required requiredLabel={tCommon("required")} error={errors.supplier}>
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" loading={busy} iconStart="save">
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "po", label: t("purchaseOrder"), value: order ? (order.poNo ?? "") : t("noPurchaseOrder") },
+                { key: "supplier", label: t("supplier"), value: supplierName },
+                { key: "no", label: t("invoiceNo"), value: invoiceNo.trim() },
+                { key: "date", label: t("invoiceDate"), value: invoiceDate ? format.date(invoiceDate) : "" },
+                { key: "due", label: t("dueDate"), value: dueDate ? format.date(dueDate) : "" },
+                { key: "vat", label: t("vatMode"), value: tCommon(`vatModes.${vatMode}`) },
+                { key: "wht", label: t("wht"), value: wht === "0" ? t("noWht") : `${wht}%` },
+              ]}
+            />
+            <p className="text-muted border-border border-t pt-3 text-sm">{t("matchNote")}</p>
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("supplier")}>
+          <Field label={t("purchaseOrder")} hint={t("purchaseOrderHint")}>
             <Select
-              value={supplierId || null}
-              placeholder={tCommon("selectSupplier")}
-              onValueChange={setSupplierId}
-              options={suppliers.map((s) => ({ value: s.id, label: s.name, description: s.code }))}
+              value={order?.id ?? NONE}
+              onValueChange={choose}
+              options={[
+                { value: NONE, label: t("noPurchaseOrder") },
+                ...orders.map((po) => ({ value: po.id, label: `${po.poNo ?? ""} · ${po.supplier.name}` })),
+              ]}
             />
           </Field>
-        )}
-        <Field label={t("invoiceNo")} required requiredLabel={tCommon("required")} error={errors.invoiceNo}>
-          <Input
-            value={invoiceNo}
-            placeholder={t("invoiceNoPlaceholder")}
-            onChange={(event) => setInvoiceNo(event.target.value)}
-          />
-        </Field>
-        <Field label={t("taxInvoiceNo")} hint={t("taxInvoiceNoHint")}>
-          <Input value={taxInvoiceNo} onChange={(event) => setTaxInvoiceNo(event.target.value)} />
-        </Field>
-        <Field label={t("invoiceDate")}>
-          <Input
-            type="date"
-            max={bangkokToday()}
-            value={invoiceDate}
-            onChange={(event) => setInvoiceDate(event.target.value || bangkokToday())}
-          />
-        </Field>
-        <Field label={t("dueDate")} hint={t("dueDateHint")}>
-          <Input type="date" min={invoiceDate} value={dueDate} onChange={(event) => setDueDate(event.target.value)} />
-        </Field>
-      </div>
-      <div className="flex flex-col gap-2">
-        <SegmentedControl
-          label={t("vatMode")}
-          size="md"
-          value={vatMode}
-          onValueChange={setVatMode}
-          options={VAT_MODES.map((mode) => ({ value: mode, label: tCommon(`vatModes.${mode}`) }))}
-        />
-        {vatMode !== "none" ? (
-          <div className="max-w-48">
-            <Field label={t("vatRate")}>
-              <NumberInput
-                min={0}
-                max={99}
-                step="any"
-                unit="%"
-                value={vatRate}
-                onChange={(event) => setVatRate(event.target.value)}
+          <div className="grid gap-4 md:grid-cols-2">
+            {order ? (
+              <Field label={t("supplier")}>
+                <Input value={order.supplier.name} readOnly />
+              </Field>
+            ) : (
+              <Field label={t("supplier")} required requiredLabel={tCommon("required")} error={errors.supplier}>
+                <Select
+                  value={supplierId || null}
+                  placeholder={tCommon("selectSupplier")}
+                  onValueChange={setSupplierId}
+                  options={suppliers.map((s) => ({ value: s.id, label: s.name, description: s.code }))}
+                />
+              </Field>
+            )}
+            <Field label={t("invoiceNo")} required requiredLabel={tCommon("required")} error={errors.invoiceNo}>
+              <Input
+                value={invoiceNo}
+                placeholder={t("invoiceNoPlaceholder")}
+                onChange={(event) => setInvoiceNo(event.target.value)}
+              />
+            </Field>
+            <Field label={t("taxInvoiceNo")} hint={t("taxInvoiceNoHint")}>
+              <Input value={taxInvoiceNo} onChange={(event) => setTaxInvoiceNo(event.target.value)} />
+            </Field>
+            <Field label={t("invoiceDate")}>
+              <Input
+                type="date"
+                max={bangkokToday()}
+                value={invoiceDate}
+                onChange={(event) => setInvoiceDate(event.target.value || bangkokToday())}
+              />
+            </Field>
+            <Field label={t("dueDate")} hint={t("dueDateHint")}>
+              <Input
+                type="date"
+                min={invoiceDate}
+                value={dueDate}
+                onChange={(event) => setDueDate(event.target.value)}
               />
             </Field>
           </div>
-        ) : null}
-      </div>
-      <SegmentedControl
-        label={t("wht")}
-        size="md"
-        value={wht}
-        onValueChange={setWht}
-        options={WHT.map((rate) => ({ value: rate, label: rate === "0" ? t("noWht") : `${rate}%` }))}
-      />
-      <div className="flex flex-col gap-3">
-        <h3 className="font-semibold">{t("lines")}</h3>
-        {errors.lines ? <p className="text-danger text-sm">{errors.lines}</p> : null}
-        <ol className="flex flex-col gap-3">
-          {lines.map((line, index) => (
-            <li key={line.key} className="border-border bg-surface rounded-xl border p-3 md:p-4">
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  {line.label ? <p className="font-medium">{line.label}</p> : null}
-                  {line.hint ? <p className="text-muted text-sm">{line.hint}</p> : null}
+        </FormSection>
+        <FormSection card step={2} title={tSections("tax")}>
+          <SegmentedControl
+            label={t("vatMode")}
+            size="md"
+            value={vatMode}
+            onValueChange={setVatMode}
+            options={VAT_MODES.map((mode) => ({ value: mode, label: tCommon(`vatModes.${mode}`) }))}
+          />
+          {vatMode !== "none" ? (
+            <div className="max-w-48">
+              <Field label={t("vatRate")}>
+                <NumberInput
+                  min={0}
+                  max={99}
+                  step="any"
+                  unit="%"
+                  value={vatRate}
+                  onChange={(event) => setVatRate(event.target.value)}
+                />
+              </Field>
+            </div>
+          ) : null}
+          <SegmentedControl
+            label={t("wht")}
+            size="md"
+            value={wht}
+            onValueChange={setWht}
+            options={WHT.map((rate) => ({ value: rate, label: rate === "0" ? t("noWht") : `${rate}%` }))}
+          />
+        </FormSection>
+        <FormSection card step={3} title={t("lines")}>
+          {errors.lines ? <p className="text-danger text-sm">{errors.lines}</p> : null}
+          <ol className="flex flex-col gap-3">
+            {lines.map((line, index) => (
+              <li key={line.key} className="border-border rounded-xl border p-3 md:p-4">
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    {line.label ? <p className="font-medium">{line.label}</p> : null}
+                    {line.hint ? <p className="text-muted text-sm">{line.hint}</p> : null}
+                  </div>
+                  {!line.poLineId && lines.length > 1 ? (
+                    <IconButton
+                      name="trash"
+                      size="sm"
+                      label={tCommon("removeLine", { n: index + 1 })}
+                      onClick={() => setLines(lines.filter((_, i) => i !== index))}
+                    />
+                  ) : null}
                 </div>
-                {!line.poLineId && lines.length > 1 ? (
-                  <IconButton
-                    name="trash"
-                    size="sm"
-                    label={tCommon("removeLine", { n: index + 1 })}
-                    onClick={() => setLines(lines.filter((_, i) => i !== index))}
-                  />
-                ) : null}
-              </div>
-              <div className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
-                <Field label={t("description")} error={errors[`d${index}`]}>
-                  <Input
-                    value={line.description}
-                    placeholder={line.poLineId ? line.label : t("descriptionPlaceholder")}
-                    onChange={(event) => update(index, { description: event.target.value })}
-                  />
-                </Field>
-                <Field label={tCommon("quantity")} error={errors[`q${index}`]}>
-                  <NumberInput
-                    step="any"
-                    min={0}
-                    value={line.quantity}
-                    onChange={(event) => update(index, { quantity: event.target.value })}
-                  />
-                </Field>
-                <Field label={t("unitPrice")} error={errors[`p${index}`]}>
-                  <NumberInput
-                    step="any"
-                    min={0}
-                    unit="฿"
-                    value={line.price}
-                    onChange={(event) => update(index, { price: event.target.value })}
-                  />
-                </Field>
-              </div>
-            </li>
-          ))}
-        </ol>
-        <Button
-          variant="secondary"
-          iconStart="plus"
-          className="self-start"
-          onClick={() => setLines([...lines, { key: lineKey(), label: "", description: "", quantity: "1", price: "" }])}
-        >
-          {t("addLine")}
-        </Button>
-      </div>
-      <Field label={t("note")}>
-        <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
-      </Field>
-      <p className="text-muted text-sm">{t("matchNote")}</p>
-      <Button type="submit" size="xl" loading={busy} iconStart="save" className="self-start">
-        {t("save")}
-      </Button>
+                <div className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                  <Field label={t("description")} error={errors[`d${index}`]}>
+                    <Input
+                      value={line.description}
+                      placeholder={line.poLineId ? line.label : t("descriptionPlaceholder")}
+                      onChange={(event) => update(index, { description: event.target.value })}
+                    />
+                  </Field>
+                  <Field label={tCommon("quantity")} error={errors[`q${index}`]}>
+                    <NumberInput
+                      step="any"
+                      min={0}
+                      value={line.quantity}
+                      onChange={(event) => update(index, { quantity: event.target.value })}
+                    />
+                  </Field>
+                  <Field label={t("unitPrice")} error={errors[`p${index}`]}>
+                    <NumberInput
+                      step="any"
+                      min={0}
+                      unit="฿"
+                      value={line.price}
+                      onChange={(event) => update(index, { price: event.target.value })}
+                    />
+                  </Field>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <Button
+            variant="secondary"
+            iconStart="plus"
+            className="self-start"
+            onClick={() =>
+              setLines([...lines, { key: lineKey(), label: "", description: "", quantity: "1", price: "" }])
+            }
+          >
+            {t("addLine")}
+          </Button>
+          <Field label={t("note")}>
+            <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

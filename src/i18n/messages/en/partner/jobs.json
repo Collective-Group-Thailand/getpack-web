@@ -219,7 +219,7 @@
     "tolerance": "Tolerance",
     "toleranceValue": "Short {shortage} · over {overage}",
     "destinations": "Deliver to",
-    "destinationsNote": "Recipient name, address and phone only",
+    "destinationsNote": "getpack keeps the recipient's name, phone and address. The factory sees the destination code, the province and the postcode's first three digits.",
     "destinationQty": "{quantity} pcs · {shipped} shipped",
     "quality": "Quality",
     "qcBy": "Checked by {name}",
@@ -323,7 +323,8 @@
     "empty": "No guides yet",
     "noResults": "No guide matches",
     "published": "Published {date}",
-    "back": "Back to all guides"
+    "back": "Back to all guides",
+    "onThisPage": "On this page"
   },
   "intakes": {
     "title": "Offer a dieline",

@@ -4,9 +4,8 @@ import { getTranslations } from "next-intl/server";
 
 import { PERIOD_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
 import { MarkFiled } from "@/features/partner/ledger/LedgerForms";
-import { StatStrip } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -22,16 +21,18 @@ const thisMonth = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice
 
 /** The factory's books at a glance (D-385 – D-392): cash, what waits, the periods and their close, the month's returns. */
 export default async function LedgerPage() {
-  const [t, tc, format, context] = await Promise.all([
+  const [t, tc, tAccounts, tTax, format, context] = await Promise.all([
     getTranslations("partnerLedger.overview"),
     getTranslations("partnerLedger.common"),
+    getTranslations("partnerLedger.accounts"),
+    getTranslations("partnerSales.tax"),
     getFormat(),
     factoryContext(),
   ]);
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const month = thisMonth();
-  const [periods, cash, pl, pending, filings] = await Promise.all([
+  const [periods, cash, pl, pending, filings, openLines] = await Promise.all([
     attempt(
       async () =>
         (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/periods", { params: { path } })).data!,
@@ -60,6 +61,15 @@ export default async function LedgerPage() {
       async () =>
         (await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/tax-filings", { params: { path } })).data!,
     ),
+    // The bank lines still to match, as the bank page's own tab counts them.
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/bank-lines", {
+            params: { path, query: { status: "open", perPage: 1 } },
+          })
+        ).data!,
+    ),
   ]);
   // Months to come are opened ahead but have nothing to do yet: the list stops at this month.
   const shown = (periods.data ?? []).filter((p) => p.month <= month).reverse();
@@ -68,7 +78,7 @@ export default async function LedgerPage() {
   const monthLabel = (m: string) => format.date(`${m}-01`, { style: "month" });
   const taxHref = (form: string, m: string) =>
     form === "pp30" ? `/tax?view=vat30&month=${m}` : `/tax?view=wht&month=${m}&form=${form}`;
-  const unreconciled = cash.data?.banks.reduce((n, b) => n + b.account.openLines, 0) ?? 0;
+  const unreconciled = openLines.data?.meta.total ?? null;
   return (
     <PartnerPage
       full
@@ -82,16 +92,23 @@ export default async function LedgerPage() {
         ) : null
       }
     >
-      <StatStrip
+      <PartnerStats
         label={t("totals")}
+        columns={4}
         items={[
-          { key: "cash", label: t("cash"), value: cash.data ? format.thb(cash.data.total) : "—", href: "/ledger/bank" },
+          {
+            key: "cash",
+            label: t("cash"),
+            value: cash.data ? format.thb(cash.data.total) : "—",
+            href: "/ledger/bank",
+            highlight: true,
+          },
           {
             key: "bank",
             label: t("unreconciled"),
-            value: format.number(unreconciled),
-            tone: unreconciled ? "warning" : "success",
+            value: unreconciled === null ? "—" : format.number(unreconciled),
             href: "/ledger/bank",
+            ...(unreconciled ? { tone: "warning" as const, icon: "warning" as const } : {}),
           },
           {
             key: "np",
@@ -103,8 +120,8 @@ export default async function LedgerPage() {
             key: "pend",
             label: t("pending"),
             value: format.number(pending.data?.meta.total ?? 0),
-            tone: pending.data?.meta.total ? "warning" : "neutral",
             href: "/ledger/journals?view=pending",
+            ...(pending.data?.meta.total ? { tone: "warning" as const, icon: "hourglass" as const } : {}),
           },
         ]}
       />
@@ -116,7 +133,18 @@ export default async function LedgerPage() {
             rowKey={(row) => row.id}
             rowHref={(row) => `/ledger/periods/${row.id}`}
             rowTone={(row) => (row.id === toClose?.id ? "warning" : undefined)}
-            empty={<EmptyState icon="calendar" title={t("empty")} description={t("emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="calendar"
+                title={t("empty")}
+                description={t("emptyBody")}
+                action={
+                  <Button asChild variant="secondary" iconStart="settings">
+                    <Link href="/ledger/accounts?view=settings">{tAccounts("title")}</Link>
+                  </Button>
+                }
+              />
+            }
             columns={[
               {
                 key: "m",
@@ -137,7 +165,7 @@ export default async function LedgerPage() {
                 key: "c",
                 header: t("checklist"),
                 hideOnPhone: true,
-                cell: () => <span className="text-link text-sm">{t("checklist")}</span>,
+                cell: () => <span className="text-primary text-sm font-medium">{t("checklist")}</span>,
               },
             ]}
           />
@@ -156,14 +184,24 @@ export default async function LedgerPage() {
                 ? "danger"
                 : undefined
             }
-            empty={<EmptyState icon="stamp" title={t("noFilings")} />}
+            empty={
+              <EmptyState
+                icon="stamp"
+                title={t("noFilings")}
+                action={
+                  <Button asChild variant="secondary" iconEnd="arrow-right">
+                    <Link href="/tax">{tTax("title")}</Link>
+                  </Button>
+                }
+              />
+            }
             columns={[
               {
                 key: "f",
                 header: t("form"),
                 primary: true,
                 cell: (row) => (
-                  <Link className="text-link underline-offset-4 hover:underline" href={taxHref(row.form, row.month)}>
+                  <Link className="text-primary underline-offset-4 hover:underline" href={taxHref(row.form, row.month)}>
                     {t(`forms.${row.form}` as never)}
                   </Link>
                 ),
@@ -184,7 +222,7 @@ export default async function LedgerPage() {
               },
               {
                 key: "r",
-                header: "",
+                header: t("reconciled"),
                 cell: (row) => (
                   <Badge tone={row.reconciled ? "success" : "warning"}>
                     {row.reconciled ? t("reconciled") : t("notReconciled")}

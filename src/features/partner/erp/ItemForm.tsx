@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { useRefresh } from "@/features/partner/client";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
@@ -13,7 +14,7 @@ import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
@@ -73,6 +74,7 @@ export function ItemForm({
 }) {
   const t = useTranslations("partnerErp.item");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
   const { factoryId } = useFactory();
   const router = useRouter();
   const [refresh] = useRefresh();
@@ -142,8 +144,8 @@ export function ItemForm({
     ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.name, description: supplier.code })),
   ];
 
-  return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
+  const details = (
+    <>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <Field
           label={t("sku")}
@@ -175,6 +177,10 @@ export function ItemForm({
           options={KINDS.map((kind) => ({ value: kind, label: tCommon(`itemKinds.${kind}` as never) }))}
         />
       </Field>
+    </>
+  );
+  const units = (
+    <>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("baseUnit")} hint={item ? undefined : t("baseUnitHint")}>
           <Select
@@ -212,6 +218,10 @@ export function ItemForm({
           />
         </Field>
       ) : null}
+    </>
+  );
+  const buying = (
+    <>
       <div className="grid gap-4 md:grid-cols-3">
         <Field label={t("reorderPoint")} hint={t("inBase", { unit: unit(value.baseUnit) })} error={errors.reorderPoint}>
           <NumberInput
@@ -264,9 +274,51 @@ export function ItemForm({
           onChange={(event) => set({ note: event.target.value })}
         />
       </Field>
-      <Button type="submit" size="xl" loading={busy} className="self-start" iconStart="save">
-        {item ? tCommon("save") : t("create")}
-      </Button>
+    </>
+  );
+  const submit = (
+    <Button type="submit" size="xl" loading={busy} iconStart="save">
+      {item ? tCommon("save") : t("create")}
+    </Button>
+  );
+
+  // Editing an item happens inside its page (a disclosure): the fields in one column. A new item gets the
+  // numbered sections and the summary panel with the one save.
+  if (item)
+    return (
+      <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
+        {details}
+        {units}
+        {buying}
+        <div className="flex">{submit}</div>
+      </form>
+    );
+  return (
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary title={tSections("summary")} action={submit}>
+            <SummaryRows
+              rows={[
+                { key: "sku", label: t("sku"), value: value.sku.trim() },
+                { key: "name", label: t("name"), value: value.name.trim() },
+                { key: "kind", label: t("kind"), value: tCommon(`itemKinds.${value.kind}` as never) },
+                { key: "unit", label: t("baseUnit"), value: unit(value.baseUnit) },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("item")}>
+          {details}
+        </FormSection>
+        <FormSection card step={2} title={tSections("units")}>
+          {units}
+        </FormSection>
+        <FormSection card step={3} title={tSections("buying")}>
+          {buying}
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

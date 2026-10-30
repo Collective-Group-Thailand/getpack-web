@@ -32,7 +32,7 @@ export default async function NewRecipePage({ searchParams }: { searchParams: Pr
   });
   return (
     <PartnerPage
-      wide
+      full
       title={t("newTitle")}
       description={t("newBody")}
       back={{ href: "/planning/recipes", label: t("title") }}

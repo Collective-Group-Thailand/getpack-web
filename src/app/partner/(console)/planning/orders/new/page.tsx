@@ -35,7 +35,7 @@ export default async function NewProductionOrderPage({ searchParams }: { searchP
   });
   return (
     <PartnerPage
-      wide
+      full
       title={t("newTitle")}
       description={t("newBody")}
       back={{ href: "/planning", label: tPlan("title") }}

@@ -10,8 +10,10 @@ import { ViewTabs } from "@/features/partner/rows";
 import { getFormat } from "@/features/shared/format/server";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon, type IconName } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerOps.alerts"))("title") };
@@ -102,13 +104,34 @@ export default async function AlertsPage({
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "open";
   const kind = KINDS.includes(query.kind as Kind) ? (query.kind as Kind) : undefined;
   const page = pageOf(query.page);
-  const [t, tCommon, format, context] = await Promise.all([
+  const [t, tCommon, format, context, tNav] = await Promise.all([
     getTranslations("partnerOps.alerts"),
     getTranslations("partnerErp.common"),
     getFormat(),
     factoryContext(),
+    getTranslations("partner.sidebar.items"),
   ]);
   const { contract } = await partnerServerApis();
+  // The two views' counts for their tabs (each read for its total only).
+  const totals = Promise.all(
+    VIEWS.map((key) =>
+      attempt(
+        async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/erp/alerts", {
+              params: {
+                path: { factoryId: context.factoryId },
+                query: {
+                  perPage: 1,
+                  ...(key === "open" ? { status: "open" as const } : {}),
+                  ...(kind ? { kind } : {}),
+                },
+              },
+            })
+          ).data!.meta.total,
+      ).then((result) => [key, result.data ?? null] as const),
+    ),
+  );
   const list = await attempt(
     async () =>
       (
@@ -166,8 +189,21 @@ export default async function AlertsPage({
     });
   };
 
+  const counts = Object.fromEntries(await totals) as Record<View, number | null>;
+  const EDGE = { danger: "border-s-danger", warning: "border-s-warning", info: "border-s-info" } as const;
+  const GLYPH = {
+    danger: "bg-danger-subtle text-danger-subtle-fg",
+    warning: "bg-warning-subtle text-warning-subtle-fg",
+    info: "bg-info-subtle text-info-subtle-fg",
+  } as const;
+  const kinds = [
+    { key: "all", href: href({ kind: undefined, page: 1 }), label: t("kinds.all") },
+    ...KINDS.map((k) => ({ key: k, href: href({ kind: k, page: 1 }), label: t(`kinds.${k}`) })),
+  ];
+
   return (
     <PartnerPage
+      wide
       title={t("title")}
       description={t("body")}
       actions={view === "open" && list.data?.data.length ? <AcknowledgeAll /> : undefined}
@@ -175,82 +211,138 @@ export default async function AlertsPage({
       <ViewTabs
         label={t("views.label")}
         current={view}
-        items={VIEWS.map((key) => ({ key, href: href({ view: key, page: 1 }), label: t(`views.${key}`) }))}
+        items={VIEWS.map((key) => ({
+          key,
+          href: href({ view: key, page: 1 }),
+          label: t(`views.${key}`),
+          count: counts[key],
+        }))}
       />
-      <ViewTabs
-        label={t("kinds.label")}
-        current={kind ?? "all"}
-        items={[
-          { key: "all", href: href({ kind: undefined, page: 1 }), label: t("kinds.all") },
-          ...KINDS.map((k) => ({ key: k, href: href({ kind: k, page: 1 }), label: t(`kinds.${k}`) })),
-        ]}
-      />
-      {list.data ? (
-        list.data.data.length ? (
-          <>
-            <ul className="flex flex-col gap-2">
-              {list.data.data.map((alert) => {
-                const to = hrefOf(alert);
-                return (
-                  <li
-                    key={alert.id}
-                    className="border-border bg-surface flex flex-wrap items-start justify-between gap-3 rounded-xl border p-4"
+      <div className="grid items-start gap-6 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-8">
+        {/* The kinds: a row to swipe on a phone, a list beside the alerts on a desk. */}
+        <ViewTabs label={t("kinds.label")} current={kind ?? "all"} items={kinds} className="lg:hidden" />
+        <nav aria-label={t("kinds.label")} className="hidden lg:sticky lg:top-20 lg:block">
+          <p className="text-muted mb-2 px-3 text-sm font-medium">{t("kinds.label")}</p>
+          <ul className="flex flex-col gap-0.5">
+            {kinds.map((item) => {
+              const selected = item.key === (kind ?? "all");
+              return (
+                <li key={item.key}>
+                  <Link
+                    href={item.href}
+                    aria-current={selected ? "page" : undefined}
+                    className={cn(
+                      "focus-visible:ring-focus-ring flex min-h-9 items-center gap-2 rounded-lg px-3 text-sm outline-none focus-visible:ring-2",
+                      selected
+                        ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                        : "text-muted hover:bg-surface-subtle hover:text-fg",
+                    )}
                   >
-                    <div className="flex min-w-0 items-start gap-3">
-                      <Icon name={ICON[alert.kind]} size={22} className="mt-0.5 shrink-0" aria-hidden />
-                      <div className="flex min-w-0 flex-col gap-1">
-                        <p className="flex flex-wrap items-center gap-2">
-                          <Badge tone={TONE[alert.kind]}>{t(`kinds.${alert.kind}`)}</Badge>
-                          <span className="text-muted text-sm">{format.dateTime(alert.createdAt)}</span>
-                          {alert.dueOn ? (
-                            <span className="text-muted text-sm">{t("due", { date: format.date(alert.dueOn) })}</span>
-                          ) : null}
-                        </p>
-                        <p className="font-medium">{text(alert)}</p>
-                        {alert.acknowledgedAt ? (
-                          <p className="text-muted text-sm">
-                            {t("acknowledgedBy", {
-                              name: alert.acknowledgedBy ?? "—",
-                              at: format.dateTime(alert.acknowledgedAt),
-                            })}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {to ? (
-                        <Link
-                          href={to}
-                          className="border-border hover:bg-surface-subtle inline-flex h-9 items-center rounded-lg border px-3 text-sm font-medium"
+                    {item.key !== "all" ? (
+                      <Icon name={ICON[item.key as Kind]} size={16} aria-hidden="true" className="shrink-0" />
+                    ) : null}
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <div className="flex min-w-0 flex-col gap-4">
+          {list.data ? (
+            list.data.data.length ? (
+              <>
+                <ul className="flex flex-col gap-2">
+                  {list.data.data.map((alert) => {
+                    const to = hrefOf(alert);
+                    const tone = TONE[alert.kind];
+                    return (
+                      <li
+                        key={alert.id}
+                        className={cn(
+                          "border-border bg-surface rounded-card grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-3 border border-s-4 p-4 md:grid-cols-[auto_minmax(0,1fr)_auto]",
+                          alert.status === "open" ? EDGE[tone] : "border-s-border",
+                        )}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={cn("grid size-10 place-items-center rounded-lg", GLYPH[tone])}
                         >
-                          {t("open")}
-                        </Link>
-                      ) : null}
-                      {alert.status === "open" ? <AcknowledgeAlert alertId={alert.id} /> : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            <Pager
-              page={page}
-              perPage={PER_PAGE}
-              total={list.data.meta.total}
-              hrefFor={(n) => href({ page: n })}
-              labels={{
-                nav: tCommon("pagination.nav"),
-                previous: tCommon("pagination.previous"),
-                next: tCommon("pagination.next"),
-                page: (n: number) => tCommon("pagination.page", { n }),
-              }}
-            />
-          </>
-        ) : (
-          <EmptyState icon="bell" title={t("empty")} description={t("emptyBody")} />
-        )
-      ) : (
-        <PageError error={list.error} />
-      )}
+                          <Icon name={ICON[alert.kind]} size={20} />
+                        </span>
+                        <div className="flex min-w-0 flex-col gap-1">
+                          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <Badge tone={tone}>{t(`kinds.${alert.kind}`)}</Badge>
+                            {alert.dueOn ? (
+                              <span className="text-sm font-medium">
+                                {t("due", { date: format.date(alert.dueOn) })}
+                              </span>
+                            ) : null}
+                          </p>
+                          <p className="font-medium text-pretty [overflow-wrap:anywhere] break-keep">{text(alert)}</p>
+                          <p className="text-muted text-sm">
+                            {alert.acknowledgedAt
+                              ? t("acknowledgedBy", {
+                                  name: alert.acknowledgedBy ?? "—",
+                                  at: format.dateTime(alert.acknowledgedAt),
+                                })
+                              : format.dateTime(alert.createdAt)}
+                          </p>
+                        </div>
+                        <div className="col-span-2 flex flex-wrap items-center gap-2 md:col-span-1 md:flex-col md:items-end">
+                          {to ? (
+                            <Button
+                              asChild
+                              variant="primary"
+                              size="nav"
+                              iconEnd="arrow-right"
+                              className="md:h-9 md:px-3 md:text-sm"
+                            >
+                              <Link href={to}>{t("open")}</Link>
+                            </Button>
+                          ) : null}
+                          {alert.status === "open" ? <AcknowledgeAlert alertId={alert.id} /> : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <Pager
+                  page={page}
+                  perPage={PER_PAGE}
+                  total={list.data.meta.total}
+                  hrefFor={(n) => href({ page: n })}
+                  labels={{
+                    nav: tCommon("pagination.nav"),
+                    previous: tCommon("pagination.previous"),
+                    next: tCommon("pagination.next"),
+                    page: (n: number) => tCommon("pagination.page", { n }),
+                  }}
+                />
+              </>
+            ) : (
+              <EmptyState
+                icon="bell"
+                title={t("empty")}
+                description={t("emptyBody")}
+                action={
+                  view === "open" ? (
+                    <Button asChild variant="secondary" size="nav">
+                      <Link href={href({ view: "all", page: 1 })}>{t("views.all")}</Link>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+                      <Link href="/">{tNav("today")}</Link>
+                    </Button>
+                  )
+                }
+              />
+            )
+          ) : (
+            <PageError error={list.error} />
+          )}
+        </div>
+      </div>
     </PartnerPage>
   );
 }

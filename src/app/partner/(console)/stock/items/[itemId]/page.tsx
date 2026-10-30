@@ -7,7 +7,7 @@ import { formatQty } from "@/features/partner/erp/format";
 import { ItemForm, ItemStatusButton } from "@/features/partner/erp/ItemForm";
 import { ItemSuppliers } from "@/features/partner/erp/ItemSuppliers";
 import { erpSuppliers } from "@/features/partner/erp/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
 import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -105,7 +105,6 @@ export default async function ItemPage({ params }: Props) {
           <span className="text-muted tabular-nums">{it.sku}</span>
           <Badge tone="neutral">{tCommon(`itemKinds.${it.kind}` as never)}</Badge>
           {it.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
-          {it.stock.low ? <Badge tone="warning">{tCommon("low")}</Badge> : null}
         </>
       }
       actions={
@@ -123,14 +122,27 @@ export default async function ItemPage({ params }: Props) {
         ) : undefined
       }
     >
+      {/* The item's stock in four figures the API sent; below them, how it is bought and kept. */}
+      <PartnerStats
+        label={t("stockTitle")}
+        items={[
+          {
+            key: "onHand",
+            label: tStock("table.onHand"),
+            value: qty(it.stock.onHand),
+            // Below its reorder point: the figure the page asks the factory to act on.
+            highlight: it.stock.low,
+            ...(it.stock.low ? { hint: tCommon("low"), tone: "warning" as const } : {}),
+          },
+          { key: "available", label: tStock("table.available"), value: qty(it.stock.available) },
+          { key: "onOrder", label: tStock("table.onOrder"), value: qty(it.stock.onOrder), href: "/purchasing" },
+          { key: "value", label: tStock("table.value"), value: format.thb(it.stock.value) },
+        ]}
+      />
       <Card padding="md">
         <DescriptionList
           columns={2}
           items={[
-            { term: tStock("table.onHand"), description: <strong className="text-lg">{qty(it.stock.onHand)}</strong> },
-            { term: tStock("table.available"), description: qty(it.stock.available) },
-            { term: tStock("table.onOrder"), description: qty(it.stock.onOrder) },
-            { term: tStock("table.value"), description: format.thb(it.stock.value) },
             { term: tStock("table.avgCost"), description: format.thb(it.stock.avgCost) },
             {
               term: t("facts.reorder"),

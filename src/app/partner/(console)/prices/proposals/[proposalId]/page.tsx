@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { PROPOSAL_STATUS } from "@/domain/status";
 import { PartnerFileButton } from "@/features/partner/account/files";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { CounterAnswers, EvidenceUpload, SubmitProposal, WithdrawProposal } from "@/features/partner/prices/actions";
 import { LineList, lineLabeller } from "@/features/partner/prices/LineList";
 import { ProposalEditor } from "@/features/partner/prices/ProposalEditor";
@@ -13,6 +14,7 @@ import { loadPrices, OPEN_PROPOSAL } from "@/features/partner/prices/server";
 import { columnsOf, type Values } from "@/features/partner/prices/values";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 
@@ -30,6 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ProposalPage({ params, searchParams }: Props) {
   const [{ proposalId }, query] = await Promise.all([params, searchParams]);
   const t = await getTranslations("partnerPrices.proposal");
+  const tSales = await getTranslations("partnerSales.common");
   const format = await getFormat();
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
@@ -69,26 +72,20 @@ export default async function ProposalPage({ params, searchParams }: Props) {
     ? { href: `/prices/${list.productTypeCode}`, label: t("backList", { type: name }) }
     : back;
 
-  return (
-    <PartnerPage
-      full
-      title={factoryOwn ? t("titleOwn", { type: name }) : t("titleRateCard", { type: name })}
-      back={listBack}
-      meta={<StatusChip map={PROPOSAL_STATUS} value={item.status} size="md" />}
-      description={t("meta", {
-        from: format.date(item.proposedEffectiveFrom),
-        base: item.baseVersionNo ?? 0,
-        lines: item.lineCounts.total,
-      })}
-    >
-      {factoryOwn && ["submitted", "under_review", "countered"].includes(item.status) ? (
-        <Callout tone={item.status === "countered" ? "warning" : "info"} title={t(`next.${item.status}.title`)}>
-          {t(`next.${item.status}.body`, {
-            version: list?.current?.versionNo ?? item.baseVersionNo ?? 0,
-            date: format.date(item.proposedEffectiveFrom),
-          })}
-        </Callout>
-      ) : null}
+  const draft = factoryOwn && item.status === "draft";
+  const head = {
+    full: true,
+    title: factoryOwn ? t("titleOwn", { type: name }) : t("titleRateCard", { type: name }),
+    back: listBack,
+    status: <StatusChip map={PROPOSAL_STATUS} value={item.status} size="md" />,
+    description: t("meta", {
+      from: format.date(item.proposedEffectiveFrom),
+      base: item.baseVersionNo ?? 0,
+      lines: item.lineCounts.total,
+    }),
+  };
+  const content = (
+    <>
       {item.comment ? (
         <Callout tone="neutral" title={factoryOwn ? t("reasonOwn") : t("reasonGetpack")}>
           {item.comment}
@@ -127,7 +124,7 @@ export default async function ProposalPage({ params, searchParams }: Props) {
       )}
 
       {factoryOwn && item.status === "countered" ? (
-        <PartnerSection title={t("countersTitle")} description={t("countersBody")}>
+        <PartnerSection id="proposal-answer" title={t("countersTitle")} description={t("countersBody")}>
           <Card padding="md">
             <CounterAnswers
               proposalId={item.id}
@@ -144,6 +141,7 @@ export default async function ProposalPage({ params, searchParams }: Props) {
 
       {!factoryOwn && ["submitted", "under_review"].includes(item.status) ? (
         <PartnerSection
+          id="proposal-answer"
           title={t("answerTitle")}
           description={t("answerBody", { date: format.date(item.proposedEffectiveFrom) })}
         >
@@ -207,11 +205,60 @@ export default async function ProposalPage({ params, searchParams }: Props) {
         </PartnerSection>
       ) : null}
 
-      {factoryOwn && OPEN_PROPOSAL.includes(item.status) ? (
+      {draft && OPEN_PROPOSAL.includes(item.status) ? (
         <PartnerSection title={t("withdrawTitle")}>
           <WithdrawProposal proposalId={item.id} typeName={name} />
         </PartnerSection>
       ) : null}
+    </>
+  );
+  // A draft is a worksheet as wide as its price table; anything after it is a record with one thing to do next.
+  if (draft) return <PartnerPage {...head}>{content}</PartnerPage>;
+  const waitingOnFactory =
+    (factoryOwn && item.status === "countered") || (!factoryOwn && ["submitted", "under_review"].includes(item.status));
+  return (
+    <PartnerPage {...head}>
+      <PartnerDetail
+        aside={
+          <ActionPanel
+            id="proposal-next"
+            tone={waitingOnFactory ? "primary" : "neutral"}
+            title={
+              factoryOwn && ["submitted", "under_review", "countered"].includes(item.status)
+                ? t(`next.${item.status as "submitted" | "under_review" | "countered"}.title`)
+                : !factoryOwn && ["submitted", "under_review"].includes(item.status)
+                  ? t("answerTitle")
+                  : tSales("nextSteps")
+            }
+            description={
+              factoryOwn && ["submitted", "under_review", "countered"].includes(item.status)
+                ? t(`next.${item.status as "submitted" | "under_review" | "countered"}.body`, {
+                    version: list?.current?.versionNo ?? item.baseVersionNo ?? 0,
+                    date: format.date(item.proposedEffectiveFrom),
+                  })
+                : !factoryOwn && ["submitted", "under_review"].includes(item.status)
+                  ? t("answerBody", { date: format.date(item.proposedEffectiveFrom) })
+                  : undefined
+            }
+          >
+            <div data-fill="row" className="flex flex-col gap-2">
+              {waitingOnFactory ? (
+                <Button asChild size="lg" iconStart={factoryOwn ? "scale" : "handshake"}>
+                  <a href="#proposal-answer">{factoryOwn ? t("countersTitle") : t("answerTitle")}</a>
+                </Button>
+              ) : null}
+              <Button asChild size="lg" variant="secondary" iconStart="arrow-left">
+                <Link href={listBack.href}>{listBack.label}</Link>
+              </Button>
+              {factoryOwn && OPEN_PROPOSAL.includes(item.status) ? (
+                <WithdrawProposal proposalId={item.id} typeName={name} />
+              ) : null}
+            </div>
+          </ActionPanel>
+        }
+      >
+        {content}
+      </PartnerDetail>
     </PartnerPage>
   );
 }

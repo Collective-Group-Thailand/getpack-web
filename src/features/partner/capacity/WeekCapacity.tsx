@@ -8,6 +8,7 @@ import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { problemMessage } from "@/features/shared/actions";
 import { browserApi } from "@/lib/api/browser";
 import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
@@ -23,12 +24,15 @@ export function WeekCapacity({
   weekStart,
   weekLabel,
   capacity,
+  trigger = "link",
 }: {
   productTypeId: string;
   productTypeName: string;
   weekStart: string;
   weekLabel: string;
   capacity: string;
+  /** `icon`: a quiet pencil in a dense load table, named for the week and the product type it changes. */
+  trigger?: "link" | "icon";
 }) {
   const t = useTranslations("partnerJobs.capacity.override");
   const { factoryId } = useFactory();
@@ -59,9 +63,19 @@ export function WeekCapacity({
 
   return (
     <>
-      <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setOpen(true)}>
-        {t("change")}
-      </Button>
+      {trigger === "icon" ? (
+        <IconButton
+          name="edit"
+          size="sm"
+          className="text-muted hover:text-fg focus-visible:text-fg"
+          label={t("title", { type: productTypeName, week: weekLabel })}
+          onClick={() => setOpen(true)}
+        />
+      ) : (
+        <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setOpen(true)}>
+          {t("change")}
+        </Button>
+      )}
       {open ? (
         <Dialog
           open

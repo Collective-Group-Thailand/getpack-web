@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
@@ -32,9 +33,32 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function JobsPage({ searchParams }: Props) {
   const query = await searchParams;
   const view: View = (VIEWS as readonly string[]).includes(query.view ?? "") ? (query.view as View) : "to_accept";
-  const t = await getTranslations("partnerJobs");
+  const [t, tToday, tNav] = await Promise.all([
+    getTranslations("partnerJobs"),
+    getTranslations("partnerToday.floor"),
+    getTranslations("partner.sidebar.items"),
+  ]);
   await factoryContext();
   const { contract } = await partnerServerApis();
+  // Each tab's count: one row per view, read for its total only (the list carries `meta.total`).
+  const countsPromise = Promise.all(
+    VIEWS.map((key) =>
+      attempt(
+        async () =>
+          (
+            await contract.GET("/v1/partner/production-jobs", {
+              params: {
+                query: {
+                  perPage: 1,
+                  ...(key === "all" ? {} : { view: key satisfies Schemas["JobView"] }),
+                  ...(query.q ? { q: query.q } : {}),
+                },
+              },
+            })
+          ).data!.meta.total,
+      ).then((result) => [key, result.data ?? null] as const),
+    ),
+  );
   const jobs = await attempt(
     async () =>
       (
@@ -49,37 +73,54 @@ export default async function JobsPage({ searchParams }: Props) {
         })
       ).data!,
   );
+  const counts = Object.fromEntries(await countsPromise) as Record<View, number | null>;
   const href = (next: View) => `/jobs?view=${next}${query.q ? `&q=${encodeURIComponent(query.q)}` : ""}`;
 
   return (
     <PartnerPage title={t("title")} actions={<JobScan />} wide>
-      <ViewTabs
-        label={t("viewsLabel")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
-      />
-      <form role="search" className="flex max-w-xl gap-2" action="/jobs">
-        <input type="hidden" name="view" value={view} />
-        <label htmlFor="jobs-q" className="sr-only">
-          {t("search")}
-        </label>
-        <Input
-          id="jobs-q"
-          name="q"
-          inputSize="lg"
-          className="md:h-10"
-          defaultValue={query.q ?? ""}
-          placeholder={t("searchPlaceholder")}
+      {/* One toolbar over the list: the views with their counts, then the search. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ViewTabs
+          label={t("viewsLabel")}
+          current={view}
+          items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`), count: counts[key] }))}
         />
-        <Button type="submit" size="lg" variant="secondary" iconStart="search" className="h-11 shrink-0 md:h-10">
-          {t("searchAction")}
-        </Button>
-      </form>
+        <form role="search" className="flex w-full gap-2 md:w-auto md:min-w-[22rem]" action="/jobs">
+          <input type="hidden" name="view" value={view} />
+          <label htmlFor="jobs-q" className="sr-only">
+            {t("search")}
+          </label>
+          <Input
+            id="jobs-q"
+            name="q"
+            type="search"
+            inputSize="lg"
+            className="md:h-10"
+            defaultValue={query.q ?? ""}
+            placeholder={t("searchPlaceholder")}
+          />
+          <Button type="submit" size="lg" variant="secondary" iconStart="search" className="h-11 shrink-0 md:h-10">
+            {t("searchAction")}
+          </Button>
+        </form>
+      </div>
       {jobs.data ? (
         jobs.data.data.length ? (
           <JobsTable jobs={jobs.data.data} caption={t(`views.${view}`)} />
         ) : (
-          <EmptyState icon="factory" title={t(`empty.${view}`)} />
+          <EmptyState
+            icon="factory"
+            title={t(`empty.${view}`)}
+            action={
+              <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+                {view === "all" ? (
+                  <Link href="/">{tNav("today")}</Link>
+                ) : (
+                  <Link href={href("all")}>{tToday("allJobs")}</Link>
+                )}
+              </Button>
+            }
+          />
         )
       ) : (
         <PageError error={jobs.error} />

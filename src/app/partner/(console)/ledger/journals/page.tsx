@@ -4,11 +4,13 @@ import { getTranslations } from "next-intl/server";
 
 import { JOURNAL_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { ExportJournals, RecurringButton } from "@/features/partner/ledger/LedgerForms";
 import { accountOptions } from "@/features/partner/ledger/server";
-import { ViewTabs } from "@/features/partner/rows";
+import { PeriodPicker } from "@/features/partner/period";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { SalesActions } from "@/features/partner/sales/SalesActions";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -16,7 +18,6 @@ import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Input } from "@/ui/components/Input";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerLedger.journals"))("title") };
@@ -47,14 +48,14 @@ export default async function JournalsPage({
   const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId };
   const canPost = canAt(context, "factory_ledger.post");
-  const filter =
-    view === "pending"
+  const filterOf = (key: View) =>
+    key === "pending"
       ? { status: "pending_approval" as const }
-      : view === "draft"
+      : key === "draft"
         ? { status: "draft" as const }
-        : view === "manual"
+        : key === "manual"
           ? { kind: "manual" as const }
-          : view === "auto"
+          : key === "auto"
             ? { kind: "auto" as const }
             : {};
   const [list, recurring, accounts] = await Promise.all([
@@ -69,7 +70,7 @@ export default async function JournalsPage({
                   query: {
                     page,
                     perPage: 25,
-                    ...filter,
+                    ...filterOf(view),
                     ...(month ? { month } : {}),
                     ...(query.account ? { accountCode: query.account } : {}),
                     ...(query.q ? { q: query.q } : {}),
@@ -90,6 +91,33 @@ export default async function JournalsPage({
       : Promise.resolve(null),
     view === "recurring" && canPost ? accountOptions(contract, context.factoryId) : Promise.resolve([]),
   ]);
+  // Every tab's count with the same search and filters, so a tab says exactly how many entries it opens.
+  const counts = await viewTotals(VIEWS, async (key) =>
+    key === "recurring"
+      ? {
+          meta: {
+            total: (
+              await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/recurring-journals", {
+                params: { path },
+              })
+            ).data!.length,
+          },
+        }
+      : (
+          await contract.GET("/v1/partner/factories/{factoryId}/erp/ledger/journals", {
+            params: {
+              path,
+              query: {
+                perPage: 1,
+                ...filterOf(key),
+                ...(month ? { month } : {}),
+                ...(query.account ? { accountCode: query.account } : {}),
+                ...(query.q ? { q: query.q } : {}),
+              },
+            },
+          })
+        ).data,
+  );
   const href = (next: Record<string, string | number | undefined>) =>
     `/ledger/journals${queryOf({ view: view === "all" ? undefined : view, q: query.q, month, account: query.account, ...next })}`;
   return (
@@ -108,15 +136,32 @@ export default async function JournalsPage({
         </div>
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({
-          key,
-          href: `/ledger/journals${queryOf({ view: key === "all" ? undefined : key })}`,
-          label: t(`views.${key}`),
-        }))}
-      />
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: `/ledger/journals${queryOf({
+              view: key === "all" ? undefined : key,
+              ...(key === "recurring" ? {} : { q: query.q, month, account: query.account }),
+            })}`,
+            label: t(`views.${key}`),
+            count: counts[key],
+          }))}
+        />
+        {view !== "recurring" ? (
+          <SearchBar
+            id="journal-search"
+            action="/ledger/journals"
+            hidden={{ view: view === "all" ? undefined : view, month, account: query.account }}
+            q={query.q}
+            label={t("search")}
+            placeholder={t("searchPlaceholder")}
+            button={t("searchButton")}
+          />
+        ) : null}
+      </ListToolbar>
       {recurring ? (
         <PartnerSection
           title={t("recurringTitle")}
@@ -128,7 +173,17 @@ export default async function JournalsPage({
               caption={t("recurringTitle")}
               rows={recurring.data}
               rowKey={(row) => row.id}
-              empty={<EmptyState icon="calendar" title={t("noRecurring")} />}
+              empty={
+                <EmptyState
+                  icon="calendar"
+                  title={t("noRecurring")}
+                  action={
+                    <Button asChild variant="secondary" iconEnd="arrow-right">
+                      <Link href="/ledger/journals">{t("views.all")}</Link>
+                    </Button>
+                  }
+                />
+              }
               columns={[
                 { key: "n", header: tr("name"), primary: true, cell: (row) => row.name },
                 { key: "d", header: tc("date"), cell: (row) => t("dayOfMonth", { n: row.dayOfMonth }) },
@@ -179,44 +234,27 @@ export default async function JournalsPage({
         </PartnerSection>
       ) : (
         <>
-          <SearchBar
-            id="journal-search"
-            action="/ledger/journals"
-            hidden={{ view: view === "all" ? undefined : view, month, account: query.account }}
-            q={query.q}
-            label={t("search")}
-            placeholder={t("searchPlaceholder")}
-            button={t("searchButton")}
-          />
-          <form action="/ledger/journals" className="flex flex-wrap items-end gap-2">
-            {view !== "all" ? <input type="hidden" name="view" value={view} /> : null}
-            {query.q ? <input type="hidden" name="q" value={query.q} /> : null}
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium">{tc("month")}</span>
-              <Input type="month" name="month" defaultValue={month} className="w-48" />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium">{t("accountFilter")}</span>
-              <Input
-                name="account"
-                defaultValue={query.account}
-                inputMode="numeric"
-                placeholder={t("accountPlaceholder")}
-                className="w-32 tabular-nums"
-              />
-            </label>
-            <Button type="submit" variant="secondary">
-              {t("filter")}
-            </Button>
+          {/* The month and account narrow the list on a lighter second line, under the one toolbar. */}
+          <div className="-mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <PeriodPicker
+              action="/ledger/journals"
+              label={t("filter")}
+              hidden={{ view: view === "all" ? undefined : view, q: query.q }}
+              fields={[
+                { name: "month", label: tc("month"), value: month ?? "", type: "month" },
+                { name: "account", label: t("accountFilter"), value: query.account ?? "", type: "text" },
+              ]}
+              submit={t("filter")}
+            />
             {month || query.account ? (
               <Link
-                className="text-link text-sm underline"
+                className="text-primary inline-flex min-h-11 items-center text-sm font-medium underline-offset-4 hover:underline md:min-h-8"
                 href={`/ledger/journals${queryOf({ view: view === "all" ? undefined : view, q: query.q })}`}
               >
                 {t("clearFilter")}
               </Link>
             ) : null}
-          </form>
+          </div>
           {list?.data ? (
             <>
               <PartnerTable
@@ -225,7 +263,24 @@ export default async function JournalsPage({
                 rowKey={(row) => row.id}
                 rowHref={(row) => `/ledger/journals/${row.id}`}
                 rowTone={(row) => (row.status === "pending_approval" ? "warning" : undefined)}
-                empty={<EmptyState icon="list-ordered" title={t("empty")} description={t("emptyBody")} />}
+                empty={
+                  <EmptyState
+                    icon="list-ordered"
+                    title={t("empty")}
+                    description={t("emptyBody")}
+                    action={
+                      view !== "all" || month || query.account || query.q ? (
+                        <Button asChild variant="secondary" iconEnd="arrow-right">
+                          <Link href="/ledger/journals">{t("views.all")}</Link>
+                        </Button>
+                      ) : canPost ? (
+                        <Button asChild variant="secondary" iconStart="plus">
+                          <Link href="/ledger/journals/new">{t("new")}</Link>
+                        </Button>
+                      ) : undefined
+                    }
+                  />
+                }
                 columns={[
                   {
                     key: "no",

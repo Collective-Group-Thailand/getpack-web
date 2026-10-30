@@ -273,5 +273,72 @@
     "shipped": "Shipped",
     "delivered": "Delivered",
     "completed": "Completed"
+  },
+  "handover": {
+    "metaTitle": "Carrier handover",
+    "loading": "Opening the shipment",
+    "lede": "Recipient details for getpack's carrier",
+    "shipment": "Shipment {no}",
+    "recipient": "Recipient",
+    "callLabel": "Call {name} on {phone}",
+    "tapToCall": "Tap to call",
+    "address": "Delivery address",
+    "cartons": "{count, plural, one {# carton} other {# cartons}}",
+    "cartonOf": "Carton {n}/{total}",
+    "weight": "{kg} kg in all",
+    "plannedOn": "Pickup planned",
+    "expires": "Link works until",
+    "pickedUpAt": "Picked up",
+    "confirm": "Confirm pickup",
+    "confirmTitle": "Got every carton?",
+    "confirmBody": "Confirm once you have all {count, plural, one {# carton} other {# cartons}}. The pickup time is recorded and the getpack team is told.",
+    "confirmBodyScanned": "Confirm once you have all {count, plural, one {# carton} other {# cartons}} ({scanned} scanned). The scans are checked, the pickup time is recorded and the getpack team is told.",
+    "cancel": "Not yet",
+    "scan": {
+      "heading": "Check the cartons by QR",
+      "optional": "Optional: scan the QR on each carton label to check it belongs to this shipment.",
+      "open": "Scan carton QR",
+      "counted": "Scanned {count}/{total}",
+      "reset": "Clear scans",
+      "title": "Scan carton QR",
+      "aim": "Point the camera at the QR on each carton label, one at a time.",
+      "unavailable": "The camera can't be opened. You can confirm the pickup without scanning.",
+      "foreign": "This QR is not a getpack carton label.",
+      "done": "Done",
+      "close": "Close"
+    },
+    "pickedUp": {
+      "title": "Pickup confirmed",
+      "body": "Pickup recorded at {at}. Deliver to the recipient's address.",
+      "call": "Call the recipient",
+      "details": "See the recipient's address"
+    },
+    "notFound": {
+      "title": "Link not found",
+      "body": "It may have been cancelled or replaced by a newer one. Ask the getpack team for the latest link."
+    },
+    "expired": {
+      "title": "This link has expired",
+      "body": "A handover link works until the delivery and for 7 days at most. Ask the getpack team for a new one."
+    },
+    "notReady": {
+      "title": "Not ready to ship: contact the getpack team",
+      "body": "This shipment can't be picked up yet. Leave the cartons where they are and call the getpack team first."
+    },
+    "wrongCarton": {
+      "title": "A carton isn't from this shipment",
+      "body": "A scanned QR belongs to another shipment. Check the cartons, then scan again."
+    },
+    "error": {
+      "title": "Couldn't connect",
+      "body": "Check your internet connection and try again."
+    },
+    "actions": {
+      "contact": "Contact the getpack team",
+      "callGetpack": "Call the getpack team",
+      "back": "Back to the recipient",
+      "scanAgain": "Scan again",
+      "retry": "Try again"
+    }
   }
 }

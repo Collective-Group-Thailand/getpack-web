@@ -14,10 +14,12 @@ export function AcknowledgeAlert({ alertId }: { alertId: string }) {
   const { factoryId } = useFactory();
   const { call, busy } = useErpCall();
   return (
+    // 44 px on a phone (a thumb on the floor), the desk's 36 px from a tablet up.
     <Button
-      size="sm"
+      size="nav"
       variant="secondary"
       iconStart="check"
+      className="md:h-9 md:px-3 md:text-sm"
       loading={busy}
       onClick={() =>
         void call(

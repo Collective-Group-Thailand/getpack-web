@@ -95,6 +95,7 @@ export function QuotationActions({ quotation, etag }: { quotation: Quotation; et
   return (
     <>
       <SalesActions
+        layout="panel"
         offered={quotation.nextActions}
         etag={etag}
         actions={[

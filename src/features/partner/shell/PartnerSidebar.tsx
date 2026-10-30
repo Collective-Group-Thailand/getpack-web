@@ -9,7 +9,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { currentHref } from "./nav";
-import type { SidebarGroup } from "./sidebar";
+import type { SidebarGroup, SidebarSection } from "./sidebar";
 
 const STORE = "getpack.partner.sidebar.open";
 const listeners = new Set<() => void>();
@@ -41,15 +41,16 @@ const writeFolds = (next: Record<string, boolean>) => {
  * sits inside AppShell's own `<nav>`, so it adds no landmark of its own.
  */
 export function PartnerSidebar({
-  groups,
+  sections,
   factory,
   user,
 }: {
-  groups: SidebarGroup[];
+  sections: SidebarSection[];
   factory: { name: string; status: string | null };
   user: { name: string; roles: string };
 }) {
   const t = useTranslations("partner.sidebar");
+  const groups: SidebarGroup[] = sections.flatMap((section) => section.groups);
   const pathname = usePathname();
   const router = useRouter();
   const active = currentHref(
@@ -130,55 +131,93 @@ export function PartnerSidebar({
         </div>
       ) : null}
       {shown.length === 0 ? <p className="text-muted px-3 text-sm">{t("noMatch")}</p> : null}
-      {shown.map((group) => {
-        const expanded = needle !== "" || isOpen(group.key);
-        const listId = `sidebar-${group.key}`;
+      {/* P4-04: two labelled sections — the work with getpack first, then the factory's own ERP — each folding
+          from its heading, remembered on this device. A search shows every match, folded or not. */}
+      {sections.map((section) => {
+        const sectionGroups = section.groups
+          .map((group) => ({
+            ...group,
+            items: needle
+              ? group.items.filter((item) => label(item.key).toLocaleLowerCase("th").includes(needle))
+              : group.items,
+          }))
+          .filter((group) => group.items.length);
+        if (sectionGroups.length === 0) return null;
+        const sectionKey = `section:${section.key}`;
+        const sectionOpen = needle !== "" || (open[sectionKey] ?? true);
+        const sectionId = `sidebar-section-${section.key}`;
         return (
-          <div key={group.key} className="flex flex-col gap-1">
-            {many && !needle ? (
-              <button
-                type="button"
-                onClick={() => toggle(group.key)}
-                aria-expanded={expanded}
-                aria-controls={listId}
-                className="text-muted hover:text-fg flex items-center justify-between rounded-md px-3 pt-1 text-start text-sm font-semibold"
-              >
-                <span>{t(`groups.${group.key}`)}</span>
-                <Icon name={expanded ? "chevron-up" : "chevron-down"} size={16} aria-hidden="true" />
-              </button>
-            ) : (
-              <p className="text-muted px-3 pt-1 text-sm font-semibold">{t(`groups.${group.key}`)}</p>
-            )}
-            <ul id={listId} className={cn("flex flex-col gap-0.5", !expanded && "hidden")}>
-              {group.items.map((item) => {
-                const current = item.href === active;
+          <section key={section.key} aria-labelledby={`${sectionId}-label`} className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => writeFolds({ ...open, [sectionKey]: !sectionOpen })}
+              aria-expanded={sectionOpen}
+              aria-controls={sectionId}
+              className={cn(
+                "flex min-h-10 items-center gap-2 rounded-lg px-3 text-start text-sm font-semibold",
+                section.key === "getpack" ? "bg-primary-subtle text-primary-subtle-fg" : "bg-bg text-fg",
+              )}
+            >
+              <Icon name={section.key === "getpack" ? "package" : "building"} size={16} aria-hidden="true" />
+              <span id={`${sectionId}-label`} className="min-w-0 flex-1 truncate">
+                {t(`sections.${section.key}`)}
+              </span>
+              <Icon name={sectionOpen ? "chevron-up" : "chevron-down"} size={16} aria-hidden="true" />
+            </button>
+            <div id={sectionId} className={cn("flex flex-col gap-3", !sectionOpen && "hidden")}>
+              {sectionGroups.map((group) => {
+                const expanded = section.key === "getpack" || needle !== "" || isOpen(group.key);
+                const listId = `sidebar-${section.key}-${group.key}`;
                 return (
-                  <li key={item.key}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setQuery("")}
-                      aria-current={current ? "page" : undefined}
-                      className={cn(
-                        "flex min-h-11 items-center gap-3 rounded-e-lg border-s-[3px] px-3 text-base md:min-h-9 md:gap-2.5",
-                        // The page you are on: a teal edge and teal words on a tint — seen at a glance, not guessed.
-                        current
-                          ? "border-primary bg-primary-subtle text-primary-subtle-fg font-semibold"
-                          : "text-fg hover:bg-bg border-transparent font-medium",
-                      )}
-                    >
-                      <Icon
-                        name={item.icon}
-                        size={20}
-                        className={cn("md:size-[18px]", current ? "text-primary" : "text-muted")}
-                        aria-hidden="true"
-                      />
-                      {label(item.key)}
-                    </Link>
-                  </li>
+                  <div key={group.key} className="flex flex-col gap-1">
+                    {section.key === "getpack" ? null : many && !needle ? (
+                      <button
+                        type="button"
+                        onClick={() => toggle(group.key)}
+                        aria-expanded={expanded}
+                        aria-controls={listId}
+                        className="text-muted hover:text-fg flex items-center justify-between rounded-md px-3 pt-1 text-start text-sm font-semibold"
+                      >
+                        <span>{t(`groups.${group.key}`)}</span>
+                        <Icon name={expanded ? "chevron-up" : "chevron-down"} size={16} aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <p className="text-muted px-3 pt-1 text-sm font-semibold">{t(`groups.${group.key}`)}</p>
+                    )}
+                    <ul id={listId} className={cn("flex flex-col gap-0.5", !expanded && "hidden")}>
+                      {group.items.map((item) => {
+                        const current = item.href === active;
+                        return (
+                          <li key={item.key}>
+                            <Link
+                              href={item.href}
+                              onClick={() => setQuery("")}
+                              aria-current={current ? "page" : undefined}
+                              className={cn(
+                                "flex min-h-11 items-center gap-3 rounded-e-lg border-s-[3px] px-3 text-base md:min-h-9 md:gap-2.5",
+                                // The page you are on: a teal edge and teal words on a tint — seen at a glance, not guessed.
+                                current
+                                  ? "border-primary bg-primary-subtle text-primary-subtle-fg font-semibold"
+                                  : "text-fg hover:bg-bg border-transparent font-medium",
+                              )}
+                            >
+                              <Icon
+                                name={item.icon}
+                                size={20}
+                                className={cn("md:size-[18px]", current ? "text-primary" : "text-muted")}
+                                aria-hidden="true"
+                              />
+                              {label(item.key)}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 );
               })}
-            </ul>
-          </div>
+            </div>
+          </section>
         );
       })}
       <div className="border-border mt-auto border-t px-3 pt-3">

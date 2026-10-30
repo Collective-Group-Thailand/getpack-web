@@ -3,13 +3,14 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { PageError, PartnerPage, PartnerSection, PartnerStats } from "@/features/partner/frame";
 import { Code, Row, RowList } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { stepName } from "@/features/partner/jobs/JobCard";
 import { qcQueue } from "@/features/partner/jobs/qc-queue";
 import { getFormat } from "@/features/shared/format/server";
 import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 
@@ -23,7 +24,12 @@ export async function generateMetadata(): Promise<Metadata> {
  * the top so the shift starts with how much there is.
  */
 export default async function QcPage() {
-  const [t, format, locale] = await Promise.all([getTranslations("partnerJobs.qcQueue"), getFormat(), getLocale()]);
+  const [t, tNav, format, locale] = await Promise.all([
+    getTranslations("partnerJobs.qcQueue"),
+    getTranslations("partner.sidebar.items"),
+    getFormat(),
+    getLocale(),
+  ]);
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
   const [jobs, samples] = await Promise.all([
@@ -91,7 +97,7 @@ export default async function QcPage() {
           cell: (job) => (
             <Link
               href={`/jobs/${job.id}#qc`}
-              className="bg-primary text-primary-fg hover:bg-primary-hover rounded-control inline-flex min-h-11 w-full items-center justify-center gap-2 px-5 font-semibold md:min-h-10 md:w-auto md:px-4"
+              className="bg-primary text-primary-fg hover:bg-primary-hover rounded-control focus-visible:ring-focus-ring relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 font-semibold outline-none focus-visible:ring-2 md:min-h-10 md:w-auto md:px-4"
             >
               <Icon name="clipboard-check" size={18} aria-hidden="true" />
               {action}
@@ -104,31 +110,64 @@ export default async function QcPage() {
   );
 
   return (
-    <PartnerPage title={t("title")} description={t("body", { date: format.date(new Date().toISOString()) })} wide>
-      <p className="flex flex-wrap gap-2" aria-live="polite">
-        <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-3 py-1 font-semibold">
-          {t("waiting", { count: waiting })}
-        </span>
+    <PartnerPage
+      title={t("title")}
+      description={t("body", { date: format.date(new Date().toISOString()) })}
+      wide
+      actions={
+        <Button asChild variant="secondary" size="nav" iconStart="factory">
+          <Link href="/jobs?view=in_production">{tNav("jobs")}</Link>
+        </Button>
+      }
+    >
+      <p className="sr-only" aria-live="polite">
+        {t("waiting", { count: waiting })}
       </p>
-      {waiting === 0 ? <EmptyState icon="clipboard-check" title={t("empty")} /> : null}
-      {inspections.length ? (
-        <PartnerSection title={t("inspections")}>
-          {jobTable(
-            inspections,
-            t("inspections"),
-            (job) =>
-              job.inspection!.scheduledAt
-                ? t("inspectionAt", {
-                    at: format.dateTime(job.inspection!.scheduledAt),
-                    size: format.number(job.inspection!.sampleSize),
-                  })
-                : t("inspectionUnscheduled"),
-            t("openJob"),
-          )}
-        </PartnerSection>
-      ) : null}
+      {waiting ? (
+        <PartnerStats
+          label={t("title")}
+          items={[
+            {
+              key: "atQc",
+              href: "#at-qc",
+              icon: "clipboard-check" as const,
+              label: t("atQc"),
+              value: format.number(atQc.length),
+              highlight: atQc.length > 0,
+            },
+            {
+              key: "inspections",
+              href: "#inspections",
+              icon: "shield" as const,
+              label: t("inspections"),
+              value: format.number(inspections.length),
+            },
+            ...(samples
+              ? [
+                  {
+                    key: "samples",
+                    href: "#samples",
+                    icon: "package-check" as const,
+                    label: t("samples"),
+                    value: format.number(toRecord.length),
+                  },
+                ]
+              : []),
+          ]}
+        />
+      ) : (
+        <EmptyState
+          icon="clipboard-check"
+          title={t("empty")}
+          action={
+            <Button asChild variant="secondary" size="nav" iconEnd="arrow-right">
+              <Link href="/jobs?view=in_production">{tNav("jobs")}</Link>
+            </Button>
+          }
+        />
+      )}
       {atQc.length ? (
-        <PartnerSection title={t("atQc")}>
+        <PartnerSection id="at-qc" title={t("atQc")}>
           {jobTable(
             atQc,
             t("atQc"),
@@ -145,8 +184,24 @@ export default async function QcPage() {
           )}
         </PartnerSection>
       ) : null}
+      {inspections.length ? (
+        <PartnerSection id="inspections" title={t("inspections")}>
+          {jobTable(
+            inspections,
+            t("inspections"),
+            (job) =>
+              job.inspection!.scheduledAt
+                ? t("inspectionAt", {
+                    at: format.dateTime(job.inspection!.scheduledAt),
+                    size: format.number(job.inspection!.sampleSize),
+                  })
+                : t("inspectionUnscheduled"),
+            t("openJob"),
+          )}
+        </PartnerSection>
+      ) : null}
       {toRecord.length ? (
-        <PartnerSection title={t("samples")}>
+        <PartnerSection id="samples" title={t("samples")}>
           <RowList label={t("samples")}>
             {toRecord.map((sample) => (
               <Row

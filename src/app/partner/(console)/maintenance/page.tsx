@@ -3,10 +3,11 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { viewTotals } from "@/features/partner/erp/server";
 import { Pager, pageOf, queryOf, SearchBar } from "@/features/partner/erp/ui";
-import { PageError, PartnerPage } from "@/features/partner/frame";
+import { PageError, PartnerPage, PartnerStats } from "@/features/partner/frame";
 import { MaintenanceTable } from "@/features/partner/ops/MaintenanceTable";
-import { ViewTabs } from "@/features/partner/rows";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
@@ -31,9 +32,10 @@ export default async function MaintenancePage({
   const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "open";
   const page = pageOf(query.page);
   const q = query.q?.trim() || undefined;
-  const [t, tCommon, format, context] = await Promise.all([
+  const [t, tCommon, tStatus, format, context] = await Promise.all([
     getTranslations("partnerOps.maintenance"),
     getTranslations("partnerErp.common"),
+    getTranslations("status.erpMaintenance"),
     getFormat(),
     factoryContext(),
   ]);
@@ -62,13 +64,30 @@ export default async function MaintenancePage({
               })
             ).data!,
         );
-  const plans =
-    view === "plans"
-      ? await attempt(
-          async () =>
-            (await contract.GET("/v1/partner/factories/{factoryId}/erp/maintenance/plans", { params: { path } })).data!,
-        )
-      : null;
+  // The plans are read on every view: their count is a tab, and the ones due are a figure on top.
+  const plans = await attempt(
+    async () =>
+      (await contract.GET("/v1/partner/factories/{factoryId}/erp/maintenance/plans", { params: { path } })).data!,
+  );
+  const orderTotal = (query: { status?: "open_all" | "in_progress"; kind?: "breakdown" }) =>
+    contract
+      .GET("/v1/partner/factories/{factoryId}/erp/maintenance/orders", {
+        params: { path, query: { perPage: 1, ...query, ...(q ? { q } : {}) } },
+      })
+      .then((r) => r.data);
+  const [counts, inProgress, breakdowns] = await Promise.all([
+    // Every tab's count with the same search, so a tab says exactly how many rows it opens.
+    viewTotals(VIEWS, async (key) =>
+      key === "plans"
+        ? plans.data
+          ? { meta: { total: plans.data.length } }
+          : undefined
+        : orderTotal(key === "open" ? { status: "open_all" } : {}),
+    ),
+    attempt(async () => (await orderTotal({ status: "in_progress" }))!.meta.total),
+    attempt(async () => (await orderTotal({ status: "open_all", kind: "breakdown" }))!.meta.total),
+  ]);
+  const plansDue = plans.data?.filter((p) => p.due && p.status === "active").length ?? null;
   const every = (p: { everyDays: number | null; everyImpressions: number | null }) =>
     t("plans.every", {
       what: [
@@ -79,33 +98,73 @@ export default async function MaintenancePage({
         .join(t("plans.or")),
     });
 
+  const canReport = canAt(context, "factory_maintenance.report");
+  const reportButton = (
+    <Button asChild size="lg" variant="destructive-solid" iconStart="wrench">
+      <Link href="/maintenance/new">{t("report")}</Link>
+    </Button>
+  );
+
   return (
     <PartnerPage
       full
       title={t("title")}
       description={t("body")}
       actions={
-        <div className="flex flex-wrap gap-2">
+        <>
           {canManage ? (
-            <Button asChild variant="secondary" iconStart="calendar">
+            <Button asChild size="lg" variant="secondary" iconStart="calendar">
               <Link href="/maintenance/plans/new">{t("newPlan")}</Link>
             </Button>
           ) : null}
-          {canAt(context, "factory_maintenance.report") ? (
-            <Button asChild size="lg" variant="destructive-solid" iconStart="wrench">
-              <Link href="/maintenance/new">{t("report")}</Link>
-            </Button>
-          ) : null}
-        </div>
+          {canReport ? reportButton : null}
+        </>
       }
     >
-      <ViewTabs
-        label={t("views.label")}
-        current={view}
-        items={VIEWS.map((key) => ({ key, href: href(key), label: t(`views.${key}`) }))}
+      <PartnerStats
+        label={t("title")}
+        items={[
+          ...(counts.open !== null
+            ? [{ key: "open", label: t("views.open"), value: counts.open, href: href("open") }]
+            : []),
+          ...(inProgress.data !== undefined
+            ? [{ key: "inProgress", label: tStatus("inProgress"), value: inProgress.data }]
+            : []),
+          ...(breakdowns.data !== undefined
+            ? [
+                {
+                  key: "breakdowns",
+                  label: t("kinds.breakdown"),
+                  value: breakdowns.data,
+                  ...(breakdowns.data ? { tone: "danger" as const } : {}),
+                },
+              ]
+            : []),
+          ...(plansDue !== null
+            ? [
+                {
+                  key: "due",
+                  label: t("plans.due"),
+                  value: plansDue,
+                  href: href("plans"),
+                  ...(plansDue ? { tone: "warning" as const } : {}),
+                },
+              ]
+            : []),
+        ]}
       />
-      {orders ? (
-        <>
+      <ListToolbar>
+        <ViewTabs
+          label={t("views.label")}
+          current={view}
+          items={VIEWS.map((key) => ({
+            key,
+            href: href(key, key === "plans" ? {} : { q }),
+            label: t(`views.${key}`),
+            count: counts[key],
+          }))}
+        />
+        {view === "plans" ? null : (
           <SearchBar
             id="mt-q"
             action="/maintenance"
@@ -115,32 +174,51 @@ export default async function MaintenancePage({
             placeholder={t("searchPlaceholder")}
             button={tCommon("search")}
           />
-          {orders.data ? (
-            <>
-              <MaintenanceTable
-                rows={orders.data.data}
-                caption={t(`views.${view}`)}
-                empty={<EmptyState icon="wrench" title={t("empty")} description={t("emptyBody")} />}
-              />
-              <Pager
-                page={page}
-                perPage={PER_PAGE}
-                total={orders.data.meta.total}
-                hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })}
-                labels={{
-                  nav: tCommon("pagination.nav"),
-                  previous: tCommon("pagination.previous"),
-                  next: tCommon("pagination.next"),
-                  page: (n: number) => tCommon("pagination.page", { n }),
-                }}
-              />
-            </>
-          ) : (
-            <PageError error={orders.error} />
-          )}
-        </>
+        )}
+      </ListToolbar>
+      {orders ? (
+        orders.data ? (
+          <>
+            <MaintenanceTable
+              rows={orders.data.data}
+              caption={t(`views.${view}`)}
+              empty={
+                <EmptyState
+                  icon="wrench"
+                  title={t("empty")}
+                  description={t("emptyBody")}
+                  action={
+                    canReport ? (
+                      <Button asChild variant="secondary" iconStart="wrench">
+                        <Link href="/maintenance/new">{t("report")}</Link>
+                      </Button>
+                    ) : view !== "all" ? (
+                      <Button asChild variant="secondary" iconEnd="arrow-right">
+                        <Link href={href("all")}>{t("views.all")}</Link>
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              }
+            />
+            <Pager
+              page={page}
+              perPage={PER_PAGE}
+              total={orders.data.meta.total}
+              hrefFor={(n) => href(view, { q, page: n > 1 ? n : undefined })}
+              labels={{
+                nav: tCommon("pagination.nav"),
+                previous: tCommon("pagination.previous"),
+                next: tCommon("pagination.next"),
+                page: (n: number) => tCommon("pagination.page", { n }),
+              }}
+            />
+          </>
+        ) : (
+          <PageError error={orders.error} />
+        )
       ) : null}
-      {plans ? (
+      {view === "plans" ? (
         plans.data ? (
           <PartnerTable
             caption={t("plans.title")}
@@ -148,7 +226,20 @@ export default async function MaintenancePage({
             rowKey={(p) => p.id}
             rowHref={(p) => `/maintenance/plans/${p.id}`}
             rowTone={(p) => (p.due && p.status === "active" ? "warning" : undefined)}
-            empty={<EmptyState icon="calendar" title={t("plans.empty")} description={t("plans.emptyBody")} />}
+            empty={
+              <EmptyState
+                icon="calendar"
+                title={t("plans.empty")}
+                description={t("plans.emptyBody")}
+                action={
+                  canManage ? (
+                    <Button asChild variant="secondary" iconStart="plus">
+                      <Link href="/maintenance/plans/new">{t("newPlan")}</Link>
+                    </Button>
+                  ) : undefined
+                }
+              />
+            }
             columns={[
               { key: "title", header: t("planForm.title"), primary: true, cell: (p) => p.title },
               { key: "machine", header: t("table.machine"), cell: (p) => p.machine.name },

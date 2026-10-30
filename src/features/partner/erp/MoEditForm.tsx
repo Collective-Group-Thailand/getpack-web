@@ -5,11 +5,14 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFactory } from "@/features/partner/context/FactoryProvider";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { Select } from "@/features/partner/select";
+import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Field } from "@/ui/components/Field";
+import { Callout } from "@/ui/components/Callout";
+import { Field, FormSection } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 
@@ -43,6 +46,8 @@ export function MoEditForm({
 }) {
   const t = useTranslations("partnerFactory.orders.edit");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
+  const format = useFormat();
   const { factoryId } = useFactory();
   const router = useRouter();
   const { call, busy } = useErpCall();
@@ -138,136 +143,175 @@ export function MoEditForm({
     }
   }
 
+  // Sections are numbered in the order they show: materials and steps only while the order is still planned.
+  const step = { materials: 3, operations: planned ? 4 : 3, note: planned ? 5 : 3 };
+
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-5" noValidate>
-      {!planned ? <p className="text-muted text-sm">{t("releasedNote")}</p> : null}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("title")} required requiredLabel={tCommon("required")}>
-          <Input value={title} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
-        </Field>
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" iconStart="save" loading={busy}>
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                {
+                  key: "qty",
+                  label: t("quantity"),
+                  value: tCommon("inUnit", { qty: quantity, unit: tCommon(`units.${order.unit}` as never) }),
+                },
+                { key: "due", label: t("dueOn"), value: dueOn ? format.date(dueOn) : "" },
+                ...(planned
+                  ? [
+                      { key: "materials", label: t("materials"), value: String(materials.length) },
+                      { key: "operations", label: t("operations"), value: String(operations.length) },
+                    ]
+                  : []),
+              ]}
+            />
+            {error ? (
+              <p className="text-danger text-sm" role="alert">
+                {error}
+              </p>
+            ) : null}
+          </FormSummary>
+        }
+      >
+        {!planned ? <Callout tone="info">{t("releasedNote")}</Callout> : null}
+        <FormSection card step={1} title={tSections("details")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("title")} required requiredLabel={tCommon("required")}>
+              <Input value={title} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
+            </Field>
+            {planned ? (
+              <Field label={t("quantity")} required requiredLabel={tCommon("required")}>
+                <NumberInput step="any" min={0} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+              </Field>
+            ) : null}
+          </div>
+        </FormSection>
+        <FormSection card step={2} title={tSections("schedule")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("startOn")}>
+              <Input type="date" value={startOn} onChange={(e) => setStartOn(e.target.value)} />
+            </Field>
+            <Field label={t("dueOn")}>
+              <Input type="date" value={dueOn} onChange={(e) => setDueOn(e.target.value)} />
+            </Field>
+            <Field label={t("priority")} hint={t("priorityHint")}>
+              <NumberInput min={0} max={9} step={1} value={priority} onChange={(e) => setPriority(e.target.value)} />
+            </Field>
+          </div>
+        </FormSection>
+
         {planned ? (
-          <Field label={t("quantity")} required requiredLabel={tCommon("required")}>
-            <NumberInput step="any" min={0} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-          </Field>
+          <FormSection card step={step.materials} title={t("materials")} description={t("materialsHint")}>
+            {materials.map((m, i) => (
+              <div
+                key={m.key}
+                className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(14rem,2fr)_10rem_minmax(8rem,1fr)_auto] md:items-end"
+              >
+                <Field label={tCommon("item")} labelHidden={i > 0}>
+                  <Select
+                    value={m.itemId || null}
+                    placeholder={tCommon("selectItem")}
+                    onValueChange={(v) => setMaterial(i, { itemId: v })}
+                    options={itemOptions}
+                    aria-label={tCommon("item")}
+                  />
+                </Field>
+                <Field label={t("requiredQty")} labelHidden={i > 0}>
+                  <Input
+                    inputMode="decimal"
+                    className="text-end"
+                    value={m.requiredQty}
+                    onChange={(e) => setMaterial(i, { requiredQty: e.target.value })}
+                  />
+                </Field>
+                <Field label={t("lineNote")} labelHidden={i > 0}>
+                  <Input value={m.note} maxLength={300} onChange={(e) => setMaterial(i, { note: e.target.value })} />
+                </Field>
+                <IconButton
+                  name="trash"
+                  label={t("removeMaterial")}
+                  variant="ghost"
+                  onClick={() => setMaterials(materials.filter((_, j) => j !== i))}
+                />
+              </div>
+            ))}
+            <Button
+              variant="secondary"
+              iconStart="plus"
+              className="self-start"
+              onClick={() => setMaterials([...materials, { key: key(), itemId: "", requiredQty: "", note: "" }])}
+            >
+              {t("addMaterial")}
+            </Button>
+          </FormSection>
         ) : null}
-        <Field label={t("startOn")}>
-          <Input type="date" value={startOn} onChange={(e) => setStartOn(e.target.value)} />
-        </Field>
-        <Field label={t("dueOn")}>
-          <Input type="date" value={dueOn} onChange={(e) => setDueOn(e.target.value)} />
-        </Field>
-        <Field label={t("priority")} hint={t("priorityHint")}>
-          <NumberInput min={0} max={9} step={1} value={priority} onChange={(e) => setPriority(e.target.value)} />
-        </Field>
-      </div>
 
-      {planned ? (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 font-semibold">{t("materials")}</legend>
-          <p className="text-muted text-sm">{t("materialsHint")}</p>
-          {materials.map((m, i) => (
-            <div
-              key={m.key}
-              className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(14rem,2fr)_10rem_minmax(8rem,1fr)_auto] md:items-end"
+        {planned && !getpack ? (
+          <FormSection card step={step.operations} title={t("operations")}>
+            {operations.map((o, i) => (
+              <div
+                key={o.key}
+                className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(12rem,2fr)_minmax(12rem,2fr)_9rem_auto] md:items-end"
+              >
+                <Field label={t("operationName")} labelHidden={i > 0}>
+                  <Input value={o.name} maxLength={100} onChange={(e) => setOperation(i, { name: e.target.value })} />
+                </Field>
+                <Field label={t("machine")} labelHidden={i > 0}>
+                  <Select
+                    value={o.machineId || NONE}
+                    onValueChange={(v) => setOperation(i, { machineId: v === NONE ? "" : v })}
+                    options={machineOptions}
+                    aria-label={t("machine")}
+                  />
+                </Field>
+                <Field label={t("minutes")} labelHidden={i > 0}>
+                  <Input
+                    inputMode="numeric"
+                    className="text-end"
+                    value={o.plannedMinutes}
+                    onChange={(e) => setOperation(i, { plannedMinutes: e.target.value })}
+                  />
+                </Field>
+                <IconButton
+                  name="trash"
+                  label={t("removeOperation")}
+                  variant="ghost"
+                  onClick={() => setOperations(operations.filter((_, j) => j !== i))}
+                />
+              </div>
+            ))}
+            <Button
+              variant="secondary"
+              iconStart="plus"
+              className="self-start"
+              onClick={() =>
+                setOperations([...operations, { key: key(), name: "", machineId: "", plannedMinutes: "0" }])
+              }
             >
-              <Field label={tCommon("item")} labelHidden={i > 0}>
-                <Select
-                  value={m.itemId || null}
-                  placeholder={tCommon("selectItem")}
-                  onValueChange={(v) => setMaterial(i, { itemId: v })}
-                  options={itemOptions}
-                  aria-label={tCommon("item")}
-                />
-              </Field>
-              <Field label={t("requiredQty")} labelHidden={i > 0}>
-                <Input
-                  inputMode="decimal"
-                  className="text-end"
-                  value={m.requiredQty}
-                  onChange={(e) => setMaterial(i, { requiredQty: e.target.value })}
-                />
-              </Field>
-              <Field label={t("lineNote")} labelHidden={i > 0}>
-                <Input value={m.note} maxLength={300} onChange={(e) => setMaterial(i, { note: e.target.value })} />
-              </Field>
-              <IconButton
-                name="trash"
-                label={t("removeMaterial")}
-                variant="ghost"
-                onClick={() => setMaterials(materials.filter((_, j) => j !== i))}
-              />
-            </div>
-          ))}
-          <Button
-            variant="secondary"
-            iconStart="plus"
-            className="self-start"
-            onClick={() => setMaterials([...materials, { key: key(), itemId: "", requiredQty: "", note: "" }])}
-          >
-            {t("addMaterial")}
-          </Button>
-        </fieldset>
-      ) : null}
+              {t("addOperation")}
+            </Button>
+          </FormSection>
+        ) : planned && getpack ? (
+          <FormSection card step={step.operations} title={t("operations")}>
+            <p className="text-muted text-sm">{t("getpackSteps")}</p>
+          </FormSection>
+        ) : null}
 
-      {planned && !getpack ? (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 font-semibold">{t("operations")}</legend>
-          {operations.map((o, i) => (
-            <div
-              key={o.key}
-              className="border-border grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(12rem,2fr)_minmax(12rem,2fr)_9rem_auto] md:items-end"
-            >
-              <Field label={t("operationName")} labelHidden={i > 0}>
-                <Input value={o.name} maxLength={100} onChange={(e) => setOperation(i, { name: e.target.value })} />
-              </Field>
-              <Field label={t("machine")} labelHidden={i > 0}>
-                <Select
-                  value={o.machineId || NONE}
-                  onValueChange={(v) => setOperation(i, { machineId: v === NONE ? "" : v })}
-                  options={machineOptions}
-                  aria-label={t("machine")}
-                />
-              </Field>
-              <Field label={t("minutes")} labelHidden={i > 0}>
-                <Input
-                  inputMode="numeric"
-                  className="text-end"
-                  value={o.plannedMinutes}
-                  onChange={(e) => setOperation(i, { plannedMinutes: e.target.value })}
-                />
-              </Field>
-              <IconButton
-                name="trash"
-                label={t("removeOperation")}
-                variant="ghost"
-                onClick={() => setOperations(operations.filter((_, j) => j !== i))}
-              />
-            </div>
-          ))}
-          <Button
-            variant="secondary"
-            iconStart="plus"
-            className="self-start"
-            onClick={() => setOperations([...operations, { key: key(), name: "", machineId: "", plannedMinutes: "0" }])}
-          >
-            {t("addOperation")}
-          </Button>
-        </fieldset>
-      ) : planned && getpack ? (
-        <p className="text-muted text-sm">{t("getpackSteps")}</p>
-      ) : null}
-
-      <Field label={t("note")}>
-        <Textarea rows={2} value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} />
-      </Field>
-      {error ? (
-        <p className="text-danger text-sm" role="alert">
-          {error}
-        </p>
-      ) : null}
-      <Button type="submit" size="xl" iconStart="save" loading={busy} className="self-start">
-        {t("save")}
-      </Button>
+        <FormSection card step={step.note} title={t("note")}>
+          <Field label={t("note")} labelHidden>
+            <Textarea rows={3} value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }

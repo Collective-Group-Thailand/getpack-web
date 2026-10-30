@@ -50,10 +50,16 @@ export function SalesActions({
   offered,
   actions,
   etag,
+  layout = "row",
 }: {
   offered: NextAction[];
   actions: SalesAction[];
   etag?: string | null;
+  /**
+   * `panel`: a document page's sticky action panel — one full-width stack, the first primary action filled and the
+   * rest outlined, anything destructive last (ERP group redesign). `row` (default): buttons side by side.
+   */
+  layout?: "row" | "panel";
 }) {
   const tStatus = useTranslations("status");
   const tCommon = useTranslations("partnerSales.common");
@@ -65,18 +71,32 @@ export function SalesActions({
   const byKey = new Map(offered.map((a) => [a.key, a]));
   const shown = actions.filter((a) => byKey.has(a.key));
   const blocked = shown.filter((a) => byKey.get(a.key)?.disabledReason);
-  const live = shown.filter((a) => !byKey.get(a.key)?.disabledReason);
+  const offeredLive = shown.filter((a) => !byKey.get(a.key)?.disabledReason);
+  const isDanger = (a: SalesAction) => nextActionMeta(a.key).tone === "danger";
+  const isPrimary = (a: SalesAction) => "primary" in a && Boolean(a.primary);
+  const firstPrimary = offeredLive.find((a) => !isDanger(a) && isPrimary(a))?.key;
+  const live =
+    layout === "panel"
+      ? [
+          ...offeredLive.filter((a) => a.key === firstPrimary),
+          ...offeredLive.filter((a) => a.key !== firstPrimary && !isDanger(a)),
+          ...offeredLive.filter(isDanger),
+        ]
+      : offeredLive;
   if (!shown.length) return null;
   const label = (key: string) => tStatus(nextActionMeta(key).labelKey as never);
   const current = live.find((a) => a.key === open);
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
+      <div
+        {...(layout === "panel" ? { "data-fill": "row" } : {})}
+        className={layout === "panel" ? "flex flex-col gap-2" : "flex flex-wrap gap-2"}
+      >
         {live.map((action) => {
           const meta = nextActionMeta(action.key);
           const destructive = meta.tone === "danger";
-          const primary = "primary" in action && action.primary;
+          const primary = isPrimary(action) && (layout === "row" || action.key === firstPrimary);
           const variant = destructive ? "destructive" : primary ? "primary" : "secondary";
           if (action.kind === "link")
             return (

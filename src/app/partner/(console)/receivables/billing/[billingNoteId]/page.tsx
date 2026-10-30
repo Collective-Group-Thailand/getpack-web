@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_RECEIPT_STATUS, ERP_SALES_INVOICE_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { BillingActions } from "@/features/partner/sales/ReceivableForms";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -44,49 +44,66 @@ export default async function BillingNotePage({ params }: Props) {
       </PartnerPage>
     );
   const bn = read.data;
+  const tNext = await getTranslations("partnerSales.common");
   return (
-    <PartnerPage full title={bn.billingNo} back={back} meta={<StatusChip map={ERP_RECEIPT_STATUS} value={bn.status} />}>
-      <BillingActions billing={bn} />
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: tCommon("customer"), description: `${bn.customer.name} (${bn.customer.code})` },
-            { term: t("form.billingDate"), description: format.date(bn.billingDate) },
-            ...(bn.collectOn ? [{ term: t("form.collectOn"), description: format.date(bn.collectOn) }] : []),
-            { term: tCommon("total"), description: format.thb(bn.total) },
-            ...(bn.note ? [{ term: t("form.note"), description: bn.note }] : []),
-            ...(bn.cancelReason ? [{ term: tCommon("reason"), description: bn.cancelReason }] : []),
-          ]}
-        />
-      </Card>
-      <PartnerSection title={t("invoicesTitle")}>
-        <PartnerTable
-          caption={t("invoicesTitle")}
-          rows={bn.lines}
-          rowKey={(row) => row.invoice.id}
-          columns={[
-            {
-              key: "iv",
-              header: t("form.invoices"),
-              primary: true,
-              cell: (row) => (
-                <Link className="tabular-nums" href={`/invoices/${row.invoice.id}`}>
-                  {row.invoice.invoiceNo}
-                </Link>
-              ),
-            },
-            { key: "d", header: tCommon("date"), cell: (row) => format.date(row.issueDate) },
-            { key: "due", header: tCommon("due"), cell: (row) => format.date(row.dueDate) },
-            {
-              key: "s",
-              header: tCommon("status"),
-              cell: (row) => <StatusChip map={ERP_SALES_INVOICE_STATUS} value={row.invoice.status} />,
-            },
-            { key: "a", header: tCommon("amount"), align: "end", cell: (row) => format.thb(row.amount) },
-          ]}
-        />
-      </PartnerSection>
+    <PartnerPage
+      full
+      title={bn.billingNo}
+      back={back}
+      status={<StatusChip map={ERP_RECEIPT_STATUS} value={bn.status} />}
+    >
+      <PartnerDetail
+        aside={
+          <ActionPanel id="next-steps" tone="neutral" title={tNext("nextSteps")}>
+            <dl className="border-border grid grid-cols-[1fr_auto] items-baseline gap-x-3 border-b pb-3">
+              <dt className="text-muted text-sm">{tCommon("total")}</dt>
+              <dd className="text-end text-xl font-semibold tabular-nums">{format.thb(bn.total)}</dd>
+            </dl>
+            <BillingActions billing={bn} layout="panel" />
+          </ActionPanel>
+        }
+      >
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: tCommon("customer"), description: `${bn.customer.name} (${bn.customer.code})` },
+              { term: t("form.billingDate"), description: format.date(bn.billingDate) },
+              ...(bn.collectOn ? [{ term: t("form.collectOn"), description: format.date(bn.collectOn) }] : []),
+              { term: tCommon("total"), description: format.thb(bn.total) },
+              ...(bn.note ? [{ term: t("form.note"), description: bn.note }] : []),
+              ...(bn.cancelReason ? [{ term: tCommon("reason"), description: bn.cancelReason }] : []),
+            ]}
+          />
+        </Card>
+        <PartnerSection title={t("invoicesTitle")}>
+          <PartnerTable
+            caption={t("invoicesTitle")}
+            rows={bn.lines}
+            rowKey={(row) => row.invoice.id}
+            columns={[
+              {
+                key: "iv",
+                header: t("form.invoices"),
+                primary: true,
+                cell: (row) => (
+                  <Link className="tabular-nums" href={`/invoices/${row.invoice.id}`}>
+                    {row.invoice.invoiceNo}
+                  </Link>
+                ),
+              },
+              { key: "d", header: tCommon("date"), cell: (row) => format.date(row.issueDate) },
+              { key: "due", header: tCommon("due"), cell: (row) => format.date(row.dueDate) },
+              {
+                key: "s",
+                header: tCommon("status"),
+                cell: (row) => <StatusChip map={ERP_SALES_INVOICE_STATUS} value={row.invoice.status} />,
+              },
+              { key: "a", header: tCommon("amount"), align: "end", cell: (row) => format.thb(row.amount) },
+            ]}
+          />
+        </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

@@ -4,24 +4,36 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_MACHINE_STATE } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage } from "@/features/partner/frame";
+import { queryOf } from "@/features/partner/erp/ui";
+import { PageError, PartnerPage, PartnerStats } from "@/features/partner/frame";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
+import { PartnerTable } from "@/features/partner/table";
 import { MachineButton } from "@/features/partner/ops/MachineForm";
 import { planLine } from "@/features/partner/ops/machine-text";
 import { StatusChip } from "@/features/partner/status";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+
+const VIEWS = ["active", "inactive"] as const;
+type View = (typeof VIEWS)[number];
+const STATES = ["running", "idle", "down", "maintenance"] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerOps.machines"))("title") };
 }
 
 /** The factory's machines (D-355): state now, queue, output in 30 days and maintenance cycles. */
-export default async function MachinesPage() {
-  const [t, tShared, tStatus, format, context] = await Promise.all([
+export default async function MachinesPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+  const query = await searchParams;
+  const view: View = VIEWS.includes(query.view as View) ? (query.view as View) : "active";
+  const [t, tShared, tStatus, tMt, tPlans, format, context] = await Promise.all([
     getTranslations("partnerOps.machines"),
     getTranslations("partnerOps.shared"),
     getTranslations("status"),
+    getTranslations("partnerOps.maintenance"),
+    getTranslations("partnerOps.maintenance.plans"),
     getFormat(),
     factoryContext(),
   ]);
@@ -37,74 +49,160 @@ export default async function MachinesPage() {
   const canConfigure = canAt(context, "factory_erp.configure");
   const n = (value: number) => format.number(value);
 
+  const all = read.data ?? [];
+  const active = all.filter((m) => m.status === "active");
+  const byView = { active, inactive: all.filter((m) => m.status !== "active") };
+  const rows = byView[view];
+  const plansDue = active.reduce((sum, m) => sum + m.plans.filter((p) => p.due).length, 0);
+  const href = (next: View) => `/machines${queryOf({ view: next === "active" ? undefined : next })}`;
+
   return (
-    <PartnerPage wide title={t("title")} description={t("body")} actions={canConfigure ? <MachineButton /> : undefined}>
+    <PartnerPage full title={t("title")} description={t("body")} actions={canConfigure ? <MachineButton /> : undefined}>
       {read.data ? (
-        read.data.length ? (
-          <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {read.data.map((m) => (
-              <li key={m.id} className="border-border bg-surface flex flex-col gap-2 rounded-xl border p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <Link href={`/machines/${m.id}`} className="text-lg font-semibold underline-offset-4 hover:underline">
-                    {m.name}
-                  </Link>
-                  {m.status === "active" ? (
-                    <StatusChip map={ERP_MACHINE_STATE} value={m.state} />
-                  ) : (
-                    <Badge tone="neutral">{t("inactive")}</Badge>
-                  )}
-                </div>
-                {m.details ? <p className="text-muted text-sm">{m.details}</p> : null}
-                <p className="text-sm">
-                  {m.running
-                    ? t("running", { name: m.running.operation.name, mo: m.running.order.moNo })
-                    : tStatus("erpMachine.idle")}
-                  {" · "}
-                  {t("queued", { n: m.queued })}
-                </p>
-                <p className="text-muted text-sm">{t("impressions", { n: format.number(Number(m.impressions30d)) })}</p>
-                {m.openMaintenance ? (
-                  <Link
-                    href={`/maintenance/${m.openMaintenance.id}`}
-                    className="text-danger-subtle-fg text-sm font-medium underline-offset-4 hover:underline"
-                  >
-                    {tShared("moStep", { mo: m.openMaintenance.mtNo, step: m.openMaintenance.title })}
-                  </Link>
-                ) : null}
-                {m.plans.length ? (
-                  <ul className="flex flex-col gap-1 text-sm">
-                    {m.plans.map((plan) => (
-                      <li key={plan.planId}>
-                        <Link
-                          href={`/maintenance/plans/${plan.planId}`}
-                          className={
-                            plan.due
-                              ? "text-warning-subtle-fg font-medium underline-offset-4 hover:underline"
-                              : "text-muted underline-offset-4 hover:underline"
-                          }
-                        >
-                          {planLine(t as never, plan, n)}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                <div className="mt-auto flex flex-wrap gap-2 pt-2">
-                  {m.status === "active" ? (
-                    <Link
-                      href={`/floor/kiosk/${m.id}`}
-                      className="text-primary text-sm font-medium underline-offset-4 hover:underline"
-                    >
-                      {t("kiosk")}
-                    </Link>
-                  ) : null}
-                  {canConfigure ? <MachineButton machine={m} /> : null}
-                </div>
-              </li>
-            ))}
-          </ul>
+        all.length ? (
+          <>
+            {/* How the floor stands right now: machines by state, and the maintenance cycles that have come round. */}
+            <PartnerStats
+              label={t("title")}
+              items={[
+                ...STATES.map((state) => {
+                  const count = active.filter((m) => m.state === state).length;
+                  return {
+                    key: state,
+                    label: tStatus(`erpMachine.${state}`),
+                    value: count,
+                    ...(count && state === "down" ? { tone: "danger" as const } : {}),
+                    ...(count && state === "maintenance" ? { tone: "warning" as const } : {}),
+                  };
+                }),
+                {
+                  key: "due",
+                  label: tPlans("due"),
+                  value: plansDue,
+                  href: "/maintenance?view=plans",
+                  ...(plansDue ? { tone: "warning" as const } : {}),
+                },
+              ]}
+            />
+            <ListToolbar>
+              <ViewTabs
+                label={t("title")}
+                current={view}
+                items={VIEWS.map((key) => ({
+                  key,
+                  href: href(key),
+                  label: t(key),
+                  count: byView[key].length,
+                }))}
+              />
+            </ListToolbar>
+            <PartnerTable
+              caption={t("title")}
+              rows={rows}
+              rowKey={(m) => m.id}
+              rowHref={(m) => `/machines/${m.id}`}
+              // The edge marks an exception only — a breakdown, or a cycle that has run past its date. A cycle that has
+              // just come round is said in the maintenance column; striping every such row would be alarm noise.
+              rowTone={(m) =>
+                m.status !== "active"
+                  ? undefined
+                  : m.state === "down"
+                    ? "danger"
+                    : m.plans.some((p) => p.due && p.daysLeft !== null && p.daysLeft < 0)
+                      ? "warning"
+                      : undefined
+              }
+              empty={
+                <EmptyState
+                  icon="cog"
+                  title={t("empty")}
+                  action={
+                    <Button asChild variant="secondary" iconEnd="arrow-right">
+                      <Link href={href(view === "active" ? "inactive" : "active")}>
+                        {t(view === "active" ? "inactive" : "active")}
+                      </Link>
+                    </Button>
+                  }
+                />
+              }
+              columns={[
+                {
+                  key: "name",
+                  header: t("name"),
+                  primary: true,
+                  cell: (m) => (
+                    <span className="flex flex-col">
+                      <span className="[overflow-wrap:anywhere] break-keep">{m.name}</span>
+                      {m.details ? <span className="text-muted text-sm font-normal">{m.details}</span> : null}
+                    </span>
+                  ),
+                },
+                {
+                  key: "state",
+                  header: tShared("now"),
+                  cell: (m) =>
+                    m.status === "active" ? (
+                      <span className="flex flex-col items-start gap-1">
+                        <StatusChip map={ERP_MACHINE_STATE} value={m.state} />
+                        {m.running ? (
+                          <span className="text-muted text-sm">
+                            {t("running", { name: m.running.operation.name, mo: m.running.order.moNo })}
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : (
+                      <Badge tone="neutral">{t("inactive")}</Badge>
+                    ),
+                },
+                {
+                  key: "queue",
+                  header: tShared("queue"),
+                  align: "end",
+                  className: "whitespace-nowrap",
+                  cell: (m) => t("queued", { n: m.queued }),
+                },
+                {
+                  key: "output",
+                  header: tShared("output"),
+                  align: "end",
+                  hideOnPhone: true,
+                  className: "whitespace-nowrap",
+                  cell: (m) => t("impressions", { n: format.number(Number(m.impressions30d)) }),
+                },
+                {
+                  key: "maintenance",
+                  header: tMt("title"),
+                  cell: (m) =>
+                    m.openMaintenance || m.plans.length ? (
+                      <span className="flex flex-col gap-0.5 text-sm">
+                        {m.openMaintenance ? (
+                          <span className="text-danger font-medium">
+                            {tShared("moStep", { mo: m.openMaintenance.mtNo, step: m.openMaintenance.title })}
+                          </span>
+                        ) : null}
+                        {m.plans.map((plan) => (
+                          <span
+                            key={plan.planId}
+                            className={plan.due ? "text-warning-subtle-fg font-medium" : "text-muted"}
+                          >
+                            {planLine(t as never, plan, n)}
+                          </span>
+                        ))}
+                      </span>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    ),
+                },
+              ]}
+            />
+          </>
         ) : (
-          <EmptyState icon="cog" title={t("empty")} description={t("emptyBody")} />
+          <EmptyState
+            icon="cog"
+            title={t("empty")}
+            description={t("emptyBody")}
+            action={canConfigure ? <MachineButton /> : undefined}
+          />
         )
       ) : (
         <PageError error={read.error} />

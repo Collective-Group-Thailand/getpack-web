@@ -3,11 +3,13 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { attempt, partnerServerApis } from "@/features/partner/context/server";
+import { queryOf, SearchBar } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage } from "@/features/partner/frame";
+import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { getFormat } from "@/features/shared/format/server";
-import { EmptyState } from "@/ui/components/EmptyState";
 import { Button } from "@/ui/components/Button";
-import { Input } from "@/ui/components/Input";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerJobs.knowledge"))("title") };
@@ -16,17 +18,23 @@ export async function generateMetadata(): Promise<Metadata> {
 const pick = (locale: string, th: string, en: string | null) => (locale === "en" && en ? en : th);
 
 /**
- * The partner knowledge base (U2.F7): getpack's own guides for factories — the QC photo standard,
- * packing, labels — searchable and by category, rendered from the API (`partner.knowledgeBase.*`).
- * Screens link into it where the guide applies (the QC step to its photo standard).
+ * The partner knowledge base (U2.F7): getpack's own guides for factories — the QC photo standard, packing,
+ * labels — by category and searchable in one toolbar, as an index of guides to open (`partner.knowledgeBase.*`).
  */
 export default async function KnowledgePage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; category?: string }>;
 }) {
-  const { q, category } = await searchParams;
-  const [t, format, locale] = await Promise.all([getTranslations("partnerJobs.knowledge"), getFormat(), getLocale()]);
+  const query = await searchParams;
+  const q = query.q?.trim() || undefined;
+  const category = query.category || undefined;
+  const [t, tNav, format, locale] = await Promise.all([
+    getTranslations("partnerJobs.knowledge"),
+    getTranslations("partner.sidebar.items"),
+    getFormat(),
+    getLocale(),
+  ]);
   const { contract } = await partnerServerApis();
   const [articles, categories] = await Promise.all([
     attempt(
@@ -39,74 +47,82 @@ export default async function KnowledgePage({
     ),
     attempt(async () => (await contract.GET("/v1/partner/knowledge-base/categories")).data ?? []),
   ]);
+  const names = new Map((categories.data ?? []).map((c) => [c.slug, pick(locale, c.nameTh, c.nameEn)]));
 
   return (
-    <PartnerPage title={t("title")} description={t("body")}>
-      <form role="search" action="/knowledge" className="flex gap-2">
-        <label htmlFor="kb-q" className="sr-only">
-          {t("search")}
-        </label>
-        <Input
+    <PartnerPage wide title={t("title")} description={t("body")}>
+      <ListToolbar>
+        {categories.data && categories.data.length ? (
+          <ViewTabs
+            label={t("categories")}
+            current={category ?? ""}
+            items={[
+              { key: "", href: `/knowledge${queryOf({ q })}`, label: t("all") },
+              ...categories.data.map((c) => ({
+                key: c.slug,
+                href: `/knowledge${queryOf({ category: c.slug, q })}`,
+                label: pick(locale, c.nameTh, c.nameEn),
+              })),
+            ]}
+          />
+        ) : null}
+        <SearchBar
           id="kb-q"
-          name="q"
-          defaultValue={q ?? ""}
+          action="/knowledge"
+          hidden={{ category }}
+          q={q}
+          label={t("search")}
           placeholder={t("searchPlaceholder")}
-          className="min-h-11 md:min-h-10"
+          button={t("search")}
         />
-        {category ? <input type="hidden" name="category" value={category} /> : null}
-        <Button type="submit" className="min-h-11 md:min-h-10">
-          {t("search")}
-        </Button>
-      </form>
-      {categories.data && categories.data.length ? (
-        <nav aria-label={t("categories")} className="flex flex-wrap gap-2">
-          <Link
-            href="/knowledge"
-            aria-current={!category ? "page" : undefined}
-            className={
-              !category
-                ? "bg-primary-subtle rounded-control inline-flex min-h-11 items-center px-4 md:min-h-10"
-                : "border-border rounded-control inline-flex min-h-11 items-center border px-4 md:min-h-10"
-            }
-          >
-            {t("all")}
-          </Link>
-          {categories.data.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/knowledge?category=${encodeURIComponent(c.slug)}`}
-              aria-current={category === c.slug ? "page" : undefined}
-              className={
-                category === c.slug
-                  ? "bg-primary-subtle rounded-control inline-flex min-h-11 items-center px-4 md:min-h-10"
-                  : "border-border rounded-control inline-flex min-h-11 items-center border px-4 md:min-h-10"
-              }
-            >
-              {pick(locale, c.nameTh, c.nameEn)}
-            </Link>
-          ))}
-        </nav>
-      ) : null}
+      </ListToolbar>
       {!articles.data ? (
         <PageError error={articles.error} />
       ) : articles.data.data.length === 0 ? (
-        <EmptyState icon="article" title={q ? t("noResults") : t("empty")} />
+        <EmptyState
+          icon="article"
+          title={q ? t("noResults") : t("empty")}
+          action={
+            q || category ? (
+              <Button asChild variant="secondary">
+                <Link href="/knowledge">{t("all")}</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="secondary">
+                <Link href="/requests">{tNav("requests")}</Link>
+              </Button>
+            )
+          }
+        />
       ) : (
-        <ul className="flex flex-col gap-2">
-          {articles.data.data.map((a) => (
-            <li key={a.slug}>
-              <Link
-                href={`/knowledge/${a.slug}`}
-                className="border-border hover:bg-bg-subtle block rounded-lg border p-4"
-              >
-                <span className="block font-medium">{pick(locale, a.titleTh, a.titleEn)}</span>
-                {a.excerptTh ? (
-                  <span className="text-muted block text-sm">{pick(locale, a.excerptTh, a.excerptEn)}</span>
-                ) : null}
-                <span className="text-muted block text-xs">{t("published", { date: format.date(a.publishedAt) })}</span>
-              </Link>
-            </li>
-          ))}
+        <ul className="grid gap-3 md:grid-cols-2">
+          {articles.data.data.map((a) => {
+            const kinds = a.categorySlugs.map((slug) => names.get(slug)).filter(Boolean);
+            const excerpt = pick(locale, a.excerptTh ?? "", a.excerptEn);
+            return (
+              <li key={a.slug} className="min-w-0">
+                <Link
+                  href={`/knowledge/${a.slug}`}
+                  className="group rounded-card border-border bg-surface hover:border-border-strong focus-visible:ring-focus-ring flex h-full flex-col gap-2 border p-4 transition-colors outline-none focus-visible:ring-2 sm:p-5"
+                >
+                  {kinds.length ? <span className="text-muted text-xs font-medium">{kinds.join(" · ")}</span> : null}
+                  <span className="text-lg leading-snug font-semibold text-balance [overflow-wrap:anywhere] break-keep">
+                    {pick(locale, a.titleTh, a.titleEn)}
+                  </span>
+                  {excerpt ? <span className="text-muted text-sm leading-relaxed text-pretty">{excerpt}</span> : null}
+                  <span className="text-muted mt-auto flex items-center justify-between gap-2 pt-2 text-xs">
+                    {t("published", { date: format.date(a.publishedAt) })}
+                    <Icon
+                      name="arrow-right"
+                      size={16}
+                      aria-hidden="true"
+                      className="group-hover:text-fg transition-colors motion-reduce:transition-none"
+                    />
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </PartnerPage>

@@ -5,10 +5,17 @@ import { getTranslations } from "next-intl/server";
 import { ERP_PURCHASE_ORDER_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PartnerForm, PartnerStatusButton } from "@/features/partner/erp/PartnerForm";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import {
+  ActionPanel,
+  PageError,
+  PartnerDetail,
+  PartnerPage,
+  PartnerSection,
+  PartnerStats,
+} from "@/features/partner/frame";
+import { SummaryRows } from "@/features/partner/form-layout";
 import { RelatedDocuments } from "@/features/partner/ops/RelatedDocuments";
 import { queryOf } from "@/features/partner/erp/ui";
-import { StatStrip } from "@/features/partner/rows";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
@@ -115,245 +122,267 @@ export default async function TradingPartnerPage({ params }: Props) {
   const pct = (value: string | null) => (value ? `${Number(value).toFixed(1)}%` : "—");
   const unit = (code: string) => tCommon(`units.${code}` as never);
   const canEdit = canAt(context, "factory_trading_partners.manage");
+  const canOrder = Boolean(buysFrom) && canAt(context, "factory_procurement.manage") && partner.status === "active";
 
-  const [tSales, tOpen] = await Promise.all([
+  const [tSales, tOpen, tSalesCommon] = await Promise.all([
     getTranslations("partnerSales.partner"),
     getTranslations("partnerErp.partners.open"),
+    getTranslations("partnerSales.common"),
   ]);
   return (
     <PartnerPage
-      wide
+      full
       title={partner.name}
       back={back}
       meta={
         <>
           <span className="text-muted tabular-nums">{partner.code}</span>
           <Badge tone="neutral">{tCommon(`partnerKinds.${partner.kind}`)}</Badge>
-          {partner.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
         </>
       }
-      actions={
-        <>
-          {buysFrom && canAt(context, "factory_procurement.manage") && partner.status === "active" ? (
-            <Button asChild size="lg" iconStart="cart">
-              <Link href={`/purchasing/new?supplier=${partner.id}`}>{tPo("new")}</Link>
-            </Button>
-          ) : null}
-          {partner.kind !== "supplier" && partner.status === "active" && canAt(context, "factory_sales.manage") ? (
-            <>
-              <Button asChild size="lg" iconStart="document">
-                <Link href={`/quotations/new?customer=${partner.id}`}>{tSales("newQuotation")}</Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary" iconStart="cart">
-                <Link href={`/sales-orders/new?customer=${partner.id}`}>{tSales("newOrder")}</Link>
-              </Button>
-            </>
-          ) : null}
-          {partner.kind !== "supplier" && canAt(context, "factory_receivables.manage") ? (
-            <Button asChild size="lg" variant="secondary" iconStart="coins">
-              <Link href={`/receivables/receipts/new?customer=${partner.id}`}>{tSales("receive")}</Link>
-            </Button>
-          ) : null}
-          {canEdit ? <PartnerStatusButton partner={partner} etag={etag} /> : null}
-        </>
-      }
+      status={partner.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : undefined}
     >
-      {payables?.length || receivables?.length ? (
-        <PartnerSection title={tOpen("title")} description={tOpen("body")}>
-          <StatStrip
-            label={tOpen("title")}
-            items={[
-              ...(payables?.length
-                ? [
-                    {
-                      key: "ap",
-                      label: tOpen("weOwe"),
-                      value: format.thb(sum(payables.map((i) => i.outstanding))),
-                      hint: tOpen("invoices", { count: payables.length }),
-                      href: `/payables${queryOf({ q: partner.name })}`,
-                    },
-                    ...(payables.some((i) => i.overdue)
-                      ? [
-                          {
-                            key: "apLate",
-                            label: tOpen("overdue"),
-                            value: format.thb(sum(payables.filter((i) => i.overdue).map((i) => i.outstanding))),
-                            tone: "danger" as const,
-                          },
-                        ]
-                      : []),
-                  ]
-                : []),
-              ...(receivables?.length
-                ? [
-                    {
-                      key: "ar",
-                      label: tOpen("theyOwe"),
-                      value: format.thb(sum(receivables.map((i) => i.openAmount))),
-                      hint: tOpen("invoices", { count: receivables.length }),
-                      href: `/receivables${queryOf({ q: partner.name })}`,
-                    },
-                    ...(receivables.some((i) => i.overdue)
-                      ? [
-                          {
-                            key: "arLate",
-                            label: tOpen("overdue"),
-                            value: format.thb(sum(receivables.filter((i) => i.overdue).map((i) => i.openAmount))),
-                            tone: "danger" as const,
-                          },
-                        ]
-                      : []),
-                  ]
-                : []),
-            ]}
-          />
-        </PartnerSection>
-      ) : null}
-      {card?.data ? (
-        <PartnerSection title={tSourcing("scoreTitle")} description={tSourcing("scoreBody")}>
-          <StatStrip
-            label={tSourcing("scoreTitle")}
-            items={[
-              {
-                key: "score",
-                label: tSourcing("score.score"),
-                value: card.data.score ? `${Number(card.data.score).toFixed(1)}` : "—",
-                hint: card.data.grade ? tSourcing("grade", { grade: card.data.grade }) : tSourcing("noGrade"),
-                tone: card.data.grade === "A" ? "success" : card.data.grade === "D" ? "danger" : "neutral",
-              },
-              { key: "quality", label: tSourcing("score.quality"), value: pct(card.data.qualityPct) },
-              { key: "onTime", label: tSourcing("score.onTime"), value: pct(card.data.onTimePct) },
-              { key: "receipts", label: tSourcing("score.receipts"), value: card.data.receipts },
-              {
-                key: "rejected",
-                label: tSourcing("score.rejectedLines"),
-                value: card.data.rejectedLines,
-                tone: card.data.rejectedLines ? "warning" : "neutral",
-              },
-              { key: "approved", label: tSourcing("score.approvedItems"), value: card.data.approvedItems },
-              { key: "pending", label: tSourcing("score.pendingItems"), value: card.data.pendingItems },
-            ]}
-          />
-          {card.data.rejections.length ? (
-            <div className="flex flex-col gap-2">
-              <h3 className="font-semibold">{tSourcing("rejectionsTitle")}</h3>
-              <ul className="flex flex-col gap-1 text-sm">
-                {card.data.rejections.map((r) => (
-                  <li key={`${r.goodsReceipt.id}-${r.item.id}`}>
-                    <Link
-                      href={`/purchasing/receipts/${r.goodsReceipt.id}`}
-                      className="tabular-nums underline-offset-4 hover:underline"
-                    >
-                      {r.goodsReceipt.code}
-                    </Link>
-                    {" · "}
-                    {tSourcing("rejectionLine", {
-                      date: format.date(r.receivedOn),
-                      item: r.item.name,
-                      qty: tCommon("inUnit", { qty: r.rejectedQuantity.replace(/\.?0+$/, ""), unit: unit(r.unit) }),
-                    })}
-                    {r.reason ? (
-                      <span className="text-muted"> {tSourcing("rejectionReason", { reason: r.reason })}</span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
+      {/* The partner's record on the left; how to reach them, their terms and what to start with them in a panel
+          that stays in view. */}
+      <PartnerDetail
+        aside={
+          <ActionPanel id="partner-next" tone="neutral" title={tSalesCommon("nextSteps")}>
+            <SummaryRows
+              rows={[
+                { key: "contact", label: t("form.contactName"), value: partner.contactName ?? "" },
+                { key: "phone", label: t("form.phone"), value: partner.phone ?? "" },
+                { key: "email", label: t("form.email"), value: partner.email ?? "" },
+                {
+                  key: "terms",
+                  label: t("table.terms"),
+                  value: partner.paymentTermDays ? t("days", { n: partner.paymentTermDays }) : t("cash"),
+                },
+              ]}
+            />
+            <div data-fill="row" className="border-border flex flex-col gap-2 border-t pt-3">
+              {canOrder ? (
+                <Button asChild size="lg" iconStart="cart">
+                  <Link href={`/purchasing/new?supplier=${partner.id}`}>{tPo("new")}</Link>
+                </Button>
+              ) : null}
+              {partner.kind !== "supplier" && partner.status === "active" && canAt(context, "factory_sales.manage") ? (
+                <>
+                  {/* One filled action per panel: a partner both bought from and sold to keeps the order filled. */}
+                  <Button asChild size="lg" variant={canOrder ? "secondary" : "primary"} iconStart="document">
+                    <Link href={`/quotations/new?customer=${partner.id}`}>{tSales("newQuotation")}</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="secondary" iconStart="cart">
+                    <Link href={`/sales-orders/new?customer=${partner.id}`}>{tSales("newOrder")}</Link>
+                  </Button>
+                </>
+              ) : null}
+              {partner.kind !== "supplier" && canAt(context, "factory_receivables.manage") ? (
+                <Button asChild size="lg" variant="secondary" iconStart="coins">
+                  <Link href={`/receivables/receipts/new?customer=${partner.id}`}>{tSales("receive")}</Link>
+                </Button>
+              ) : null}
+              {canEdit ? <PartnerStatusButton partner={partner} etag={etag} /> : null}
             </div>
-          ) : null}
-        </PartnerSection>
-      ) : null}
-      {items ? (
-        <PartnerSection title={tPrices("supplierItems")}>
-          {items.data ? (
-            <PartnerTable
-              caption={tPrices("supplierItems")}
-              rows={items.data}
-              rowKey={(link) => link.id}
-              rowHref={(link) => `/stock/items/${link.item.id}`}
-              empty={<EmptyState icon="tag" title={tPrices("supplierItemsEmpty")} />}
-              columns={[
+          </ActionPanel>
+        }
+      >
+        {payables?.length || receivables?.length ? (
+          <PartnerSection title={tOpen("title")} description={tOpen("body")}>
+            <PartnerStats
+              label={tOpen("title")}
+              items={[
+                ...(payables?.length
+                  ? [
+                      {
+                        key: "ap",
+                        label: tOpen("weOwe"),
+                        value: format.thb(sum(payables.map((i) => i.outstanding))),
+                        hint: tOpen("invoices", { count: payables.length }),
+                        href: `/payables${queryOf({ q: partner.name })}`,
+                      },
+                      ...(payables.some((i) => i.overdue)
+                        ? [
+                            {
+                              key: "apLate",
+                              label: tOpen("overdue"),
+                              value: format.thb(sum(payables.filter((i) => i.overdue).map((i) => i.outstanding))),
+                              tone: "danger" as const,
+                            },
+                          ]
+                        : []),
+                    ]
+                  : []),
+                ...(receivables?.length
+                  ? [
+                      {
+                        key: "ar",
+                        label: tOpen("theyOwe"),
+                        value: format.thb(sum(receivables.map((i) => i.openAmount))),
+                        hint: tOpen("invoices", { count: receivables.length }),
+                        href: `/receivables${queryOf({ q: partner.name })}`,
+                      },
+                      ...(receivables.some((i) => i.overdue)
+                        ? [
+                            {
+                              key: "arLate",
+                              label: tOpen("overdue"),
+                              value: format.thb(sum(receivables.filter((i) => i.overdue).map((i) => i.openAmount))),
+                              tone: "danger" as const,
+                            },
+                          ]
+                        : []),
+                    ]
+                  : []),
+              ]}
+            />
+          </PartnerSection>
+        ) : null}
+        {card?.data ? (
+          <PartnerSection title={tSourcing("scoreTitle")} description={tSourcing("scoreBody")}>
+            <PartnerStats
+              label={tSourcing("scoreTitle")}
+              items={[
                 {
-                  key: "item",
-                  header: tPrices("table.item"),
-                  primary: true,
-                  cell: (link) => (
-                    <span className="flex flex-col">
-                      {link.item.name}
-                      <span className="text-muted text-sm">
-                        {link.item.sku}
-                        {link.supplierSku ? ` · ${tPrices("theirCode", { code: link.supplierSku })}` : ""}
+                  key: "score",
+                  label: tSourcing("score.score"),
+                  value: card.data.score ? `${Number(card.data.score).toFixed(1)}` : "—",
+                  hint: card.data.grade ? tSourcing("grade", { grade: card.data.grade }) : tSourcing("noGrade"),
+                  tone: card.data.grade === "D" ? "danger" : "neutral",
+                },
+                { key: "quality", label: tSourcing("score.quality"), value: pct(card.data.qualityPct) },
+                { key: "onTime", label: tSourcing("score.onTime"), value: pct(card.data.onTimePct) },
+                { key: "receipts", label: tSourcing("score.receipts"), value: card.data.receipts },
+                {
+                  key: "rejected",
+                  label: tSourcing("score.rejectedLines"),
+                  value: card.data.rejectedLines,
+                  tone: card.data.rejectedLines ? "warning" : "neutral",
+                },
+                { key: "approved", label: tSourcing("score.approvedItems"), value: card.data.approvedItems },
+                { key: "pending", label: tSourcing("score.pendingItems"), value: card.data.pendingItems },
+              ]}
+            />
+            {card.data.rejections.length ? (
+              <div className="flex flex-col gap-2">
+                <h3 className="font-semibold">{tSourcing("rejectionsTitle")}</h3>
+                <ul className="flex flex-col gap-1 text-sm">
+                  {card.data.rejections.map((r) => (
+                    <li key={`${r.goodsReceipt.id}-${r.item.id}`}>
+                      <Link
+                        href={`/purchasing/receipts/${r.goodsReceipt.id}`}
+                        className="tabular-nums underline-offset-4 hover:underline"
+                      >
+                        {r.goodsReceipt.code}
+                      </Link>
+                      {" · "}
+                      {tSourcing("rejectionLine", {
+                        date: format.date(r.receivedOn),
+                        item: r.item.name,
+                        qty: tCommon("inUnit", { qty: r.rejectedQuantity.replace(/\.?0+$/, ""), unit: unit(r.unit) }),
+                      })}
+                      {r.reason ? (
+                        <span className="text-muted"> {tSourcing("rejectionReason", { reason: r.reason })}</span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </PartnerSection>
+        ) : null}
+        {items ? (
+          <PartnerSection title={tPrices("supplierItems")}>
+            {items.data ? (
+              <PartnerTable
+                caption={tPrices("supplierItems")}
+                rows={items.data}
+                rowKey={(link) => link.id}
+                rowHref={(link) => `/stock/items/${link.item.id}`}
+                empty={<EmptyState icon="tag" title={tPrices("supplierItemsEmpty")} />}
+                columns={[
+                  {
+                    key: "item",
+                    header: tPrices("table.item"),
+                    primary: true,
+                    cell: (link) => (
+                      <span className="flex flex-col">
+                        {link.item.name}
+                        <span className="text-muted text-sm">
+                          {link.item.sku}
+                          {link.supplierSku ? ` · ${tPrices("theirCode", { code: link.supplierSku })}` : ""}
+                        </span>
                       </span>
-                    </span>
-                  ),
-                },
-                {
-                  key: "price",
-                  header: tPrices("lastPrice"),
-                  align: "end",
-                  cell: (link) =>
-                    link.lastPrice
-                      ? tPrices("perUnit", { price: format.thb(link.lastPrice), unit: unit(link.purchaseUnit) })
-                      : "—",
-                },
-                {
-                  key: "date",
-                  header: tPrices("table.date"),
-                  hideOnPhone: true,
-                  cell: (link) => format.date(link.lastPricedOn),
-                },
-                {
-                  key: "flags",
-                  header: tPrices("table.flags"),
-                  cell: (link) => (
-                    <span className="flex flex-wrap gap-1">
-                      {link.preferred ? <Badge tone="primary">{tPrices("preferred")}</Badge> : null}
-                      {link.cheapest ? <Badge tone="success">{tPrices("cheapest")}</Badge> : null}
-                      {link.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
-                    </span>
-                  ),
-                },
-              ]}
-            />
+                    ),
+                  },
+                  {
+                    key: "price",
+                    header: tPrices("lastPrice"),
+                    align: "end",
+                    cell: (link) =>
+                      link.lastPrice
+                        ? tPrices("perUnit", { price: format.thb(link.lastPrice), unit: unit(link.purchaseUnit) })
+                        : "—",
+                  },
+                  {
+                    key: "date",
+                    header: tPrices("table.date"),
+                    hideOnPhone: true,
+                    cell: (link) => format.date(link.lastPricedOn),
+                  },
+                  {
+                    key: "flags",
+                    header: tPrices("table.flags"),
+                    cell: (link) => (
+                      <span className="flex flex-wrap gap-1">
+                        {link.preferred ? <Badge tone="primary">{tPrices("preferred")}</Badge> : null}
+                        {link.cheapest ? <Badge tone="success">{tPrices("cheapest")}</Badge> : null}
+                        {link.status === "archived" ? <Badge tone="neutral">{tCommon("archived")}</Badge> : null}
+                      </span>
+                    ),
+                  },
+                ]}
+              />
+            ) : (
+              <PageError error={items.error} />
+            )}
+          </PartnerSection>
+        ) : null}
+        {orders ? (
+          <PartnerSection title={t("detail.orders")}>
+            {orders.data ? (
+              <PartnerTable
+                caption={t("detail.orders")}
+                rows={orders.data.data}
+                rowKey={(po) => po.id}
+                rowHref={(po) => `/purchasing/${po.id}`}
+                empty={<EmptyState icon="cart" title={t("detail.noOrders")} />}
+                columns={[
+                  { key: "no", header: tPo("table.no"), primary: true, cell: (po) => po.poNo ?? tPo("draftNo") },
+                  { key: "date", header: tPo("table.ordered"), cell: (po) => format.date(po.orderedOn) },
+                  { key: "total", header: tPo("table.total"), align: "end", cell: (po) => format.thb(po.total) },
+                  {
+                    key: "status",
+                    header: tPo("table.status"),
+                    cell: (po) => <StatusChip map={ERP_PURCHASE_ORDER_STATUS} value={po.status} />,
+                  },
+                ]}
+              />
+            ) : (
+              <PageError error={orders.error} />
+            )}
+          </PartnerSection>
+        ) : null}
+        <RelatedDocuments type="trading_partner" id={partner.id} label={partner.name} />
+        <PartnerSection title={t("form.editTitle")}>
+          {canEdit ? (
+            <PartnerForm partner={partner} etag={etag} />
           ) : (
-            <PageError error={items.error} />
+            <p className="text-muted">
+              {[partner.contactName, partner.phone, partner.email, partner.address].filter(Boolean).join(" · ")}
+            </p>
           )}
         </PartnerSection>
-      ) : null}
-      {orders ? (
-        <PartnerSection title={t("detail.orders")}>
-          {orders.data ? (
-            <PartnerTable
-              caption={t("detail.orders")}
-              rows={orders.data.data}
-              rowKey={(po) => po.id}
-              rowHref={(po) => `/purchasing/${po.id}`}
-              empty={<EmptyState icon="cart" title={t("detail.noOrders")} />}
-              columns={[
-                { key: "no", header: tPo("table.no"), primary: true, cell: (po) => po.poNo ?? tPo("draftNo") },
-                { key: "date", header: tPo("table.ordered"), cell: (po) => format.date(po.orderedOn) },
-                { key: "total", header: tPo("table.total"), align: "end", cell: (po) => format.thb(po.total) },
-                {
-                  key: "status",
-                  header: tPo("table.status"),
-                  cell: (po) => <StatusChip map={ERP_PURCHASE_ORDER_STATUS} value={po.status} />,
-                },
-              ]}
-            />
-          ) : (
-            <PageError error={orders.error} />
-          )}
-        </PartnerSection>
-      ) : null}
-      <RelatedDocuments type="trading_partner" id={partner.id} label={partner.name} />
-      <PartnerSection title={t("form.editTitle")}>
-        {canEdit ? (
-          <PartnerForm partner={partner} etag={etag} />
-        ) : (
-          <p className="text-muted">
-            {[partner.contactName, partner.phone, partner.email, partner.address].filter(Boolean).join(" · ")}
-          </p>
-        )}
-      </PartnerSection>
+      </PartnerDetail>
     </PartnerPage>
   );
 }

@@ -123,7 +123,16 @@ export function CategoryButton({ accounts, category }: { accounts: AccountOption
 // ============================================================================================ assets
 
 /** D-393: register an asset (its purchase is posted by the supplier invoice or an opening journal). */
-export function AssetButton({ categories, machines }: { categories: Category[]; machines: Option[] }) {
+export function AssetButton({
+  categories,
+  machines,
+  variant = "primary",
+}: {
+  categories: Category[];
+  machines: Option[];
+  /** The page header's copy is the primary action; an empty state's copy is outlined. */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("partnerLedger.assets");
   const tc = useTranslations("partnerLedger.common");
   const { factoryId } = useFactory();
@@ -177,7 +186,7 @@ export function AssetButton({ categories, machines }: { categories: Category[]; 
 
   return (
     <>
-      <Button size="lg" iconStart="plus" disabled={!categories.length} onClick={() => setOpen(true)}>
+      <Button size="lg" variant={variant} iconStart="plus" disabled={!categories.length} onClick={() => setOpen(true)}>
         {t("new")}
       </Button>
       {open ? (
@@ -387,7 +396,14 @@ export function RunDepreciation({ month }: { month: string }) {
 // ============================================================================================== bank
 
 /** D-394: add or edit a bank account (last four digits only). */
-export function BankAccountButton({ bank }: { bank?: Bank }) {
+export function BankAccountButton({
+  bank,
+  variant,
+}: {
+  bank?: Bank;
+  /** The add button is the page's primary action in its header; an empty state's copy of it is outlined. */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("partnerLedger.bank");
   const tc = useTranslations("partnerLedger.common");
   const { factoryId } = useFactory();
@@ -422,7 +438,7 @@ export function BankAccountButton({ bank }: { bank?: Bank }) {
     <>
       <Button
         size={bank ? "sm" : "lg"}
-        variant={bank ? "secondary" : "primary"}
+        variant={variant ?? (bank ? "secondary" : "primary")}
         iconStart={bank ? "edit" : "plus"}
         onClick={() => setOpen(true)}
       >

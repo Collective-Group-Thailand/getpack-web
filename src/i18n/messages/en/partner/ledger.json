@@ -372,7 +372,8 @@
       "semi_finished": "Semi-finished",
       "finished_good": "Finished good",
       "packing": "Packing"
-    }
+    },
+    "sectionTotal": "Total {section}"
   },
   "accounts": {
     "title": "Chart of accounts and settings",

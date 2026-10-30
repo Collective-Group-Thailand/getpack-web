@@ -6,7 +6,7 @@ import { ERP_ISSUED_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
 import { PostedEntries } from "@/features/partner/ledger/PostedEntries";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { NoteActions } from "@/features/partner/sales/NoteForms";
 import { StatusChip } from "@/features/partner/status";
 import { PartnerTable } from "@/features/partner/table";
@@ -49,70 +49,82 @@ export default async function NotePage({ params }: Props) {
       </PartnerPage>
     );
   const note = read.data;
+  const tNext = await getTranslations("partnerSales.common");
   return (
     <PartnerPage
       full
       title={note.noteNo ?? tCommon("draftNo")}
       description={t(`kinds.${note.kind}`)}
       back={back}
-      meta={<StatusChip map={ERP_ISSUED_STATUS} value={note.status} />}
+      status={<StatusChip map={ERP_ISSUED_STATUS} value={note.status} />}
     >
-      <NoteActions note={note} />
-      {note.voidReason ? (
-        <Callout tone="danger" title={t("voidedTitle")}>
-          {note.voidReason}
-        </Callout>
-      ) : null}
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: tCommon("customer"), description: `${note.customer.name} (${note.customer.code})` },
-            {
-              term: t("invoice"),
-              description: (
-                <Link className="text-link underline" href={`/invoices/${note.invoice.id}`}>
-                  {note.invoice.invoiceNo}
-                </Link>
-              ),
-            },
-            { term: t("issueDate"), description: format.date(note.issueDate) },
-            {
-              term: t("reason"),
-              description: `${tReasons(note.reason)}${note.reasonText ? ` — ${note.reasonText}` : ""}`,
-            },
-            { term: t("originalValue"), description: format.thb(note.originalValue) },
-            { term: t("correctValue"), description: format.thb(note.correctValue) },
-            { term: t("difference"), description: format.thb(note.difference) },
-            ...(note.warehouse ? [{ term: t("warehouse"), description: note.warehouse.code }] : []),
-          ]}
-        />
-      </Card>
-      <PartnerSection title={t("linesTitle")}>
-        <PartnerTable
-          caption={t("linesTitle")}
-          rows={note.lines}
-          rowKey={(line) => String(line.lineNo)}
-          columns={[
-            { key: "d", header: t("form.description"), primary: true, cell: (line) => line.description },
-            {
-              key: "ret",
-              header: t("form.returnQty"),
-              align: "end",
-              hideOnPhone: true,
-              cell: (line) => (line.returnQty ? formatQty(line.returnQty, locale) : "—"),
-            },
-            { key: "a", header: t("form.amount"), align: "end", cell: (line) => format.thb(line.amount) },
-          ]}
-        />
-        <dl className="ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 tabular-nums">
-          <dt className="text-muted">{tCommon("vat", { rate: formatPlain(note.vatRatePct, locale) })}</dt>
-          <dd className="text-end">{format.thb(note.vatAmount)}</dd>
-          <dt className="font-semibold">{tCommon("total")}</dt>
-          <dd className="text-end text-lg font-semibold">{format.thb(note.total)}</dd>
-        </dl>
-      </PartnerSection>
-      <PostedEntries sourceId={note.id} />
+      <PartnerDetail
+        aside={
+          <ActionPanel id="next-steps" tone="neutral" title={tNext("nextSteps")}>
+            <dl className="border-border grid grid-cols-[1fr_auto] items-baseline gap-x-3 border-b pb-3">
+              <dt className="text-muted text-sm">{tNext("total")}</dt>
+              <dd className="text-end text-xl font-semibold tabular-nums">{format.thb(note.total)}</dd>
+            </dl>
+            <NoteActions note={note} layout="panel" />
+          </ActionPanel>
+        }
+      >
+        {note.voidReason ? (
+          <Callout tone="danger" title={t("voidedTitle")}>
+            {note.voidReason}
+          </Callout>
+        ) : null}
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: tCommon("customer"), description: `${note.customer.name} (${note.customer.code})` },
+              {
+                term: t("invoice"),
+                description: (
+                  <Link className="text-primary underline" href={`/invoices/${note.invoice.id}`}>
+                    {note.invoice.invoiceNo}
+                  </Link>
+                ),
+              },
+              { term: t("issueDate"), description: format.date(note.issueDate) },
+              {
+                term: t("reason"),
+                description: `${tReasons(note.reason)}${note.reasonText ? ` — ${note.reasonText}` : ""}`,
+              },
+              { term: t("originalValue"), description: format.thb(note.originalValue) },
+              { term: t("correctValue"), description: format.thb(note.correctValue) },
+              { term: t("difference"), description: format.thb(note.difference) },
+              ...(note.warehouse ? [{ term: t("warehouse"), description: note.warehouse.code }] : []),
+            ]}
+          />
+        </Card>
+        <PartnerSection title={t("linesTitle")}>
+          <PartnerTable
+            caption={t("linesTitle")}
+            rows={note.lines}
+            rowKey={(line) => String(line.lineNo)}
+            columns={[
+              { key: "d", header: t("form.description"), primary: true, cell: (line) => line.description },
+              {
+                key: "ret",
+                header: t("form.returnQty"),
+                align: "end",
+                hideOnPhone: true,
+                cell: (line) => (line.returnQty ? formatQty(line.returnQty, locale) : "—"),
+              },
+              { key: "a", header: t("form.amount"), align: "end", cell: (line) => format.thb(line.amount) },
+            ]}
+          />
+          <dl className="ms-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 tabular-nums">
+            <dt className="text-muted">{tCommon("vat", { rate: formatPlain(note.vatRatePct, locale) })}</dt>
+            <dd className="text-end">{format.thb(note.vatAmount)}</dd>
+            <dt className="font-semibold">{tCommon("total")}</dt>
+            <dd className="text-end text-lg font-semibold">{format.thb(note.total)}</dd>
+          </dl>
+        </PartnerSection>
+        <PostedEntries sourceId={note.id} />
+      </PartnerDetail>
     </PartnerPage>
   );
 }

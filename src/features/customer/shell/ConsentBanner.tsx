@@ -21,10 +21,11 @@ import { Button } from "@/ui/components/Button";
  */
 /**
  * Pages where the banner would sit on the one control that matters — the studio's canvas, the
- * configurator's price bar, checkout's pay button (UX audit, system-wide). The question waits for
+ * configurator's price bar, checkout's pay button, the driver's confirm-pickup button on a handover link `/l/d…`
+ * (D-463) (UX audit, system-wide). The question waits for
  * the next page; until it is answered nothing is tracked, which is the safe default (D-144).
  */
-const QUIET_PATHS = /^\/(?:studio|configure|checkout|design)(?:\/|$)/;
+const QUIET_PATHS = /^\/(?:studio|configure|checkout|design|l)(?:\/|$)/;
 
 export function ConsentBanner() {
   const t = useTranslations("storefront.consent");

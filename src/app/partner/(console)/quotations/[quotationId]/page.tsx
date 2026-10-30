@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ERP_QUOTATION_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { QuotationActions } from "@/features/partner/sales/QuotationActions";
 import { SalesLinesTable, SalesTotals } from "@/features/partner/sales/view";
 import { StatusChip } from "@/features/partner/status";
@@ -49,73 +49,86 @@ export default async function QuotationPage({ params }: Props) {
       full
       title={doc.revision > 1 ? `${doc.quoteNo} (${t("revision", { n: doc.revision })})` : doc.quoteNo}
       back={back}
-      meta={<StatusChip map={ERP_QUOTATION_STATUS} value={doc.status} />}
+      status={<StatusChip map={ERP_QUOTATION_STATUS} value={doc.status} />}
+      description={`${doc.customer.name} · ${format.date(doc.quoteDate)}`}
     >
-      <QuotationActions quotation={doc} etag={etag} />
-      {doc.status === "accepted" && doc.acceptedName ? (
-        <Callout tone="success" title={t("acceptedBy", { name: doc.acceptedName })}>
-          {t(doc.acceptedVia === "link" ? "acceptedOnline" : "acceptedRecorded", {
-            date: doc.acceptedAt ? format.dateTime(doc.acceptedAt) : "",
-            position: doc.acceptedPosition ?? "",
-          })}
-        </Callout>
-      ) : null}
-      {doc.rejectReason ? (
-        <Callout tone="danger" title={t("rejectedTitle")}>
-          {doc.rejectReason}
-        </Callout>
-      ) : null}
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: tCommon("customer"), description: `${doc.customer.name} (${doc.customer.code})` },
-            { term: tCommon("salesperson"), description: doc.salesperson?.name ?? tCommon("noSalesperson") },
-            { term: t("facts.date"), description: format.date(doc.quoteDate) },
-            { term: t("facts.validUntil"), description: format.date(doc.validUntil) },
-            { term: t("facts.paymentTerms"), description: tCommon("days", { n: doc.paymentTermDays }) },
-            ...(doc.leadTimeDays != null
-              ? [{ term: t("facts.leadTime"), description: tCommon("days", { n: doc.leadTimeDays }) }]
-              : []),
-            ...(doc.opportunity ? [{ term: t("facts.opportunity"), description: doc.opportunity.code }] : []),
-            ...(doc.sentAt ? [{ term: t("facts.sent"), description: format.dateTime(doc.sentAt) }] : []),
-            ...(doc.salesOrder
-              ? [
-                  {
-                    term: t("facts.salesOrder"),
-                    description: (
-                      <Link className="text-link underline" href={`/sales-orders/${doc.salesOrder.id}`}>
-                        {doc.salesOrder.code}
-                      </Link>
-                    ),
-                  },
-                ]
-              : []),
-            ...(doc.terms ? [{ term: t("facts.terms"), description: doc.terms }] : []),
-            ...(doc.note ? [{ term: t("facts.note"), description: doc.note }] : []),
-            ...(doc.cancelReason ? [{ term: tCommon("reason"), description: doc.cancelReason }] : []),
-          ]}
-        />
-      </Card>
-      <PartnerSection title={t("linesTitle")}>
-        <SalesLinesTable caption={t("linesTitle")} lines={doc.lines} />
-        <SalesTotals doc={doc} />
-      </PartnerSection>
-      {doc.revisions.length > 1 ? (
-        <PartnerSection title={t("revisionsTitle")}>
-          <ul className="flex flex-col gap-1">
-            {doc.revisions.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center gap-2">
-                <Link className="text-link underline" href={`/quotations/${r.id}`}>
-                  {t("revision", { n: r.revision })}
-                </Link>
-                <StatusChip map={ERP_QUOTATION_STATUS} value={r.status} />
-                <span className="tabular-nums">{format.thb(r.total)}</span>
-              </li>
-            ))}
-          </ul>
+      {/* The document on the left; its total and what can be done with it next in a panel that stays in view. */}
+      <PartnerDetail
+        aside={
+          <ActionPanel id="quote-next" tone="neutral" title={tCommon("nextSteps")}>
+            <dl className="border-border flex items-baseline justify-between gap-3 border-b pb-3">
+              <dt className="text-muted text-sm">{tCommon("total")}</dt>
+              <dd className="text-xl font-semibold tabular-nums">{format.thb(doc.total)}</dd>
+            </dl>
+            <QuotationActions quotation={doc} etag={etag} />
+          </ActionPanel>
+        }
+      >
+        {doc.status === "accepted" && doc.acceptedName ? (
+          <Callout tone="success" title={t("acceptedBy", { name: doc.acceptedName })}>
+            {t(doc.acceptedVia === "link" ? "acceptedOnline" : "acceptedRecorded", {
+              date: doc.acceptedAt ? format.dateTime(doc.acceptedAt) : "",
+              position: doc.acceptedPosition ?? "",
+            })}
+          </Callout>
+        ) : null}
+        {doc.rejectReason ? (
+          <Callout tone="danger" title={t("rejectedTitle")}>
+            {doc.rejectReason}
+          </Callout>
+        ) : null}
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: tCommon("customer"), description: `${doc.customer.name} (${doc.customer.code})` },
+              { term: tCommon("salesperson"), description: doc.salesperson?.name ?? tCommon("noSalesperson") },
+              { term: t("facts.date"), description: format.date(doc.quoteDate) },
+              { term: t("facts.validUntil"), description: format.date(doc.validUntil) },
+              { term: t("facts.paymentTerms"), description: tCommon("days", { n: doc.paymentTermDays }) },
+              ...(doc.leadTimeDays != null
+                ? [{ term: t("facts.leadTime"), description: tCommon("days", { n: doc.leadTimeDays }) }]
+                : []),
+              ...(doc.opportunity ? [{ term: t("facts.opportunity"), description: doc.opportunity.code }] : []),
+              ...(doc.sentAt ? [{ term: t("facts.sent"), description: format.dateTime(doc.sentAt) }] : []),
+              ...(doc.salesOrder
+                ? [
+                    {
+                      term: t("facts.salesOrder"),
+                      description: (
+                        <Link className="text-link underline" href={`/sales-orders/${doc.salesOrder.id}`}>
+                          {doc.salesOrder.code}
+                        </Link>
+                      ),
+                    },
+                  ]
+                : []),
+              ...(doc.terms ? [{ term: t("facts.terms"), description: doc.terms }] : []),
+              ...(doc.note ? [{ term: t("facts.note"), description: doc.note }] : []),
+              ...(doc.cancelReason ? [{ term: tCommon("reason"), description: doc.cancelReason }] : []),
+            ]}
+          />
+        </Card>
+        <PartnerSection title={t("linesTitle")}>
+          <SalesLinesTable caption={t("linesTitle")} lines={doc.lines} />
+          <SalesTotals doc={doc} />
         </PartnerSection>
-      ) : null}
+        {doc.revisions.length > 1 ? (
+          <PartnerSection title={t("revisionsTitle")}>
+            <ul className="flex flex-col gap-1">
+              {doc.revisions.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center gap-2">
+                  <Link className="text-link underline" href={`/quotations/${r.id}`}>
+                    {t("revision", { n: r.revision })}
+                  </Link>
+                  <StatusChip map={ERP_QUOTATION_STATUS} value={r.status} />
+                  <span className="tabular-nums">{format.thb(r.total)}</span>
+                </li>
+              ))}
+            </ul>
+          </PartnerSection>
+        ) : null}
+      </PartnerDetail>
     </PartnerPage>
   );
 }

@@ -11,7 +11,14 @@ import { ActionBar } from "./ActionBar";
 type Pr = Schemas["ErpPurchaseRequestDto"];
 
 /** What can be done with a purchase request now (D-336) — only what the API offers. */
-export function RequestActions({ request }: { request: Pr }) {
+export function RequestActions({
+  request,
+  layout,
+}: {
+  request: Pr;
+  /** `panel` on the record page's next-steps panel. */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("partnerFactory.requests.actions");
   const tCommon = useTranslations("partnerErp.common");
   const tStatus = useTranslations("status.action");
@@ -21,6 +28,7 @@ export function RequestActions({ request }: { request: Pr }) {
 
   return (
     <ActionBar
+      layout={layout}
       offered={request.nextActions}
       failed={tCommon("failed")}
       actions={[

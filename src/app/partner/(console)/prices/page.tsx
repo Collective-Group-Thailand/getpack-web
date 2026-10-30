@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { PROPOSAL_STATUS } from "@/domain/status";
 import { canAt, factoryContext } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { Row, RowList } from "@/features/partner/rows";
 import { PartnerTable } from "@/features/partner/table";
 import { VersionSignOff } from "@/features/partner/prices/actions";
 import { loadPrices, OPEN_PROPOSAL } from "@/features/partner/prices/server";
@@ -53,47 +54,45 @@ export default async function PricesPage() {
 
   return (
     <PartnerPage
-      wide
+      full
       title={t("title")}
       description={prices.mode ? t(`mode.${prices.mode}`) : t("mode.none")}
       actions={
-        <Button asChild variant="secondary" size="md" iconStart="truck">
+        <Button asChild variant="secondary" size="lg" iconStart="truck">
           <Link href="/prices/shipping">{t("shippingLink")}</Link>
         </Button>
       }
     >
       {rateCards.length || countered.length || toSignOff.length ? (
         <PartnerSection title={t("attention.title")}>
-          <ul className="flex flex-col gap-2">
-            {rateCards.map((item) => (
-              <li key={item.id}>
-                <Link href={`/prices/proposals/${item.id}`} className="block">
-                  <Callout
-                    tone="warning"
-                    icon="handshake"
-                    title={t("attention.rateCard", { type: prices.typeName(item.productTypeId) })}
-                  >
-                    {t("attention.rateCardBody", {
-                      count: item.lineCounts.pending,
-                      date: format.date(item.proposedEffectiveFrom),
-                    })}
-                  </Callout>
-                </Link>
-              </li>
-            ))}
-            {countered.map((item) => (
-              <li key={item.id}>
-                <Link href={`/prices/proposals/${item.id}`} className="block">
-                  <Callout
-                    tone="warning"
-                    icon="scale"
-                    title={t("attention.countered", { type: prices.typeName(item.productTypeId) })}
-                  >
-                    {t("attention.counteredBody", { count: item.lineCounts.countered })}
-                  </Callout>
-                </Link>
-              </li>
-            ))}
+          {rateCards.length || countered.length ? (
+            <RowList label={t("attention.title")}>
+              {rateCards.map((item) => (
+                <Row
+                  key={item.id}
+                  href={`/prices/proposals/${item.id}`}
+                  icon="handshake"
+                  tone="warning"
+                  title={t("attention.rateCard", { type: prices.typeName(item.productTypeId) })}
+                  meta={t("attention.rateCardBody", {
+                    count: item.lineCounts.pending,
+                    date: format.date(item.proposedEffectiveFrom),
+                  })}
+                />
+              ))}
+              {countered.map((item) => (
+                <Row
+                  key={item.id}
+                  href={`/prices/proposals/${item.id}`}
+                  icon="scale"
+                  tone="warning"
+                  title={t("attention.countered", { type: prices.typeName(item.productTypeId) })}
+                  meta={t("attention.counteredBody", { count: item.lineCounts.countered })}
+                />
+              ))}
+            </RowList>
+          ) : null}
+          <ul className="flex flex-col gap-2 empty:hidden">
             {toSignOff.map(({ list, version }) => (
               <li key={version.id}>
                 <Callout

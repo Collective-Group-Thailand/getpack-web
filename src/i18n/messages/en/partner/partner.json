@@ -176,7 +176,11 @@
     },
     "search": "Find a menu",
     "searchPlaceholder": "Find a menu (press /)",
-    "noMatch": "No menu matches"
+    "noMatch": "No menu matches",
+    "sections": {
+      "getpack": "Work with getpack",
+      "erp": "Factory ERP"
+    }
   },
   "status": {
     "job": {

@@ -203,6 +203,10 @@
       "result": "Result",
       "reason": "Reason",
       "reasonPlaceholder": "e.g. Customer accepts the slight colour shift"
+    },
+    "stats": {
+      "ncrOpen": "Open NCRs",
+      "ncrOverdue": "Overdue NCRs"
     }
   },
   "ncrs": {
@@ -384,7 +388,8 @@
       "machine": "Machine",
       "level": "Level",
       "certifiedOn": "Certified on",
-      "save": "Save skill"
+      "save": "Save skill",
+      "addTitle": "Add an operator skill"
     }
   },
   "support": {
@@ -535,6 +540,9 @@
     "loss": "{reason} {minutes} min",
     "day": "Day",
     "note": "Unfinished work counts its run time but not yet its output — performance rises when it finishes",
-    "empty": "No machines yet"
+    "empty": "No machines yet",
+    "lede": "Every machine over the chosen dates: running time, good output and where paused time went",
+    "howTitle": "How OEE is worked out",
+    "byDay": "Day by day, per machine"
   }
 }

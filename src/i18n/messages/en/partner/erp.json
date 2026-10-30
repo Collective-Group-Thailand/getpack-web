@@ -101,6 +101,27 @@
       "vat": "VAT {rate}%",
       "total": "Total (estimate)",
       "note": "The saved document's figures are worked out by the system"
+    },
+    "sections": {
+      "supplier": "Supplier and dates",
+      "lines": "Lines",
+      "references": "References and notes",
+      "summary": "Summary",
+      "where": "Warehouse and reference",
+      "delivery": "Delivery",
+      "item": "Item details",
+      "units": "Units",
+      "buying": "Buying and stock",
+      "partner": "Partner details",
+      "terms": "Trading terms",
+      "details": "Details",
+      "schedule": "Schedule",
+      "notes": "Warehouse and note",
+      "affected": "What it affects",
+      "owner": "Owner and due date",
+      "quantities": "Lot and quantities",
+      "tax": "Tax",
+      "payment": "Payment"
     }
   },
   "stock": {

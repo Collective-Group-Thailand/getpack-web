@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ERP_MACHINE_STATE } from "@/domain/status";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
@@ -15,11 +15,13 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 type Board = Schemas["ErpScheduleDto"];
@@ -29,7 +31,9 @@ type Hours = Record<string, { from: string; to: string } | null>;
 
 const NONE = "none";
 const SNAP = 15 * 60_000;
-const CLOSED_PX = 28;
+const CLOSED_PX = 72;
+/** The machine-name column of the board. */
+const NAME_PX = 200;
 
 interface Segment {
   day: string;
@@ -61,13 +65,17 @@ export function ScheduleBoard({
   machines,
   days,
   canManage,
+  nav,
 }: {
   board: Board;
   machines: { id: string; name: string }[];
   days: number;
   canManage: boolean;
+  /** The window controls (1/3/7 days, previous/today/next): the left end of the board's one toolbar. */
+  nav?: React.ReactNode;
 }) {
   const t = useTranslations("partnerOps.schedule");
+  const tShared = useTranslations("partnerOps.shared");
   const format = useFormat();
   const router = useRouter();
   const { factoryId } = useFactory();
@@ -76,6 +84,17 @@ export function ScheduleBoard({
   const [planning, setPlanning] = useState(false);
   const [late, setLate] = useState<Schemas["ErpAutoPlanResultDto"]["late"]>([]);
   const perMinute = days <= 1 ? 2.4 : days <= 3 ? 0.9 : 0.42;
+  // "Now" is drawn only after hydration, so the server and the browser render the same markup.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    const tick = () => setNow(Date.now());
+    const first = setTimeout(tick, 0);
+    const timer = setInterval(tick, 60_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
+  }, []);
 
   // The time axis: working hours only, each day after the other.
   const segments: Segment[] = [];
@@ -100,6 +119,36 @@ export function ScheduleBoard({
     cursor += width;
   }
   const total = cursor;
+  // Hour marks inside working hours: labelled when an hour is wide enough to read, a faint rule otherwise.
+  const pxPerHour = perMinute * 60;
+  const labelEvery = pxPerHour >= 48 ? 1 : pxPerHour >= 24 ? 3 : 0;
+  const hours: { key: string; x: number; label: string | null }[] = [];
+  for (const s of segments) {
+    if (s.closed) continue;
+    const first = Math.ceil(s.open / 3_600_000) * 3_600_000;
+    for (let ms = first; ms < s.close; ms += 3_600_000) {
+      if (ms === s.open) continue;
+      const hour = new Date(ms + 7 * 3_600_000).getUTCHours();
+      hours.push({
+        key: `${s.day}-${hour}`,
+        x: s.x + ((ms - s.open) / (s.close - s.open)) * s.width,
+        label: labelEvery && hour % labelEvery === 0 ? `${pad(hour)}:00` : null,
+      });
+    }
+  }
+  const lanes = [
+    ...board.machines.map((lane) => ({
+      key: lane.machine.id,
+      name: lane.machine.name,
+      state: lane.state as string | null,
+      slots: lane.slots,
+      blocks: lane.blocks,
+    })),
+    ...(board.unassigned.length
+      ? [{ key: NONE, name: t("unassigned"), state: null, slots: board.unassigned, blocks: [] as Block[] }]
+      : []),
+  ];
+  const empty = lanes.every((lane) => !lane.slots.length && !lane.blocks.length);
   const xOf = (ms: number) => {
     for (const s of segments) {
       if (s.closed) {
@@ -122,6 +171,15 @@ export function ScheduleBoard({
     return segments.at(-1)?.close ?? 0;
   };
 
+  const nowX = now !== null && segments.some((s) => !s.closed && now >= s.open && now <= s.close) ? xOf(now) : null;
+  // On a phone a slot reads "30 ต.ค. · 08:30–11:00"; one running past midnight keeps both full times.
+  const slotTime = (slot: Slot) => {
+    const start = localValue(new Date(slot.start).getTime());
+    const end = localValue(new Date(slot.end).getTime());
+    return start.slice(0, 10) === end.slice(0, 10)
+      ? `${format.date(slot.start, { style: "dayMonth" })} · ${start.slice(11)}–${end.slice(11)}`
+      : `${format.dateTime(slot.start)} – ${format.dateTime(slot.end)}`;
+  };
   const move = (slot: Slot, body: Schemas["ErpMoveOperationDto"]) =>
     call(
       async () =>
@@ -134,22 +192,22 @@ export function ScheduleBoard({
       t("moved"),
     );
 
+  const autoPlan = canManage ? (
+    <Button size="lg" iconStart="refresh" loading={busy} onClick={() => setPlanning(true)}>
+      {t("autoPlan")}
+    </Button>
+  ) : null;
+
   return (
     <div className="flex flex-col gap-4">
-      {canManage ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <Button size="lg" iconStart="refresh" loading={busy} onClick={() => setPlanning(true)}>
-            {t("autoPlan")}
-          </Button>
-          <p className="text-muted text-sm">{t("dragHint")}</p>
-        </div>
-      ) : null}
-      {board.unscheduled > 0 ? (
-        <p className="text-warning-subtle-fg font-medium">{t("unscheduled", { n: board.unscheduled })}</p>
-      ) : null}
+      {/* One toolbar: the window on the left, the one primary action on the right. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">{nav}</div>
+        {autoPlan}
+      </div>
+      {board.unscheduled > 0 ? <Callout tone="warning">{t("unscheduled", { n: board.unscheduled })}</Callout> : null}
       {late.length ? (
-        <div className="border-warning bg-warning-subtle rounded-xl border p-3">
-          <p className="font-semibold">{t("lateTitle")}</p>
+        <Callout tone="warning" title={t("lateTitle")}>
           <ul className="text-sm">
             {late.map((l) => (
               <li key={l.order.id}>
@@ -163,46 +221,73 @@ export function ScheduleBoard({
               </li>
             ))}
           </ul>
-        </div>
+        </Callout>
       ) : null}
-      <Legend />
-      <div className="border-border bg-surface overflow-x-auto rounded-xl border">
-        <div style={{ width: total + 176 }} className="min-w-full">
-          {/* Day headers */}
-          <div className="border-border bg-surface-subtle sticky top-0 flex border-b text-xs">
-            <div className="w-44 shrink-0 p-2" />
-            <div className="relative h-10" style={{ width: total }}>
+
+      {/* A desk reads the timeline: the machine names stay put while the hours scroll under them. */}
+      <div className="border-border bg-surface relative hidden overflow-x-auto rounded-xl border md:block">
+        <div style={{ width: total + NAME_PX }} className="min-w-full">
+          <div className="border-border bg-surface-subtle sticky top-0 z-10 flex border-b text-xs">
+            <div
+              className="border-border bg-surface-subtle sticky left-0 z-20 shrink-0 border-e px-3 py-2"
+              style={{ width: NAME_PX }}
+            >
+              <span className="text-muted font-medium">{t("machine")}</span>
+            </div>
+            <div className="relative h-14" style={{ width: total }}>
               {segments.map((s) => (
                 <div
                   key={s.day}
                   className={cn(
-                    "border-border absolute top-0 h-full border-s px-1 py-1",
+                    "border-border absolute top-0 h-full border-s px-2 pt-1.5",
                     s.closed && "bg-surface-muted",
                   )}
                   style={{ left: s.x, width: s.width }}
                 >
-                  <span className="block truncate font-medium">{format.date(s.day)}</span>
-                  <span className="text-muted block truncate">
-                    {s.closed
-                      ? t("closed")
-                      : `${(board.hours as Hours)[s.day]?.from}–${(board.hours as Hours)[s.day]?.to}`}
+                  <span className="block truncate" title={format.date(s.day)}>
+                    <span className="font-semibold">{format.date(s.day, { style: "dayMonth" })}</span>
+                    <span className="text-muted">
+                      {s.closed
+                        ? ` · ${t("closed")}`
+                        : ` · ${(board.hours as Hours)[s.day]?.from}–${(board.hours as Hours)[s.day]?.to}`}
+                    </span>
                   </span>
                 </div>
               ))}
+              {hours.map((h) =>
+                h.label ? (
+                  <span
+                    key={h.key}
+                    aria-hidden
+                    className="text-muted absolute bottom-1 -translate-x-1/2 text-[0.6875rem] tabular-nums"
+                    style={{ left: h.x }}
+                  >
+                    {h.label}
+                  </span>
+                ) : null,
+              )}
             </div>
           </div>
-          {board.machines.map((lane) => (
+          {lanes.map((lane) => (
             <Lane
-              key={lane.machine.id}
+              key={lane.key}
               title={
-                <span className="flex flex-col gap-1">
-                  <span className="truncate font-medium">{lane.machine.name}</span>
-                  <StatusChip map={ERP_MACHINE_STATE} value={lane.state} />
+                <span className="flex min-w-0 flex-col gap-1">
+                  <span className={cn("truncate text-sm font-medium", !lane.state && "text-muted")} title={lane.name}>
+                    {lane.name}
+                  </span>
+                  {lane.state ? (
+                    <span className="self-start">
+                      <StatusChip map={ERP_MACHINE_STATE} value={lane.state as Board["machines"][number]["state"]} />
+                    </span>
+                  ) : null}
                 </span>
               }
               slots={lane.slots}
               blocks={lane.blocks}
               segments={segments}
+              hours={hours}
+              nowX={nowX}
               total={total}
               xOf={xOf}
               timeOf={timeOf}
@@ -211,23 +296,97 @@ export function ScheduleBoard({
               onDrop={(slot, start) => void move(slot, { start: new Date(start).toISOString(), locked: true })}
             />
           ))}
-          {board.unassigned.length ? (
-            <Lane
-              title={<span className="text-muted">{t("unassigned")}</span>}
-              slots={board.unassigned}
-              blocks={[]}
-              segments={segments}
-              total={total}
-              xOf={xOf}
-              timeOf={timeOf}
-              canManage={canManage}
-              onOpen={setEditing}
-              onDrop={(slot, start) => void move(slot, { start: new Date(start).toISOString(), locked: true })}
-            />
-          ) : null}
-          {!board.machines.length && !board.unassigned.length ? <p className="text-muted p-4">{t("empty")}</p> : null}
+          {!lanes.length ? <p className="text-muted p-4">{t("empty")}</p> : null}
         </div>
+        {empty && lanes.length ? (
+          // Nothing planned in this window: say so over the empty lanes, with the one way to fill them.
+          <div className="pointer-events-none absolute inset-x-0 top-14 bottom-0 flex items-center justify-center p-6">
+            <div className="rounded-card border-border bg-surface pointer-events-auto flex max-w-sm flex-col items-center gap-3 border p-5 text-center shadow-sm">
+              <Icon name="gantt" size={22} className="text-muted" aria-hidden />
+              <p className="font-semibold">{t("empty")}</p>
+              {canManage && board.unscheduled > 0 ? (
+                <Button variant="secondary" iconStart="refresh" loading={busy} onClick={() => setPlanning(true)}>
+                  {t("autoPlan")}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
+
+      {/* A phone reads a list: each machine with its work in time order; a tap opens the same dialog. */}
+      {empty ? (
+        <p className="border-border bg-surface text-muted rounded-xl border px-4 py-5 text-center md:hidden">
+          {t("empty")}
+        </p>
+      ) : null}
+      <ul className={cn("flex flex-col gap-3 md:hidden", empty && "hidden")}>
+        {lanes.map((lane) => {
+          const slots = [...lane.slots].sort((a, b) => a.start.localeCompare(b.start));
+          return (
+            <li key={lane.key} className="border-border bg-surface rounded-xl border">
+              <div className="flex items-center justify-between gap-3 px-4 py-3">
+                <span className={cn("min-w-0 font-semibold break-keep", !lane.state && "text-muted")}>{lane.name}</span>
+                {lane.state ? (
+                  <StatusChip map={ERP_MACHINE_STATE} value={lane.state as Board["machines"][number]["state"]} />
+                ) : null}
+              </div>
+              {slots.length || lane.blocks.length ? (
+                <ul className="border-border divide-border divide-y border-t">
+                  {lane.blocks.map((b) => (
+                    <li key={b.maintenanceOrder.id}>
+                      <Link
+                        href={`/maintenance/${b.maintenanceOrder.id}`}
+                        className="text-warning-subtle-fg flex min-h-12 items-center gap-2 px-4 py-2 text-sm"
+                      >
+                        <Icon name="wrench" size={16} aria-hidden />
+                        {t("maintenanceBlock", { no: b.maintenanceOrder.code })}
+                      </Link>
+                    </li>
+                  ))}
+                  {slots.map((slot) => (
+                    <li key={slot.operationId}>
+                      <button
+                        type="button"
+                        onClick={() => setEditing(slot)}
+                        className="hover:bg-surface-subtle focus-visible:ring-focus-ring flex min-h-14 w-full flex-col items-start gap-0.5 px-4 py-2.5 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset"
+                      >
+                        <span className="flex w-full items-center gap-2">
+                          <span
+                            aria-hidden
+                            className={cn(
+                              "size-2.5 shrink-0 rounded-full",
+                              slot.late
+                                ? "bg-danger"
+                                : slot.status === "in_progress" || slot.status === "paused"
+                                  ? "bg-warning"
+                                  : slot.locked
+                                    ? "bg-primary"
+                                    : "bg-info",
+                            )}
+                          />
+                          <span className="min-w-0 flex-1 font-medium break-keep">
+                            {tShared("numbered", { no: slot.seq, name: slot.name })}
+                          </span>
+                          {slot.locked ? (
+                            <Icon name="lock" size={14} className="text-muted" aria-label={t("locked")} />
+                          ) : null}
+                        </span>
+                        <span className="text-muted ps-4.5 text-sm tabular-nums">{slotTime(slot)}</span>
+                        <span className="text-muted ps-4.5 text-sm">{slot.order.moNo}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted border-border border-t px-4 py-3 text-sm">{t("empty")}</p>
+              )}
+            </li>
+          );
+        })}
+        {!lanes.length ? <li className="text-muted">{t("empty")}</li> : null}
+      </ul>
+      <Legend />
       {editing ? (
         <MoveDialog
           slot={editing}
@@ -277,7 +436,7 @@ function Legend() {
     ["running", "bg-warning-subtle border-warning"],
     ["locked", "bg-primary-subtle border-primary"],
     ["late", "bg-danger-subtle border-danger"],
-    ["maintenance", "bg-surface-muted border-border-strong"],
+    ["maintenance", "bg-warning-subtle border-warning border-dashed"],
   ];
   return (
     <ul aria-label={t("label")} className="flex flex-wrap gap-3 text-xs">
@@ -296,6 +455,8 @@ function Lane({
   slots,
   blocks,
   segments,
+  hours,
+  nowX,
   total,
   xOf,
   timeOf,
@@ -307,6 +468,8 @@ function Lane({
   slots: Slot[];
   blocks: Block[];
   segments: Segment[];
+  hours: { key: string; x: number }[];
+  nowX: number | null;
   total: number;
   xOf: (ms: number) => number;
   timeOf: (x: number) => number;
@@ -321,8 +484,13 @@ function Lane({
 
   return (
     <div className="border-border flex border-b last:border-b-0">
-      <div className="w-44 shrink-0 p-2">{title}</div>
-      <div className="relative h-16" style={{ width: total }}>
+      <div
+        className="border-border bg-surface sticky left-0 z-[5] flex shrink-0 items-center border-e px-3 py-2"
+        style={{ width: NAME_PX }}
+      >
+        {title}
+      </div>
+      <div className="relative h-[4.5rem]" style={{ width: total }}>
         {segments.map((s) => (
           <div
             key={s.day}
@@ -331,6 +499,17 @@ function Lane({
             style={{ left: s.x, width: s.width }}
           />
         ))}
+        {hours.map((h) => (
+          <div
+            key={h.key}
+            aria-hidden
+            className="bg-border absolute top-0 h-full w-px opacity-50"
+            style={{ left: h.x }}
+          />
+        ))}
+        {nowX !== null ? (
+          <div aria-hidden className="bg-danger absolute top-0 z-[2] h-full w-0.5" style={{ left: nowX }} />
+        ) : null}
         {blocks.map((b) => {
           const left = xOf(new Date(b.start).getTime());
           const width = Math.max(6, xOf(new Date(b.end).getTime()) - left);
@@ -338,7 +517,7 @@ function Lane({
             <Link
               key={b.maintenanceOrder.id}
               href={`/maintenance/${b.maintenanceOrder.id}`}
-              className="border-warning bg-warning-subtle text-warning-subtle-fg absolute top-1 bottom-1 overflow-hidden rounded-md border-2 border-dashed px-1 text-xs"
+              className="border-warning bg-warning-subtle text-warning-subtle-fg absolute top-1.5 bottom-1.5 z-[3] overflow-hidden rounded-md border border-dashed px-1.5 py-1 text-xs"
               style={{ left, width }}
               title={t("maintenanceBlock", { no: b.maintenanceOrder.code })}
             >
@@ -357,7 +536,7 @@ function Lane({
               key={slot.operationId}
               type="button"
               className={cn(
-                "absolute top-2 bottom-2 overflow-hidden rounded-md border px-1 text-start text-xs shadow-sm",
+                "absolute top-2.5 bottom-2.5 z-[3] overflow-hidden rounded-md border px-1.5 py-1 text-start text-xs",
                 "focus-visible:ring-focus-ring outline-none focus-visible:ring-2",
                 slot.late
                   ? "border-danger bg-danger-subtle"
@@ -398,9 +577,9 @@ function Lane({
                 if (event.key === "Enter" || event.key === " ") onOpen(slot);
               }}
             >
-              <span className="block truncate font-medium">
-                {slot.locked ? "🔒 " : ""}
-                {tShared("numbered", { no: slot.seq, name: slot.name })}
+              <span className="flex items-center gap-1 truncate font-medium">
+                {slot.locked ? <Icon name="lock" size={12} className="shrink-0" aria-label={t("locked")} /> : null}
+                <span className="truncate">{tShared("numbered", { no: slot.seq, name: slot.name })}</span>
               </span>
               <span className="block truncate">{slot.order.moNo}</span>
             </button>

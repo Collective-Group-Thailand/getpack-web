@@ -7,6 +7,7 @@ import { useState } from "react";
 import { bangkokToday } from "@/features/partner/client";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { ActionBar } from "@/features/partner/erp/ActionBar";
+import { FormColumns, FormSummary, SummaryRows } from "@/features/partner/form-layout";
 import { useErpCall } from "@/features/partner/erp/call";
 import { plainNumber, QTY_PATTERN } from "@/features/partner/erp/format";
 import { type Line, LinesEditor, newLine, type PickItem } from "@/features/partner/erp/LinesEditor";
@@ -17,7 +18,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -46,6 +47,7 @@ export function BreakdownForm({
 }) {
   const t = useTranslations("partnerOps.maintenance");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
   const router = useRouter();
   const { factoryId } = useFactory();
   const { call, busy } = useErpCall();
@@ -93,59 +95,85 @@ export function BreakdownForm({
   }
 
   return (
-    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-4" noValidate>
-      <Field label={t("form.machine")} required requiredLabel={tCommon("required")} error={errors.machine}>
-        <Select
-          value={machineId || null}
-          placeholder={t("form.machine")}
-          onValueChange={setMachineId}
-          options={machines.map((m) => ({ value: m.id, label: m.name }))}
-        />
-      </Field>
-      <Field label={t("form.subject")} required requiredLabel={tCommon("required")} error={errors.title}>
-        <Input
-          value={title}
-          maxLength={200}
-          placeholder={t("form.subjectPlaceholder")}
-          onChange={(event) => setTitle(event.target.value)}
-        />
-      </Field>
-      <Field label={t("priorities.label")}>
-        <SegmentedControl
-          label={t("priorities.label")}
-          size="xl"
-          value={priority}
-          onValueChange={setPriority}
-          options={PRIORITIES.map((p) => ({ value: p, label: t(`priorities.${p}`) }))}
-        />
-      </Field>
-      <Field label={t("form.description")}>
-        <Textarea
-          rows={3}
-          maxLength={2000}
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-        />
-      </Field>
-      <Field label={t("form.photos")} hint={t("form.photosHint")}>
-        <FileDropzone
-          accept="image/*"
-          multiple
-          maxBytes={20 * 1024 * 1024}
-          onFiles={(chosen) => setFiles((all) => [...all, ...chosen].slice(0, MAX_PHOTOS))}
-          labels={{
-            prompt: files.length ? t("form.chosen", { names: files.map((f) => f.name).join(", ") }) : t("form.drop"),
-            browse: t("form.browse"),
-            tooLarge: (name) => t("form.tooLarge", { name }),
-            wrongType: (name) => t("form.wrongType", { name }),
-          }}
-        />
-      </Field>
-      <div>
-        <Button type="submit" size="xl" variant="destructive-solid" iconStart="wrench" loading={busy}>
-          {t("form.submit")}
-        </Button>
-      </div>
+    <form onSubmit={(event) => void submit(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" variant="destructive-solid" iconStart="wrench" loading={busy}>
+                {t("form.submit")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                {
+                  key: "machine",
+                  label: t("form.machine"),
+                  value: machines.find((m) => m.id === machineId)?.name ?? "",
+                },
+                { key: "priority", label: t("priorities.label"), value: t(`priorities.${priority}`) },
+                { key: "photos", label: t("form.photos"), value: files.length ? String(files.length) : "" },
+              ]}
+            />
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("details")}>
+          <Field label={t("form.machine")} required requiredLabel={tCommon("required")} error={errors.machine}>
+            <Select
+              value={machineId || null}
+              placeholder={t("form.machine")}
+              onValueChange={setMachineId}
+              options={machines.map((m) => ({ value: m.id, label: m.name }))}
+            />
+          </Field>
+          <Field label={t("form.subject")} required requiredLabel={tCommon("required")} error={errors.title}>
+            <Input
+              value={title}
+              maxLength={200}
+              placeholder={t("form.subjectPlaceholder")}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </Field>
+          <Field label={t("priorities.label")}>
+            <SegmentedControl
+              label={t("priorities.label")}
+              size="xl"
+              value={priority}
+              onValueChange={setPriority}
+              options={PRIORITIES.map((p) => ({ value: p, label: t(`priorities.${p}`) }))}
+            />
+          </Field>
+          <Field label={t("form.description")}>
+            <Textarea
+              rows={3}
+              maxLength={2000}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+        <FormSection card step={2} title={t("form.photos")} description={t("form.photosHint")}>
+          <Field label={t("form.photos")} labelHidden>
+            <FileDropzone
+              accept="image/*"
+              multiple
+              maxBytes={20 * 1024 * 1024}
+              onFiles={(chosen) => setFiles((all) => [...all, ...chosen].slice(0, MAX_PHOTOS))}
+              labels={{
+                prompt: files.length
+                  ? t("form.chosen", { names: files.map((f) => f.name).join(", ") })
+                  : t("form.drop"),
+                browse: t("form.browse"),
+                tooLarge: (name) => t("form.tooLarge", { name }),
+                wrongType: (name) => t("form.wrongType", { name }),
+              }}
+            />
+          </Field>
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
@@ -170,7 +198,9 @@ export function PlanForm({
   initialMachineId?: string;
 }) {
   const t = useTranslations("partnerOps.maintenance.planForm");
+  const tPlans = useTranslations("partnerOps.maintenance.plans");
   const tCommon = useTranslations("partnerErp.common");
+  const tSections = useTranslations("partnerErp.common.sections");
   const router = useRouter();
   const { factoryId } = useFactory();
   const { call, busy } = useErpCall();
@@ -192,6 +222,13 @@ export function PlanForm({
     const n = Number.parseInt(value, 10);
     return Number.isFinite(n) && n > 0 ? n : null;
   };
+
+  const cycle = [
+    whole(everyDays) ? tPlans("everyDays", { n: whole(everyDays)! }) : null,
+    whole(everyImpressions) ? tPlans("everyImpressions", { n: whole(everyImpressions)! }) : null,
+  ]
+    .filter(Boolean)
+    .join(tPlans("or"));
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
@@ -242,70 +279,99 @@ export function PlanForm({
   }
 
   return (
-    <form onSubmit={(event) => void save(event)} className="flex flex-col gap-4" noValidate>
-      <Field label={t("machine")} required requiredLabel={tCommon("required")} error={errors.machine}>
-        <Select
-          value={machineId || null}
-          placeholder={t("machine")}
-          onValueChange={setMachineId}
-          options={machines.map((m) => ({ value: m.id, label: m.name }))}
-        />
-      </Field>
-      <Field label={t("title")} required requiredLabel={tCommon("required")} error={errors.title}>
-        <Input
-          value={title}
-          maxLength={200}
-          placeholder={t("titlePlaceholder")}
-          onChange={(event) => setTitle(event.target.value)}
-        />
-      </Field>
-      <Field label={t("instructions")}>
-        <Textarea
-          rows={4}
-          maxLength={4000}
-          value={instructions}
-          onChange={(event) => setInstructions(event.target.value)}
-        />
-      </Field>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Field label={t("everyDays")} error={errors.interval} hint={t("intervalHint")}>
-          <NumberInput min={1} step={1} value={everyDays} onChange={(event) => setEveryDays(event.target.value)} />
-        </Field>
-        <Field label={t("everyImpressions")}>
-          <NumberInput
-            min={1}
-            step={1}
-            value={everyImpressions}
-            onChange={(event) => setEveryImpressions(event.target.value)}
-          />
-        </Field>
-        <Field label={t("duration")}>
-          <NumberInput min={1} step={1} value={duration} onChange={(event) => setDuration(event.target.value)} />
-        </Field>
-      </div>
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-semibold">{t("parts")}</legend>
-        {lines.length ? (
-          <LinesEditor items={items} lines={lines} onChange={setLines} locale={locale} quantityLabel={t("quantity")} />
-        ) : (
-          <div>
-            <Button
-              variant="secondary"
-              size="sm"
-              iconStart="plus"
-              onClick={() => setLines((all) => [...all, newLine()])}
-            >
-              {t("addPart")}
-            </Button>
+    <form onSubmit={(event) => void save(event)} noValidate>
+      <FormColumns
+        aside={
+          <FormSummary
+            title={tSections("summary")}
+            action={
+              <Button type="submit" size="xl" iconStart="save" loading={busy}>
+                {t("save")}
+              </Button>
+            }
+          >
+            <SummaryRows
+              rows={[
+                { key: "machine", label: t("machine"), value: machines.find((m) => m.id === machineId)?.name ?? "" },
+                { key: "cycle", label: tPlans("cycleHeader"), value: cycle ? tPlans("every", { what: cycle }) : "" },
+                { key: "duration", label: t("duration"), value: duration },
+                {
+                  key: "parts",
+                  label: t("parts"),
+                  value: String(lines.filter((line) => line.itemId).length),
+                },
+              ]}
+            />
+            {plan ? (
+              <Checkbox label={t("active")} checked={active} onCheckedChange={(c) => setActive(c === true)} />
+            ) : null}
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={tSections("details")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t("machine")} required requiredLabel={tCommon("required")} error={errors.machine}>
+              <Select
+                value={machineId || null}
+                placeholder={t("machine")}
+                onValueChange={setMachineId}
+                options={machines.map((m) => ({ value: m.id, label: m.name }))}
+              />
+            </Field>
+            <Field label={t("title")} required requiredLabel={tCommon("required")} error={errors.title}>
+              <Input
+                value={title}
+                maxLength={200}
+                placeholder={t("titlePlaceholder")}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </Field>
           </div>
-        )}
-      </fieldset>
-      {plan ? <Checkbox label={t("active")} checked={active} onCheckedChange={(c) => setActive(c === true)} /> : null}
-      <div>
-        <Button type="submit" size="lg" iconStart="save" loading={busy}>
-          {t("save")}
-        </Button>
-      </div>
+          <Field label={t("instructions")}>
+            <Textarea
+              rows={4}
+              maxLength={4000}
+              value={instructions}
+              onChange={(event) => setInstructions(event.target.value)}
+            />
+          </Field>
+        </FormSection>
+        <FormSection card step={2} title={tPlans("cycleHeader")} description={t("intervalHint")}>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label={t("everyDays")} error={errors.interval}>
+              <NumberInput min={1} step={1} value={everyDays} onChange={(event) => setEveryDays(event.target.value)} />
+            </Field>
+            <Field label={t("everyImpressions")}>
+              <NumberInput
+                min={1}
+                step={1}
+                value={everyImpressions}
+                onChange={(event) => setEveryImpressions(event.target.value)}
+              />
+            </Field>
+            <Field label={t("duration")}>
+              <NumberInput min={1} step={1} value={duration} onChange={(event) => setDuration(event.target.value)} />
+            </Field>
+          </div>
+        </FormSection>
+        <FormSection card step={3} title={t("parts")}>
+          {lines.length ? (
+            <LinesEditor
+              items={items}
+              lines={lines}
+              onChange={setLines}
+              locale={locale}
+              quantityLabel={t("quantity")}
+            />
+          ) : (
+            <div>
+              <Button variant="secondary" iconStart="plus" onClick={() => setLines((all) => [...all, newLine()])}>
+                {t("addPart")}
+              </Button>
+            </div>
+          )}
+        </FormSection>
+      </FormColumns>
     </form>
   );
 }
@@ -318,6 +384,7 @@ export function OpenPlanButton({ planId }: { planId: string }) {
   const { call, busy } = useErpCall();
   return (
     <Button
+      size="lg"
       iconStart="wrench"
       loading={busy}
       onClick={async () => {
@@ -350,11 +417,14 @@ export function MtActions({
   items,
   warehouses,
   locale,
+  layout = "row",
 }: {
   order: Schemas["ErpMaintenanceOrderDto"];
   items: PickItem[];
   warehouses: Warehouse[];
   locale: string;
+  /** `panel`: the order page's next-steps panel — one full-width stack, one filled action, cancel last. */
+  layout?: "row" | "panel";
 }) {
   const t = useTranslations("partnerOps.maintenance.actions");
   const tCommon = useTranslations("partnerErp.common");
@@ -387,24 +457,46 @@ export function MtActions({
   const [resolutionError, setResolutionError] = useState<string | undefined>();
   const [downtime, setDowntime] = useState("");
 
+  const schedule = offered.has("erp_mt.schedule") ? (
+    <Button
+      size={layout === "panel" ? "lg" : undefined}
+      variant="secondary"
+      iconStart="calendar"
+      onClick={() => setOpen("schedule")}
+    >
+      {t("schedule")}
+    </Button>
+  ) : null;
+  const parts = offered.has("erp_mt.parts") ? (
+    <Button
+      size={layout === "panel" ? "lg" : undefined}
+      variant="secondary"
+      iconStart="package"
+      onClick={() => setOpen("parts")}
+    >
+      {t("parts")}
+    </Button>
+  ) : null;
+  const finish = offered.has("erp_mt.finish") ? (
+    <Button size={layout === "panel" ? "lg" : undefined} iconStart="check" onClick={() => setOpen("finish")}>
+      {t("finish")}
+    </Button>
+  ) : null;
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {offered.has("erp_mt.schedule") ? (
-        <Button variant="secondary" iconStart="calendar" onClick={() => setOpen("schedule")}>
-          {t("schedule")}
-        </Button>
+    <div
+      {...(layout === "panel" ? { "data-fill": "row" } : {})}
+      className={layout === "panel" ? "flex flex-col gap-2" : "flex flex-wrap gap-2"}
+    >
+      {layout === "row" ? (
+        <>
+          {schedule}
+          {parts}
+        </>
       ) : null}
-      {offered.has("erp_mt.parts") ? (
-        <Button variant="secondary" iconStart="package" onClick={() => setOpen("parts")}>
-          {t("parts")}
-        </Button>
-      ) : null}
-      {offered.has("erp_mt.finish") ? (
-        <Button iconStart="check" onClick={() => setOpen("finish")}>
-          {t("finish")}
-        </Button>
-      ) : null}
+      {finish}
       <ActionBar
+        layout={layout}
         offered={order.nextActions}
         failed={tCommon("failed")}
         actions={[
@@ -412,6 +504,8 @@ export function MtActions({
             key: "erp_mt.start",
             label: t("start"),
             icon: "wrench",
+            // The next step when nothing is to be finished yet: filled in the panel.
+            ...(layout === "panel" && !offered.has("erp_mt.finish") ? { variant: "primary" as const } : {}),
             confirm: {
               title: t("startTitle", { no: order.mtNo }),
               body: t("startBody"),
@@ -443,7 +537,14 @@ export function MtActions({
             done: t("cancelled"),
           },
         ]}
-      />
+      >
+        {layout === "panel" ? (
+          <>
+            {schedule}
+            {parts}
+          </>
+        ) : null}
+      </ActionBar>
 
       {open === "schedule" ? (
         <Dialog

@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ERP_DELIVERY_STATUS, ERP_SALES_INVOICE_STATUS, ERP_SALES_ORDER_STATUS } from "@/domain/status";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { formatPlain, formatQty } from "@/features/partner/erp/format";
-import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { Row, RowList } from "@/features/partner/rows";
 import { SalesOrderActions } from "@/features/partner/sales/SalesOrderActions";
 import { SalesLinesTable, SalesTotals } from "@/features/partner/sales/view";
@@ -50,135 +50,153 @@ export default async function SalesOrderPage({ params }: Props) {
     );
   const { doc, etag } = read.data;
   const qty = (value: string) => formatQty(value, locale);
+  const deliveredPct = `${formatPlain(doc.deliveredPct, locale, 0)}%`;
 
   return (
     <PartnerPage
       full
       title={doc.soNo}
       back={back}
-      meta={
+      status={
         <>
           <StatusChip map={ERP_SALES_ORDER_STATUS} value={doc.status} />
           {doc.late ? <Badge tone="danger">{tCommon("late")}</Badge> : null}
         </>
       }
+      description={`${doc.customer.name} · ${format.date(doc.orderDate)}`}
     >
-      <SalesOrderActions order={doc} etag={etag} />
-      {doc.status === "draft" && doc.credit.over ? (
-        <Callout tone="warning" title={t("creditOverTitle")}>
-          {t("creditOverBody", {
-            limit: format.thb(doc.credit.limit ?? "0"),
-            receivables: format.thb(doc.credit.receivables),
-            orders: format.thb(doc.credit.openOrders),
-          })}
-        </Callout>
-      ) : null}
-      <Card padding="md">
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: tCommon("customer"), description: `${doc.customer.name} (${doc.customer.code})` },
-            { term: tCommon("salesperson"), description: doc.salesperson?.name ?? tCommon("noSalesperson") },
-            { term: t("facts.orderDate"), description: format.date(doc.orderDate) },
-            { term: t("facts.deliveryDate"), description: doc.deliveryDate ? format.date(doc.deliveryDate) : "—" },
-            { term: t("facts.paymentTerms"), description: tCommon("days", { n: doc.paymentTermDays }) },
-            { term: t("facts.warehouse"), description: doc.warehouse.code },
-            ...(doc.customerPoNo ? [{ term: t("facts.customerPoNo"), description: doc.customerPoNo }] : []),
-            ...(doc.quotation
-              ? [
-                  {
-                    term: t("facts.quotation"),
-                    description: (
-                      <Link className="text-link underline" href={`/quotations/${doc.quotation.id}`}>
-                        {doc.quotation.code}
-                      </Link>
-                    ),
-                  },
-                ]
-              : []),
-            {
-              term: t("facts.credit"),
-              description: doc.credit.limit
-                ? t("creditLine", {
-                    limit: format.thb(doc.credit.limit),
-                    receivables: format.thb(doc.credit.receivables),
-                  })
-                : t("noLimit"),
-            },
-            ...(doc.shipToAddress ? [{ term: t("facts.shipTo"), description: doc.shipToAddress }] : []),
-            ...(doc.creditOverrideReason ? [{ term: t("facts.override"), description: doc.creditOverrideReason }] : []),
-            ...(doc.note ? [{ term: t("facts.note"), description: doc.note }] : []),
-            ...(doc.cancelReason || doc.closeReason
-              ? [{ term: tCommon("reason"), description: doc.cancelReason ?? doc.closeReason }]
-              : []),
-          ]}
-        />
-      </Card>
-      <PartnerSection
-        title={t("linesTitle")}
-        description={t("progress", { pct: formatPlain(doc.deliveredPct, locale, 0) })}
+      {/* The order on the left; its total, delivery progress and next steps in a panel that stays in view. */}
+      <PartnerDetail
+        aside={
+          <ActionPanel id="so-next" tone="neutral" title={tCommon("nextSteps")}>
+            <dl className="border-border grid grid-cols-[1fr_auto] items-baseline gap-x-3 gap-y-1 border-b pb-3">
+              <dt className="text-muted text-sm">{tCommon("total")}</dt>
+              <dd className="text-end text-xl font-semibold tabular-nums">{format.thb(doc.total)}</dd>
+              <dt className="text-muted text-sm">{t("table.delivered")}</dt>
+              <dd className="text-end tabular-nums">{deliveredPct}</dd>
+            </dl>
+            <SalesOrderActions order={doc} etag={etag} />
+          </ActionPanel>
+        }
       >
-        <SalesLinesTable
-          caption={t("linesTitle")}
-          lines={doc.lines}
-          extra={[
-            {
-              key: "how",
-              header: tLines("fulfilment"),
-              cell: (line) =>
-                line.productionOrder ? (
-                  <Link className="text-link underline" href={`/planning/orders/${line.productionOrder.id}`}>
-                    {line.productionOrder.code}
-                  </Link>
-                ) : (
-                  tLines(`fulfilments.${line.fulfilment}`)
-                ),
-            },
-            { key: "reserved", header: t("reserved"), cell: (line) => qty(line.reservedQty) },
-            { key: "delivered", header: t("delivered"), cell: (line) => qty(line.deliveredQty) },
-            { key: "invoiced", header: t("invoiced"), cell: (line) => qty(line.invoicedQty) },
-          ]}
-        />
-        <SalesTotals doc={doc} />
-      </PartnerSection>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <PartnerSection title={t("deliveriesTitle")}>
-          {doc.deliveryNotes.length ? (
-            <RowList label={t("deliveriesTitle")}>
-              {doc.deliveryNotes.map((d) => (
-                <Row
-                  key={d.id}
-                  href={`/deliveries/${d.id}`}
-                  icon="truck"
-                  title={<span className="tabular-nums">{d.doNo}</span>}
-                  meta={format.date(d.deliverOn)}
-                  aside={<StatusChip map={ERP_DELIVERY_STATUS} value={d.status} />}
-                />
-              ))}
-            </RowList>
-          ) : (
-            <EmptyState icon="truck" title={t("noDeliveries")} />
-          )}
+        {doc.status === "draft" && doc.credit.over ? (
+          <Callout tone="warning" title={t("creditOverTitle")}>
+            {t("creditOverBody", {
+              limit: format.thb(doc.credit.limit ?? "0"),
+              receivables: format.thb(doc.credit.receivables),
+              orders: format.thb(doc.credit.openOrders),
+            })}
+          </Callout>
+        ) : null}
+        <Card padding="md">
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: tCommon("customer"), description: `${doc.customer.name} (${doc.customer.code})` },
+              { term: tCommon("salesperson"), description: doc.salesperson?.name ?? tCommon("noSalesperson") },
+              { term: t("facts.orderDate"), description: format.date(doc.orderDate) },
+              { term: t("facts.deliveryDate"), description: doc.deliveryDate ? format.date(doc.deliveryDate) : "—" },
+              { term: t("facts.paymentTerms"), description: tCommon("days", { n: doc.paymentTermDays }) },
+              { term: t("facts.warehouse"), description: doc.warehouse.code },
+              ...(doc.customerPoNo ? [{ term: t("facts.customerPoNo"), description: doc.customerPoNo }] : []),
+              ...(doc.quotation
+                ? [
+                    {
+                      term: t("facts.quotation"),
+                      description: (
+                        <Link className="text-link underline" href={`/quotations/${doc.quotation.id}`}>
+                          {doc.quotation.code}
+                        </Link>
+                      ),
+                    },
+                  ]
+                : []),
+              {
+                term: t("facts.credit"),
+                description: doc.credit.limit
+                  ? t("creditLine", {
+                      limit: format.thb(doc.credit.limit),
+                      receivables: format.thb(doc.credit.receivables),
+                    })
+                  : t("noLimit"),
+              },
+              ...(doc.shipToAddress ? [{ term: t("facts.shipTo"), description: doc.shipToAddress }] : []),
+              ...(doc.creditOverrideReason
+                ? [{ term: t("facts.override"), description: doc.creditOverrideReason }]
+                : []),
+              ...(doc.note ? [{ term: t("facts.note"), description: doc.note }] : []),
+              ...(doc.cancelReason || doc.closeReason
+                ? [{ term: tCommon("reason"), description: doc.cancelReason ?? doc.closeReason }]
+                : []),
+            ]}
+          />
+        </Card>
+        <PartnerSection
+          title={t("linesTitle")}
+          description={t("progress", { pct: formatPlain(doc.deliveredPct, locale, 0) })}
+        >
+          <SalesLinesTable
+            caption={t("linesTitle")}
+            lines={doc.lines}
+            extra={[
+              {
+                key: "how",
+                header: tLines("fulfilment"),
+                cell: (line) =>
+                  line.productionOrder ? (
+                    <Link className="text-link underline" href={`/planning/orders/${line.productionOrder.id}`}>
+                      {line.productionOrder.code}
+                    </Link>
+                  ) : (
+                    tLines(`fulfilments.${line.fulfilment}`)
+                  ),
+              },
+              { key: "reserved", header: t("reserved"), cell: (line) => qty(line.reservedQty) },
+              { key: "delivered", header: t("delivered"), cell: (line) => qty(line.deliveredQty) },
+              { key: "invoiced", header: t("invoiced"), cell: (line) => qty(line.invoicedQty) },
+            ]}
+          />
+          <SalesTotals doc={doc} />
         </PartnerSection>
-        <PartnerSection title={t("invoicesTitle")}>
-          {doc.invoices.length ? (
-            <RowList label={t("invoicesTitle")}>
-              {doc.invoices.map((i) => (
-                <Row
-                  key={i.id}
-                  href={`/invoices/${i.id}`}
-                  icon="receipt"
-                  title={<span className="tabular-nums">{i.invoiceNo ?? tCommon("draftNo")}</span>}
-                  meta={<StatusChip map={ERP_SALES_INVOICE_STATUS} value={i.status} />}
-                  aside={format.thb(i.total)}
-                />
-              ))}
-            </RowList>
-          ) : (
-            <EmptyState icon="receipt" title={t("noInvoices")} />
-          )}
-        </PartnerSection>
-      </div>
+        <div className="grid gap-6 xl:grid-cols-2">
+          <PartnerSection title={t("deliveriesTitle")}>
+            {doc.deliveryNotes.length ? (
+              <RowList label={t("deliveriesTitle")}>
+                {doc.deliveryNotes.map((d) => (
+                  <Row
+                    key={d.id}
+                    href={`/deliveries/${d.id}`}
+                    icon="truck"
+                    title={<span className="tabular-nums">{d.doNo}</span>}
+                    meta={format.date(d.deliverOn)}
+                    aside={<StatusChip map={ERP_DELIVERY_STATUS} value={d.status} />}
+                  />
+                ))}
+              </RowList>
+            ) : (
+              <EmptyState icon="truck" title={t("noDeliveries")} />
+            )}
+          </PartnerSection>
+          <PartnerSection title={t("invoicesTitle")}>
+            {doc.invoices.length ? (
+              <RowList label={t("invoicesTitle")}>
+                {doc.invoices.map((i) => (
+                  <Row
+                    key={i.id}
+                    href={`/invoices/${i.id}`}
+                    icon="receipt"
+                    title={<span className="tabular-nums">{i.invoiceNo ?? tCommon("draftNo")}</span>}
+                    meta={<StatusChip map={ERP_SALES_INVOICE_STATUS} value={i.status} />}
+                    aside={format.thb(i.total)}
+                  />
+                ))}
+              </RowList>
+            ) : (
+              <EmptyState icon="receipt" title={t("noInvoices")} />
+            )}
+          </PartnerSection>
+        </div>
+      </PartnerDetail>
     </PartnerPage>
   );
 }
