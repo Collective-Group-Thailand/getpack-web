@@ -37,8 +37,13 @@ test("Today counts the sample jobs and the claims", async ({ page }) => {
   await signInAsPartner(page, "owner");
   const counters = page.getByRole("region", { name: "ภาพรวมวันนี้" });
   await expect(counters.getByRole("link", { name: /ตัวอย่าง/ }).first()).toBeVisible();
-  // A counter with nothing in it is named in the "nothing waiting" line instead of a tile.
-  await expect(counters.getByText(/เคลม/).first()).toBeVisible();
+  // A counter with nothing in it is named in the "nothing waiting" line under the tiles instead of a tile.
+  await expect(
+    counters
+      .getByText(/เคลม/)
+      .or(page.getByText(/^ไม่มีงาน.*เคลม/))
+      .first(),
+  ).toBeVisible();
   await expectAxeClean(page);
 });
 
@@ -46,7 +51,7 @@ test("the owner sets new working hours from tomorrow and a closure; another role
   test.setTimeout(90_000);
   await signInAsPartner(page, "owner");
   await page.goto(`${HOSTS.partner}/settings`);
-  await page.getByRole("link", { name: "ตั้งเวลาทำการ" }).click();
+  await page.getByRole("link", { name: /^เวลาทำการและวันหยุด/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "เวลาทำการ" })).toBeVisible();
   await expect(page.getByText(/^ใช้ตั้งแต่ /)).toBeVisible();
   await expectAxeClean(page);
@@ -90,7 +95,7 @@ test("the knowledge base: searched, by category, and an article", async ({ page 
   await signInAsPartner(page, "qc");
   await gotoHydrated(page, `${HOSTS.partner}/knowledge?category=qc-photo-standard`);
   await expect(page.getByRole("heading", { level: 1, name: "คู่มือโรงงาน" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "มาตรฐานรูป QC" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: "มาตรฐานรูป QC", exact: true })).toHaveAttribute("aria-current", "page");
   await expectAxeClean(page);
 
   await page.getByRole("link", { name: "ทั้งหมด" }).click();

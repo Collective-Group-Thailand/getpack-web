@@ -48,11 +48,14 @@ test.describe("account redesign (C6)", () => {
   });
 
   test("orders: to-do strip, tab counts, search in the address, export", async ({ page }) => {
-    await signInAsCustomer(page, "/account/orders");
-    await expect(page.getByRole("heading", { level: 1, name: "คำสั่งซื้อ" })).toBeVisible();
+    // The to-do strip sits on the account home since the customer redesign; the orders list is a table.
+    await signInAsCustomer(page, "/account");
     const todo = page.getByRole("region", { name: "ต้องทำตอนนี้" });
     await expect(todo.getByText(/^ชำระ ฿/)).toBeVisible();
     await expect(todo.getByText(/เคลมกำลังตรวจ/)).toBeVisible();
+
+    await gotoHydrated(page, `${HOSTS.customer}/account/orders`);
+    await expect(page.getByRole("heading", { level: 1, name: "คำสั่งซื้อ" })).toBeVisible();
 
     const tabs = page.getByRole("navigation", { name: "สถานะคำสั่งซื้อ" });
     await expect(tabs.getByRole("link", { name: /ต้องทำ\s*2/ })).toBeVisible();
@@ -62,7 +65,9 @@ test.describe("account redesign (C6)", () => {
 
     await page.getByRole("searchbox", { name: "ค้นหาคำสั่งซื้อ" }).fill("00112");
     await expect(page).toHaveURL(/q=00112/);
-    await expect(page.getByRole("heading", { level: 3 })).toHaveCount(1);
+    await expect(
+      page.getByRole("table", { name: "คำสั่งซื้อ" }).getByRole("row").filter({ hasText: /PK-/ }),
+    ).toHaveCount(1);
 
     const download = page.waitForEvent("download");
     await page.getByRole("link", { name: "ส่งออก" }).click();

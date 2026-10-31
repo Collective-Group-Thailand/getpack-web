@@ -61,10 +61,12 @@ test("a call-off: asked for on a saved quotation, accepted, released into the ca
   await expect(page.getByText(/บันทึกใบเสนอราคาแล้ว/)).toBeVisible();
 
   await gotoHydrated(page, `${HOSTS.customer}/account/quotes`);
+  // In each saved quotation's "⋯" menu since the customer redesign.
   await page
-    .getByRole("button", { name: /^ล็อกราคาไว้เรียกทีละงวด/ })
+    .getByRole("button", { name: /^ตัวเลือกเพิ่มเติมของ / })
     .first()
     .click();
+  await page.getByRole("menuitem", { name: /^ล็อกราคาไว้เรียกทีละงวด/ }).click();
   const dialog = page.getByRole("dialog", { name: "ขอทำสัญญาเรียกของ" });
   await expectNoViolations(page);
   await dialog.getByRole("button", { name: "ส่งคำขอ" }).click();
@@ -81,11 +83,11 @@ test("a call-off: asked for on a saved quotation, accepted, released into the ca
   await expect(page).toHaveURL(/\/cart$/);
 
   await gotoHydrated(page, `${HOSTS.customer}/account/call-offs`);
-  // Called off / the whole (the call-offs table, account/call-offs).
+  // Called off / the whole (the call-offs table, account/call-offs), with its meter beside it.
   await expect(
     page
       .getByRole("table", { name: "สัญญาเรียกของ" })
-      .getByRole("cell", { name: /^[1-9][\d,]* \/ [\d,]+ ชิ้น$/ })
+      .getByRole("cell", { name: /^[1-9][\d,]* \/ [\d,]+ ชิ้น/ })
       .first(),
   ).toBeVisible();
 });

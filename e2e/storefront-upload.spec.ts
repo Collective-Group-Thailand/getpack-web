@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, completeSignIn, signInAsCustomer } from "./helpers/customer";
+import { choiceList } from "./helpers/select";
 import { gotoHydrated } from "./helpers/session";
 
 /**
@@ -77,7 +78,8 @@ test.describe("upload page (C9)", () => {
     await expect(page.getByText("แก้ข้อที่ต้องแก้ก่อน แล้วจึงเพิ่มลงตะกร้าได้")).toBeVisible();
 
     // A size that no longer matches the die lines: must fix, with "ใช้ขนาดตามไฟล์".
-    await page.getByLabel("ขนาดที่สั่ง").selectOption("A");
+    await choiceList(page, "ขนาดที่สั่ง").click();
+    await page.getByRole("option", { name: /เบอร์ A/ }).click();
     await expect(page.getByText("ไม่ตรงกับไฟล์")).toBeVisible();
     await page.getByRole("button", { name: "ใช้ขนาดตามไฟล์" }).first().click();
     await expect(page.getByText(/ไฟล์นี้คือ.+เบอร์ B/)).toBeVisible();

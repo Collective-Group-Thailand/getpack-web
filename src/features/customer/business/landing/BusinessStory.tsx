@@ -160,6 +160,7 @@ export async function BusinessStory({
           <ul className="px-5 py-1.5">
             {BRANCHES.map((branch, index) => (
               <Up
+                as="li"
                 key={branch}
                 delay={0.9 + index * 0.5}
                 className="border-border flex items-center gap-3 border-b py-3 last:border-b-0"
@@ -256,6 +257,7 @@ export async function BusinessStory({
           <ul className="border-border grid grid-cols-2 gap-2 border-t px-5 py-4 sm:grid-cols-4">
             {ROLES.map((role, index) => (
               <Up
+                as="li"
                 key={role}
                 delay={1.8 + index * 0.2}
                 className="bg-bg-subtle rounded-control p-2.5 text-center text-xs"

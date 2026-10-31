@@ -12,7 +12,8 @@ const shots = process.env["E2E_SHOTS"];
 test.describe("company credit (D-462)", () => {
   test("a buyer sees the available credit, the term and the end date — not the limit", async ({ page }) => {
     await signInAsCustomer(page, "/business", CREDIT_BUYER_PHONE);
-    const card = page.getByRole("region", { name: "เครดิตคงเหลือ" });
+    // The credit is the first of the dashboard's summary cards (`SummaryCards`, a term and its values).
+    const card = page.locator("dl > div").filter({ has: page.getByRole("term").filter({ hasText: "เครดิตคงเหลือ" }) });
     await expect(card).toContainText("฿");
     await expect(card).toContainText("เครดิต 90 วันหลังส่งมอบ");
     await expect(card).toContainText("วงเงินชั่วคราว ใช้ได้ถึง");

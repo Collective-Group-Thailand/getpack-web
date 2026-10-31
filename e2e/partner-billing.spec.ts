@@ -38,7 +38,7 @@ test.describe("billing and payouts (F001)", () => {
     await expectAxeClean(page);
 
     await page
-      .getByRole("list", { name: "วางบิล", exact: true })
+      .getByRole("list", { name: "ทั้งหมด", exact: true })
       .getByRole("listitem")
       .filter({ hasText: "รอคุณตรวจและยืนยัน" })
       .first()
@@ -47,7 +47,7 @@ test.describe("billing and payouts (F001)", () => {
     await expect(page).toHaveURL(/\/billing\/[0-9a-f-]+$/);
     await expect(page.getByRole("heading", { level: 1, name: /^BS-/ })).toBeVisible();
     const bsNumber = (await page.getByRole("heading", { level: 1 }).textContent())!;
-    await expect(page.getByText("ค่าผลิต").first()).toBeVisible();
+    await expect(page.getByText("ค่าผลิต").filter({ visible: true }).first()).toBeVisible();
     await expect(page.getByText(/^getpack สร้างเมื่อ /)).toBeVisible();
     await expectAxeClean(page);
 
@@ -87,8 +87,10 @@ test.describe("billing and payouts (F001)", () => {
     await expectAxeClean(page);
 
     await gotoHydrated(page, `${HOSTS.partner}/payouts/statement`);
-    await expect(page.getByRole("table")).toContainText(pvNumber);
-    await expect(page.getByRole("table")).toContainText("รับสินค้า");
+    // A list of entries on a phone (the partner redesign), not a table.
+    const statement = page.getByRole("list", { name: /^รายการเดินบัญชี/ });
+    await expect(statement).toContainText(pvNumber);
+    await expect(statement).toContainText("รับสินค้า");
     await expectAxeClean(page);
   });
 });

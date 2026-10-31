@@ -436,3 +436,23 @@ Measured by CI on `main` at `619e3167` (after C6 account, C7/C8 studio, C9 uploa
   Both are levers to work down: the finder and the recent designs can load on view; the pro toolbox with the mode.
 - The rest is shared-shell growth across C6–C11 (2.5–5 KB per set).
 - Raised under the owner's decision for the Stage C repair ("raise ratchets to measured", 2026-10-28); targets unchanged.
+
+## Stage C CI repair 3 — customer and partner redesigns, D-462 (2026-10-31)
+
+Measured with `pnpm lhci` on `9c3da6fa` (a local production build with CI's env; CI's own run failed on the same
+five sets without per-URL figures in its annotations):
+
+| Set | Heaviest page | Before | Measured | Ratchet |
+|---|---|---|---|---|
+| customer-marketing | `/studio` | 349,900 | 351,615 | 349,900 → **352,100** |
+| studio | `/studio/new?product=tuck-end-box…` | 600,800 | 601,681 | 600,800 → **602,200** |
+| admin-crud | `/partners` | 512,500 | 512,612 | 512,500 → **513,100** |
+| admin-lists | `/orders`, an order | 397,300 | 397,434 | 397,300 → **397,900** |
+| partner | `/settings` | 312,900 | 313,139 (`/ship` 313,018) | 312,900 → **313,600** |
+
+- Shared-shell growth from the customer redesign (projects A–D), the partner portal redesign and D-462's credit
+  summary: 0.1–1.7 KB per set. `customer-app` and the admin shell stay under their ratchets.
+- `/products/tuck-end-box` measured a CLS of 0.20 against the 0.05 warning — a warning, not a gate; to look at
+  with the PDP's sections loading on view.
+- Raised by the owner's decision for this repair (2026-10-31: "raise ratchets slightly"); targets unchanged.
+

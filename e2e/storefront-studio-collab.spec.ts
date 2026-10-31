@@ -73,7 +73,8 @@ test("a comment pinned on the flat sheet, resolved; a comment link used by someo
   await guest.goto(link);
   await expect(guest.getByText("แบบที่แชร์ · แสดงความคิดเห็นได้")).toBeVisible();
   await guest.getByRole("button", { name: "ปักหมุดความคิดเห็น" }).click();
-  await guest.locator("main svg[aria-hidden='true']").first().click();
+  // The pin layer over the flat sheet: the crosshair overlay while placing (SharedComments).
+  await guest.locator("main svg.cursor-crosshair").first().click();
   await guest.getByRole("textbox", { name: "ความคิดเห็น" }).fill("สีฟ้าเข้มไปไหม");
   await guest.getByRole("button", { name: "ส่ง", exact: true }).click();
   await expect(guest.getByRole("listitem").filter({ hasText: "สีฟ้าเข้มไปไหม" })).toBeVisible();

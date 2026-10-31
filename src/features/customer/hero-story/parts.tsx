@@ -64,22 +64,24 @@ export function Toast({ delay, title, detail }: { delay: number; title: string; 
   );
 }
 
-/** A line that rises into place at its time. */
+/** A line that rises into place at its time; `as="li"` inside a `<ul>`. */
 export function Up({
   delay,
   className,
   children,
   highlight = false,
+  as: Tag = "div",
 }: {
   delay: number;
   className?: string;
   children: ReactNode;
   highlight?: boolean;
+  as?: "div" | "li";
 }) {
   return (
-    <div className={cn(highlight ? "pk-story-hi" : "pk-story-up", className)} style={at(delay)}>
+    <Tag className={cn(highlight ? "pk-story-hi" : "pk-story-up", className)} style={at(delay)}>
       {children}
-    </div>
+    </Tag>
   );
 }
 

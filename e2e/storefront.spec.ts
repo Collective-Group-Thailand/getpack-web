@@ -47,6 +47,8 @@ async function signIn(page: Page, phone: string, locale: keyof typeof SIGN_IN = 
   const sheet = new URL(page.url()).pathname.endsWith("/sign-in")
     ? page.getByRole("main")
     : page.getByRole("dialog", { name: labels.title });
+  // Typed before hydration, the number is in the field but not in React's state, and "send" stays disabled.
+  await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
   await sheet.getByLabel(labels.phone).fill(phone);
   await sheet.getByRole("button", { name: labels.send }).click();
   await sheet.getByLabel(labels.otp).fill(MOCK_OTP.code);

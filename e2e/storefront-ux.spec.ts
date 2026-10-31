@@ -132,7 +132,7 @@ test.describe("U5.4 — the RFQ basket", () => {
     await page.getByLabel(/^สูง/).fill("60");
     await page.getByRole("button", { name: "เพิ่มลงตะกร้าคำขอ" }).click();
     await expect(page).toHaveURL(/\/rfq\/basket\?added=1$/);
-    await expect(page.getByText("รายการในตะกร้า (1)")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "รายการในตะกร้า (1)" })).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/rfq/rigid-box`);
     await choiceList(page, /รูปแบบการปิด/).click();
@@ -141,7 +141,7 @@ test.describe("U5.4 — the RFQ basket", () => {
     await page.getByLabel(/^กว้าง/).fill("80");
     await page.getByLabel(/^สูง/).fill("40");
     await page.getByRole("button", { name: "เพิ่มลงตะกร้าคำขอ" }).click();
-    await expect(page.getByText("รายการในตะกร้า (2)")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "รายการในตะกร้า (2)" })).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("button", { name: "ส่งคำขอ 2 รายการ" }).click();

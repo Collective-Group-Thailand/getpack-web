@@ -137,7 +137,7 @@ test.describe("getpack for business", () => {
   }) => {
     await signInAsCustomer(page, "/business", PHONES.admin);
     await expect(
-      page.getByRole("region", { name: "เครดิตคงเหลือ" }).or(page.locator("section[aria-labelledby=dash-credit]")),
+      page.locator("dl > div").filter({ has: page.getByRole("term").filter({ hasText: "เครดิตคงเหลือ" }) }),
     ).toContainText("฿");
     await expectNoViolations(page);
 
@@ -152,7 +152,9 @@ test.describe("getpack for business", () => {
     await expect(page.getByRole("link", { name: /^เปิดไฟล์/ }).first()).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/business/members`);
-    // An invitation goes to an existing getpack account, by phone (store.companies.inviteMember).
+    // An invitation goes to an existing getpack account, by phone (store.companies.inviteMember), from the
+    // "เชิญสมาชิก" button above the members table.
+    await page.getByRole("button", { name: "เชิญสมาชิก" }).click();
     await page.getByLabel(/^เบอร์มือถือ/).fill(PHONES.founder);
     await page.getByRole("checkbox", { name: /^ฝ่ายบัญชี/ }).click();
     await page.getByRole("button", { name: "ส่งคำเชิญ" }).click();
@@ -175,6 +177,9 @@ test.describe("getpack for business", () => {
 });
 
 test.describe("LINE LIFF (D-151)", () => {
+  // LINE's in-app browser is a phone: an order's actions sit in the bar above the tabs, which is phone-only.
+  test.use({ viewport: { width: 390, height: 844 } });
+
   test("orders, an order's stages and points in LINE's frame", async ({ page }) => {
     await signInAsCustomer(page, "/liff");
     await expect(page.getByRole("heading", { level: 1, name: /^สวัสดี/ })).toBeVisible();

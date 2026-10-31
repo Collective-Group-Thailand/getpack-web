@@ -35,7 +35,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 312900
+            "maxNumericValue": 313600
           }
         ]
       }

@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { acceptCookies } from "./helpers/customer";
+import { choiceList } from "./helpers/select";
 import { gotoHydrated } from "./helpers/session";
 
 /**
@@ -18,6 +19,9 @@ const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function expectNoViolations(page: Page) {
   await page.waitForLoadState("networkidle").catch(() => {});
+  // The hero stories loop their scenes, fading lines in: with less motion every element sits in its final state,
+  // so the contrast is measured on what a reader settles on, not on a line half-way through its fade.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
   expect(
     violations,
@@ -165,7 +169,9 @@ test.describe("/partner-with-us (C10 Phase 3)", () => {
     await apply.getByLabel(/^ชื่อโรงงาน/).fill("โรงงานทดสอบอีทูอี");
     await apply.getByLabel(/^ผู้ติดต่อ/).fill("ผู้ติดต่อทดสอบ");
     await apply.locator("input[type=tel]").fill("0812345678");
-    await apply.locator("select").first().selectOption({ index: 1 });
+    await choiceList(apply, /^จังหวัด/).click();
+    // The first option is the "เลือกจังหวัด" placeholder.
+    await page.getByRole("option").nth(1).click();
     await apply.getByRole("group").getByRole("button").first().click();
     await expectNoViolations(page);
     await apply.getByRole("button", { name: "สมัครเป็นโรงงานพาร์ตเนอร์" }).click();
