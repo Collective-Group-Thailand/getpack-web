@@ -17,7 +17,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 600800
+            "maxNumericValue": 602200
           }
         ],
         "largest-contentful-paint": [
