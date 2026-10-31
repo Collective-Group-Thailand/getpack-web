@@ -44,11 +44,15 @@ export function HubSection({
         id={id}
         tabIndex={-1}
         aria-labelledby={`${id}-title`}
-        className={cn("scroll-mt-[calc(var(--site-sticky-top)+1rem)] outline-none", className)}
+        className={cn("relative scroll-mt-[calc(var(--site-sticky-top)+1rem)] outline-none", className)}
       >
         <details className="group/section">
-          <summary className="focus-visible:ring-focus-ring hover:bg-surface-subtle flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-4 outline-none focus-visible:ring-2 focus-visible:ring-inset md:px-6 md:py-5 [&::-webkit-details-marker]:hidden">
-            <span className="min-w-0">
+          <summary
+            className={cn(
+              "focus-visible:ring-focus-ring hover:bg-surface-subtle flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-4 outline-none focus-visible:ring-2 focus-visible:ring-inset md:px-6 md:py-5 [&::-webkit-details-marker]:hidden",
+            )}
+          >
+            <span className={cn("min-w-0", aside && "md:pe-64")}>
               <h2 id={`${id}-title`} className="text-lg leading-snug font-semibold md:text-xl">
                 {title}
               </h2>
@@ -61,11 +65,16 @@ export function HubSection({
               className="text-muted mt-1 shrink-0 transition-transform group-open/section:rotate-180 motion-reduce:transition-none"
             />
           </summary>
-          <div className="px-4 pb-6 md:px-6">
-            {aside ? <div className="mb-4 flex flex-wrap gap-2">{aside}</div> : null}
-            {children}
-          </div>
+          <div className="px-4 pb-6 md:px-6">{children}</div>
         </details>
+        {/* The section's own action (e.g. "เปรียบเทียบวัสดุทั้งหมด") stays visible on a desk while the row is
+            folded — outside the summary, so the link is not nested in the toggle. */}
+        {aside ? (
+          <>
+            <div className="absolute end-14 top-4 hidden md:top-5 md:flex">{aside}</div>
+            <div className="-mt-1 flex flex-wrap gap-2 px-4 pb-4 md:hidden">{aside}</div>
+          </>
+        ) : null}
       </section>
     );
   return (
