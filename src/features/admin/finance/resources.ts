@@ -7,7 +7,7 @@
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
-import { defineList } from "../console/resource";
+import { asPage, defineList } from "../console/resource";
 
 export type SlipItem = Schemas["SlipQueueItemDto"];
 export type Payment = Schemas["AdminPaymentDto"];
@@ -255,6 +255,40 @@ export const bankLinesList = defineList<BankLine>({
     sort: "txnDate",
     order: "desc",
   },
+});
+
+/** Buyer-correction requests (D-431): the pending ones by default, `all` for every request. */
+export const correctionsList = defineList<Schemas["DocumentCorrectionDto"]>({
+  key: "document-corrections",
+  fetch: async ({ contract }, { status, ...query }) =>
+    (
+      await contract.GET("/v1/admin/document-corrections", {
+        params: {
+          query: {
+            ...(query as object),
+            ...(status && status !== "all" ? { status: status as Schemas["DocumentCorrectionStatus"] } : {}),
+          },
+        },
+      })
+    ).data!,
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.document.docNumber,
+  defaults: { filterKeys: ["status"], filters: { status: "pending" }, sort: "createdAt", order: "desc" },
+});
+
+/** Unidentified receipts by status (an unpaged read), so a status tab counts the rows it shows. */
+export const unidentifiedList = defineList<Schemas["UnidentifiedReceiptDto"]>({
+  key: "unidentified-receipt",
+  fetch: async ({ contract }, { status }) =>
+    asPage(
+      (
+        await contract.GET("/v1/admin/unidentified-receipts", {
+          params: { query: { status: (status ?? "open") as Schemas["UnidentifiedReceiptStatus"] } },
+        })
+      ).data!,
+    ),
+  getRowId: (row) => row.id,
+  defaults: { filterKeys: ["status"], filters: { status: "open" } },
 });
 
 export const settlementsList = defineList<SettlementSummary>({

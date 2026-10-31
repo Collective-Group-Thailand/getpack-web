@@ -6,26 +6,29 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { DOCUMENT_CORRECTION_STATUS, ETAX_STATUS, ETAX_SUBMISSION_STATUS } from "@/domain/status";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable } from "@/ui/components/DataTable";
-import { EmptyState } from "@/ui/components/EmptyState";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Field } from "@/ui/components/Field";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis } from "../console/api";
 import { ConfirmAction } from "../console/ConfirmAction";
 import { FormDialog, Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
+import { QueueTabs } from "../console/queues";
+import { ResourceList } from "../console/ResourceList";
 import { StatusChip } from "../console/StatusChip";
-import type { CustomerDocument } from "./resources";
+import { correctionsList, type CustomerDocument } from "./resources";
 import { invalidateMoney } from "./slips";
 
 type Correction = Schemas["DocumentCorrectionDto"];
@@ -278,56 +281,54 @@ export function CorrectionsQueue() {
   const t = useTranslations("finance.corrections");
   const tReasons = useTranslations("finance.documents.replace.reasons");
   const format = useFormat();
-  const [status, setStatus] = useState<"pending" | "all">("pending");
-  const query = useQuery({
-    queryKey: queryKeys.list("admin", "document-corrections", { status }),
-    queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/document-corrections", {
-          params: { query: { ...(status === "pending" ? { status: "pending" as const } : {}), perPage: 100 } },
-        })
-      ).data!,
-  });
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} />
-      <SegmentedControl
-        label={t("title")}
-        value={status}
-        onValueChange={(value) => setStatus(value as "pending" | "all")}
-        options={[
-          { value: "pending", label: t("pending") },
-          { value: "all", label: t("all") },
+      <ResourceList
+        resource={correctionsList}
+        caption={t("title")}
+        rowHref={(row) => `/finance/corrections/${row.id}`}
+        savedViews={false}
+        views={
+          <QueueTabs
+            label={t("title")}
+            param="status"
+            countFrom={correctionsList}
+            tabs={[
+              // No `status` in the address is the list's default: the requests waiting for a decision.
+              { value: null, label: t("pending") },
+              { value: "all", label: t("all") },
+            ]}
+          />
+        }
+        empty={{
+          title: t("empty"),
+          action: (
+            <Button asChild variant="secondary">
+              <Link href="/finance/documents">{t("documents")}</Link>
+            </Button>
+          ),
+        }}
+        columns={[
+          {
+            id: "document",
+            header: t("document"),
+            cell: (row) => (
+              <Link href={`/finance/corrections/${row.id}`} className="text-primary tabular-nums hover:underline">
+                {row.document.docNumber}
+              </Link>
+            ),
+          },
+          { id: "reason", header: t("reason"), cell: (row) => tReasons(row.reason) },
+          { id: "by", header: t("requestedBy"), cell: (row) => row.requestedBy.name },
+          { id: "at", header: t("requestedAt"), cell: (row) => format.dateTime(row.createdAt) },
+          {
+            id: "status",
+            header: t("status"),
+            cell: (row) => <StatusChip map={DOCUMENT_CORRECTION_STATUS} value={row.status} />,
+          },
         ]}
       />
-      {query.isError ? <QueryError error={query.error} onRetry={() => void query.refetch()} /> : null}
-      {query.data && query.data.data.length === 0 ? <EmptyState title={t("empty")} /> : null}
-      {query.data && query.data.data.length > 0 ? (
-        <DataTable
-          caption={t("title")}
-          rows={query.data.data}
-          getRowId={(row) => row.id}
-          columns={[
-            {
-              id: "document",
-              header: t("document"),
-              cell: (row) => (
-                <Link href={`/finance/corrections/${row.id}`} className="text-primary tabular-nums hover:underline">
-                  {row.document.docNumber}
-                </Link>
-              ),
-            },
-            { id: "reason", header: t("reason"), cell: (row) => tReasons(row.reason) },
-            { id: "by", header: t("requestedBy"), cell: (row) => row.requestedBy.name },
-            { id: "at", header: t("requestedAt"), cell: (row) => format.dateTime(row.createdAt) },
-            {
-              id: "status",
-              header: t("status"),
-              cell: (row) => <StatusChip map={DOCUMENT_CORRECTION_STATUS} value={row.status} />,
-            },
-          ]}
-        />
-      ) : null}
     </div>
   );
 }
@@ -353,66 +354,84 @@ export function CorrectionDetail({ requestId }: { requestId: string }) {
   const row = query.data;
   if (!row) return null;
   const changed = (field: keyof Correction["buyer"]) => row.buyer[field] !== row.currentBuyer[field];
+  const pending = row.status === "pending";
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
+        back={{ href: "/finance/corrections", label: t("title") }}
         title={t("detailTitle", { number: row.document.docNumber })}
         meta={<StatusChip map={DOCUMENT_CORRECTION_STATUS} value={row.status} size="md" />}
-        description={t("requested", { name: row.requestedBy.name, at: format.dateTime(row.createdAt) })}
-        actions={
-          row.status === "pending" ? (
-            <>
-              <Button variant="secondary" onClick={() => setDeciding("decline")}>
-                {t("decline")}
-              </Button>
-              <Button onClick={() => setDeciding("approve")}>{t("approve")}</Button>
-            </>
-          ) : null
-        }
       />
-      <Section title={t("reason")}>
-        <p>{tReplace(`reasons.${row.reason}`)}</p>
-        {row.note ? <p className="text-muted text-sm">{row.note}</p> : null}
-      </Section>
-      <Section title={t("compare")}>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-muted">
-              <th className="py-1 text-start font-medium" />
-              <th className="py-1 text-start font-medium">{t("printed")}</th>
-              <th className="py-1 text-start font-medium">{t("asked")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(["name", "taxId", "branchCode", "address"] as const).map((field) => (
-              <tr key={field} className="border-border border-t">
-                <td className="text-muted py-2 pe-3">{tReplace(`fields.${field}`)}</td>
-                <td className="py-2 pe-3">{row.currentBuyer[field] ?? "—"}</td>
-                <td className={changed(field) ? "py-2 font-semibold" : "py-2"}>{row.buyer[field] ?? "—"}</td>
+      <DetailLayout
+        aside={
+          <ActionPanel id="correction-panel" tone={pending ? "primary" : "neutral"} title={t("status")}>
+            <SummaryRows
+              rows={[
+                { key: "by", label: t("requestedBy"), value: row.requestedBy.name },
+                { key: "at", label: t("requestedAt"), value: format.dateTime(row.createdAt) },
+                ...(row.decidedAt
+                  ? [
+                      { key: "decidedBy", label: t("decidedBy"), value: row.decidedBy?.name ?? null },
+                      { key: "decidedAt", label: t("decidedAt"), value: format.dateTime(row.decidedAt) },
+                    ]
+                  : []),
+              ]}
+            />
+            {pending ? (
+              <ActionStack>
+                <Button onClick={() => setDeciding("approve")}>{t("approve")}</Button>
+                <Button variant="ghost" className="text-danger" onClick={() => setDeciding("decline")}>
+                  {t("decline")}
+                </Button>
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        <Section title={t("reason")}>
+          <p>{tReplace(`reasons.${row.reason}`)}</p>
+          {row.note ? <p className="text-muted text-sm">{row.note}</p> : null}
+        </Section>
+        <Section title={t("compare")}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-muted">
+                <th className="py-1 text-start font-medium" />
+                <th className="py-1 text-start font-medium">{t("printed")}</th>
+                <th className="py-1 text-start font-medium">{t("asked")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </Section>
-      <Section title={t("documents")}>
-        <p className="flex flex-wrap gap-4 text-sm">
-          <Link href={`/finance/documents/${row.document.id}`} className="text-primary tabular-nums hover:underline">
-            {row.document.docNumber}
-          </Link>
-          {row.replacement ? (
-            <span>
-              → {t("replacement")}{" "}
-              <Link
-                href={`/finance/documents/${row.replacement.id}`}
-                className="text-primary tabular-nums hover:underline"
-              >
-                {row.replacement.docNumber}
-              </Link>
-            </span>
-          ) : null}
-        </p>
-        {row.decisionNote ? <p className="text-muted mt-2 text-sm">{row.decisionNote}</p> : null}
-      </Section>
+            </thead>
+            <tbody>
+              {(["name", "taxId", "branchCode", "address"] as const).map((field) => (
+                <tr key={field} className="border-border border-t">
+                  <td className="text-muted py-2 pe-3">{tReplace(`fields.${field}`)}</td>
+                  <td className="py-2 pe-3">{row.currentBuyer[field] ?? "—"}</td>
+                  <td className={changed(field) ? "py-2 font-semibold" : "py-2"}>{row.buyer[field] ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+        <Section title={t("documents")}>
+          <p className="flex flex-wrap gap-4 text-sm">
+            <Link href={`/finance/documents/${row.document.id}`} className="text-primary tabular-nums hover:underline">
+              {row.document.docNumber}
+            </Link>
+            {row.replacement ? (
+              <span>
+                → {t("replacement")}{" "}
+                <Link
+                  href={`/finance/documents/${row.replacement.id}`}
+                  className="text-primary tabular-nums hover:underline"
+                >
+                  {row.replacement.docNumber}
+                </Link>
+              </span>
+            ) : null}
+          </p>
+          {row.decisionNote ? <p className="text-muted mt-2 text-sm">{row.decisionNote}</p> : null}
+        </Section>
+      </DetailLayout>
       {deciding ? (
         <ConfirmAction
           open

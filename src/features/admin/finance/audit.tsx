@@ -25,6 +25,7 @@ import { adminBrowserApis } from "../console/api";
 import { Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
+import { FinanceDateField } from "./frame";
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 const thisMonth = () => bangkokToday().slice(0, 7);
@@ -127,7 +128,11 @@ export function ExceptionsView() {
     <div className="flex flex-col gap-5">
       <div className="flex justify-end">
         <Field label={t("month")} className="w-44">
-          <Input type="month" value={month} onChange={(event) => event.target.value && setMonth(event.target.value)} />
+          <FinanceDateField
+            type="month"
+            value={month}
+            onChange={(event) => event.target.value && setMonth(event.target.value)}
+          />
         </Field>
       </div>
       {reports.isError ? <QueryError error={reports.error} onRetry={() => void reports.refetch()} /> : null}
@@ -230,7 +235,7 @@ export function SamplesView() {
         <Section title={t("draw")} description={t("drawNote")}>
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6 xl:items-end">
             <Field label={t("month")}>
-              <Input
+              <FinanceDateField
                 type="month"
                 value={form.period}
                 onChange={(event) => event.target.value && setForm({ ...form, period: event.target.value })}
@@ -365,7 +370,7 @@ export function PbcView() {
       actions={
         <div className="flex flex-wrap items-end gap-2">
           <Field label={t("month")} className="w-44">
-            <Input
+            <FinanceDateField
               type="month"
               value={month}
               onChange={(event) => event.target.value && setMonth(event.target.value)}

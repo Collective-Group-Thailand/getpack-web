@@ -8,14 +8,16 @@ import { useEffect, useState } from "react";
 
 import { PAYMENT_STATUS, REFUND_STATUS, SLIP_STATUS } from "@/domain/status";
 import { isZeroMoney, moneyText } from "@/domain/money";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
@@ -32,6 +34,7 @@ import { problemMessage, QueryError } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { StatusChip } from "../console/StatusChip";
+import { StatusViews, EmptyLink } from "./frame";
 import { REFUND_STATUSES, paymentsList, refundsList, type Payment, type Refund } from "./resources";
 import { DocumentLink, fieldErrorsOf } from "./shared";
 import { invalidateMoney } from "./slips";
@@ -97,17 +100,19 @@ export function PaymentsList({ initial }: { initial: InitialPage<Payment> | null
   return (
     <ResourceList
       resource={paymentsList}
+      rowHref={(row) => `/finance/payments/${row.id}`}
+      views={
+        <StatusViews
+          resource={paymentsList}
+          label={t("columns.status")}
+          statuses={PAYMENT_STATUSES.map((value) => ({ value, label: tStatus(PAYMENT_STATUS[value].labelKey) }))}
+        />
+      }
       columns={columns}
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
       filters={[
-        {
-          id: "status",
-          label: t("columns.status"),
-          kind: "select",
-          options: PAYMENT_STATUSES.map((value) => ({ value, label: tStatus(PAYMENT_STATUS[value].labelKey) })),
-        },
         {
           id: "method",
           label: t("columns.method"),
@@ -121,7 +126,7 @@ export function PaymentsList({ initial }: { initial: InitialPage<Payment> | null
           options: [{ value: "true", label: t("unidentifiedOnly") }],
         },
       ]}
-      empty={{ title: t("empty") }}
+      empty={{ title: t("empty"), action: <EmptyLink href="/finance/slips" label="nav.items.slips" /> }}
     />
   );
 }
@@ -168,15 +173,13 @@ export function PaymentDetail({ paymentId }: { paymentId: string }) {
   if (!data) return null;
   const refundable = ["succeeded", "partially_refunded"].includes(data.status);
 
+  const allocate = data.groupId === null && data.status === "succeeded";
+  const refund = canRefund && refundable;
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: tList("title"), href: "/finance/payments" }, { label: data.referenceCode }]}
-          />
-        }
+        back={{ href: "/finance/payments", label: tList("title") }}
         title={t("title", { reference: data.referenceCode })}
         meta={
           <>
@@ -184,94 +187,125 @@ export function PaymentDetail({ paymentId }: { paymentId: string }) {
             <span className="text-muted text-sm">{tList(`methods.${data.method}`)}</span>
           </>
         }
-        actions={
-          <>
-            {data.groupId === null && data.status === "succeeded" ? <AllocatePaymentButton payment={data} /> : null}
-            {canRefund && refundable ? (
-              <Button variant="secondary" iconStart="reset" onClick={() => setRefunding(true)}>
-                {t("requestRefund")}
-              </Button>
-            ) : null}
-          </>
-        }
       />
 
-      <Section title={t("summary")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("amount"), description: <span className="tabular-nums">{format.thb(data.amount)}</span> },
-            { term: t("cash"), description: <span className="tabular-nums">{format.thb(data.cashAmount)}</span> },
-            { term: t("wht"), description: <span className="tabular-nums">{format.thb(data.whtAmount)}</span> },
-            { term: t("fee"), description: <span className="tabular-nums">{format.thb(data.feeAmount)}</span> },
-            {
-              term: t("refunded"),
-              description: <span className="tabular-nums">{format.thb(data.refundedAmount)}</span>,
-            },
-            { term: t("provider"), description: `${data.provider}${data.providerRef ? ` · ${data.providerRef}` : ""}` },
-            { term: t("paidAt"), description: <When at={data.paidAt} absoluteOnly /> },
-            { term: t("createdAt"), description: <When at={data.createdAt} absoluteOnly /> },
-            {
-              term: t("group"),
-              description: data.groupId ? (
-                <Link
-                  href={`/orders?q=${encodeURIComponent(data.referenceCode)}`}
-                  className="text-primary hover:underline"
-                >
-                  {t("openOrders")}
-                </Link>
-              ) : (
-                "—"
-              ),
-            },
-          ]}
-        />
-      </Section>
-
-      {data.slips.length > 0 ? (
-        <Section title={t("slips")}>
-          <DataTable
-            caption={t("slips")}
-            density="compact"
-            rows={data.slips}
-            getRowId={(row) => row.id}
-            columns={[
-              { id: "declared", header: t("declared"), numeric: true, cell: (row) => format.thb(row.declaredAmount) },
+      <DetailLayout
+        aside={
+          <ActionPanel id="payment-panel" tone={allocate ? "primary" : "neutral"} title={t("amount")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(data.amount)}</p>
+            <SummaryRows
+              rows={[
+                {
+                  key: "cash",
+                  label: t("cash"),
+                  value: <span className="tabular-nums">{format.thb(data.cashAmount)}</span>,
+                },
+                {
+                  key: "wht",
+                  label: t("wht"),
+                  value: <span className="tabular-nums">{format.thb(data.whtAmount)}</span>,
+                },
+                {
+                  key: "fee",
+                  label: t("fee"),
+                  value: <span className="tabular-nums">{format.thb(data.feeAmount)}</span>,
+                },
+                {
+                  key: "refunded",
+                  label: t("refunded"),
+                  value: <span className="tabular-nums">{format.thb(data.refundedAmount)}</span>,
+                },
+                { key: "paid", label: t("paidAt"), value: data.paidAt ? <When at={data.paidAt} absoluteOnly /> : null },
+              ]}
+            />
+            {allocate || refund ? (
+              <ActionStack>
+                {allocate ? <AllocatePaymentButton payment={data} /> : null}
+                {refund ? (
+                  <Button variant="secondary" iconStart="reset" onClick={() => setRefunding(true)}>
+                    {t("requestRefund")}
+                  </Button>
+                ) : null}
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        <Section title={t("summary")}>
+          <DescriptionList
+            columns={3}
+            items={[
               {
-                id: "transferredAt",
-                header: t("transferredAt"),
-                cell: (row) => <When at={row.declaredTransferredAt} absoluteOnly />,
+                term: t("provider"),
+                description: `${data.provider}${data.providerRef ? ` · ${data.providerRef}` : ""}`,
               },
+              { term: t("createdAt"), description: <When at={data.createdAt} absoluteOnly /> },
               {
-                id: "check",
-                header: t("check"),
-                cell: (row) => (row.lastCheck ? tFinance(`checks.${row.lastCheck}`) : "—"),
+                term: t("group"),
+                description: data.groupId ? (
+                  <Link
+                    href={`/orders?q=${encodeURIComponent(data.referenceCode)}`}
+                    className="text-primary hover:underline"
+                  >
+                    {t("openOrders")}
+                  </Link>
+                ) : (
+                  "—"
+                ),
               },
-              { id: "status", header: t("status"), cell: (row) => <StatusChip map={SLIP_STATUS} value={row.status} /> },
             ]}
           />
         </Section>
-      ) : null}
 
-      <Section title={t("documents")}>
-        <DataTable
-          caption={t("documents")}
-          density="compact"
-          rows={documents.data ?? []}
-          loading={documents.isPending && Boolean(payment.data)}
-          getRowId={(row) => row.id}
-          empty={<EmptyState icon="document" title={t("noDocuments")} />}
-          columns={[
-            { id: "number", header: t("docNumber"), cell: (row) => <DocumentLink document={row} /> },
-            { id: "date", header: t("docDate"), cell: (row) => format.date(row.documentDate) },
-            { id: "gross", header: t("docGross"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
-          ]}
-        />
-      </Section>
+        {data.slips.length > 0 ? (
+          <Section title={t("slips")}>
+            <DataTable
+              caption={t("slips")}
+              density="compact"
+              rows={data.slips}
+              getRowId={(row) => row.id}
+              columns={[
+                { id: "declared", header: t("declared"), numeric: true, cell: (row) => format.thb(row.declaredAmount) },
+                {
+                  id: "transferredAt",
+                  header: t("transferredAt"),
+                  cell: (row) => <When at={row.declaredTransferredAt} absoluteOnly />,
+                },
+                {
+                  id: "check",
+                  header: t("check"),
+                  cell: (row) => (row.lastCheck ? tFinance(`checks.${row.lastCheck}`) : "—"),
+                },
+                {
+                  id: "status",
+                  header: t("status"),
+                  cell: (row) => <StatusChip map={SLIP_STATUS} value={row.status} />,
+                },
+              ]}
+            />
+          </Section>
+        ) : null}
 
-      <Section title={t("refunds")}>
-        <RefundRows rows={refunds.data ?? []} loading={refunds.isPending} />
-      </Section>
+        <Section title={t("documents")}>
+          <DataTable
+            caption={t("documents")}
+            density="compact"
+            rows={documents.data ?? []}
+            loading={documents.isPending && Boolean(payment.data)}
+            getRowId={(row) => row.id}
+            empty={<EmptyState icon="document" title={t("noDocuments")} />}
+            columns={[
+              { id: "number", header: t("docNumber"), cell: (row) => <DocumentLink document={row} /> },
+              { id: "date", header: t("docDate"), cell: (row) => format.date(row.documentDate) },
+              { id: "gross", header: t("docGross"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
+            ]}
+          />
+        </Section>
+
+        <Section title={t("refunds")}>
+          <RefundRows rows={refunds.data ?? []} loading={refunds.isPending} />
+        </Section>
+      </DetailLayout>
 
       {refunding ? <RequestRefund payment={data} onClose={() => setRefunding(false)} /> : null}
     </div>
@@ -477,18 +511,18 @@ export function RefundsList({ initial }: { initial: InitialPage<Refund> | null }
     <>
       <ResourceList
         resource={refundsList}
+        rowHref={(row) => `/finance/refunds?refund=${row.id}`}
+        views={
+          <StatusViews
+            resource={refundsList}
+            label={t("columns.status")}
+            statuses={REFUND_STATUSES.map((value) => ({ value, label: tStatus(REFUND_STATUS[value].labelKey) }))}
+          />
+        }
         columns={columns}
         caption={t("title")}
         initial={initial}
-        filters={[
-          {
-            id: "status",
-            label: t("columns.status"),
-            kind: "select",
-            options: REFUND_STATUSES.map((value) => ({ value, label: tStatus(REFUND_STATUS[value].labelKey) })),
-          },
-        ]}
-        empty={{ title: t("empty") }}
+        empty={{ title: t("empty"), action: <EmptyLink href="/finance/payments" label="nav.items.payments" /> }}
       />
       {openId ? <RefundSheet refundId={openId} onClose={() => setOpen(null)} /> : null}
     </>

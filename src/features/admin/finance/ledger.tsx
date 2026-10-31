@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { PERIOD_STATUS, RECURRING_JOURNAL_STATUS, SETTING_VERSION_STATUS } from "@/domain/status";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
@@ -15,10 +16,13 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Combobox, type ComboboxOption } from "@/ui/components/Combobox";
+import { DateField } from "@/ui/components/DateField";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Dialog } from "@/ui/components/Dialog";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
+import { EDGE_BAR, FormColumns, FormSummary, SummaryRows } from "@/ui/components/FormLayout";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, Textarea } from "@/ui/components/Input";
 import { JsonView } from "@/ui/components/JsonView";
@@ -34,6 +38,7 @@ import { FormDialog, FormError, Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
 import { StatusChip } from "../console/StatusChip";
+import { FinanceDateField } from "./frame";
 import { fieldErrorsOf, journalHref } from "./shared";
 
 type Account = Schemas["AccountDto"];
@@ -360,6 +365,9 @@ export function JournalLinesEditor({
  */
 export function JournalEditor({ journalId }: { journalId?: string }) {
   const t = useTranslations("finance.ledger.editor");
+  const tJournals = useTranslations("finance.journals");
+  const tLines = useTranslations("finance.ledger.lines");
+  const format = useFormat();
   const tCommon = useTranslations("common");
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -446,80 +454,109 @@ export function JournalEditor({ journalId }: { journalId?: string }) {
     }
   }
 
+  const back = journalId ? journalHref(journalId) : "/finance/ledger/journals";
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
+        back={{ href: back, label: journalId ? t("editTitle") : tJournals("journals") }}
         title={journalId ? t("editTitle") : t("title")}
         description={t("description")}
-        actions={
-          <>
-            <Button variant="ghost" asChild>
-              <Link href={journalId ? journalHref(journalId) : "/finance/ledger/journals"}>
-                {tCommon("actions.cancel")}
-              </Link>
-            </Button>
-            <Button loading={busy} disabled={!editable} onClick={() => void save()}>
-              {t("save")}
-            </Button>
-          </>
-        }
       />
       {!editable ? (
         <Callout tone="warning" title={t("notEditable")}>
           {t("notEditableBody")}
         </Callout>
       ) : null}
-      <Section title={t("header")}>
-        <div className="grid gap-3 md:grid-cols-[12rem_1fr]">
-          <Field
-            label={t("documentDate")}
-            required
-            requiredLabel={tCommon("state.required")}
-            error={errors.documentDate}
+      <FormColumns
+        aside={
+          <FormSummary
+            title={t("header")}
+            barClassName={EDGE_BAR}
+            action={
+              <>
+                <Button loading={busy} disabled={!editable} onClick={() => void save()}>
+                  {t("save")}
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link href={back}>{tCommon("actions.cancel")}</Link>
+                </Button>
+              </>
+            }
           >
-            <Input
-              type="date"
-              value={form.documentDate}
-              onChange={(event) => setForm({ ...form, documentDate: event.target.value })}
+            <SummaryRows
+              rows={[
+                {
+                  key: "date",
+                  label: t("documentDate"),
+                  value: form.documentDate ? format.date(form.documentDate) : null,
+                },
+                { key: "description", label: t("descriptionLabel"), value: form.description.trim() || null },
+                { key: "lines", label: t("linesTitle"), value: format.number(form.lines.length) },
+                {
+                  key: "reverse",
+                  label: t("autoReverseOn"),
+                  value: form.autoReverse && form.autoReverseOn ? format.date(form.autoReverseOn) : null,
+                },
+              ]}
             />
-          </Field>
-          <Field
-            label={t("descriptionLabel")}
-            required
-            requiredLabel={tCommon("state.required")}
-            error={errors.description}
-          >
-            <Input
-              value={form.description}
-              onChange={(event) => setForm({ ...form, description: event.target.value })}
-            />
-          </Field>
-        </div>
-        <div className="mt-3 flex flex-wrap items-end gap-4">
-          <Switch
-            label={t("autoReverse")}
-            description={t("autoReverseHint")}
-            checked={form.autoReverse}
-            onCheckedChange={(checked) => setForm({ ...form, autoReverse: checked })}
-          />
-          {form.autoReverse ? (
-            <Field label={t("autoReverseOn")} className="w-48">
-              <Input
-                type="date"
-                value={form.autoReverseOn}
-                min={form.documentDate}
-                onChange={(event) => setForm({ ...form, autoReverseOn: event.target.value })}
+            <p className="text-muted text-sm text-pretty">{t("linesNote")}</p>
+            {errors.lines ? (
+              <Callout tone="danger" title={tLines("unbalancedTitle")}>
+                {errors.lines}
+              </Callout>
+            ) : null}
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={t("header")}>
+          <div className="grid gap-3 md:grid-cols-[12rem_1fr]">
+            <Field
+              label={t("documentDate")}
+              required
+              requiredLabel={tCommon("state.required")}
+              error={errors.documentDate}
+            >
+              <FinanceDateField
+                value={form.documentDate}
+                onChange={(event) => setForm({ ...form, documentDate: event.target.value })}
               />
             </Field>
-          ) : null}
-        </div>
-        <div className="mt-3">
+            <Field
+              label={t("descriptionLabel")}
+              required
+              requiredLabel={tCommon("state.required")}
+              error={errors.description}
+            >
+              <Input
+                value={form.description}
+                onChange={(event) => setForm({ ...form, description: event.target.value })}
+              />
+            </Field>
+          </div>
           <PostingPeriodNotice date={form.documentDate} what={t("thisEntry")} />
-        </div>
-      </Section>
-      <Section title={t("linesTitle")} description={t("linesNote")}>
-        <JournalLinesEditor lines={form.lines} onChange={(lines) => setForm({ ...form, lines })} errors={errors} />
-      </Section>
+        </FormSection>
+        <FormSection card step={2} title={t("linesTitle")} description={t("linesNote")}>
+          <JournalLinesEditor lines={form.lines} onChange={(lines) => setForm({ ...form, lines })} errors={errors} />
+        </FormSection>
+        <FormSection card step={3} title={t("autoReverse")} description={t("autoReverseHint")}>
+          <div className="flex flex-wrap items-end gap-4">
+            <Switch
+              label={t("autoReverse")}
+              checked={form.autoReverse}
+              onCheckedChange={(checked) => setForm({ ...form, autoReverse: checked })}
+            />
+            {form.autoReverse ? (
+              <Field label={t("autoReverseOn")} className="w-48">
+                <FinanceDateField
+                  value={form.autoReverseOn}
+                  min={form.documentDate}
+                  onChange={(event) => setForm({ ...form, autoReverseOn: event.target.value })}
+                />
+              </Field>
+            ) : null}
+          </div>
+        </FormSection>
+      </FormColumns>
     </div>
   );
 }
@@ -531,7 +568,16 @@ export function JournalEditor({ journalId }: { journalId?: string }) {
  * manual, recurring or closing entry is corrected by a reversal that another person approves.
  * Entries from the sub-ledgers are corrected by their documents (void, credit note), not here.
  */
-export function JournalActions({ journal, isMaker }: { journal: Schemas["JournalDto"]; isMaker: boolean }) {
+export function JournalActions({
+  journal,
+  isMaker,
+  layout = "header",
+}: {
+  journal: Schemas["JournalDto"];
+  isMaker: boolean;
+  /** `panel`: the record page's next-steps stack — submit leads, edit and reverse outlined, discard last. */
+  layout?: "header" | "panel";
+}) {
   const t = useTranslations("finance.ledger.actions");
   const format = useFormat();
   const router = useRouter();
@@ -548,24 +594,51 @@ export function JournalActions({ journal, isMaker }: { journal: Schemas["Journal
   const draft = journal.status === "draft" && isMaker;
   const reversible =
     journal.status === "posted" && !journal.reversedById && !["auto", "reversal"].includes(journal.kind);
+  const buttons =
+    layout === "panel" ? (
+      draft || reversible ? (
+        <ActionStack>
+          {draft ? <Button onClick={() => setAction("submit")}>{t("submit")}</Button> : null}
+          {draft ? (
+            <Button variant="secondary" asChild>
+              <Link href={`${journalHref(journal.id)}/edit`}>{t("edit")}</Link>
+            </Button>
+          ) : null}
+          {reversible ? (
+            <Button variant="secondary" iconStart="undo" onClick={() => setAction("reverse")}>
+              {t("reverse")}
+            </Button>
+          ) : null}
+          {draft ? (
+            <Button variant="ghost" className="text-danger" onClick={() => setAction("discard")}>
+              {t("discard")}
+            </Button>
+          ) : null}
+        </ActionStack>
+      ) : null
+    ) : (
+      <>
+        {draft ? (
+          <>
+            <Button variant="ghost" onClick={() => setAction("discard")}>
+              {t("discard")}
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href={`${journalHref(journal.id)}/edit`}>{t("edit")}</Link>
+            </Button>
+            <Button onClick={() => setAction("submit")}>{t("submit")}</Button>
+          </>
+        ) : null}
+        {reversible ? (
+          <Button variant="secondary" iconStart="undo" onClick={() => setAction("reverse")}>
+            {t("reverse")}
+          </Button>
+        ) : null}
+      </>
+    );
   return (
     <>
-      {draft ? (
-        <>
-          <Button variant="ghost" onClick={() => setAction("discard")}>
-            {t("discard")}
-          </Button>
-          <Button variant="secondary" asChild>
-            <Link href={`${journalHref(journal.id)}/edit`}>{t("edit")}</Link>
-          </Button>
-          <Button onClick={() => setAction("submit")}>{t("submit")}</Button>
-        </>
-      ) : null}
-      {reversible ? (
-        <Button variant="secondary" iconStart="undo" onClick={() => setAction("reverse")}>
-          {t("reverse")}
-        </Button>
-      ) : null}
+      {buttons}
       {action === "submit" ? (
         <ConfirmAction
           open
@@ -640,9 +713,9 @@ export function JournalActions({ journal, isMaker }: { journal: Schemas["Journal
           }}
         >
           <Field label={t("reverseOn")}>
-            <Input
-              type="date"
+            <DateField
               value={reverseOn}
+              display={format.date(reverseOn)}
               onChange={(event) => setReverseOn(event.target.value || bangkokToday())}
             />
           </Field>
@@ -735,20 +808,27 @@ export function AccountsView() {
             header: t("actions"),
             cell: (row: Account) =>
               row.isPostable ? (
-                <span className="flex gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => setProposing({ kind: "update", account: row })}>
-                    {t("change")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      setProposing({ kind: row.status === "active" ? "deactivate" : "reactivate", account: row })
-                    }
-                  >
-                    {row.status === "active" ? t("deactivate") : t("reactivate")}
-                  </Button>
-                </span>
+                <DropdownMenu
+                  label={t("actions")}
+                  align="end"
+                  trigger={<IconButton name="more" size="sm" variant="ghost" label={t("actions")} />}
+                  items={[
+                    {
+                      id: "change",
+                      label: t("change"),
+                      icon: "edit",
+                      onSelect: () => setProposing({ kind: "update", account: row }),
+                    },
+                    {
+                      id: "status",
+                      label: row.status === "active" ? t("deactivate") : t("reactivate"),
+                      icon: row.status === "active" ? "ban" : "undo",
+                      tone: row.status === "active" ? "destructive" : "default",
+                      onSelect: () =>
+                        setProposing({ kind: row.status === "active" ? "deactivate" : "reactivate", account: row }),
+                    },
+                  ]}
+                />
               ) : null,
           } satisfies DataTableColumn<Account>,
         ]
@@ -1089,6 +1169,7 @@ function samplePayload(template: Record<string, unknown>): Record<string, unknow
 /** One rule: its versions, the template in force, a dry run on a sample event, a new version. */
 export function PostingRuleDetail({ ruleKey }: { ruleKey: string }) {
   const t = useTranslations("finance.ledger.rules");
+  const tNav = useTranslations("finance.ledger.nav");
   const format = useFormat();
   const canPropose = useCan("ledger.config.propose");
   const rule = useQuery({
@@ -1134,6 +1215,7 @@ export function PostingRuleDetail({ ruleKey }: { ruleKey: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
+        back={{ href: "/finance/ledger/rules", label: tNav("rules") }}
         title={t("detailTitle", { key: data.key, name: data.name })}
         description={data.description}
         meta={<code className="text-muted text-xs">{data.eventType}</code>}
@@ -1287,8 +1369,7 @@ function ProposeRuleVersion({ rule, onClose }: { rule: Rule; onClose: () => void
         />
       </Field>
       <Field label={t("effectiveFrom")} required requiredLabel={tCommon("state.required")} hint={t("effectiveHint")}>
-        <Input
-          type="date"
+        <FinanceDateField
           value={effectiveFrom}
           min={bangkokToday()}
           onChange={(event) => setEffectiveFrom(event.target.value)}
@@ -1522,15 +1603,13 @@ function NewRecurring({ onClose }: { onClose: () => void }) {
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("startOn")}>
-              <Input
-                type="date"
+              <FinanceDateField
                 value={form.startOn}
                 onChange={(event) => setForm({ ...form, startOn: event.target.value })}
               />
             </Field>
             <Field label={t("endOn")}>
-              <Input
-                type="date"
+              <FinanceDateField
                 value={form.endOn}
                 onChange={(event) => setForm({ ...form, endOn: event.target.value })}
               />

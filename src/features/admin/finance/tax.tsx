@@ -8,16 +8,19 @@ import { useState } from "react";
 
 import { isZeroMoney } from "@/domain/money";
 import { SETTING_VERSION_STATUS, TAX_CALENDAR_STATUS, TAX_REPORT_STATUS } from "@/domain/status";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
+import { Statement } from "@/ui/components/Statement";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
@@ -34,8 +37,9 @@ import { FormDialog, FormError, Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
 import { StatusChip } from "../console/StatusChip";
-import { effectiveInstant, useFiscalYears } from "./ledger";
-import { Figure, journalHref, sourceHref } from "./shared";
+import { PeriodBar, FinanceDateField } from "./frame";
+import { effectiveInstant } from "./ledger";
+import { journalHref, sourceHref } from "./shared";
 
 type Report = Schemas["TaxReportDto"];
 type Kind = Schemas["TaxReportKind"];
@@ -102,7 +106,6 @@ export function TaxReports() {
   const params = useSearchParams();
   const queryClient = useQueryClient();
   const canManage = useCan("tax.manage");
-  const years = useFiscalYears();
   const month = params.get("period") ?? thisMonth();
   const reports = useQuery({
     queryKey: queryKeys.list("admin", "tax-report", { period: month }),
@@ -110,11 +113,6 @@ export function TaxReports() {
       (await adminBrowserApis().contract.GET("/v1/admin/tax-reports", { params: { query: { period: month } } })).data!,
   });
   const [busy, setBusy] = useState<Kind | "all" | null>(null);
-  const months = (years.data ?? [])
-    .flatMap((year) => year.periods)
-    .filter((period) => period.startDate <= bangkokToday())
-    .map((period) => period.startDate.slice(0, 7))
-    .reverse();
 
   async function generate(kinds: readonly Kind[]) {
     setBusy(kinds.length > 1 ? "all" : kinds[0]!);
@@ -205,29 +203,24 @@ export function TaxReports() {
       : []),
   ];
   return (
-    <Section
-      title={t("title", { month: format.date(`${month}-01`, { style: "month" }) })}
-      description={t("description")}
-      actions={
-        <div className="flex flex-wrap items-end gap-2">
-          <Field label={t("month")} className="w-44">
-            <SearchableSelect
-              value={month}
-              onValueChange={(value) => router.replace(`${pathname}?period=${value}`)}
-              options={(months.length ? months : [month]).map((value) => ({
-                value,
-                label: format.date(`${value}-01`, { style: "month" }),
-              }))}
-            />
-          </Field>
-          {canManage && drafts.length ? (
+    <div className="flex flex-col gap-4">
+      <PeriodBar
+        month={{ value: month, label: t("month") }}
+        onChange={(patch) => patch.period && router.replace(`${pathname}?period=${patch.period}`)}
+        tools={
+          canManage && drafts.length ? (
             <Button loading={busy === "all"} onClick={() => void generate(drafts)}>
               {t("buildAll")}
             </Button>
-          ) : null}
-        </div>
-      }
-    >
+          ) : null
+        }
+      />
+      <div className="flex flex-col gap-1">
+        <h2 className="text-lg font-semibold">
+          {t("title", { month: format.date(`${month}-01`, { style: "month" }) })}
+        </h2>
+        <p className="text-muted text-sm">{t("description")}</p>
+      </div>
       <DataTable
         caption={t("caption")}
         columns={columns}
@@ -236,7 +229,7 @@ export function TaxReports() {
         getRowId={(row) => row.kind}
         rowTone={(row) => (row.report && !isZeroMoney(row.report.glDifference) ? "danger" : undefined)}
       />
-    </Section>
+    </div>
   );
 }
 
@@ -421,109 +414,144 @@ export function TaxReportDetail({ reportId }: { reportId: string }) {
     },
   }));
 
+  const finalise = canManage && data.status === "draft";
+  const file = canManage && data.status === "final";
+  const pay = canPay && PAYABLE.includes(data.kind) && data.status !== "draft" && !data.paidOn;
+  const reconciled = isZeroMoney(data.glDifference);
+  const shownTotals = TOTALS[data.kind].filter((name) => totals[name] !== undefined);
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("reports"), href: `/finance/tax?period=${data.period}` }, { label: tKinds(data.kind) }]}
-          />
-        }
+        back={{ href: `/finance/tax?period=${data.period}`, label: t("reports") }}
         title={title}
         meta={<StatusChip map={TAX_REPORT_STATUS} value={data.status} size="md" />}
         description={t(`descriptions.${data.kind}`)}
-        actions={
-          <>
-            {canManage && data.status === "draft" ? (
-              <>
-                <Button variant="secondary" iconStart="refresh" onClick={() => void rebuild()}>
-                  {t("rebuild")}
-                </Button>
-                <Button disabled={!isZeroMoney(data.glDifference)} onClick={() => setAction("finalise")}>
-                  {t("finalise")}
-                </Button>
-              </>
-            ) : null}
-            {data.fileReady ? (
-              <Button variant="secondary" iconStart="download" onClick={() => void exportCsv()}>
-                {data.kind === "pnd1" || data.kind === "pnd3" || data.kind === "pnd53"
-                  ? t("exportAttachment")
-                  : t("export")}
-              </Button>
-            ) : null}
-            {canManage && data.status === "final" ? (
-              <Button onClick={() => setAction("file")}>{t("file")}</Button>
-            ) : null}
-            {canPay && PAYABLE.includes(data.kind) && data.status !== "draft" && !data.paidOn ? (
-              <Button variant="secondary" onClick={() => setAction("pay")}>
-                {t("pay")}
-              </Button>
-            ) : null}
-          </>
-        }
       />
+      <DetailLayout
+        aside={
+          <ActionPanel id="tax-panel" tone={finalise || file ? "primary" : "neutral"} title={t("reportAmount")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(data.reportAmount)}</p>
+            <SummaryRows
+              rows={[
+                {
+                  key: "gl",
+                  label: t("glAmount"),
+                  value: <span className="tabular-nums">{format.thb(data.glAmount)}</span>,
+                },
+                {
+                  key: "difference",
+                  label: t("difference"),
+                  value: (
+                    <span
+                      className={reconciled ? "text-success tabular-nums" : "text-danger font-semibold tabular-nums"}
+                    >
+                      {format.thb(data.glDifference)}
+                    </span>
+                  ),
+                },
+                { key: "generated", label: t("generatedAt"), value: <When at={data.generatedAt} absoluteOnly /> },
+                {
+                  key: "finalised",
+                  label: t("finalisedAt"),
+                  value: data.finalisedAt ? <When at={data.finalisedAt} absoluteOnly /> : null,
+                },
+                {
+                  key: "filed",
+                  label: t("filed"),
+                  value: data.filingRef
+                    ? t("filedAs", { ref: data.filingRef, at: format.dateTime(data.filedAt) })
+                    : null,
+                },
+                {
+                  key: "paid",
+                  label: t("paid"),
+                  value: data.paidOn
+                    ? t("paidAs", { amount: format.thb(data.paidAmount), date: format.date(data.paidOn) })
+                    : null,
+                },
+              ]}
+            />
+            {finalise || file || pay || data.fileReady ? (
+              <ActionStack>
+                {finalise ? (
+                  <Button disabled={!reconciled} onClick={() => setAction("finalise")}>
+                    {t("finalise")}
+                  </Button>
+                ) : null}
+                {file ? <Button onClick={() => setAction("file")}>{t("file")}</Button> : null}
+                {pay ? (
+                  <Button variant="secondary" onClick={() => setAction("pay")}>
+                    {t("pay")}
+                  </Button>
+                ) : null}
+                {data.fileReady ? (
+                  <Button variant="secondary" iconStart="download" onClick={() => void exportCsv()}>
+                    {data.kind === "pnd1" || data.kind === "pnd3" || data.kind === "pnd53"
+                      ? t("exportAttachment")
+                      : t("export")}
+                  </Button>
+                ) : null}
+                {finalise ? (
+                  <Button variant="ghost" iconStart="refresh" onClick={() => void rebuild()}>
+                    {t("rebuild")}
+                  </Button>
+                ) : null}
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {!reconciled ? (
+          <Callout tone="danger" title={t("differenceTitle")}>
+            {t("differenceBody", { difference: format.thb(data.glDifference) })}
+          </Callout>
+        ) : data.status === "draft" ? (
+          <Callout tone="success" title={t("reconciledTitle")}>
+            {t("reconciledBody")}
+          </Callout>
+        ) : null}
 
-      {!isZeroMoney(data.glDifference) ? (
-        <Callout tone="danger" title={t("differenceTitle")}>
-          {t("differenceBody", { difference: format.thb(data.glDifference) })}
-        </Callout>
-      ) : data.status === "draft" ? (
-        <Callout tone="success" title={t("reconciledTitle")}>
-          {t("reconciledBody")}
-        </Callout>
-      ) : null}
-
-      <Section title={t("reconciliation")} description={t("reconciliationNote")}>
-        <dl className="grid gap-3 sm:grid-cols-3">
-          <Figure label={t("reportAmount")} amount={data.reportAmount} />
-          <Figure label={t("glAmount")} amount={data.glAmount} />
-          <Figure
-            label={t("difference")}
-            amount={data.glDifference}
-            tone={isZeroMoney(data.glDifference) ? "success" : "danger"}
-          />
-        </dl>
-        <dl className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-          {TOTALS[data.kind]
-            .filter((name) => totals[name] !== undefined)
-            .map((name) => (
-              <Figure key={name} label={tTotals(name)} amount={totals[name]} />
-            ))}
-        </dl>
-        <DescriptionList
-          className="mt-4"
-          columns={3}
-          items={[
-            { term: t("generatedAt"), description: <When at={data.generatedAt} absoluteOnly /> },
-            { term: t("finalisedAt"), description: <When at={data.finalisedAt} absoluteOnly /> },
+        <Statement
+          caption={title}
+          title={t("reconciliation")}
+          period={t("reconciliationNote")}
+          headers={{ label: tKinds(data.kind), amount: month }}
+          rows={[
+            ...shownTotals.map((name) => ({
+              key: name,
+              label: tTotals(name),
+              amount: format.thb(totals[name]!),
+              level: 0 as const,
+            })),
             {
-              term: t("filed"),
-              description: data.filingRef
-                ? t("filedAs", { ref: data.filingRef, at: format.dateTime(data.filedAt) })
-                : "—",
+              key: "report",
+              label: t("reportAmount"),
+              amount: format.thb(data.reportAmount),
+              kind: "subtotal" as const,
             },
+            { key: "gl", label: t("glAmount"), amount: format.thb(data.glAmount), level: 0 as const },
             {
-              term: t("paid"),
-              description: data.paidOn
-                ? t("paidAs", { amount: format.thb(data.paidAmount), date: format.date(data.paidOn) })
-                : "—",
+              key: "difference",
+              label: t("difference"),
+              amount: format.thb(data.glDifference),
+              kind: "total" as const,
             },
           ]}
         />
-      </Section>
 
-      <Section title={t("lines", { count: data.lineCount })}>
-        <DataTable
-          caption={t("lines", { count: data.lineCount })}
-          columns={columns}
-          rows={lines}
-          getRowId={(row) => String(row.seq ?? row.key ?? row.wtNumber)}
-          density="compact"
-          empty={<EmptyState icon="document" title={t("noLines")} />}
-          rowTone={(row) => (row.late === true ? "warning" : undefined)}
-        />
-      </Section>
+        <Section title={t("lines", { count: data.lineCount })}>
+          <DataTable
+            caption={t("lines", { count: data.lineCount })}
+            columns={columns}
+            rows={lines}
+            getRowId={(row) => String(row.seq ?? row.key ?? row.wtNumber)}
+            density="compact"
+            empty={<EmptyState icon="document" title={t("noLines")} />}
+            rowTone={(row) => (row.late === true ? "warning" : undefined)}
+          />
+        </Section>
+      </DetailLayout>
 
       {action === "finalise" ? (
         <ConfirmAction
@@ -643,7 +671,7 @@ function PayReturn({
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("paidOn")}>
-          <Input type="date" value={paidOn} onChange={(event) => setPaidOn(event.target.value || bangkokToday())} />
+          <FinanceDateField value={paidOn} onChange={(event) => setPaidOn(event.target.value || bangkokToday())} />
         </Field>
         <Field label={t("fromAccount")}>
           <SearchableSelect
@@ -935,8 +963,7 @@ function ProposeRate({ rate, onClose }: { rate: Schemas["TaxRateDto"]; onClose: 
         <Input inputMode="decimal" value={ratePct} onChange={(event) => setRatePct(event.target.value)} />
       </Field>
       <Field label={t("effectiveFrom")} required requiredLabel={tCommon("state.required")} hint={t("effectiveHint")}>
-        <Input
-          type="date"
+        <FinanceDateField
           min={bangkokToday()}
           value={effectiveFrom}
           onChange={(event) => setEffectiveFrom(event.target.value)}
@@ -1005,7 +1032,11 @@ export function DocumentSeries() {
         getRowId={(row) => row.id}
         density="compact"
         columns={[
-          { id: "type", header: t("type"), cell: (row) => t(`types.${row.docType}`) },
+          {
+            id: "type",
+            header: t("type"),
+            cell: (row) => (t.has(`types.${row.docType}`) ? t(`types.${row.docType}`) : row.docType),
+          },
           { id: "prefix", header: t("prefix"), cell: (row) => <span className="tabular-nums">{row.prefix}</span> },
           { id: "format", header: t("format"), cell: (row) => <code className="text-xs">{row.format}</code> },
           { id: "reset", header: t("reset"), cell: (row) => t(`resets.${row.resetPeriod}`) },

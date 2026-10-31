@@ -74,7 +74,7 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
   useShortcutsOverlayShortcut(openShortcuts);
 
   return (
-    <SubnavProvider>
+    <SubnavProvider listed={!collapsed}>
       <AppShell
         skipLabel={tCommon("nav.skipToContent")}
         sidebarLabel={t("nav")}

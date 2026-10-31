@@ -5,6 +5,7 @@ import { companiesList } from "../companies/resources";
 import { inboxList } from "../inbox/resources";
 import { claimsList, shipmentsList } from "../logistics/resources";
 import { ordersList } from "../orders/resources";
+import { bankLinesList, receivablesList, slipsList, unidentifiedList, whtCertificatesList } from "../finance/resources";
 import { factoriesList } from "../partners/resources";
 import { prepressList } from "../prepress/resources";
 import { productionBoardCount } from "../production/resources";
@@ -27,6 +28,12 @@ const LISTS_AT: Readonly<Record<string, ListResource<any>>> = {
   "/partners": factoriesList,
   "/style-intakes": styleIntakesList,
   "/structural-requests": structuralRequestsList,
+  // G4 — the finance queues that are lists (the others open a page whose rows are not the queue: dashboard count).
+  "/finance/slips": slipsList,
+  "/finance/banking/lines": bankLinesList,
+  "/finance/receivables/wht": whtCertificatesList,
+  "/finance/receivables": receivablesList,
+  "/finance/banking/unidentified": unidentifiedList,
 };
 
 /**

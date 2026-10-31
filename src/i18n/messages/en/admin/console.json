@@ -5,7 +5,10 @@
     "from": "From",
     "to": "To",
     "pickDate": "Pick a date",
-    "pickMonth": "Pick a month"
+    "pickMonth": "Pick a month",
+    "period": "Period",
+    "prevPeriod": "Previous period",
+    "nextPeriod": "Next period"
   },
   "list": {
     "toolbar": "Filters and tools",

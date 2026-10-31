@@ -73,8 +73,11 @@ export function tabQuery(
   const filters = { ...state.filters };
   // A list whose filters do not include the tab's parameter (orders' "all" tab) is never sent it.
   const takes = !resource.defaults?.filterKeys || resource.defaults.filterKeys.includes(param);
-  if (value === null || !takes) delete filters[param];
-  else filters[param] = value;
+  // No value is the list's default view: with no parameter in the address the list reads its default filter (the
+  // certificates still awaited), so the count reads the same.
+  const fallback = resource.defaults?.filters?.[param];
+  if (!takes || (value === null && fallback === undefined)) delete filters[param];
+  else filters[param] = value ?? fallback!;
   return toCountQuery({ ...state, filters });
 }
 

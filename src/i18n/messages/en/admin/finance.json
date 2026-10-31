@@ -73,7 +73,14 @@
       "coa_change": "Chart of accounts change",
       "tax_setting_change": "Tax setting change",
       "document_series_change": "Document series change"
-    }
+    },
+    "nowTitle": "Needs action now",
+    "openReports": "Open financial reports",
+    "openPayments": "View payments",
+    "periodsTitle": "Accounting periods",
+    "allPeriods": "All period closes",
+    "openCash": "Open daily cash",
+    "openAging": "Open receivables aging"
   },
   "slips": {
     "title": "Slip review",
@@ -822,7 +829,8 @@
       "gateway_settlement": "Gateway settlement",
       "tax_report": "Tax return",
       "fixed_asset": "Fixed asset",
-      "depreciation_run": "Depreciation run"
+      "depreciation_run": "Depreciation run",
+      "points_entry": "Points entry"
     },
     "dimensionNames": {
       "campaign": "Campaign",
@@ -857,7 +865,8 @@
     "rejectedTitle": "Not approved",
     "rejectedBody": "The checker did not approve this entry. Nothing was posted.",
     "autoReverseTitle": "Reverses itself",
-    "autoReverseBody": "A reversing entry posts automatically on {date}."
+    "autoReverseBody": "A reversing entry posts automatically on {date}.",
+    "sourceOther": "System record"
   },
   "payables": {
     "nav": {
@@ -944,7 +953,8 @@
         "hire_of_work": "Hire of work 3%",
         "transport": "Transport 1%",
         "service": "Service 3%",
-        "none": "None"
+        "none": "None",
+        "commission": "Commission"
       }
     },
     "goodsReceipts": {
@@ -1078,7 +1088,8 @@
         "hire_of_work": "Hire of work 3%",
         "transport": "Transport 1%",
         "service": "Service 3%",
-        "none": "None"
+        "none": "None",
+        "commission": "Commission"
       },
       "journals": "Journals",
       "validate": "Validate",
@@ -1124,13 +1135,15 @@
         "carrier": "Carrier",
         "freelancer": "Freelancer",
         "service": "Service vendor",
-        "other": "Other"
+        "other": "Other",
+        "sales_agent": "Sales agent"
       },
       "whtCategories": {
         "hire_of_work": "Hire of work 3%",
         "transport": "Transport 1%",
         "service": "Service 3%",
-        "none": "None"
+        "none": "None",
+        "commission": "Commission"
       },
       "outcomes": {
         "confirmed": "Confirmed by phone",
@@ -1217,7 +1230,8 @@
         "needCall": "Enter the number and the time of the call",
         "save": "Save",
         "saved": "Call-back recorded"
-      }
+      },
+      "unnamed": "Not in the vendor register"
     },
     "bill": {
       "title": "Record a bill from {vendor}",
@@ -1772,7 +1786,8 @@
         "operating": "Operating",
         "investing": "Investing",
         "financing": "Financing",
-        "non_cash": "Non-cash"
+        "non_cash": "Non-cash",
+        "equity": "Equity"
       },
       "dimensions": {
         "order": "Order",
@@ -2196,7 +2211,18 @@
         "bs": "Factory billing statement (BS)",
         "pv": "Payment voucher (PV)",
         "wt": "WHT certificate 50 Tawi (WT)",
-        "jv": "Journal voucher (JV)"
+        "jv": "Journal voucher (JV)",
+        "qt": "Quotation (QT)",
+        "order_group": "Order group",
+        "job": "Production job",
+        "claim": "Claim",
+        "shipment": "Shipment",
+        "rfq": "Request for quotation (RFQ)",
+        "support_ticket": "Support ticket",
+        "rfq_basket": "RFQ basket",
+        "order": "Order",
+        "customer": "Customer code",
+        "company": "Company code"
       },
       "prefix": "Prefix",
       "format": "Format",
@@ -2602,7 +2628,10 @@
       "tooLarge": "{name} is too large",
       "wrongType": "{name} is not an accepted file",
       "whatItShows": "What it shows"
-    }
+    },
+    "progress": "Progress",
+    "stepsDone": "{done} of {total} steps done",
+    "submittedBy": "Submitted by"
   },
   "reports": {
     "nav": {
@@ -2737,7 +2766,8 @@
       "account": "Account",
       "amount": "Cash effect",
       "nothing": "Nothing in this section",
-      "sectionTotal": "Total {amount}"
+      "sectionTotal": "Total {amount}",
+      "totalOf": "Total {section}"
     },
     "rollForwards": {
       "points": "Points liability (2330)",
@@ -2778,7 +2808,8 @@
         "fixed_assets": "Fixed assets ({code})"
       },
       "asOf": "Sub-ledgers as of {at}."
-    }
+    },
+    "amount": "Amount"
   },
   "audit": {
     "nav": {
@@ -2956,6 +2987,8 @@
     "declineNote": "Reason",
     "approved": "Approved and reissued",
     "declined": "Declined",
-    "failed": "Could not save"
+    "failed": "Could not save",
+    "decidedBy": "Decided by",
+    "decidedAt": "Decided at"
   }
 }

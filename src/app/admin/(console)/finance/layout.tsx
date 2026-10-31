@@ -1,14 +1,14 @@
 import { FinanceNav } from "@/features/admin/finance/nav";
 
 /**
- * The finance workspace (F6): its desks beside the work on a wide screen, as one scrolling row on
- * a phone. The console layout above already holds the session guard and the actor.
+ * The finance workspace (F6). Its desks are nested under "การเงิน" in the main sidebar (`FinanceNav` hands them to the
+ * shell), so the work keeps the full width of the page. The console layout above holds the session guard and actor.
  */
 export default function FinanceLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col lg:flex-row">
+    <>
       <FinanceNav />
-      <div className="min-w-0 flex-1">{children}</div>
-    </div>
+      {children}
+    </>
   );
 }

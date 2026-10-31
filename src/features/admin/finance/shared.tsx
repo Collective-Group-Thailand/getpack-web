@@ -50,6 +50,19 @@ export function sourceHref(source: { type: string; id: string } | null | undefin
   }
 }
 
+/**
+ * How a journal's source is named: its document number, or — when the API sends none (a points entry) — what kind of
+ * record it is; a kind this screen has no words for reads as a system record, never as a key or a cut id.
+ */
+export function useSourceLabel() {
+  const t = useTranslations("finance.journals");
+  return (source: { type: string | null; number: string | null } | null | undefined) => {
+    if (!source?.type) return source?.number ?? t("manual");
+    if (source.number) return source.number;
+    return t.has(`sourceTypes.${source.type}`) ? t(`sourceTypes.${source.type}`) : t("sourceOther");
+  };
+}
+
 export const journalHref = (journalId: string) => `/finance/ledger/journals/${journalId}`;
 
 /** A document number as a link to it — the one way a document is named in the workspace. */

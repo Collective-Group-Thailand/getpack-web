@@ -11,11 +11,12 @@ import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { Dialog } from "@/ui/components/Dialog";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
@@ -35,8 +36,9 @@ import { problemMessage, QueryError } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { StatusChip } from "../console/StatusChip";
+import { ApprovalTrail, FinanceDateField, EmptyLink } from "./frame";
 import { payoutRunsList, type PayoutRun } from "./resources";
-import { AccountNo, Figure } from "./shared";
+import { AccountNo } from "./shared";
 import { invalidateMoney } from "./slips";
 
 type Item = Schemas["PayoutItemDto"];
@@ -105,6 +107,7 @@ export function PayoutRunsList({ initial }: { initial: InitialPage<PayoutRun> | 
     <>
       <ResourceList
         resource={payoutRunsList}
+        rowHref={(row) => `/finance/payouts/${row.id}`}
         columns={columns}
         caption={t("title")}
         initial={initial}
@@ -121,7 +124,7 @@ export function PayoutRunsList({ initial }: { initial: InitialPage<PayoutRun> | 
             ) : null}
           </>
         }
-        empty={{ title: t("empty") }}
+        empty={{ title: t("empty"), action: <EmptyLink href="/finance/payables" label="nav.items.payables" /> }}
       />
       {creating ? <NewRun onClose={() => setCreating(false)} /> : null}
     </>
@@ -194,8 +197,7 @@ function NewRun({ onClose }: { onClose: () => void }) {
       <div className="flex flex-col gap-4">
         <div className="grid gap-3 sm:grid-cols-3">
           <Field label={t("payOn")} required requiredLabel={tCommon("state.required")}>
-            <Input
-              type="date"
+            <FinanceDateField
               value={payOn}
               min={bangkokToday()}
               onChange={(event) => setPayOn(event.target.value || bangkokToday())}
@@ -352,7 +354,7 @@ export function PayoutRunDetail({ runId }: { runId: string }) {
       id: "vendor",
       header: t("columns.vendor"),
       cell: (row) => (
-        <div>
+        <div className="min-w-40">
           <Link href={`/finance/payables/vendors/${row.vendorId}`} className="text-primary hover:underline">
             {row.vendorName}
           </Link>
@@ -422,104 +424,126 @@ export function PayoutRunDetail({ runId }: { runId: string }) {
     },
   ];
 
+  const offered = data.nextActions.length > 0;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: tList("title"), href: "/finance/payouts" }, { label: data.runNo }]}
-          />
-        }
+        back={{ href: "/finance/payouts", label: tList("title") }}
         title={t("title", { run: data.runNo })}
         meta={<StatusChip map={PAYOUT_RUN_STATUS} value={data.status} size="md" />}
         description={t("description", { payOn: format.date(data.payOn), format: data.bankFormat })}
-        actions={
-          <>
-            {canExecute && data.bankFileReady ? (
-              <Button variant="secondary" iconStart="download" onClick={() => void downloadFile()}>
-                {t("download")}
-              </Button>
-            ) : null}
-            {/* What the API offers on this run, for this person (`nextActions`, D-093). */}
+      />
+      <DetailLayout
+        aside={
+          <ActionPanel id="run-panel" tone={offered ? "primary" : "neutral"} title={t("cash")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(data.cashAmount)}</p>
+            <SummaryRows
+              rows={[
+                {
+                  key: "net",
+                  label: t("apNet"),
+                  value: <span className="tabular-nums">{format.thb(data.apNetAmount)}</span>,
+                },
+                {
+                  key: "vat",
+                  label: t("vat"),
+                  value: <span className="tabular-nums">{format.thb(data.vatAmount)}</span>,
+                },
+                {
+                  key: "wht",
+                  label: t("wht"),
+                  value: <span className="tabular-nums">{format.thb(data.whtAmount)}</span>,
+                },
+                {
+                  key: "retention",
+                  label: t("retention"),
+                  value: <span className="tabular-nums">{format.thb(data.retentionAmount)}</span>,
+                },
+                {
+                  key: "account",
+                  label: t("account"),
+                  value: <AccountNo bank={data.bankAccount.bankCode} last4={data.bankAccount.accountNoLast4} />,
+                },
+              ]}
+            />
             <NextActionBar
+              layout="panel"
               actions={data.nextActions}
               supported={RUN_VERBS}
               labelOf={(verb) => RUN_LABELS[verb] && t(RUN_LABELS[verb])}
               onAction={(verb) => setAction(verb === "generate_bank_file" ? "file" : (verb as Action))}
+              secondary={
+                canExecute && data.bankFileReady ? (
+                  <Button variant="secondary" size="lg" iconStart="download" onClick={() => void downloadFile()}>
+                    {t("download")}
+                  </Button>
+                ) : null
+              }
             />
-          </>
+            {!offered && canExecute && data.bankFileReady ? (
+              <Button variant="secondary" iconStart="download" onClick={() => void downloadFile()}>
+                {t("download")}
+              </Button>
+            ) : null}
+            {data.approvalRequestId ? <ApprovalTrail requestId={data.approvalRequestId} /> : null}
+          </ActionPanel>
         }
-      />
+      >
+        {data.status === "proposed" ? (
+          <Callout tone="warning" title={t("waitingTitle")}>
+            {isProposer ? t("waitingProposer") : t("waitingBody")}{" "}
+            {data.approvalRequestId ? (
+              <Link href={`/approvals/${data.approvalRequestId}`} className="text-primary hover:underline">
+                {t("openApproval")}
+              </Link>
+            ) : null}
+          </Callout>
+        ) : null}
+        {data.status === "rejected" ? (
+          <Callout tone="danger" title={t("rejectedTitle")}>
+            {t("rejectedBody")}
+          </Callout>
+        ) : null}
+        {data.items.some((item) => item.status === "excluded") ? (
+          <Callout tone="warning" title={t("excludedTitle")}>
+            {t("excludedBody")}
+          </Callout>
+        ) : null}
 
-      {data.status === "proposed" ? (
-        <Callout tone="warning" title={t("waitingTitle")}>
-          {isProposer ? t("waitingProposer") : t("waitingBody")}{" "}
-          {data.approvalRequestId ? (
-            <Link href={`/approvals/${data.approvalRequestId}`} className="text-primary hover:underline">
-              {t("openApproval")}
-            </Link>
-          ) : null}
-        </Callout>
-      ) : null}
-      {data.status === "rejected" ? (
-        <Callout tone="danger" title={t("rejectedTitle")}>
-          {t("rejectedBody")}
-        </Callout>
-      ) : null}
-      {data.items.some((item) => item.status === "excluded") ? (
-        <Callout tone="warning" title={t("excludedTitle")}>
-          {t("excludedBody")}
-        </Callout>
-      ) : null}
+        <Section title={t("totals")}>
+          <DescriptionList
+            columns={3}
+            items={[
+              {
+                term: t("account"),
+                description: (
+                  <AccountNo
+                    bank={data.bankAccount.bankCode}
+                    last4={data.bankAccount.accountNoLast4}
+                    gl={data.bankAccount.glAccountCode}
+                  />
+                ),
+              },
+              { term: t("format"), description: data.bankFormat },
+              {
+                term: t("approval"),
+                description: approval.data ? t("approvalBy", { name: approval.data.requester.displayName }) : "—",
+              },
+            ]}
+          />
+        </Section>
 
-      <Section title={t("totals")}>
-        <dl className="grid gap-3 sm:grid-cols-3 xl:grid-cols-5">
-          <Figure label={t("apNet")} amount={data.apNetAmount} />
-          <Figure label={t("vat")} amount={data.vatAmount} />
-          <Figure label={t("wht")} amount={data.whtAmount} />
-          <Figure label={t("retention")} amount={data.retentionAmount} />
-          <Figure label={t("cash")} amount={data.cashAmount} />
-        </dl>
-        <DescriptionList
-          className="mt-4"
-          columns={3}
-          items={[
-            {
-              term: t("account"),
-              description: (
-                <AccountNo
-                  bank={data.bankAccount.bankCode}
-                  last4={data.bankAccount.accountNoLast4}
-                  gl={data.bankAccount.glAccountCode}
-                />
-              ),
-            },
-            { term: t("format"), description: data.bankFormat },
-            {
-              term: t("approval"),
-              description: data.approvalRequestId ? (
-                <Link href={`/approvals/${data.approvalRequestId}`} className="text-primary hover:underline">
-                  {approval.data ? t("approvalBy", { name: approval.data.requester.displayName }) : t("openApproval")}
-                </Link>
-              ) : (
-                "—"
-              ),
-            },
-          ]}
-        />
-      </Section>
-
-      <Section title={t("items")}>
-        <DataTable
-          caption={t("items")}
-          columns={columns}
-          rows={data.items}
-          getRowId={(row) => row.id}
-          density="compact"
-          rowTone={(row) => (row.status === "failed" ? "danger" : row.status === "excluded" ? "warning" : undefined)}
-        />
-      </Section>
+        <Section title={t("items")}>
+          <DataTable
+            caption={t("items")}
+            columns={columns}
+            rows={data.items}
+            getRowId={(row) => row.id}
+            density="compact"
+            rowTone={(row) => (row.status === "failed" ? "danger" : row.status === "excluded" ? "warning" : undefined)}
+          />
+        </Section>
+      </DetailLayout>
 
       {action === "propose" || action === "file" ? (
         <ConfirmAction

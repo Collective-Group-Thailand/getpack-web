@@ -15,7 +15,7 @@ import { cn } from "@/ui/lib/cn";
 import { listTotalQuery, useQueues } from "../console/queues";
 import { MENU_BADGES } from "./badges";
 import { groupSidebar, isCurrent, menuLabel, type SidebarItem } from "./menu";
-import { isSubnavCurrent, useSubnavItems } from "./subnav";
+import { isSubnavCurrent, type SubnavGroup, type SubnavItem, useSubnavDesks, useSubnavItems } from "./subnav";
 
 // Which groups the reader opened or closed, remembered on this device (as the factory app does).
 const STORE = "getpack.admin.sidebar.open";
@@ -90,6 +90,7 @@ export function AdminSidebar({
     else waiting.delete(item.key);
   });
   const subnav = useSubnavItems();
+  const desks = useSubnavDesks();
   const roleLabel = (role: string) => (t.has(`roles.${role}`) ? t(`roles.${role}`) : role);
   const label = (key: string) => menuLabel(key, t);
 
@@ -246,32 +247,9 @@ export function AdminSidebar({
                   return (
                     <li key={item.key}>
                       {collapsed ? <Tooltip content={name}>{link}</Tooltip> : link}
-                      {/* The area's own pages (its `SectionNav`), under the entry you are in. */}
-                      {current && !collapsed && subnav?.length ? (
-                        <ul
-                          aria-label={name}
-                          className="border-border ms-[1.375rem] mt-0.5 mb-1 flex flex-col border-s ps-2"
-                        >
-                          {subnav.map((page) => {
-                            const here = isSubnavCurrent(page, pathname);
-                            return (
-                              <li key={page.href}>
-                                <Link
-                                  href={page.href}
-                                  aria-current={here ? "page" : undefined}
-                                  className={cn(
-                                    "flex min-h-11 items-center rounded-lg px-2.5 text-sm md:min-h-8",
-                                    here
-                                      ? "text-primary-subtle-fg bg-primary-subtle font-semibold"
-                                      : "text-muted hover:bg-bg hover:text-fg font-medium",
-                                  )}
-                                >
-                                  {page.label}
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
+                      {/* The workspace's desks (finance) or the area's own pages (its `SectionNav`), under the entry you are in. */}
+                      {current && !collapsed && (desks?.length || subnav?.length) ? (
+                        <SubnavTree label={name} desks={desks} pages={subnav} pathname={pathname} />
                       ) : null}
                     </li>
                   );
@@ -290,6 +268,108 @@ export function AdminSidebar({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+const SUB_LINK = "flex min-h-11 items-center rounded-lg px-2.5 text-sm md:min-h-8";
+
+function SubnavLink({ page, pathname }: { page: SubnavItem; pathname: string }) {
+  const here = isSubnavCurrent(page, pathname);
+  return (
+    <Link
+      href={page.href}
+      aria-current={here ? "page" : undefined}
+      className={cn(
+        SUB_LINK,
+        here
+          ? "text-primary-subtle-fg bg-primary-subtle font-semibold"
+          : "text-muted hover:bg-bg hover:text-fg font-medium",
+      )}
+    >
+      {page.label}
+    </Link>
+  );
+}
+
+/**
+ * What sits under the open entry: a workspace's desks in their named runs (finance), with the open desk's own pages
+ * one step further in; or, for a plain area, its pages. The current desk reads in ink (its page carries the tint), so
+ * exactly one row is marked as "here".
+ */
+function SubnavTree({
+  label,
+  desks,
+  pages,
+  pathname,
+}: {
+  label: string;
+  desks: readonly SubnavGroup[] | null;
+  pages: readonly SubnavItem[] | null;
+  pathname: string;
+}) {
+  const rail = "border-border ms-[1.375rem] mt-0.5 mb-1 flex flex-col border-s ps-2";
+  if (!desks?.length) {
+    return (
+      <ul aria-label={label} className={rail}>
+        {(pages ?? []).map((page) => (
+          <li key={page.href}>
+            <SubnavLink page={page} pathname={pathname} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  // The desk whose pages are open: the longest desk path the address starts with (the home is exact).
+  const open = desks
+    .flatMap((group) => group.items)
+    .filter((desk) => isSubnavCurrent(desk, pathname))
+    .sort((a, b) => b.href.length - a.href.length)[0];
+  return (
+    <div aria-label={label} role="group" className={cn(rail, "gap-2")}>
+      {desks.map((group) => (
+        <div key={group.label} className="flex flex-col">
+          <p className="text-muted px-2.5 pt-1 pb-0.5 text-xs font-semibold">{group.label}</p>
+          <ul aria-label={group.label} className="flex flex-col">
+            {group.items.map((desk) => {
+              const isOpen = desk.href === open?.href;
+              const own = isOpen && pages?.length ? pages : null;
+              const exact = pathname === desk.href;
+              return (
+                <li key={desk.href}>
+                  {own ? (
+                    <>
+                      <Link
+                        href={desk.href}
+                        aria-current={exact ? "page" : undefined}
+                        className={cn(
+                          SUB_LINK,
+                          exact
+                            ? "text-primary-subtle-fg bg-primary-subtle font-semibold"
+                            : "text-fg hover:bg-bg font-semibold",
+                        )}
+                      >
+                        {desk.label}
+                      </Link>
+                      <ul aria-label={desk.label} className="border-border ms-3 mb-1 flex flex-col border-s ps-1.5">
+                        {own
+                          .filter((page) => page.href !== desk.href)
+                          .map((page) => (
+                            <li key={page.href}>
+                              <SubnavLink page={page} pathname={pathname} />
+                            </li>
+                          ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <SubnavLink page={isOpen ? { ...desk, exact: false } : desk} pathname={pathname} />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }
