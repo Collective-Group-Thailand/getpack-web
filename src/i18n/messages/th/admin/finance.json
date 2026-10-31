@@ -2190,7 +2190,8 @@
       "newRateHint": "เช่น 7 หรือ 1.5",
       "effectiveFrom": "มีผลตั้งแต่",
       "effectiveHint": "วันนี้หรือหลังจากนี้",
-      "reason": "เหตุผล"
+      "reason": "เหตุผล",
+      "openAllSettings": "เปิดหน้าตั้งค่าระบบ"
     },
     "series": {
       "title": "เลขที่เอกสาร",

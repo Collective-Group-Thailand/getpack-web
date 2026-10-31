@@ -186,12 +186,13 @@ function Group({
                   onClick={() => setOpenKey(l.key)}
                   className={cn(
                     "rounded-control border-border inline-flex min-h-9 items-center gap-2 border px-3 text-sm",
-                    selected ? "bg-primary text-fg-inverse border-primary" : "bg-surface hover:border-primary",
+                    // Design language v3: the chosen view is an ink hairline and semibold, not a filled green block.
+                    selected ? "bg-surface text-fg border-fg font-semibold" : "bg-surface text-muted hover:text-fg",
                     l.list.count === 0 && !selected && "text-muted",
                   )}
                 >
                   {t(`lists.${l.key}`)}
-                  <span className={cn("tabular-nums", selected ? "opacity-80" : "text-muted")}>
+                  <span className={cn("tabular-nums", selected ? "text-fg" : "text-muted")}>
                     {format.number(l.list.count)}
                   </span>
                 </button>

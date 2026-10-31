@@ -14,7 +14,7 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
-import { Input, Textarea } from "@/ui/components/Input";
+import { Textarea } from "@/ui/components/Input";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
@@ -23,6 +23,7 @@ import { adminBrowserApis } from "../../console/api";
 import { bangkokDay, useFactoryPart } from "../hooks";
 import { FormDialog, Section } from "../parts";
 import type { Factory, ProposalSummary } from "../resources";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type List = Schemas["PriceListDto"];
 type Row = Schemas["PriceRowDto"];
@@ -210,7 +211,7 @@ export function Pricing({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("effectiveFrom")}>
-            <Input
+            <ConsoleDateField
               type="date"
               value={draft.effectiveFrom}
               onChange={(event) => setDraft({ ...draft, effectiveFrom: event.target.value })}

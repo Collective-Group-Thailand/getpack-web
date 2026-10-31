@@ -241,7 +241,13 @@ export default async function JournalsPage({
               label={t("filter")}
               hidden={{ view: view === "all" ? undefined : view, q: query.q }}
               fields={[
-                { name: "month", label: tc("month"), value: month ?? "", type: "month" },
+                {
+                  name: "month",
+                  label: tc("month"),
+                  value: month ?? "",
+                  type: "month",
+                  display: month ? format.date(`${month}-01`, { style: "month" }) : undefined,
+                },
                 { name: "account", label: t("accountFilter"), value: query.account ?? "", type: "text" },
               ]}
               submit={t("filter")}

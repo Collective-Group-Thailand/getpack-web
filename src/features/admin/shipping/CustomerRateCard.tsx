@@ -46,6 +46,7 @@ import {
 import { RatesTable } from "./RatesTable";
 import { QuoteTester } from "./QuoteTester";
 import { useCustomerZones } from "./zones";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Summary = Schemas["CustomerRateVersionSummaryDto"];
 type Preview = Schemas["RateImportPreviewDto"];
@@ -343,7 +344,7 @@ export function CustomerRateCard() {
           }}
         >
           <Field label={tVersion("effectiveFrom")} hint={t("effectiveHint")} required>
-            <Input
+            <ConsoleDateField
               type="date"
               min={today()}
               value={creating.effectiveFrom}

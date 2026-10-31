@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Button } from "./Button";
 import { Input } from "./Input";
+import { PeriodField } from "./PeriodField";
 import { Icon } from "@/ui/icons";
 
 type Step = { href: string; label: string };
@@ -39,7 +40,8 @@ export function PeriodPicker({
   label: string;
   /** The rest of the page's query (the tab, the form) carried along. */
   hidden?: Record<string, string | undefined>;
-  fields: { name: string; label: string; value: string; type: "date" | "month" | "text" }[];
+  /** `display`: a month or date as the page's calendar writes it ("ตุลาคม 2569") — shown at rest instead of the browser's. */
+  fields: { name: string; label: string; value: string; type: "date" | "month" | "text"; display?: string }[];
   submit: string;
   prev?: Step;
   next?: Step;
@@ -53,12 +55,22 @@ export function PeriodPicker({
         {fields.map((field) => (
           <label key={field.name} className="flex min-w-0 items-center gap-2">
             <span className="text-muted shrink-0 text-sm">{field.label}</span>
-            <Input
-              type={field.type}
-              name={field.name}
-              defaultValue={field.value}
-              className={field.type === "text" ? "w-28" : field.type === "month" ? "w-44" : "w-40"}
-            />
+            {field.type !== "text" && field.display ? (
+              <PeriodField
+                type={field.type}
+                name={field.name}
+                defaultValue={field.value}
+                display={field.display}
+                className={field.type === "month" ? "w-44" : "w-40"}
+              />
+            ) : (
+              <Input
+                type={field.type}
+                name={field.name}
+                defaultValue={field.value}
+                className={field.type === "text" ? "w-28" : field.type === "month" ? "w-44" : "w-40"}
+              />
+            )}
           </label>
         ))}
       </div>

@@ -20,7 +20,15 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { StatusBadge } from "@/ui/components/StatusBadge";
 import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, problemMessage, ResourceList, useCan, useRoleLabel, type InitialPage } from "../console";
+import {
+  adminBrowserApis,
+  problemMessage,
+  QueueTabs,
+  ResourceList,
+  useCan,
+  useRoleLabel,
+  type InitialPage,
+} from "../console";
 import type { User } from "./grants";
 import { usersList } from "./resources";
 
@@ -51,7 +59,7 @@ export function UsersList({ initial }: { initial: InitialPage<User> | null }) {
       cell: (row) => (
         <span className="flex flex-wrap gap-1">
           {row.roles.map((grant) => (
-            <Badge key={grant.id} size="sm">
+            <Badge key={grant.id} size="sm" tone="neutral">
               {roleLabel(grant.role)}
             </Badge>
           ))}
@@ -77,13 +85,20 @@ export function UsersList({ initial }: { initial: InitialPage<User> | null }) {
       initial={initial}
       searchLabel={t("search")}
       searchPlaceholder={t("searchPlaceholder")}
+      rowHref={(row) => `/users/${row.id}`}
+      views={
+        <QueueTabs
+          countFrom={usersList}
+          label={t("columns.kind")}
+          param="kind"
+          tabs={[
+            { value: null, label: t("kinds.staff") },
+            { value: "partner", label: t("kinds.partner") },
+            { value: "customer", label: t("kinds.customer") },
+          ]}
+        />
+      }
       filters={[
-        {
-          id: "kind",
-          label: t("columns.kind"),
-          kind: "select",
-          options: (["staff", "partner", "customer"] as const).map((value) => ({ value, label: t(`kinds.${value}`) })),
-        },
         {
           id: "status",
           label: t("columns.status"),

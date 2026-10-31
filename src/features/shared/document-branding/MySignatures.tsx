@@ -12,6 +12,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { FilePickButton } from "@/ui/components/FilePickButton";
 import { Input } from "@/ui/components/Input";
@@ -42,7 +43,13 @@ async function save(zone: Zone, signatoryId: string, body: Schemas["UpdateMySign
  * factory) that named them signatory. A photographed signature or one drawn on the screen; the API makes the
  * paper transparent. Shows which kinds of document print it.
  */
-export function MySignatures({ zone }: { zone: Zone }) {
+export function MySignatures({
+  zone,
+  emptyAction,
+}: {
+  zone: Zone;
+  /** The way on when nobody has named you a signatory. */ emptyAction?: React.ReactNode;
+}) {
   const t = useTranslations("docBranding.mine");
   const [rows, setRows] = useState<Mine[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +66,12 @@ export function MySignatures({ zone }: { zone: Zone }) {
 
   if (error) return <Callout tone="danger" title={error} />;
   if (!rows) return <Skeleton className="h-48" />;
-  if (rows.length === 0) return <Callout tone="neutral" title={t("none")} />;
+  if (rows.length === 0)
+    return emptyAction ? (
+      <EmptyState icon="signature" title={t("none")} action={emptyAction} />
+    ) : (
+      <Callout tone="neutral" title={t("none")} />
+    );
   return (
     <div className="flex flex-col gap-4">
       {rows.map((row) => (

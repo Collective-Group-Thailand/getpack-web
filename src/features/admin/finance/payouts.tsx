@@ -245,7 +245,13 @@ function NewRun({ onClose }: { onClose: () => void }) {
           rows={eligible.data ?? []}
           loading={eligible.isPending}
           getRowId={(row) => row.id}
-          empty={<EmptyState icon="wallet" title={t("nothing")} />}
+          empty={
+            <EmptyState
+              icon="wallet"
+              title={t("nothing")}
+              action={<EmptyLink href="/finance/payables" label="nav.items.payables" />}
+            />
+          }
           columns={[
             { id: "vendor", header: tOpen("columns.vendor"), cell: (row) => row.vendorName },
             { id: "source", header: tOpen("columns.source"), cell: (row) => tOpen(`sources.${row.source}`) },
@@ -532,18 +538,19 @@ export function PayoutRunDetail({ runId }: { runId: string }) {
             ]}
           />
         </Section>
-
-        <Section title={t("items")}>
-          <DataTable
-            caption={t("items")}
-            columns={columns}
-            rows={data.items}
-            getRowId={(row) => row.id}
-            density="compact"
-            rowTone={(row) => (row.status === "failed" ? "danger" : row.status === "excluded" ? "warning" : undefined)}
-          />
-        </Section>
       </DetailLayout>
+
+      {/* Full width under the record: nine columns read side by side instead of scrolling inside a narrow box. */}
+      <Section title={t("items")}>
+        <DataTable
+          caption={t("items")}
+          columns={columns}
+          rows={data.items}
+          getRowId={(row) => row.id}
+          density="compact"
+          rowTone={(row) => (row.status === "failed" ? "danger" : row.status === "excluded" ? "warning" : undefined)}
+        />
+      </Section>
 
       {action === "propose" || action === "file" ? (
         <ConfirmAction
@@ -832,7 +839,13 @@ export function PayoutExceptions() {
         rows={rows.data ?? []}
         loading={rows.isPending}
         getRowId={(row) => row.id}
-        empty={<EmptyState icon="check" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="check"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/payouts" label="nav.items.payouts" />}
+          />
+        }
         columns={[
           {
             id: "run",

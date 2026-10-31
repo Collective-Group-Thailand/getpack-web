@@ -61,8 +61,8 @@ export default async function OeePage({ searchParams }: { searchParams: Promise<
           action="/insight/oee"
           label={t("title")}
           fields={[
-            { name: "from", label: t("from"), value: from, type: "date" },
-            { name: "to", label: t("to"), value: to, type: "date" },
+            { name: "from", label: t("from"), value: from, type: "date", display: format.date(from) },
+            { name: "to", label: t("to"), value: to, type: "date", display: format.date(to) },
           ]}
           submit={t("show")}
         />

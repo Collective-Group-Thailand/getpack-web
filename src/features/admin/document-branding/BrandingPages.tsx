@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { DocumentBrandingEditor } from "@/features/shared/document-branding/DocumentBrandingEditor";
 import { MySignatures } from "@/features/shared/document-branding/MySignatures";
+import { Button } from "@/ui/components/Button";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 import { useCan } from "../console/actor";
@@ -26,7 +28,14 @@ export function MySignaturePage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("body")} />
-      <MySignatures zone="admin" />
+      <MySignatures
+        zone="admin"
+        emptyAction={
+          <Button asChild variant="secondary">
+            <Link href="/document-branding">{t("openBranding")}</Link>
+          </Button>
+        }
+      />
     </div>
   );
 }

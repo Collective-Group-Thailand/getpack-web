@@ -293,7 +293,13 @@ export function PaymentDetail({ paymentId }: { paymentId: string }) {
             rows={documents.data ?? []}
             loading={documents.isPending && Boolean(payment.data)}
             getRowId={(row) => row.id}
-            empty={<EmptyState icon="document" title={t("noDocuments")} />}
+            empty={
+              <EmptyState
+                icon="document"
+                title={t("noDocuments")}
+                action={<EmptyLink href="/finance/documents" label="nav.items.documents" />}
+              />
+            }
             columns={[
               { id: "number", header: t("docNumber"), cell: (row) => <DocumentLink document={row} /> },
               { id: "date", header: t("docDate"), cell: (row) => format.date(row.documentDate) },
@@ -349,7 +355,13 @@ function RefundRows({
       loading={loading}
       getRowId={(row) => row.id}
       columns={columns}
-      empty={<EmptyState icon="reset" title={t("empty")} />}
+      empty={
+        <EmptyState
+          icon="reset"
+          title={t("empty")}
+          action={<EmptyLink href="/finance/payments" label="nav.items.payments" />}
+        />
+      }
     />
   );
 }

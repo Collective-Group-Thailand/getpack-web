@@ -17,6 +17,7 @@ import { cn } from "@/ui/lib/cn";
 
 import { problemMessage, QueryError, useCan } from "../console";
 import { adminBrowserApis } from "../console/api";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 /** This month, in Bangkok, as `YYYY-MM`. */
 const thisMonth = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 7);
@@ -133,7 +134,7 @@ export function IndexSeries() {
               }}
             >
               <Field label={t("period")}>
-                <Input
+                <ConsoleDateField
                   type="month"
                   value={point.period}
                   onChange={(event) => setPoint({ ...point, period: event.target.value })}

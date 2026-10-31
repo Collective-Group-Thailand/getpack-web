@@ -127,6 +127,13 @@
     "company_admin": "Company Admin",
     "company_buyer": "Buyer",
     "company_approver": "Approver",
-    "company_accountant": "Accountant"
+    "company_accountant": "Accountant",
+    "sales_manager": "Sales manager",
+    "sales_agent": "Sales agent",
+    "factory_storekeeper": "Storekeeper",
+    "factory_purchaser": "Purchaser",
+    "factory_maintenance": "Maintenance",
+    "factory_sales": "Factory sales",
+    "factory_auditor": "External auditor / CPA"
   }
 }

@@ -106,8 +106,1011 @@
         "required": "Enter a value",
         "format": "That is not the right format for this setting",
         "json": "That is not valid JSON"
+      },
+      "structured": "the new set of values"
+    },
+    "items": {
+      "advisory": {
+        "rule_set": {
+          "label": "Structure Advisor rules",
+          "help": "McKee constant, uncertainty band, eligible flute formulas and factors for humidity, storage and transport"
+        }
+      },
+      "agents": {
+        "rules": {
+          "label": "Sales agent rules",
+          "help": "Agent link lifetime, new-customers-only attribution, lead protection, open leads per agent and commission payment terms"
+        }
+      },
+      "analytics": {
+        "journey_alert_min_sessions": {
+          "label": "Minimum sessions before a journey alert",
+          "help": "Sessions needed at the first step in both weeks before a week-over-week drop raises an alert"
+        },
+        "journey_drop_alert_pct": {
+          "label": "Journey drop alert",
+          "help": "A journey whose completion rate falls by more than this against the week before alerts operations"
+        },
+        "price_gap_bands_pct": {
+          "label": "Target price gap bands",
+          "help": "Upper bound of each band (% of the target), ascending"
+        },
+        "prospectus_min_group_size": {
+          "label": "Minimum factories per figure",
+          "help": "Fewest factories behind any breakdown in anonymised exports and the partner prospectus"
+        },
+        "target_price_min_group_size": {
+          "label": "Minimum customers per target-price cell",
+          "help": "Fewest distinct customers behind any figure built from target prices"
+        }
+      },
+      "api": {
+        "max_keys_per_company": {
+          "label": "API keys per company",
+          "help": "Active API clients one company may hold"
+        }
+      },
+      "approvals": {
+        "solo_owner_mode": {
+          "label": "Solo owner mode",
+          "help": "While on, a superadmin may approve their own request with a typed reason; every use is audited"
+        },
+        "solo_owner_mode_max_days": {
+          "label": "Solo owner mode length",
+          "help": "Longest one turn-on of solo owner mode lasts; turn it on again to renew"
+        }
+      },
+      "artwork": {
+        "approval_checklist": {
+          "label": "Proof approval checklist",
+          "help": "What the customer confirms when approving a proof, kept as evidence"
+        },
+        "file_check_retention_days": {
+          "label": "File check retention",
+          "help": "Files checked but never ordered are deleted after this many days"
+        },
+        "first_proof_business_days": {
+          "label": "Time to first proof",
+          "help": "Business days from an accepted file to the first proof, shown on the storefront"
+        },
+        "preflight_rules": {
+          "label": "Preflight rules",
+          "help": "Bleed and safe zone, and the severity of each check"
+        },
+        "prepress_sla_business_hours": {
+          "label": "Prepress response time",
+          "help": "Business hours prepress has to answer a submission"
+        }
+      },
+      "assistant": {
+        "eval_min_pass_rate_pct": {
+          "label": "Assistant evaluation pass rate",
+          "help": "Share of evaluation cases the provider must pass before the assistant can be switched on"
+        },
+        "log_retention_days": {
+          "label": "Assistant log retention",
+          "help": "Days sessions are kept after their last turn, then purged (PDPA)"
+        },
+        "messages_per_day": {
+          "label": "Assistant messages per day",
+          "help": "Messages one customer may send per day"
+        },
+        "messages_per_minute": {
+          "label": "Assistant messages per minute",
+          "help": "Messages one customer may send per minute"
+        },
+        "model": {
+          "label": "Assistant model",
+          "help": "The provider's model id"
+        },
+        "model_prices": {
+          "label": "Assistant model prices",
+          "help": "USD per million input and output tokens by model, counted against the cost ceiling"
+        },
+        "provider": {
+          "label": "Assistant provider",
+          "help": "The model provider; the assistant stays off until it is set"
+        },
+        "session_cost_ceiling_usd": {
+          "label": "Cost ceiling per session",
+          "help": "Most one assistant session may cost in model usage (USD)"
+        },
+        "turns_per_session": {
+          "label": "Turns per session",
+          "help": "Turns one session may hold before a new one starts"
+        }
+      },
+      "audit": {
+        "business_hours": {
+          "label": "Business hours for the exception report",
+          "help": "Manual journals posted outside these hours are listed for the auditor"
+        }
+      },
+      "auth": {
+        "access_token_ttl_seconds": {
+          "label": "Access token lifetime",
+          "help": "How long one access token is valid"
+        },
+        "device_pin_policy": {
+          "label": "Partner device PIN",
+          "help": "PIN length, attempts allowed and lock time"
+        },
+        "otp_policy": {
+          "label": "Phone OTP",
+          "help": "Code expiry, attempts and request limits"
+        },
+        "password_lockout": {
+          "label": "Password lockout",
+          "help": "Failed attempts allowed and lock time for staff and partners"
+        },
+        "refresh_token_lifetimes": {
+          "label": "Sign-in lifetimes",
+          "help": "Idle and absolute sign-in lifetime per audience"
+        }
+      },
+      "b2b": {
+        "credit_eligibility_paid_orders": {
+          "label": "Paid orders before credit",
+          "help": "Paid orders after which a prepaid company may get credit"
+        },
+        "credit_terms": {
+          "label": "Credit terms",
+          "help": "Credit days that may be given and the default"
+        },
+        "kyc_certificate_max_age_months": {
+          "label": "Company certificate age",
+          "help": "A certificate is accepted only when issued within this many months"
+        },
+        "overdue_rules": {
+          "label": "Overdue rules",
+          "help": "Reminder before the due date and when credit orders are blocked"
+        }
+      },
+      "banking": {
+        "auto_match": {
+          "label": "Bank auto-matching",
+          "help": "Date window and amount tolerance for a match"
+        }
+      },
+      "calendar": {
+        "business_hours": {
+          "label": "Business hours",
+          "help": "Working-day hours used for business-hour SLAs"
+        }
+      },
+      "calloff": {
+        "max_months": {
+          "label": "Call-off length",
+          "help": "Longest a call-off agreement holds a unit price"
+        }
+      },
+      "campaigns": {
+        "budget_alert_pct": {
+          "label": "Campaign budget alert",
+          "help": "Marketing is alerted when a campaign has used this share of its budget"
+        }
+      },
+      "catalog": {
+        "hero_presets": {
+          "label": "Homepage studio presets",
+          "help": "Shapes, sizes, boards, prints and quantities offered on the homepage"
+        },
+        "print_limits": {
+          "label": "Print limits",
+          "help": "Most spot colours per side and whether CMYK plus spot is offered"
+        }
+      },
+      "claims": {
+        "window_days": {
+          "label": "Claim window",
+          "help": "Days after receipt in which a claim may be raised"
+        }
+      },
+      "close": {
+        "unmatched_items_threshold": {
+          "label": "Unmatched items at close",
+          "help": "Unmatched bank items allowed at close before each must be explained"
+        }
+      },
+      "configurations": {
+        "draft_retention_days": {
+          "label": "Draft retention",
+          "help": "Days a draft configuration is kept after its last change"
+        },
+        "share_link_days": {
+          "label": "Share link lifetime",
+          "help": "Days a share link stays valid"
+        }
+      },
+      "conversations": {
+        "resolution_business_days": {
+          "label": "Conversation resolution target",
+          "help": "Business days from the customer's first message to resolution"
+        }
+      },
+      "design": {
+        "extra_revision_fee": {
+          "label": "Extra revision fee",
+          "help": "Fee per extra round: the greater of the minimum and a share of the design fee"
+        },
+        "free_revision_rounds": {
+          "label": "Free revision rounds",
+          "help": "Free rounds per hired design"
+        },
+        "hired_design_sla": {
+          "label": "Hired design delivery",
+          "help": "Target and longest delivery of a hired design (business days)"
+        }
+      },
+      "dielines": {
+        "downloads_per_day": {
+          "label": "Dieline downloads per day",
+          "help": "Dieline downloads one customer may take per day"
+        },
+        "downloads_per_minute": {
+          "label": "Dieline downloads per minute",
+          "help": "Dieline downloads one customer may take per minute"
+        }
+      },
+      "discounts": {
+        "cs_limit_pct": {
+          "label": "CS discount limit",
+          "help": "Most CS may give without a discount memo"
+        }
+      },
+      "documents": {
+        "retention_years": {
+          "label": "Record retention",
+          "help": "Years documents and ledgers are kept"
+        }
+      },
+      "entity": {
+        "address_th": {
+          "label": "Registered address",
+          "help": "Address printed on the entity's documents"
+        },
+        "branch_code": {
+          "label": "Branch code",
+          "help": "00000 is the head office"
+        },
+        "display_name": {
+          "label": "Display name",
+          "help": "The sender name customers and carriers see"
+        },
+        "legal_name_en": {
+          "label": "Legal name (English)",
+          "help": "Registered name in English"
+        },
+        "legal_name_th": {
+          "label": "Legal name (Thai)",
+          "help": "Registered name in Thai"
+        },
+        "phone": {
+          "label": "Phone",
+          "help": "Contact phone printed on documents"
+        },
+        "return_address": {
+          "label": "Return address",
+          "help": "Sender address on carrier bookings; bookings are refused until it is set"
+        },
+        "tax_id": {
+          "label": "Tax ID",
+          "help": "13 digits"
+        }
+      },
+      "e_tax": {
+        "email_cc": {
+          "label": "ETDA copy address",
+          "help": "Every e-Tax e-mail is copied here for time-stamping"
+        },
+        "email_from": {
+          "label": "e-Tax sender",
+          "help": "The address registered with the Revenue Department; nothing is sent until it is set"
+        },
+        "email_retry": {
+          "label": "e-Tax e-mail retries",
+          "help": "Wait before each retry"
+        },
+        "subject_date_format": {
+          "label": "Date in the e-Tax subject",
+          "help": "How the date is written in the e-mail subject"
+        }
+      },
+      "fixed_assets": {
+        "depreciation_start": {
+          "label": "Depreciation start",
+          "help": "The month an asset is acquired or the month after"
+        }
+      },
+      "fulfilment": {
+        "colour_tolerance_delta_e": {
+          "label": "Colour tolerance (ΔE)",
+          "help": "Published tolerance against the approved proof"
+        },
+        "dimensional_tolerance_mm": {
+          "label": "Dimensional tolerance",
+          "help": "Plus or minus mm per calculator"
+        },
+        "tolerance_default_pct": {
+          "label": "Quantity tolerance",
+          "help": "Shortage and overage allowed until a factory sets its own"
+        }
+      },
+      "loyalty": {
+        "activity_rewards": {
+          "label": "Activity rewards",
+          "help": "Baht per activity, converted to points at the point value"
+        },
+        "earn_rate": {
+          "label": "Earn rate",
+          "help": "Amount paid per point"
+        },
+        "expected_redemption_rate_pct": {
+          "label": "Expected redemption rate",
+          "help": "Used for the points liability"
+        },
+        "points_expiry": {
+          "label": "Points expiry",
+          "help": "Months each earning lasts and the reminder lead"
+        },
+        "point_value": {
+          "label": "Point value",
+          "help": "Value of one point"
+        },
+        "redemption_limits": {
+          "label": "Redemption limits",
+          "help": "Minimum redemption and the most of an order it may cover"
+        },
+        "tiers": {
+          "label": "Tiers",
+          "help": "Tiers by 12-month spend with their multipliers"
+        }
+      },
+      "notifications": {
+        "deep_link_ttl_hours": {
+          "label": "Notification link lifetime",
+          "help": "How long a link in a notification stays valid"
+        },
+        "marketing_window": {
+          "label": "Marketing window",
+          "help": "Marketing messages go out only inside this window"
+        }
+      },
+      "ops": {
+        "alert_thresholds": {
+          "label": "Operations alert thresholds",
+          "help": "Value at which each signal alerts the admins"
+        }
+      },
+      "orders": {
+        "auto_complete_days": {
+          "label": "Auto-complete",
+          "help": "Days after delivery until an order completes"
+        },
+        "unpaid_expiry_days": {
+          "label": "Unpaid expiry",
+          "help": "Days after placement until an unpaid order is cancelled"
+        }
+      },
+      "partners": {
+        "auto_selection_min_factories": {
+          "label": "Factories before auto-selection",
+          "help": "Active factories per product type before auto-selection switches on"
+        },
+        "impact_simulation_window_days": {
+          "label": "Impact simulation window",
+          "help": "Days of factory quotes the simulation re-prices"
+        },
+        "peer_benchmark_min_factories": {
+          "label": "Factories before benchmarks",
+          "help": "Active factories per product type before benchmarks are computed"
+        },
+        "suggestion_deviation_band_pct": {
+          "label": "Suggestion deviation band",
+          "help": "A proposed buy price above this band is flagged"
+        }
+      },
+      "payments": {
+        "method_fees": {
+          "label": "Payment method fees",
+          "help": "Expected fee per method; 0 until set"
+        },
+        "qr_validity_minutes": {
+          "label": "QR validity",
+          "help": "How long one QR payment attempt is valid"
+        },
+        "schedule_split_threshold": {
+          "label": "Split payment threshold",
+          "help": "From this order value a 50% deposit applies"
+        },
+        "slip_receiver_accounts": {
+          "label": "Receiving accounts",
+          "help": "Accounts a slip must pay into; until set every slip goes to Finance"
+        },
+        "slip_review_sla_business_hours": {
+          "label": "Slip review time",
+          "help": "Business hours Finance has for slips that fail automatic checks"
+        }
+      },
+      "payouts": {
+        "advance_pct": {
+          "label": "Factory advance",
+          "help": "Share paid when a factory accepts a job"
+        },
+        "balance_trigger": {
+          "label": "Balance payout trigger",
+          "help": "What releases the factory balance"
+        },
+        "retention_pct": {
+          "label": "Retention",
+          "help": "Share held from the balance payout"
+        },
+        "retention_release_days": {
+          "label": "Retention release",
+          "help": "Days after the claim window until the retention is released"
+        },
+        "run_calendar": {
+          "label": "Payout days",
+          "help": "Days of the week payout runs pay on"
+        }
+      },
+      "pricing": {
+        "margin_floor_pct": {
+          "label": "Margin floor",
+          "help": "Reassignment, discounts and promotions never go below it"
+        }
+      },
+      "privacy": {
+        "export_link_days": {
+          "label": "Data export link",
+          "help": "Days an export stays downloadable"
+        },
+        "response_days": {
+          "label": "Privacy request response",
+          "help": "Days to answer an export or deletion request"
+        }
+      },
+      "production": {
+        "factory_acceptance_sla_business_days": {
+          "label": "Factory acceptance time",
+          "help": "Business days a factory has to accept a released job"
+        }
+      },
+      "promotions": {
+        "code_attempt_limits": {
+          "label": "Code attempt limits",
+          "help": "Attempts per hour per customer, IP and device"
+        },
+        "max_codes_per_cart": {
+          "label": "Codes per cart",
+          "help": "Codes one cart may hold at once"
+        }
+      },
+      "qc": {
+        "inspection_sampling": {
+          "label": "Inspection sampling",
+          "help": "AQL levels and risk-based rules"
+        }
+      },
+      "quotes": {
+        "lever_quantity_multipliers": {
+          "label": "Quantity lever multipliers",
+          "help": "Alternative quantities: the largest quoted times each"
+        },
+        "validity_days": {
+          "label": "Quote validity",
+          "help": "Days a quotation holds its price"
+        }
+      },
+      "receivables": {
+        "allowance_rates": {
+          "label": "Allowance rates",
+          "help": "% of open receivables per overdue band"
+        },
+        "forfeited_deposit_policy": {
+          "label": "Forfeited deposit",
+          "help": "% of the deposit kept when an order is cancelled before production"
+        }
+      },
+      "referral": {
+        "rules": {
+          "label": "Referral rules",
+          "help": "Referee discount, referrer reward and the monthly cap"
+        }
+      },
+      "reorder": {
+        "average_orders": {
+          "label": "Orders averaged for reorder",
+          "help": "Recent order intervals averaged for the next need"
+        },
+        "min_orders": {
+          "label": "Orders before a reorder suggestion",
+          "help": "Earlier orders needed before a suggestion"
+        },
+        "safety_stock_days": {
+          "label": "Safety stock",
+          "help": "Days before need the suggestion comes"
+        }
+      },
+      "rfq": {
+        "sla_business_hours": {
+          "label": "RFQ response time",
+          "help": "Business hours to the first response"
+        }
+      },
+      "samples": {
+        "credit_pct": {
+          "label": "Sample credit",
+          "help": "Share of a sample's price credited on the bulk order"
+        },
+        "credit_window_days": {
+          "label": "Sample credit window",
+          "help": "Days after approval in which the credit applies"
+        }
+      },
+      "shipping": {
+        "carton_spec": {
+          "label": "Shipping carton",
+          "help": "Carton used by the packing helper"
+        },
+        "pallet_spec": {
+          "label": "Pallet",
+          "help": "Pallet used to count cartons per pallet"
+        },
+        "target_margin_pct": {
+          "label": "Shipping target margin",
+          "help": "Used for the suggested factory shipping payout"
+        },
+        "transit_days": {
+          "label": "Transit days",
+          "help": "Working days in transit per zone; unlisted zones use the default"
+        }
+      },
+      "storefront": {
+        "cart_quantity_step": {
+          "label": "Cart quantity step",
+          "help": "Pieces the cart stepper moves by"
+        },
+        "featured_services": {
+          "label": "Featured services",
+          "help": "Add-on services featured on the storefront, in order"
+        },
+        "roadmap": {
+          "label": "Storefront roadmap",
+          "help": "What the storefront says is live, in display order"
+        },
+        "style_library": {
+          "label": "Style library content",
+          "help": "Popular terms, material swatches and the trust section"
+        },
+        "support_channels": {
+          "label": "Support channels",
+          "help": "getpack contacts on the storefront"
+        },
+        "support_hours": {
+          "label": "Support hours",
+          "help": "Days and hours CS answers"
+        }
+      },
+      "studio": {
+        "featured_styles": {
+          "label": "Featured studio styles",
+          "help": "Chosen styles and the usage rule"
+        },
+        "funnel_targets": {
+          "label": "Studio targets",
+          "help": "Time-to-cart and pass-rate targets"
+        },
+        "print_rules": {
+          "label": "Studio print rules",
+          "help": "Rules checked on the document and the print file"
+        },
+        "soft_proof_profiles": {
+          "label": "Soft proof profiles",
+          "help": "Preview transforms per material class"
+        }
+      },
+      "styles": {
+        "intake_terms": {
+          "label": "Style intake terms",
+          "help": "Terms a factory accepts when offering a dieline"
+        },
+        "published_wave": {
+          "label": "Published wave",
+          "help": "Highest style-library wave that may be published"
+        }
+      },
+      "support": {
+        "callback_slots": {
+          "label": "Call-back slots",
+          "help": "Windows offered on the contact form"
+        },
+        "first_response_business_days": {
+          "label": "First response target",
+          "help": "Business days to the first response"
+        },
+        "reply_business_days_by_topic": {
+          "label": "Response target by topic",
+          "help": "Business days per topic; others use the first response target"
+        },
+        "reply_minutes": {
+          "label": "Typical reply time",
+          "help": "Typical reply within support hours, shown on the storefront"
+        },
+        "topic_queues": {
+          "label": "Topic queues",
+          "help": "The team queue each topic goes to"
+        }
+      },
+      "tax": {
+        "calendar": {
+          "label": "Tax calendar",
+          "help": "Filing day of the next month per form and the reminder lead"
+        },
+        "gl_accounts": {
+          "label": "Tax control accounts",
+          "help": "GL accounts each tax report reconciles to"
+        },
+        "nature_by_product_type": {
+          "label": "Nature of sale by product type",
+          "help": "Hire of work or sale of goods: the default and overrides"
+        },
+        "rounding_mode": {
+          "label": "Tax rounding",
+          "help": "VAT and WHT rounded per line or per document"
+        }
+      },
+      "tooling": {
+        "reuse_months": {
+          "label": "Tooling reuse",
+          "help": "Months after last use that a plate or die is reused"
+        }
+      },
+      "trust": {
+        "audit_criteria": {
+          "label": "Factory audit criteria",
+          "help": "Criteria published on the network page"
+        },
+        "network_min_factories": {
+          "label": "Factories before publishing",
+          "help": "Active factories before counts and rates are published"
+        },
+        "network_min_jobs": {
+          "label": "Jobs before publishing rates",
+          "help": "Completed jobs in the window before rates are published"
+        },
+        "network_window_days": {
+          "label": "Published rates window",
+          "help": "Rolling days of the on-time and first-pass rates"
+        }
       }
-    }
+    },
+    "fields": {
+      "absoluteHours": "Absolute lifetime",
+      "idleHours": "Idle lifetime",
+      "staff": "Staff",
+      "partner": "Partners",
+      "customer": "Customers",
+      "allowedDays": "Days allowed",
+      "defaultDays": "Default",
+      "amountTolerance": "Amount tolerance",
+      "dateWindowDays": "Date window",
+      "artworkToCartPct": "Artwork to cart",
+      "preflightPassPct": "Preflight pass",
+      "priceParityPct": "Price parity",
+      "medianMinutesToCart": "Median time to cart",
+      "backoffMinutes": "Wait before each retry",
+      "bahtPerPoint": "Paid per point",
+      "basis": "Basis",
+      "bleedMm": "Bleed",
+      "safeZoneMm": "Safe zone",
+      "blockCreditOrdersAfterDaysOverdue": "Block credit orders after overdue",
+      "reminderDaysBeforeDue": "Reminder before due",
+      "cmykSpotAddOnEnabled": "CMYK plus spot colour",
+      "maxSpotColoursPerSide": "Spot colours per side",
+      "codeLength": "Code length",
+      "expirySeconds": "Code expiry",
+      "maxAttempts": "Attempts allowed",
+      "maxPerIpPerHour": "Per IP per hour",
+      "maxPerPhonePerHour": "Per phone per hour",
+      "resendCooldownSeconds": "Resend cooldown",
+      "length": "Length",
+      "lockMinutes": "Lock time",
+      "maxFailedAttempts": "Failed attempts allowed",
+      "corrugate": "Corrugated",
+      "folding": "Folding carton",
+      "tag_sleeve": "Tags and sleeves",
+      "flexo": "Flexo",
+      "standard": "Standard",
+      "dayOfNextMonth": "Due day of the next month",
+      "reminderDaysBefore": "Reminder lead",
+      "pp30": "PP 30",
+      "pnd3": "PND 3",
+      "pnd53": "PND 53",
+      "input_vat": "Input VAT",
+      "output_vat": "Output VAT",
+      "wht_pnd1": "WHT PND 1",
+      "wht_pnd3": "WHT PND 3",
+      "wht_pnd53": "WHT PND 53",
+      "wht_receivable": "WHT receivable",
+      "default": "Default",
+      "overrides": "Overrides",
+      "min": "Minimum",
+      "max": "Maximum",
+      "start": "Start",
+      "end": "End",
+      "weekdays": "Weekdays (1 = Monday)",
+      "days": "Days",
+      "open": "Opens",
+      "close": "Closes",
+      "hours": "Hours",
+      "forfeitPct": "Share kept",
+      "leadProtectionDays": "Lead protection",
+      "linkCookieDays": "Agent link lifetime",
+      "maxOpenLeads": "Open leads per agent",
+      "newCustomersOnly": "New customers only",
+      "paymentTermsDays": "Commission payment terms",
+      "lineLinkingBaht": "Linking LINE",
+      "reviewBaht": "Writing a review",
+      "signupBaht": "Signing up",
+      "maxPctOfOrder": "Most of an order",
+      "minimumBaht": "Minimum redemption",
+      "monthsPerEarning": "Months per earning",
+      "maxBusinessDays": "Longest",
+      "targetBusinessDays": "Target",
+      "minimumAmount": "Minimum",
+      "pctOfDesignFee": "Share of the design fee",
+      "perCustomerPerHour": "Per customer per hour",
+      "perDevicePerHour": "Per device per hour",
+      "perIpPerHour": "Per IP per hour",
+      "refereeDiscountMaxBaht": "Referee discount cap",
+      "refereeDiscountPct": "Referee discount",
+      "referrerRewardBaht": "Referrer reward",
+      "maxRewardedReferralsPerMonth": "Rewarded referrals per month",
+      "textTh": "Thai text",
+      "textEn": "English text",
+      "inputPerMTokUsd": "Input per million tokens",
+      "outputPerMTokUsd": "Output per million tokens",
+      "minDesigns": "Minimum designs",
+      "windowDays": "Window",
+      "id": "ID",
+      "key": "Item",
+      "status": "Status",
+      "tier": "Tier",
+      "multiplier": "Points multiplier",
+      "minSpend12m": "Minimum 12-month spend (baht)",
+      "from": "From",
+      "to": "To",
+      "labelTh": "Label (Thai)",
+      "styleCode": "Style code",
+      "productSlug": "Product",
+      "optionCodes": "Options",
+      "rules": "Rules",
+      "severity": "Severity",
+      "severities": "Severity per check",
+      "thresholds": "Thresholds",
+      "evaluatedOn": "Checked on",
+      "printMethods": "Print methods",
+      "materialClasses": "Material classes",
+      "warnBelowPpi": "Warn below (ppi)",
+      "blockBelowPpi": "Block below (ppi)",
+      "usage": "Usage",
+      "styles": "Styles",
+      "zones": "By zone",
+      "business": "Business",
+      "erpModules": "Factory ERP modules",
+      "topics": "Topics",
+      "factors": "Factors",
+      "formulas": "Formulas",
+      "storage": "Storage",
+      "humidity": "Humidity",
+      "fragility": "Fragility",
+      "transport": "Transport",
+      "prints": "Prints",
+      "shapes": "Shapes",
+      "materials": "Materials",
+      "quantities": "Quantities",
+      "sizesMm": "Sizes (mm)",
+      "standardSizeCodes": "Standard size codes",
+      "aql": "AQL by defect class",
+      "critical": "Critical",
+      "major": "Major",
+      "minor": "Minor",
+      "fullInspectionFromValue": "Full inspection from order value",
+      "sampledBandFromValue": "Wider sampling from order value",
+      "sampledBandRatePct": "Sampling rate in that band",
+      "highDefectRatePct": "Inspection rate after high defects",
+      "highDefectRateThresholdPct": "High defect threshold",
+      "highDefectWindowDays": "Defect look-back window",
+      "isoInspectionLevel": "ISO inspection level",
+      "specialFinishOrFoodUpliftPp": "Extra rate for special finishes or food (points)",
+      "trialFactoryJobs": "Trial jobs per factory",
+      "trialFactoryRatePct": "Inspection rate during trial",
+      "maxInkCoveragePct": "Maximum ink coverage",
+      "minEffectivePpi": "Minimum effective resolution (ppi)",
+      "minLineWidthPt": "Minimum line width (pt)",
+      "minStrokePt": "Minimum stroke (pt)",
+      "sizeToleranceMm": "Size tolerance",
+      "fonts_not_embedded": "Fonts not embedded",
+      "ink_count": "Ink count",
+      "ink_coverage": "Ink coverage",
+      "low_resolution": "Low resolution",
+      "missing_bleed": "Missing bleed",
+      "overprint": "Overprint",
+      "rgb_colour": "RGB colour",
+      "safe_zone": "Safe zone",
+      "size_mismatch": "Size mismatch",
+      "thin_lines": "Thin lines",
+      "mckeeConstant": "McKee constant",
+      "thinMarginPct": "Thin margin",
+      "uncertaintyPct": "Uncertainty",
+      "over_90_days": "Over 90 days",
+      "up_to_10_days": "Up to 10 days",
+      "up_to_30_days": "Up to 30 days",
+      "up_to_90_days": "Up to 90 days",
+      "dry": "Dry",
+      "humid": "Humid",
+      "normal": "Normal",
+      "very_humid": "Very humid",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "pickup": "Pickup",
+      "sea_export": "Sea export",
+      "pallet_domestic": "Domestic pallet",
+      "parcel_domestic": "Domestic parcel",
+      "palletPattern": "Pallet pattern",
+      "palletOverhang": "Pallet overhang",
+      "none": "None",
+      "column": "Column",
+      "interlocked": "Interlocked",
+      "overhang": "Overhang",
+      "d": "Depth",
+      "h": "Height",
+      "w": "Width",
+      "qty": "Quantity",
+      "size": "Size",
+      "print": "Print",
+      "shape": "Shape",
+      "material": "Material",
+      "timezone": "Time zone",
+      "quote": "Quotes",
+      "artwork": "Artwork",
+      "payment": "Payments",
+      "partnership": "Partnerships",
+      "standard_product": "Standard products"
+    },
+    "units": {
+      "days": "days",
+      "businessDays": "business days",
+      "hours": "hours",
+      "businessHours": "business hours",
+      "minutes": "min",
+      "seconds": "sec",
+      "months": "months",
+      "years": "years",
+      "pct": "%",
+      "baht": "THB",
+      "usd": "USD",
+      "mm": "mm",
+      "perHour": "per hour"
+    },
+    "enums": {
+      "DDMMBBBB": "Day month Buddhist year (31052569)",
+      "DDMMYYYY": "Day month year (31052026)",
+      "YYYYMMDD": "Year month day (20260531)",
+      "line": "Per line",
+      "document": "Per document",
+      "acquisition_month": "The month acquired",
+      "next_month": "The month after",
+      "after_pod_and_claim_window": "After delivery is confirmed and the claim window closes",
+      "after_pod": "After delivery is confirmed",
+      "immediate": "Immediately",
+      "sale_of_goods": "Sale of goods",
+      "hire_of_work": "Hire of work",
+      "daily": "Every day",
+      "live": "Live",
+      "soon": "Soon",
+      "in_development": "In development",
+      "warn": "Warn",
+      "block": "Block",
+      "info": "Info",
+      "morning": "Morning",
+      "midday": "Midday",
+      "afternoon": "Afternoon"
+    },
+    "areas": {
+      "sales": {
+        "title": "Pricing and sales",
+        "body": "Prices, quotes, discounts, samples and company accounts"
+      },
+      "loyalty": {
+        "title": "Loyalty and referrals",
+        "body": "Earning and redeeming points, tiers and referral rewards"
+      },
+      "storefront": {
+        "title": "Storefront and design",
+        "body": "Storefront, studio, style library, design and file checks"
+      },
+      "operations": {
+        "title": "Orders, production and shipping",
+        "body": "Orders, factories, quality, tolerances, claims and shipping"
+      },
+      "money": {
+        "title": "Payments and payouts",
+        "body": "Customer payments, factory payouts, receivables and bank matching"
+      },
+      "accounting": {
+        "title": "Accounting and tax",
+        "body": "Tax, e-Tax, close, assets and record retention"
+      },
+      "entity": {
+        "title": "Issuing entities",
+        "body": "Names, addresses and tax IDs printed on documents, per entity"
+      },
+      "service": {
+        "title": "Service and notifications",
+        "body": "Response targets, hours, notifications and privacy requests"
+      },
+      "platform": {
+        "title": "Platform and security",
+        "body": "Sign-in, API, approvals, the assistant and operations alerts"
+      },
+      "other": {
+        "title": "Other",
+        "body": "Settings not in an area yet"
+      }
+    },
+    "views": {
+      "label": "Show",
+      "all": "All {count}",
+      "attention": "Awaiting confirmation {count}",
+      "unset": "Not set {count}"
+    },
+    "nav": "Setting areas",
+    "allAreas": "All areas",
+    "clearFilters": "Clear search and filter",
+    "notSet": "Not set",
+    "entityScope": "Entity",
+    "edited": "Edited",
+    "historyLink": "History",
+    "list": {
+      "add": "Add",
+      "addLabel": "Add to {label}",
+      "remove": "Remove {item}",
+      "hint": "Press Enter or Add to add the next value"
+    },
+    "window": {
+      "from": "From",
+      "to": "To",
+      "range": "{from}–{to}"
+    },
+    "advanced": {
+      "open": "Edit as JSON (advanced)",
+      "back": "Back to the fields",
+      "label": "{label} (JSON)",
+      "unknownShape": "This value has its own structure; edit it as JSON in the same shape",
+      "set": "Set as JSON",
+      "cancel": "Cancel JSON edit",
+      "view": "View the technical value (JSON)",
+      "items": "{count} items · view as JSON"
+    },
+    "save": {
+      "note": "{count} changed in this area, not saved yet",
+      "invalid": "A field is not in the right format yet",
+      "discard": "Discard changes",
+      "review": "Review and save",
+      "title": "Save {count} changes",
+      "changes": "What changes",
+      "fromTo": "From {from} to {to}",
+      "reasonShort": "Give a reason of at least 3 characters",
+      "whenMissing": "Choose when it takes effect",
+      "done": "{count} saved",
+      "donePending": "{count} sent for approval",
+      "partial": "Not saved: {names}",
+      "lockedNote": "Each change is kept as a new version with the reason; orders already priced keep the old value"
+    },
+    "none": "None"
   },
   "audit": {
     "title": "Audit log",
@@ -153,7 +1156,35 @@
     "onBehalfOf": "On behalf of",
     "requestId": "Request id",
     "data": "Recorded data",
-    "redacted": "Personal data was redacted before storage"
+    "redacted": "Personal data was redacted before storage",
+    "raw": "Raw record (JSON)",
+    "noData": "Nothing else recorded",
+    "change": "Change",
+    "changedTo": "changed to",
+    "resourceTypes": {
+      "user": "User account",
+      "order": "Order",
+      "setting": "Setting",
+      "factory": "Factory",
+      "company": "Company",
+      "approval_request": "Approval request",
+      "shipment": "Shipment",
+      "sample": "Sample",
+      "sales_agent": "Sales agent",
+      "payout_run": "Payout run",
+      "journal_entry": "Journal entry",
+      "tax_report": "Tax report",
+      "vendor": "Vendor",
+      "vendor_invoice": "Vendor invoice",
+      "customer_document": "Customer document",
+      "file": "File",
+      "api_client": "API client",
+      "notification_template": "Message template",
+      "close_task": "Close task",
+      "bank_statement_line": "Bank line",
+      "report_schedule": "Report schedule"
+    },
+    "openUsers": "View users and roles"
   },
   "fileAccess": {
     "title": "Customer file access log",
@@ -201,7 +1232,8 @@
     "close": "Close",
     "noOrder": "Not in an order yet",
     "noReason": "None (not a Superadmin access with a reason)",
-    "requestId": "Request id"
+    "requestId": "Request id",
+    "openUsers": "View users and roles"
   },
   "flags": {
     "title": "Feature flags",
@@ -231,6 +1263,76 @@
       "percentageHint": "Leave empty for everyone in the chosen audiences.",
       "audiences": "Audiences",
       "audiencesHint": "None selected means all audiences."
+    },
+    "items": {
+      "advisory": {
+        "structure_advisor": {
+          "label": "Structure Advisor for customers",
+          "help": "Off until its test cases are signed off"
+        }
+      },
+      "artwork": {
+        "file_check_notify": {
+          "label": "Notify when a file check finishes",
+          "help": "E-mail or LINE when the customer has left the upload page"
+        }
+      },
+      "assistant": {
+        "enabled": {
+          "label": "Customer assistant",
+          "help": "Can be switched on after the assistant passes its evaluation"
+        }
+      },
+      "drawing": {
+        "engine": {
+          "label": "Dieline drawing engine",
+          "help": "Off until the drawing package is published"
+        }
+      },
+      "e_tax": {
+        "sending": {
+          "label": "Send e-Tax to the Revenue Department",
+          "help": "XML and PDF are generated; sending opens after registration"
+        }
+      },
+      "orders": {
+        "payment_overdue_reminder": {
+          "label": "Overdue payment reminder",
+          "help": "One reminder when an unpaid order passes its deadline"
+        }
+      },
+      "payments": {
+        "scb": {
+          "label": "SCB QR payments",
+          "help": "PromptPay QR, on once the merchant account exists"
+        },
+        "scb_direct_debit": {
+          "label": "SCB direct debit",
+          "help": "Planned for release 2"
+        },
+        "slip_verify": {
+          "label": "Automatic slip verification",
+          "help": "When off, every slip goes to Finance"
+        },
+        "twoc2p": {
+          "label": "2C2P cards and online banking",
+          "help": "On once the merchant account exists"
+        },
+        "twoc2p_ipp": {
+          "label": "2C2P card instalments",
+          "help": "Planned for release 2"
+        }
+      },
+      "pricing": {
+        "dieline_quantities": {
+          "label": "Dieline-derived quantities in prices",
+          "help": "Off until each calculator's validation is signed"
+        },
+        "folding_engine_b": {
+          "label": "Folding engine B",
+          "help": "For type-B factories; off until its prices are validated"
+        }
+      }
     }
   },
   "templates": {

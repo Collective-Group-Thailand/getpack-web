@@ -324,7 +324,13 @@ export function PurchaseOrderDetail({ poId }: { poId: string }) {
             rows={receipts.data?.data ?? []}
             loading={receipts.isPending}
             getRowId={(row) => row.id}
-            empty={<EmptyState icon="package" title={t("noReceipts")} />}
+            empty={
+              <EmptyState
+                icon="package"
+                title={t("noReceipts")}
+                action={<EmptyLink href="/finance/payables/goods-receipts" label="payables.nav.goodsReceipts" />}
+              />
+            }
             columns={[
               { id: "gr", header: t("grNumber"), cell: (row) => <span className="tabular-nums">{row.grNumber}</span> },
               { id: "on", header: t("receivedOn"), cell: (row) => format.date(row.receivedOn) },
@@ -580,7 +586,13 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
             rows={data.lines}
             getRowId={(row) => String(row.lineNo)}
             rowTone={(row) => (disputed.has(row.lineNo) ? "danger" : undefined)}
-            empty={<EmptyState icon="document" title={t("noLines")} />}
+            empty={
+              <EmptyState
+                icon="document"
+                title={t("noLines")}
+                action={<EmptyLink href="/finance/payables/statements" label="payables.nav.statements" />}
+              />
+            }
             columns={[
               { id: "kind", header: t("lineKind"), cell: (row) => t(`lineKinds.${row.kind}`) },
               {
@@ -629,7 +641,13 @@ function InvoiceRows({ rows, loading }: { rows: VendorInvoice[]; loading?: boole
       rows={rows}
       loading={loading}
       getRowId={(row) => row.id}
-      empty={<EmptyState icon="document" title={t("none")} />}
+      empty={
+        <EmptyState
+          icon="document"
+          title={t("none")}
+          action={<EmptyLink href="/finance/payables/invoices" label="payables.nav.invoices" />}
+        />
+      }
       columns={[
         {
           id: "number",
@@ -1125,7 +1143,13 @@ export function VendorsList() {
         loading={vendors.isPending}
         getRowId={(row) => row.id}
         density="compact"
-        empty={<EmptyState icon="building" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="building"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/payables/purchase-orders" label="payables.nav.purchaseOrders" />}
+          />
+        }
       />
       {creating ? <CreateVendor onClose={() => setCreating(false)} /> : null}
     </Section>
@@ -1399,7 +1423,13 @@ export function VendorDetail({ vendorId }: { vendorId: string }) {
               loading={banks.isPending}
               getRowId={(row) => row.id}
               density="compact"
-              empty={<EmptyState icon="building" title={t("banks.none")} />}
+              empty={
+                <EmptyState
+                  icon="building"
+                  title={t("banks.none")}
+                  action={<EmptyLink href="/finance/payables/vendors" label="payables.nav.vendors" />}
+                />
+              }
             />
           )}
         </Section>

@@ -38,7 +38,7 @@ import { FormDialog, FormError, Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
 import { StatusChip } from "../console/StatusChip";
-import { FinanceDateField } from "./frame";
+import { FinanceDateField, EmptyLink } from "./frame";
 import { fieldErrorsOf, journalHref } from "./shared";
 
 type Account = Schemas["AccountDto"];
@@ -873,7 +873,13 @@ export function AccountsView() {
           loading={changes.isPending}
           getRowId={(row) => row.id}
           density="compact"
-          empty={<EmptyState icon="settings" title={t("noChanges")} />}
+          empty={
+            <EmptyState
+              icon="settings"
+              title={t("noChanges")}
+              action={<EmptyLink href="/finance/ledger/rules" label="ledger.nav.rules" />}
+            />
+          }
           columns={[
             { id: "kind", header: t("kind"), cell: (row) => t(`kinds.${row.kind}`) },
             {
@@ -1417,7 +1423,13 @@ export function RecurringJournals() {
           loading={items.isPending}
           getRowId={(row) => row.id}
           density="compact"
-          empty={<EmptyState icon="calendar" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="calendar"
+              title={t("empty")}
+              action={<EmptyLink href="/finance/ledger/journals" label="ledger.nav.journals" />}
+            />
+          }
           columns={[
             {
               id: "name",

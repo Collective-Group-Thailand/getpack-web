@@ -18,6 +18,7 @@ import { adminBrowserApis } from "../../console/api";
 import { useFactoryPart, useFactoryRefresh } from "../hooks";
 import { FormDialog, FormError, Section } from "../parts";
 import type { Factory } from "../resources";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Hours = Schemas["WeeklyHoursDto"];
 type Version = Schemas["FactoryHoursVersionDto"];
@@ -177,7 +178,7 @@ export function FactoryHours({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("effectiveFrom")} hint={t("fromHint")} className="w-48">
-            <Input
+            <ConsoleDateField
               type="date"
               min={bangkokDay(1)}
               value={editing.from}
@@ -242,7 +243,7 @@ export function FactoryHours({ factory }: { factory: Factory }) {
           }}
         >
           <Field label={t("day")} required className="w-48">
-            <Input
+            <ConsoleDateField
               type="date"
               min={bangkokDay(1)}
               value={closing.day}

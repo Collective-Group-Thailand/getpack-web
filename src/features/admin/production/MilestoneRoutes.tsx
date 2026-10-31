@@ -33,6 +33,7 @@ import {
   useCan,
   useProductTypes,
 } from "../console";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Route = Schemas["MilestoneRouteDto"];
 type RouteVersion = Schemas["RouteVersionDto"];
@@ -449,7 +450,7 @@ function PublishDialog({
       </Button>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("effectiveFrom")} hint={t("effectiveHint")} required>
-          <Input
+          <ConsoleDateField
             type="date"
             min={today()}
             value={effectiveFrom}

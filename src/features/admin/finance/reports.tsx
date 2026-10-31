@@ -27,7 +27,7 @@ import { QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
 import { downloadCsv, toCsv } from "./csv";
 import { AccountPicker, useAccounts } from "./ledger";
-import { PeriodBar } from "./frame";
+import { PeriodBar, EmptyLink } from "./frame";
 import { journalHref, sourceHref, useSourceLabel } from "./shared";
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
@@ -389,7 +389,13 @@ export function GlDetailView() {
         loading={report.isPending}
         getRowId={(row) => `${row.journalEntryId}-${row.debit}-${row.credit}-${row.balance}`}
         density="compact"
-        empty={<EmptyState icon="document" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="document"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/ledger/journals" label="ledger.nav.journals" />}
+          />
+        }
       />
       {data && data.total > 50 ? (
         <Pagination
@@ -626,7 +632,13 @@ export function ProfitAndLossView() {
             loading={report.isPending}
             getRowId={(row) => row.dimension}
             density="compact"
-            empty={<EmptyState icon="chart" title={t("empty")} />}
+            empty={
+              <EmptyState
+                icon="chart"
+                title={t("empty")}
+                action={<EmptyLink href="/finance/ledger/dimensions" label="ledger.nav.dimensions" />}
+              />
+            }
           />
         </DeskSection>
       ) : null}

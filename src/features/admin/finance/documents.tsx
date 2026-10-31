@@ -35,7 +35,7 @@ import { problemMessage, QueryError } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { StatusChip } from "../console/StatusChip";
-import { DocumentSheet, StatusViews } from "./frame";
+import { DocumentSheet, StatusViews, EmptyLink } from "./frame";
 import { ETaxPanel, ReplaceDialog, ReplacementNotice, ResendETaxDialog } from "./document-corrections";
 import { DOC_TYPES, documentsList, type CustomerDocument } from "./resources";
 import { DocumentLink, fieldErrorsOf, SourceJournals } from "./shared";
@@ -525,7 +525,13 @@ function Deliveries({ documentId }: { documentId: string }) {
       rows={query.data ?? []}
       loading={query.isPending}
       getRowId={(row) => `${row.kind}:${row.channel}:${row.requestedAt}`}
-      empty={<EmptyState icon="send" title={t("noDeliveries")} />}
+      empty={
+        <EmptyState
+          icon="send"
+          title={t("noDeliveries")}
+          action={<EmptyLink href="/finance/documents" label="nav.items.documents" />}
+        />
+      }
       columns={[
         { id: "requestedAt", header: t("requestedAt"), cell: (row) => <When at={row.requestedAt} /> },
         { id: "kind", header: t("deliveryKind"), cell: (row) => t(`deliveryKinds.${row.kind}`) },

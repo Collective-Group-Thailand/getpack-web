@@ -212,8 +212,8 @@ export function DataTable<TRow extends RowData>({
     ));
   } else if (!hasRows) {
     body = (
-      <tr>
-        <td colSpan={colSpan} className="p-6">
+      <tr className="max-md:block">
+        <td colSpan={colSpan} className="p-6 max-md:block max-md:p-4">
           {empty}
         </td>
       </tr>

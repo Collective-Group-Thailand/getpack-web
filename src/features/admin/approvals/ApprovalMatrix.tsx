@@ -35,6 +35,7 @@ import {
   useRoleLabel,
 } from "../console";
 import { conditionUsesAmount, moneyInput } from "./presentation";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Policy = Schemas["ApprovalPolicyDto"];
 type PolicyVersion = Schemas["PolicyVersionDto"];
@@ -490,7 +491,7 @@ function ProposeVersionDialog({
       </Button>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("effectiveFrom")} hint={t("effectiveHint")} required>
-          <Input
+          <ConsoleDateField
             type="date"
             min={today()}
             value={effectiveFrom}

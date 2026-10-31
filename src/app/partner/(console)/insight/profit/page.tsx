@@ -64,7 +64,15 @@ export default async function ProfitPage({ searchParams }: { searchParams: Promi
           action="/insight/profit"
           label={tPeriod("monthNav")}
           hidden={{ by: by === "getpack_job" ? undefined : by }}
-          fields={[{ name: "month", label: t("month"), value: month, type: "month" }]}
+          fields={[
+            {
+              name: "month",
+              label: t("month"),
+              value: month,
+              type: "month",
+              display: format.date(`${month}-01`, { style: "month" }),
+            },
+          ]}
           submit={t("show")}
           prev={{ href: href(shiftMonth(month, -1)), label: stepLabel(tPeriod("prevMonth")) }}
           {...(month < bangkokMonth()

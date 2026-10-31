@@ -12,6 +12,7 @@ import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 import { useCan } from "../console/actor";
+import { EmptyLink } from "./frame";
 import { adminBrowserApis } from "../console/api";
 import { QueryError } from "../console/QueryError";
 
@@ -179,7 +180,13 @@ export function SourceJournals({ sourceType, sourceId }: { sourceType: string; s
       getRowId={(row) => row.id}
       loading={query.isPending}
       density="compact"
-      empty={<EmptyState icon="layers" title={t("none")} />}
+      empty={
+        <EmptyState
+          icon="layers"
+          title={t("none")}
+          action={<EmptyLink href="/finance/ledger/journals" label="ledger.nav.journals" />}
+        />
+      }
     />
   );
 }

@@ -11,7 +11,7 @@ import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
-import { Input, Textarea } from "@/ui/components/Input";
+import { Textarea } from "@/ui/components/Input";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
 
@@ -20,6 +20,7 @@ import { adminBrowserApis } from "../../console/api";
 import { useFactoryPart, useFactoryRefresh } from "../hooks";
 import { FormDialog, Section } from "../parts";
 import type { Factory } from "../resources";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 /** The checklist the visit form records, versioned so an old visit keeps its meaning. */
 const CHECKLIST = ["safety", "qualityControl", "storage", "capacityVerified", "hygiene"] as const;
@@ -106,7 +107,7 @@ export function SiteVisits({ factory }: { factory: Factory }) {
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("visitedOn")} required>
-              <Input type="date" value={visitedOn} onChange={(event) => setVisitedOn(event.target.value)} />
+              <ConsoleDateField type="date" value={visitedOn} onChange={(event) => setVisitedOn(event.target.value)} />
             </Field>
             <Field label={t("result")}>
               <SearchableSelect

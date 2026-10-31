@@ -441,7 +441,12 @@ function LineSheet({ lineId, line: known, onClose }: { lineId: string; line: Ban
               {suggestions.isError ? (
                 <QueryError error={suggestions.error} onRetry={() => void suggestions.refetch()} />
               ) : (suggestions.data ?? []).length === 0 && !suggestions.isPending ? (
-                <EmptyState icon="search" title={t("noSuggestions")} description={t("noSuggestionsBody")} />
+                <EmptyState
+                  icon="search"
+                  title={t("noSuggestions")}
+                  description={t("noSuggestionsBody")}
+                  action={<EmptyLink href="/finance/banking/unidentified" label="banking.nav.unidentified" />}
+                />
               ) : (
                 <ul className="flex flex-col gap-2">
                   {(suggestions.data ?? []).map((item) => {
@@ -800,7 +805,13 @@ export function UnidentifiedReceipts() {
           rows={rows.data ?? []}
           loading={rows.isPending}
           getRowId={(row) => row.id}
-          empty={<EmptyState icon="inbox" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="inbox"
+              title={t("empty")}
+              action={<EmptyLink href="/finance/banking/lines" label="banking.nav.lines" />}
+            />
+          }
           columns={[
             { id: "receivedOn", header: t("receivedOn"), cell: (row) => format.date(row.receivedOn) },
             {

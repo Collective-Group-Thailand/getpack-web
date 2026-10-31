@@ -19,6 +19,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, ConfirmAction, FormDialog, FormError, problemMessage, QueryError, useCan } from "../console";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Day = Schemas["CalendarDayDto"];
 type Kind = Schemas["NationalDayKind"];
@@ -211,7 +212,7 @@ export function CalendarDesk() {
           }}
         >
           <Field label={t("day")} required>
-            <Input
+            <ConsoleDateField
               type="date"
               disabled={!draft.isNew}
               value={draft.day}

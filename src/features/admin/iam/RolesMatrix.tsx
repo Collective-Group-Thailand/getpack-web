@@ -44,6 +44,7 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
   return (
     <div className="flex flex-col gap-4">
       <SegmentedControl
+        className="self-start"
         label={t("audience")}
         value={audience}
         onValueChange={setAudience}
@@ -60,13 +61,16 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
         role="region"
         aria-label={t("caption", { audience: t(`audiences.${audience}`) })}
         tabIndex={0}
-        className="border-border overflow-auto rounded-lg border"
+        className="border-border relative max-h-[75dvh] overflow-auto rounded-lg border"
       >
         <table className="text-sm">
           <caption className="sr-only">{t("caption", { audience: t(`audiences.${audience}`) })}</caption>
-          <thead className="bg-surface-subtle sticky top-0">
+          <thead className="bg-surface-subtle sticky top-0 z-20">
             <tr>
-              <th scope="col" className="text-muted px-3 py-2 text-start text-xs font-medium">
+              <th
+                scope="col"
+                className="text-muted bg-surface-subtle sticky start-0 z-10 px-3 py-2 text-start text-xs font-medium"
+              >
                 {t("permission")}
               </th>
               {columns.map((role) => (
@@ -85,7 +89,10 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
               const sensitive = SENSITIVE_PERMISSIONS.has(permission);
               return (
                 <tr key={permission} className="border-border border-t">
-                  <th scope="row" className="px-3 py-1.5 text-start text-xs font-normal whitespace-nowrap tabular-nums">
+                  <th
+                    scope="row"
+                    className="bg-surface border-border sticky start-0 border-e px-3 py-1.5 text-start font-mono text-xs font-normal whitespace-nowrap"
+                  >
                     {sensitive ? (
                       <Icon name="shield-alert" size={14} className="text-warning-subtle-fg me-1 inline" aria-hidden />
                     ) : null}

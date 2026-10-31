@@ -25,7 +25,7 @@ import { adminBrowserApis } from "../console/api";
 import { Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
-import { FinanceDateField } from "./frame";
+import { FinanceDateField, EmptyLink } from "./frame";
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 const thisMonth = () => bangkokToday().slice(0, 7);
@@ -284,7 +284,11 @@ export function SamplesView() {
       ) : null}
       {samples.isError ? <QueryError error={samples.error} onRetry={() => void samples.refetch()} /> : null}
       {(samples.data ?? []).length === 0 && !samples.isPending ? (
-        <EmptyState icon="checklist" title={t("empty")} />
+        <EmptyState
+          icon="checklist"
+          title={t("empty")}
+          action={<EmptyLink href="/finance/audit/exceptions" label="audit.nav.exceptions" />}
+        />
       ) : null}
       {(samples.data ?? []).map((sample) => (
         <Section
@@ -389,7 +393,13 @@ export function PbcView() {
         loading={packs.isPending}
         getRowId={(row) => row.id}
         density="compact"
-        empty={<EmptyState icon="archive" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="archive"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/audit" label="audit.nav.home" />}
+          />
+        }
         columns={[
           { id: "period", header: t("month"), cell: (row) => format.date(`${row.period}-01`, { style: "month" }) },
           { id: "generated", header: t("generatedAt"), cell: (row) => <When at={row.generatedAt} absoluteOnly /> },

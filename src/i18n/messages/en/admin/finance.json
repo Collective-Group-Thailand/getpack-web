@@ -2190,7 +2190,8 @@
       "newRateHint": "For example 7 or 1.5",
       "effectiveFrom": "Effective from",
       "effectiveHint": "Today or later",
-      "reason": "Reason"
+      "reason": "Reason",
+      "openAllSettings": "Open system settings"
     },
     "series": {
       "title": "Document numbering",

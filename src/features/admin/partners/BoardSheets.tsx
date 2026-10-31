@@ -23,6 +23,7 @@ import { FileField } from "../catalogue/FileField";
 import { adminBrowserApis, FormDialog, FormError, QueryError, useCan } from "../console";
 import { FileButton } from "../logistics/files";
 import { useFactoryOptions } from "../production/factories";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Sheet = Schemas["BoardStrengthSheetDto"];
 
@@ -310,7 +311,7 @@ export function BoardSheets() {
               <Input value={draft.testMethod} onChange={(e) => setDraft({ ...draft, testMethod: e.target.value })} />
             </Field>
             <Field label={t("signedOn")} required>
-              <Input
+              <ConsoleDateField
                 type="date"
                 max={today()}
                 value={draft.signedOn}
@@ -318,7 +319,7 @@ export function BoardSheets() {
               />
             </Field>
             <Field label={t("effectiveFrom")} hint={t("effectiveHint")}>
-              <Input
+              <ConsoleDateField
                 type="date"
                 min={today()}
                 value={draft.effectiveFrom}

@@ -138,15 +138,23 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   );
   const fields =
     tab === "pl"
-      ? [{ name: "month", label: tc("month"), value: month, type: "month" as const }]
+      ? [
+          {
+            name: "month",
+            label: tc("month"),
+            value: month,
+            type: "month" as const,
+            display: format.date(`${month}-01`, { style: "month" }),
+          },
+        ]
       : tab === "bs" || tab === "stock"
-        ? [{ name: "asOf", label: tc("asOf"), value: asOf, type: "date" as const }]
+        ? [{ name: "asOf", label: tc("asOf"), value: asOf, type: "date" as const, display: format.date(asOf) }]
         : [
             ...(tab === "gl"
               ? [{ name: "account", label: t("glAccount"), value: account, type: "text" as const }]
               : []),
-            { name: "from", label: tc("from"), value: from, type: "date" as const },
-            { name: "to", label: tc("to"), value: to, type: "date" as const },
+            { name: "from", label: tc("from"), value: from, type: "date" as const, display: format.date(from) },
+            { name: "to", label: tc("to"), value: to, type: "date" as const, display: format.date(to) },
           ];
   const tbEmpty = (
     <EmptyState

@@ -57,7 +57,15 @@ export default async function CostsPage({ searchParams }: { searchParams: Promis
         <PeriodPicker
           action="/insight/costs"
           label={tPeriod("monthNav")}
-          fields={[{ name: "month", label: t("month"), value: month, type: "month" }]}
+          fields={[
+            {
+              name: "month",
+              label: t("month"),
+              value: month,
+              type: "month",
+              display: format.date(`${month}-01`, { style: "month" }),
+            },
+          ]}
           submit={t("show")}
           prev={{ href: `/insight/costs?month=${shiftMonth(month, -1)}`, label: stepLabel(tPeriod("prevMonth")) }}
           {...(month < bangkokMonth()

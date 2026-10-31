@@ -268,7 +268,13 @@ export function AgingReport() {
               loading={query.isPending}
               getRowId={(row) => row.companyId ?? row.customerId}
               density="compact"
-              empty={<EmptyState icon="coins" title={t("empty")} />}
+              empty={
+                <EmptyState
+                  icon="coins"
+                  title={t("empty")}
+                  action={<EmptyLink href="/finance/receivables" label="receivables.nav.items" />}
+                />
+              }
             />
           </>
         )}
@@ -609,7 +615,13 @@ export function CompanyStatements() {
             loading={statement.isPending && Boolean(chosen)}
             getRowId={(row) => row.groupId}
             density="compact"
-            empty={<EmptyState icon="document" title={t("empty")} />}
+            empty={
+              <EmptyState
+                icon="document"
+                title={t("empty")}
+                action={<EmptyLink href="/finance/receivables/aging" label="receivables.nav.aging" />}
+              />
+            }
           />
         </>
       )}
@@ -665,7 +677,13 @@ export function DunningLog({
         loading={scoped.isPending}
         getRowId={dunningList.getRowId}
         density="compact"
-        empty={<EmptyState icon="send" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="send"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/receivables" label="receivables.nav.items" />}
+          />
+        }
       />
     );
   return (
@@ -769,7 +787,13 @@ export function PartyBalance({ customerId }: { customerId: string }) {
           rows={items.data?.data ?? []}
           loading={items.isPending}
           getRowId={(row) => row.id}
-          empty={<EmptyState icon="coins" title={t("noItems")} />}
+          empty={
+            <EmptyState
+              icon="coins"
+              title={t("noItems")}
+              action={<EmptyLink href="/finance/payments" label="nav.items.payments" />}
+            />
+          }
           columns={[
             { id: "document", header: t("document"), cell: (row) => <DocumentLink document={row.document} /> },
             { id: "dueDate", header: t("dueDate"), cell: (row) => format.date(row.dueDate) },
@@ -798,7 +822,13 @@ export function PartyBalance({ customerId }: { customerId: string }) {
               rows={credit.data?.entries ?? []}
               loading={credit.isPending}
               getRowId={(row) => row.id}
-              empty={<EmptyState icon="wallet" title={t("noCredit")} />}
+              empty={
+                <EmptyState
+                  icon="wallet"
+                  title={t("noCredit")}
+                  action={<EmptyLink href="/finance/refunds" label="nav.items.refunds" />}
+                />
+              }
               columns={[
                 { id: "createdAt", header: t("date"), cell: (row) => <When at={row.createdAt} absoluteOnly /> },
                 { id: "source", header: t("source"), cell: (row) => t(`sources.${row.source}`) },
@@ -818,7 +848,13 @@ export function PartyBalance({ customerId }: { customerId: string }) {
           rows={documents.data?.data ?? []}
           loading={documents.isPending}
           getRowId={(row) => row.id}
-          empty={<EmptyState icon="document" title={t("noDocuments")} />}
+          empty={
+            <EmptyState
+              icon="document"
+              title={t("noDocuments")}
+              action={<EmptyLink href="/finance/documents" label="nav.items.documents" />}
+            />
+          }
           columns={[
             { id: "number", header: t("document"), cell: (row) => <DocumentLink document={row} /> },
             { id: "type", header: t("type"), cell: (row) => tDocs(`types.${row.docType}`) },

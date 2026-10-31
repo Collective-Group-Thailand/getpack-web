@@ -22,7 +22,8 @@
     "sessions": "Sessions",
     "quotes": "Quotes",
     "rfqs": "RFQs",
-    "repeatRate": "Repeat rate"
+    "repeatRate": "Repeat rate",
+    "label": "Key figures of the period"
   },
   "funnel": {
     "title": "Funnel",
@@ -43,7 +44,10 @@
     "title": "Daily trend",
     "date": "Date",
     "groupsPlaced": "Order groups placed",
-    "groupsPaid": "Order groups paid"
+    "groupsPaid": "Order groups paid",
+    "gmv": "Sales",
+    "note": "Days with orders in the period",
+    "empty": "No orders in this period"
   },
   "demand": {
     "title": "Demand",
@@ -80,7 +84,8 @@
     "shown": "Shown a price",
     "carted": "Added to cart",
     "dropOff": "Drop-off",
-    "empty": "No prices shown in this period"
+    "empty": "No prices shown in this period",
+    "unknownBand": "Lead time not given"
   },
   "unmet": {
     "title": "Unmet demand",
@@ -108,7 +113,8 @@
       "customer_declined": "Customer declined",
       "expired": "Expired",
       "none": "Not given"
-    }
+    },
+    "bySource": "Source"
   },
   "factories": {
     "title": "Factory utilisation",
@@ -194,7 +200,15 @@
       "evidence_added": "Added evidence",
       "downloaded": "Downloaded",
       "size_entered": "Entered a size"
-    }
+    },
+    "relative": "Sessions vs. step before",
+    "fromVisit": "Vs. first step",
+    "above": "More than the step before",
+    "relativeNote": "Each step counts the sessions that reached it on its own, per day, and a session may start mid-way, so a step with more sessions than the one before shows no percentage: it is not a continuation rate",
+    "lastToFirst": "Sessions at the last step vs. the first {pct}",
+    "weekRatio": "Last step vs. first",
+    "previousRatio": "Week before",
+    "aboveFirst": "More than the first step"
   },
   "choosePeriod": "Choose the first and last day",
   "channels": {

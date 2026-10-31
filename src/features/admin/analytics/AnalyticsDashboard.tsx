@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
@@ -15,21 +14,18 @@ import { Callout } from "@/ui/components/Callout";
 import { DataTable } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
+import { DateField } from "@/ui/components/DateField";
+import { StatsRow } from "@/ui/components/DeskPage";
+import { BarValue } from "@/ui/components/charts";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, download, pollUntil, problemMessage, QueryError, Section, useCan } from "../console";
+import { FunnelSteps } from "./FunnelSteps";
 import { JourneyFunnels } from "./JourneyFunnels";
 import { RollupRuns, StudioFunnel } from "./AnalyticsExtras";
 import { periodOf, previousPeriod, type Period, type Range } from "./period";
-
-// Recharts is heavy: it loads with this page only, after the figures it draws.
-const Chart = dynamic(() => import("@/ui/components/Chart").then((module) => module.Chart), {
-  ssr: false,
-  loading: () => <Skeleton className="h-64 w-full" />,
-});
 
 type Dimension = Schemas["DemandDimension"];
 type DemandRow = Schemas["DemandRowDto"];
@@ -63,6 +59,7 @@ const readDemand = (groupBy: Dimension) => async (query: Period) =>
  */
 export function AnalyticsDashboard() {
   const t = useTranslations("analytics");
+  const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const canProspectus = useCan("analytics.prospectus");
   const canFactories = useCan("analytics.read", "analytics.read_factories");
@@ -71,7 +68,6 @@ export function AnalyticsDashboard() {
   const [dimension, setDimension] = useState<Dimension>("product_type");
   const period = useMemo(() => periodOf(range, custom), [range, custom]);
   const before = period ? previousPeriod(period) : null;
-  const labels = { showTable: t("showTable"), hideTable: t("hideTable") };
   const nameOf = (ref: Ref | null) => (ref ? (format.locale === "en" ? ref.nameEn : ref.nameTh) : "—");
   const onDay = (day: string) => format.date(`${day}T00:00:00+07:00`);
 
@@ -178,6 +174,10 @@ export function AnalyticsDashboard() {
         ] as const)
       : null;
 
+  const trendMax = Math.max(0, ...(sales.data?.series ?? []).map((point) => point.groupsPlaced));
+  const demandMax = Math.max(0, ...(demand.data ?? []).map((row) => row.calculations));
+  const unmetMax = Math.max(0, ...(unmet.data?.byReason ?? []).map((reason) => reason.records));
+
   const cellKey = (row: DemandRow): string => {
     switch (dimension) {
       case "product_type":
@@ -214,16 +214,16 @@ export function AnalyticsDashboard() {
           {range === "custom" ? (
             <>
               <Field label={t("from")}>
-                <Input
-                  type="date"
+                <DateField
                   value={custom.from}
+                  display={custom.from ? format.date(custom.from) : tFilters("pickDate")}
                   onChange={(event) => setCustom({ ...custom, from: event.target.value })}
                 />
               </Field>
               <Field label={t("to")}>
-                <Input
-                  type="date"
+                <DateField
                   value={custom.to}
+                  display={custom.to ? format.date(custom.to) : tFilters("pickDate")}
                   onChange={(event) => setCustom({ ...custom, to: event.target.value })}
                 />
               </Field>
@@ -269,15 +269,16 @@ export function AnalyticsDashboard() {
           }}
         />
       ) : kpis ? (
-        <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {kpis.map(([name, value, earlier]) => (
-            <div key={name} className="bg-surface rounded-md border p-4">
-              <dt className="text-muted text-xs">{t(`kpis.${name}`)}</dt>
-              <dd className="text-2xl font-semibold tabular-nums">{value}</dd>
-              {earlier ? <dd className="text-muted text-xs">{t("previous", { value: earlier })}</dd> : null}
-            </div>
-          ))}
-        </dl>
+        <StatsRow
+          label={t("kpis.label")}
+          columns={4}
+          items={kpis.map(([name, value, earlier]) => ({
+            key: name,
+            label: t(`kpis.${name}`),
+            value,
+            hint: earlier ? t("previous", { value: earlier }) : undefined,
+          }))}
+        />
       ) : period ? (
         <Skeleton className="h-28 w-full" />
       ) : (
@@ -288,42 +289,66 @@ export function AnalyticsDashboard() {
         <Section title={t("funnel.title")} description={t("funnel.note")}>
           {funnel.isError ? <QueryError error={funnel.error} onRetry={() => void funnel.refetch()} /> : null}
           {funnel.data ? (
-            <Chart
-              kind="bar"
-              title={t("funnel.title")}
-              data={funnel.data.steps.map((step) => ({
-                step: t(`funnel.steps.${step.step}`),
+            <FunnelSteps
+              caption={t("funnel.title")}
+              steps={funnel.data.steps.map((step) => ({
+                key: step.step,
+                label: t(`funnel.steps.${step.step}`),
                 sessions: step.sessions,
+                fromPreviousPct: step.fromPreviousPct,
+                fromVisitPct: step.fromVisitPct,
               }))}
-              index="step"
-              indexLabel={t("funnel.step")}
-              series={[{ key: "sessions", label: t("funnel.sessions") }]}
-              formatValue={(value) => format.number(value)}
-              labels={labels}
             />
+          ) : period ? (
+            <Skeleton className="h-64 w-full" />
           ) : null}
         </Section>
         {/* CONTRACT-GAP admin.analytics — no quotes per day: the trend is order groups placed and paid. */}
-        <Section title={t("trend.title")}>
+        <Section title={t("trend.title")} description={t("trend.note")}>
           {sales.data ? (
-            <Chart
-              kind="line"
-              title={t("trend.title")}
-              data={sales.data.series.map((point) => ({
-                period: point.period,
-                groupsPlaced: point.groupsPlaced,
-                groupsPaid: point.groupsPaid,
-              }))}
-              index="period"
-              indexLabel={t("trend.date")}
-              series={[
-                { key: "groupsPlaced", label: t("trend.groupsPlaced"), tone: "info" },
-                { key: "groupsPaid", label: t("trend.groupsPaid"), tone: "primary" },
+            <DataTable<Schemas["SalesPointDto"]>
+              caption={t("trend.title")}
+              density="compact"
+              rows={sales.data.series}
+              getRowId={(point) => point.period}
+              empty={
+                <EmptyState
+                  icon="chart"
+                  title={t("trend.empty")}
+                  action={
+                    <Button variant="secondary" onClick={() => setRange("90d")}>
+                      {t("ranges.90d")}
+                    </Button>
+                  }
+                />
+              }
+              columns={[
+                { id: "period", header: t("trend.date"), cell: (point) => onDay(point.period) },
+                {
+                  id: "placed",
+                  header: t("trend.groupsPlaced"),
+                  numeric: true,
+                  cell: (point) => (
+                    <BarValue value={point.groupsPlaced} max={trendMax} tone="muted">
+                      {format.number(point.groupsPlaced)}
+                    </BarValue>
+                  ),
+                },
+                {
+                  id: "paid",
+                  header: t("trend.groupsPaid"),
+                  numeric: true,
+                  cell: (point) => (
+                    <BarValue value={point.groupsPaid} max={trendMax}>
+                      {format.number(point.groupsPaid)}
+                    </BarValue>
+                  ),
+                },
+                { id: "gmv", header: t("trend.gmv"), numeric: true, cell: (point) => format.thb(point.gmv) },
               ]}
-              formatValue={(value) => format.number(value)}
-              formatIndex={onDay}
-              labels={labels}
             />
+          ) : period ? (
+            <Skeleton className="h-64 w-full" />
           ) : null}
         </Section>
       </div>
@@ -348,30 +373,8 @@ export function AnalyticsDashboard() {
         {demand.isError ? <QueryError error={demand.error} onRetry={() => void demand.refetch()} /> : null}
         {demand.data ? (
           <>
-            <Chart
-              kind="bar"
-              layout="vertical"
-              title={t("demand.chart", { dimension: t(`demand.dimensions.${dimension}`) })}
-              data={demand.data.map((row) => ({
-                label: cellLabel(row),
-                savedQuotes: row.savedQuotes,
-                rfqsSubmitted: row.rfqsSubmitted,
-                convertedQuotes: row.convertedQuotes,
-              }))}
-              index="label"
-              indexLabel={t(`demand.dimensions.${dimension}`)}
-              series={[
-                { key: "savedQuotes", label: t("demand.savedQuotes"), tone: "info" },
-                { key: "rfqsSubmitted", label: t("demand.rfqsSubmitted"), tone: "warning" },
-                { key: "convertedQuotes", label: t("demand.convertedQuotes"), tone: "primary" },
-              ]}
-              height={Math.max(220, demand.data.length * 44)}
-              formatValue={(value) => format.number(value)}
-              labels={labels}
-            />
             {/* CONTRACT-GAP admin.analytics — no GMV or conversion per cell; "priced but not taken" is the sensitivity block below. */}
             <DataTable<DemandRow>
-              className="mt-4"
               caption={t("demand.table")}
               columns={[
                 { id: "label", header: t(`demand.dimensions.${dimension}`), cell: cellLabel },
@@ -379,7 +382,11 @@ export function AnalyticsDashboard() {
                   id: "calculations",
                   header: t("demand.calculations"),
                   numeric: true,
-                  cell: (row) => format.number(row.calculations),
+                  cell: (row) => (
+                    <BarValue value={row.calculations} max={demandMax}>
+                      {format.number(row.calculations)}
+                    </BarValue>
+                  ),
                 },
                 {
                   id: "savedQuotes",
@@ -447,7 +454,7 @@ export function AnalyticsDashboard() {
           {sensitivity.isError ? (
             <QueryError error={sensitivity.error} onRetry={() => void sensitivity.refetch()} />
           ) : sensitivity.data ? (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="flex flex-col gap-4">
               {(["byLeadTime", "byPriceQuartile"] as const).map((part) => (
                 <DataTable<Schemas["SensitivityRowDto"]>
                   key={part}
@@ -459,7 +466,9 @@ export function AnalyticsDashboard() {
                       header: t(`sensitivity.${part}Band`),
                       cell: (row) =>
                         part === "byLeadTime"
-                          ? t("sensitivity.days", { band: row.band })
+                          ? row.band === "unknown"
+                            ? t("sensitivity.unknownBand")
+                            : t("sensitivity.days", { band: row.band })
                           : t("sensitivity.quartile", { band: row.band }),
                     },
                     {
@@ -484,7 +493,17 @@ export function AnalyticsDashboard() {
                   rows={sensitivity.data[part]}
                   getRowId={(row) => row.band}
                   density="compact"
-                  empty={<EmptyState icon="chart" title={t("sensitivity.empty")} />}
+                  empty={
+                    <EmptyState
+                      icon="chart"
+                      title={t("sensitivity.empty")}
+                      action={
+                        <Button variant="secondary" onClick={() => setRange("90d")}>
+                          {t("ranges.90d")}
+                        </Button>
+                      }
+                    />
+                  }
                 />
               ))}
             </div>
@@ -497,26 +516,22 @@ export function AnalyticsDashboard() {
           {unmet.isError ? <QueryError error={unmet.error} onRetry={() => void unmet.refetch()} /> : null}
           {unmet.data ? (
             <>
-              <p className="mb-2 text-sm">
+              <p className="text-muted mb-3 text-sm">
                 {unmet.data.bySource
                   .map((source) => `${keyed("unmet.sources", source.key)} ${format.number(source.records)}`)
                   .join(" · ")}
               </p>
-              <Chart
-                kind="bar"
-                layout="vertical"
-                title={t("unmet.reasons")}
-                data={unmet.data.byReason.map((reason) => ({
-                  label: keyed("unmet.reasonCodes", reason.key),
-                  records: reason.records,
-                }))}
-                index="label"
-                indexLabel={t("unmet.reason")}
-                series={[{ key: "records", label: t("unmet.count"), tone: "warning" }]}
-                height={220}
-                formatValue={(value) => format.number(value)}
-                labels={labels}
-              />
+              <h3 className="mb-1 text-sm font-medium">{t("unmet.reasons")}</h3>
+              <ul className="divide-border divide-y text-sm">
+                {unmet.data.byReason.map((reason) => (
+                  <li key={reason.key} className="grid grid-cols-[minmax(0,1fr)_9rem] items-center gap-3 py-2">
+                    <span>{keyed("unmet.reasonCodes", reason.key)}</span>
+                    <BarValue value={reason.records} max={unmetMax} tone="muted">
+                      {format.number(reason.records)}
+                    </BarValue>
+                  </li>
+                ))}
+              </ul>
               <h3 className="mt-4 mb-1 text-sm font-medium">{t("unmet.specs")}</h3>
               <ul className="divide-border divide-y text-sm">
                 {unmet.data.rows.map((row, index) => (
@@ -556,60 +571,61 @@ export function AnalyticsDashboard() {
             <Skeleton className="h-64 w-full" />
           ) : null}
         </Section>
-        {canFactories ? (
-          <Section title={t("factories.title")} description={t("factories.note")}>
-            {factories.isError ? <QueryError error={factories.error} onRetry={() => void factories.refetch()} /> : null}
-            <DataTable<Schemas["FactoryPerformanceDto"]>
-              caption={t("factories.title")}
-              columns={[
-                {
-                  id: "factory",
-                  header: t("factories.factory"),
-                  cell: (row) => (
-                    <span>
-                      {row.factory.code} <span className="text-muted text-xs">· {nameOf(row.productType)}</span>
-                    </span>
-                  ),
-                },
-                {
-                  id: "released",
-                  header: t("factories.released"),
-                  numeric: true,
-                  cell: (row) => format.number(row.released),
-                },
-                {
-                  id: "utilisation",
-                  header: t("factories.utilisation"),
-                  numeric: true,
-                  cell: (row) => (row.utilisationPct === null ? "—" : format.percent(row.utilisationPct, 0)),
-                },
-                {
-                  id: "acceptedOnTime",
-                  header: t("factories.acceptedOnTime"),
-                  numeric: true,
-                  cell: (row) => (row.acceptedOnTimePct === null ? "—" : format.percent(row.acceptedOnTimePct, 0)),
-                },
-                {
-                  id: "shippedOnTime",
-                  header: t("factories.shippedOnTime"),
-                  numeric: true,
-                  cell: (row) => (row.shippedOnTimePct === null ? "—" : format.percent(row.shippedOnTimePct, 0)),
-                },
-                {
-                  id: "claims",
-                  header: t("factories.claims"),
-                  numeric: true,
-                  cell: (row) => format.number(row.claims),
-                },
-              ]}
-              rows={factories.data ?? []}
-              getRowId={(row) => `${row.factory.code}:${row.productType.code}`}
-              loading={period !== null && factories.isPending}
-              density="compact"
-            />
-          </Section>
-        ) : null}
       </div>
+
+      {canFactories ? (
+        <Section title={t("factories.title")} description={t("factories.note")}>
+          {factories.isError ? <QueryError error={factories.error} onRetry={() => void factories.refetch()} /> : null}
+          <DataTable<Schemas["FactoryPerformanceDto"]>
+            caption={t("factories.title")}
+            columns={[
+              {
+                id: "factory",
+                header: t("factories.factory"),
+                cell: (row) => (
+                  <span>
+                    {row.factory.code} <span className="text-muted text-xs">· {nameOf(row.productType)}</span>
+                  </span>
+                ),
+              },
+              {
+                id: "released",
+                header: t("factories.released"),
+                numeric: true,
+                cell: (row) => format.number(row.released),
+              },
+              {
+                id: "utilisation",
+                header: t("factories.utilisation"),
+                numeric: true,
+                cell: (row) => (row.utilisationPct === null ? "—" : format.percent(row.utilisationPct, 0)),
+              },
+              {
+                id: "acceptedOnTime",
+                header: t("factories.acceptedOnTime"),
+                numeric: true,
+                cell: (row) => (row.acceptedOnTimePct === null ? "—" : format.percent(row.acceptedOnTimePct, 0)),
+              },
+              {
+                id: "shippedOnTime",
+                header: t("factories.shippedOnTime"),
+                numeric: true,
+                cell: (row) => (row.shippedOnTimePct === null ? "—" : format.percent(row.shippedOnTimePct, 0)),
+              },
+              {
+                id: "claims",
+                header: t("factories.claims"),
+                numeric: true,
+                cell: (row) => format.number(row.claims),
+              },
+            ]}
+            rows={factories.data ?? []}
+            getRowId={(row) => `${row.factory.code}:${row.productType.code}`}
+            loading={period !== null && factories.isPending}
+            density="compact"
+          />
+        </Section>
+      ) : null}
 
       <Section title={t("campaigns.title")}>
         <DataTable<Schemas["CampaignPerformanceDto"]>

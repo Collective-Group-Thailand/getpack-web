@@ -444,7 +444,13 @@ export function AssetDetail({ assetId }: { assetId: string }) {
             loading={schedule.isPending}
             getRowId={(row) => `${row.runId}-${row.period}`}
             density="compact"
-            empty={<EmptyState icon="calendar" title={t("noDepreciation")} />}
+            empty={
+              <EmptyState
+                icon="calendar"
+                title={t("noDepreciation")}
+                action={<EmptyLink href="/finance/assets/depreciation" label="assets.nav.depreciation" />}
+              />
+            }
             columns={[
               { id: "period", header: t("period"), cell: (row) => format.date(`${row.period}-01`, { style: "month" }) },
               { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.amount) },
@@ -625,7 +631,13 @@ export function DepreciationView() {
           loading={preview.isPending}
           getRowId={(row) => row.assetId}
           density="compact"
-          empty={<EmptyState icon="calendar" title={data?.alreadyRun ? t("nothingLeft") : t("nothing")} />}
+          empty={
+            <EmptyState
+              icon="calendar"
+              title={data?.alreadyRun ? t("nothingLeft") : t("nothing")}
+              action={<EmptyLink href="/finance/assets" label="assets.nav.register" />}
+            />
+          }
           columns={[
             {
               id: "asset",
@@ -660,7 +672,13 @@ export function DepreciationView() {
           loading={runs.isPending}
           getRowId={(row) => row.id}
           density="compact"
-          empty={<EmptyState icon="calendar" title={t("noRuns")} />}
+          empty={
+            <EmptyState
+              icon="calendar"
+              title={t("noRuns")}
+              action={<EmptyLink href="/finance/assets/roll-forward" label="assets.nav.rollForward" />}
+            />
+          }
           columns={[
             { id: "period", header: t("month"), cell: (row) => format.date(`${row.period}-01`, { style: "month" }) },
             { id: "runOn", header: t("runOn"), cell: (row) => format.date(row.runOn) },
@@ -972,7 +990,13 @@ export function AssetRollForward() {
           loading={report.isPending}
           getRowId={(row) => row.category}
           density="compact"
-          empty={<EmptyState icon="archive" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="archive"
+              title={t("empty")}
+              action={<EmptyLink href="/finance/assets" label="assets.nav.register" />}
+            />
+          }
           columns={[
             { id: "category", header: t("columns.category"), cell: (row) => row.name },
             money("openingCost"),

@@ -23,6 +23,7 @@ import { adminBrowserApis } from "../../console/api";
 import { useFactoryPart, useFactoryRefresh } from "../hooks";
 import { FormDialog, FormError, Section } from "../parts";
 import type { Factory } from "../resources";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Kyc = Schemas["KycDocumentDto"];
 type Bank = Schemas["BankAccountDto"];
@@ -303,10 +304,10 @@ export function Compliance({ factory }: { factory: Factory }) {
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("issuedOn")}>
-              <Input type="date" value={issuedOn} onChange={(event) => setIssuedOn(event.target.value)} />
+              <ConsoleDateField type="date" value={issuedOn} onChange={(event) => setIssuedOn(event.target.value)} />
             </Field>
             <Field label={t("expiresOn")}>
-              <Input type="date" value={expiresOn} onChange={(event) => setExpiresOn(event.target.value)} />
+              <ConsoleDateField type="date" value={expiresOn} onChange={(event) => setExpiresOn(event.target.value)} />
             </Field>
           </div>
           <Upload file={file} onFile={setFile} />

@@ -130,15 +130,22 @@ export function CallOffsList({ initial }: { initial: InitialPage<CallOff> | null
   ];
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...CALL_OFF_STATUSES.map((status) => ({ value: status, label: tStatus(CALL_OFF_STATUS[status].labelKey) })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={callOffsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...CALL_OFF_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(CALL_OFF_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         resource={callOffsList}
         columns={columns}
         caption={t("title")}
@@ -255,18 +262,22 @@ export function ReorderQueue({ initial }: { initial: InitialPage<Suggestion> | n
   ];
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("openTab") },
-          ...SUGGESTION_STATUSES.filter((status) => status !== "open").map((status) => ({
-            value: status,
-            label: tStatus(REORDER_SUGGESTION_STATUS[status].labelKey),
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={reorderSuggestionsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("openTab") },
+              ...SUGGESTION_STATUSES.filter((status) => status !== "open").map((status) => ({
+                value: status,
+                label: tStatus(REORDER_SUGGESTION_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         resource={reorderSuggestionsList}
         columns={columns}
         caption={t("title")}

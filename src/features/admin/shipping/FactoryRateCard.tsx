@@ -40,6 +40,7 @@ import {
 } from "./rates";
 import { RatesTable, type RateRow } from "./RatesTable";
 import { useCustomerZones } from "./zones";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Summary = Schemas["FactoryRateVersionSummaryDto"];
 type Rate = Schemas["FactoryRateDto"];
@@ -416,7 +417,7 @@ export function FactoryRateCard({ factoryId }: { factoryId: string }) {
           }}
         >
           <Field label={tVersion("effectiveFrom")} required>
-            <Input
+            <ConsoleDateField
               type="date"
               min={today()}
               value={creating.effectiveFrom}

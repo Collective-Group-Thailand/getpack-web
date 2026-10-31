@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -91,6 +92,7 @@ function useScheduleText() {
  */
 export function ReportSchedules() {
   const t = useTranslations("reports.schedules");
+  const tNav = useTranslations("reports.nav");
   const reportName = useReportName();
   const scheduleText = useScheduleText();
   const queryClient = useQueryClient();
@@ -193,7 +195,24 @@ export function ReportSchedules() {
         rows={schedules.data ?? []}
         getRowId={(row) => row.id}
         loading={schedules.isPending}
-        empty={<EmptyState icon="calendar" title={t("empty")} description={t("emptyHint")} />}
+        empty={
+          <EmptyState
+            icon="calendar"
+            title={t("empty")}
+            description={t("emptyHint")}
+            action={
+              canSchedule ? (
+                <Button variant="secondary" iconStart="plus" onClick={() => setCreating(true)}>
+                  {t("new")}
+                </Button>
+              ) : (
+                <Button asChild variant="secondary">
+                  <Link href="/reports">{tNav("reports")}</Link>
+                </Button>
+              )
+            }
+          />
+        }
       />
       {creating ? <CreateScheduleDialog onClose={() => setCreating(false)} onDone={refresh} /> : null}
     </Section>
@@ -425,6 +444,7 @@ function RunStatus({ status }: { status: Run["status"] }) {
  */
 export function ReportFiles() {
   const t = useTranslations("reports.files");
+  const tNav = useTranslations("reports.nav");
   const tSchedules = useTranslations("reports.schedules");
   const format = useFormat();
   const reportName = useReportName();
@@ -529,7 +549,17 @@ export function ReportFiles() {
         rows={runs.data ?? []}
         getRowId={(row) => row.id}
         loading={runs.isPending}
-        empty={<EmptyState icon="document" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="document"
+            title={t("empty")}
+            action={
+              <Button asChild variant="secondary">
+                <Link href="/reports">{tNav("reports")}</Link>
+              </Button>
+            }
+          />
+        }
       />
     </Section>
   );

@@ -17,14 +17,12 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
-import { DescriptionList } from "@/ui/components/DescriptionList";
 import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { SummaryRows } from "@/ui/components/FormLayout";
 import { Statement } from "@/ui/components/Statement";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { JsonView } from "@/ui/components/JsonView";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
@@ -37,7 +35,9 @@ import { FormDialog, FormError, Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
 import { StatusChip } from "../console/StatusChip";
-import { PeriodBar, FinanceDateField } from "./frame";
+import { plainDescription } from "../platform/settings/shape";
+import { SettingsSection } from "../platform/settings/SettingsSection";
+import { PeriodBar, FinanceDateField, EmptyLink } from "./frame";
 import { effectiveInstant } from "./ledger";
 import { journalHref, sourceHref } from "./shared";
 
@@ -547,7 +547,13 @@ export function TaxReportDetail({ reportId }: { reportId: string }) {
             rows={lines}
             getRowId={(row) => String(row.seq ?? row.key ?? row.wtNumber)}
             density="compact"
-            empty={<EmptyState icon="document" title={t("noLines")} />}
+            empty={
+              <EmptyState
+                icon="document"
+                title={t("noLines")}
+                action={<EmptyLink href="/finance/tax" label="tax.nav.reports" />}
+              />
+            }
             rowTone={(row) => (row.late === true ? "warning" : undefined)}
           />
         </Section>
@@ -712,7 +718,13 @@ export function TaxCalendar() {
         rows={items.data ?? []}
         loading={items.isPending}
         getRowId={(row) => row.id}
-        empty={<EmptyState icon="calendar" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="calendar"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/tax" label="tax.nav.reports" />}
+          />
+        }
         rowTone={(row) => (row.status === "open" && row.dueOn < today ? "danger" : undefined)}
         columns={[
           { id: "kind", header: t("return"), cell: (row) => tKinds(row.kind) },
@@ -786,8 +798,6 @@ export function TaxSettings() {
   const taxSettings = (settings.data ?? []).filter((setting) =>
     (TAX_SETTING_KEYS as readonly string[]).includes(setting.key),
   );
-  const nature = taxSettings.find((setting) => setting.key === "tax.nature_by_product_type")?.current?.value as
-    { default: string; overrides: Record<string, string> } | undefined;
   return (
     <div className="flex flex-col gap-5">
       <Section title={t("rates")} description={t("ratesNote")}>
@@ -848,7 +858,7 @@ export function TaxSettings() {
               id: "description",
               header: t("about"),
               hideable: true,
-              cell: (row) => <span className="text-muted text-sm">{row.description}</span>,
+              cell: (row) => <span className="text-muted text-sm">{plainDescription(row.description)}</span>,
             },
             ...(canPropose
               ? [
@@ -872,53 +882,28 @@ export function TaxSettings() {
         />
       </Section>
 
-      <Section title={t("nature")} description={t("natureNote")}>
-        {nature ? (
-          <DescriptionList
-            columns={2}
-            items={[
-              { term: t("natureDefault"), description: t(`natures.${nature.default}`) },
-              ...Object.entries(nature.overrides).map(([productType, value]) => ({
-                term: <span className="tabular-nums">{productType}</span>,
-                description: t(`natures.${value}`),
-              })),
-            ]}
-          />
-        ) : (
-          <p className="text-muted text-sm">{t("notReadable")}</p>
-        )}
-      </Section>
-
-      <Section title={t("settings")} description={t("settingsNote")}>
-        <DataTable
-          caption={t("settings")}
-          rows={taxSettings}
-          loading={settings.isPending}
-          getRowId={(row) => row.id}
-          density="compact"
-          empty={<EmptyState icon="settings" title={t("notReadable")} />}
-          columns={[
-            {
-              id: "key",
-              header: t("setting"),
-              cell: (row) => (
-                <div>
-                  <Link href={`/settings/${row.id}`} className="text-primary text-sm tabular-nums hover:underline">
-                    {row.key}
-                  </Link>
-                  <p className="text-muted text-xs">{row.description}</p>
-                </div>
-              ),
-            },
-            {
-              id: "value",
-              header: t("value"),
-              cell: (row) => <JsonView value={row.current?.value ?? null} label={row.key} />,
-            },
-            { id: "owner", header: t("owner"), hideable: true, cell: (row) => row.ownerRole },
-          ]}
+      {settings.isError ? <QueryError error={settings.error} onRetry={() => void settings.refetch()} /> : null}
+      {settings.isPending ? null : taxSettings.length ? (
+        <SettingsSection
+          id="tax-settings"
+          card
+          title={t("settings")}
+          description={t("settingsNote")}
+          settings={taxSettings}
         />
-      </Section>
+      ) : (
+        <Section title={t("settings")} description={t("settingsNote")}>
+          <EmptyState
+            icon="settings"
+            title={t("notReadable")}
+            action={
+              <Button asChild variant="secondary">
+                <Link href="/settings?section=accounting">{t("openAllSettings")}</Link>
+              </Button>
+            }
+          />
+        </Section>
+      )}
 
       <Section title={t("eTax")} description={t("eTaxNote")}>
         <Callout tone="info" title={t("eTaxR2")}>
