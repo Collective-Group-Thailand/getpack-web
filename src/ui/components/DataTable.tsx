@@ -18,6 +18,10 @@ import { useMemo } from "react";
 import { Icon } from "../icons";
 import { cn } from "../lib/cn";
 
+/** The first column stays put while a wide table scrolls sideways (desk only; a phone gets cards). */
+const PIN = "md:bg-surface md:group-hover/row:bg-surface-subtle md:sticky md:z-[1]";
+const PIN_HEAD = "md:bg-surface-subtle md:sticky md:z-[1]";
+
 /**
  * The server table (design-system.md §3 "DataTable", F2 §2): TanStack Table v9 for the model,
  * our own markup for semantics.
@@ -208,8 +212,8 @@ export function DataTable<TRow extends RowData>({
     ));
   } else if (!hasRows) {
     body = (
-      <tr>
-        <td colSpan={colSpan} className="p-6">
+      <tr className="max-md:block">
+        <td colSpan={colSpan} className="p-6 max-md:block max-md:p-4">
           {empty}
         </td>
       </tr>
@@ -232,9 +236,9 @@ export function DataTable<TRow extends RowData>({
               : undefined
           }
           className={cn(
-            "border-border hover:bg-surface-subtle border-b last:border-0",
+            "border-border hover:bg-surface-subtle group/row border-b last:border-0",
             // Below md a row is a card: the cells stack, each with its column's name (AdminMobile).
-            "max-md:flex max-md:flex-col max-md:gap-1.5 max-md:px-4 max-md:py-3",
+            "max-md:relative max-md:flex max-md:flex-col max-md:gap-1.5 max-md:px-4 max-md:py-3",
             onRowClick && "cursor-pointer",
             isSelected && "bg-primary-subtle/40",
             tone === "danger" && "shadow-[inset_3px_0_0_var(--color-danger)]",
@@ -243,7 +247,16 @@ export function DataTable<TRow extends RowData>({
           )}
         >
           {selectable ? (
-            <td role="cell" className={cn(cellPadding, "w-10 max-md:w-auto max-md:p-0")}>
+            // On a phone card the checkbox sits in the card's corner, not on a line of its own above the code.
+            <td
+              role="cell"
+              className={cn(
+                cellPadding,
+                "w-10 max-md:absolute max-md:end-4 max-md:top-3 max-md:w-auto max-md:p-0",
+                PIN,
+                "md:start-0",
+              )}
+            >
               <input
                 type="checkbox"
                 className="accent-primary size-4 align-middle"
@@ -266,7 +279,9 @@ export function DataTable<TRow extends RowData>({
                   "align-middle",
                   column?.numeric && "text-end tabular-nums",
                   column?.className,
+                  index === 0 && cn(PIN, selectable ? "md:start-10" : "md:start-0"),
                   "max-md:w-auto max-md:p-0",
+                  index === 0 && selectable && "max-md:pe-8",
                   index === 0
                     ? "max-md:text-base max-md:font-semibold"
                     : "max-md:flex max-md:items-baseline max-md:justify-between max-md:gap-3 max-md:text-end",
@@ -295,7 +310,9 @@ export function DataTable<TRow extends RowData>({
       role="region"
       aria-label={caption}
       tabIndex={0}
-      className={cn("border-border bg-surface relative max-h-[72dvh] overflow-auto rounded-lg border", className)}
+      // The page scrolls, not the table (two scrollbars and a pager stuck mid-page before); a wide table still
+      // scrolls sideways inside its own box, its first column pinned.
+      className={cn("border-border bg-surface relative overflow-x-auto rounded-lg border", className)}
       aria-busy={loading || undefined}
     >
       {/*
@@ -312,7 +329,7 @@ export function DataTable<TRow extends RowData>({
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id} role="row" className="border-border border-b">
               {selectable ? (
-                <th scope="col" role="columnheader" className={cn(cellPadding, "w-10")}>
+                <th scope="col" role="columnheader" className={cn(cellPadding, "w-10", PIN_HEAD, "md:start-0")}>
                   <input
                     type="checkbox"
                     className="accent-primary size-4 align-middle"
@@ -326,7 +343,7 @@ export function DataTable<TRow extends RowData>({
                   />
                 </th>
               ) : null}
-              {group.headers.map((header) => {
+              {group.headers.map((header, index) => {
                 const column = columnById.get(header.column.id);
                 const sorted = header.column.getIsSorted();
                 return (
@@ -339,6 +356,7 @@ export function DataTable<TRow extends RowData>({
                       cellPadding,
                       "text-muted text-start text-xs font-medium whitespace-nowrap",
                       column?.numeric && "text-end",
+                      index === 0 && cn(PIN_HEAD, selectable ? "md:start-10" : "md:start-0"),
                     )}
                   >
                     {header.column.getCanSort() ? (

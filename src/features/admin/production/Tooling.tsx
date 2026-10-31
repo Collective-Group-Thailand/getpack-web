@@ -9,6 +9,7 @@ import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
@@ -171,7 +172,18 @@ export function Tooling() {
           getRowId={(row) => row.id}
           loading={query.isPending}
           rowTone={(row) => (row.status === "unusable" ? "danger" : undefined)}
-          empty={<EmptyState icon="wrench" title={t("empty")} description={t("emptyHint")} />}
+          empty={
+            <EmptyState
+              icon="wrench"
+              action={
+                <Button asChild variant="secondary" iconEnd="arrow-right">
+                  <Link href="/production">{t("openBoard")}</Link>
+                </Button>
+              }
+              title={t("empty")}
+              description={t("emptyHint")}
+            />
+          }
         />
       )}
       {data && data.meta.total > data.meta.perPage ? (

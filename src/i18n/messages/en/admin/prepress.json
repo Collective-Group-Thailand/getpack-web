@@ -29,7 +29,8 @@
     "you": "You",
     "unassigned": "Unassigned",
     "mine": "Mine",
-    "productType": "Product type"
+    "productType": "Product type",
+    "emptyAction": "Orders with artwork to review"
   },
   "actions": {
     "labels": {

@@ -202,7 +202,20 @@ function PriceRules() {
           rows={query.data ?? []}
           getRowId={(row) => row.id}
           loading={query.isPending}
-          empty={<EmptyState icon="calculator" title={t("empty")} description={t("emptyHint")} />}
+          empty={
+            <EmptyState
+              icon="calculator"
+              title={t("empty")}
+              description={t("emptyHint")}
+              action={
+                canManage ? (
+                  <Button variant="secondary" iconStart="plus" onClick={() => setCreating(true)}>
+                    {t("create")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
         />
       )}
 
@@ -391,7 +404,19 @@ function ProcessRules() {
           rows={query.data ?? []}
           getRowId={(row) => row.id}
           loading={query.isPending}
-          empty={<EmptyState icon="factory" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="factory"
+              title={t("empty")}
+              action={
+                canManage ? (
+                  <Button variant="secondary" iconStart="plus" onClick={() => setCreating(true)}>
+                    {t("create")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
         />
       )}
 

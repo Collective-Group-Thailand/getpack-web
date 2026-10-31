@@ -13,13 +13,15 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { IconButton } from "@/ui/components/IconButton";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, problemMessage, StatusChip, useActor, useCan } from "../console";
+import { adminBrowserApis, problemMessage, StatusChip, useActor, useCan, useSlaFormat } from "../console";
 import { FileItem } from "../prepress/FileItem";
 import { adminRecordHref, type Conversation } from "./resources";
 
@@ -36,6 +38,7 @@ export function InboxThread({ initial }: { initial: Conversation }) {
   const t = useTranslations("cs.inbox");
   const locale = useLocale() as "th" | "en";
   const format = useFormat();
+  const sla = useSlaFormat();
   const client = useQueryClient();
   const me = useActor();
   const canReply = useCan("conversations.reply");
@@ -115,9 +118,11 @@ export function InboxThread({ initial }: { initial: Conversation }) {
   const subjectHref = conversation.subject ? adminRecordHref(conversation.subject) : null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-      <div className="flex min-w-0 flex-col gap-4">
-        <div aria-busy={messages.isPending} aria-live="polite" className="min-h-40">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      {/* The thread fills the view and the reply box stays at its foot while the thread scrolls (it floated
+          mid-page under a short thread). */}
+      <div className="flex min-w-0 flex-col gap-4 lg:min-h-[calc(100dvh-15rem)]">
+        <div aria-busy={messages.isPending} aria-live="polite" className="min-h-40 flex-1">
           {messages.isPending ? (
             <div className="flex flex-col gap-3">
               <Skeleton className="h-16 w-3/5" />
@@ -135,49 +140,54 @@ export function InboxThread({ initial }: { initial: Conversation }) {
           )}
         </div>
         {canReply ? (
-          <Composer
-            label={asNote ? t("noteLabel") : t("replyLabel")}
-            sendLabel={asNote ? t("addNote") : t("send")}
-            quickReplies={template ? [templateBody(template)] : []}
-            upload={async (file) => {
-              const uploaded = await uploadFile("admin", file, "evidence");
-              return { id: uploaded.id, name: file.name };
-            }}
-            extra={<Switch label={t("asNote")} checked={asNote} onCheckedChange={setAsNote} />}
-            onSend={async (draft) => {
-              try {
-                if (asNote)
-                  await api.POST("/v1/admin/conversations/{conversationId}/notes", {
-                    params: {
-                      path: { conversationId: initial.id },
-                      header: { "Idempotency-Key": newIdempotencyKey() },
-                    },
-                    body: { body: draft.body, ...(draft.fileIds.length ? { fileIds: draft.fileIds } : {}) },
-                  });
-                else
-                  await api.POST("/v1/admin/conversations/{conversationId}/messages", {
-                    params: {
-                      path: { conversationId: initial.id },
-                      header: { "Idempotency-Key": newIdempotencyKey() },
-                    },
-                    body: {
-                      ...(draft.body ? { body: draft.body } : {}),
-                      ...(draft.fileIds.length ? { fileIds: draft.fileIds } : {}),
-                      ...(template && templateBody(template) === draft.body ? { cannedResponseId: template } : {}),
-                    },
-                  });
-                setTemplate("");
-                // The box frees at once; the thread catches up (U5.7 §2).
-                void refresh();
-              } catch (error) {
-                throw new Error(problemMessage(error, t("sendFailed")));
-              }
-            }}
-          />
+          <div className="bg-bg border-border sticky bottom-0 z-10 -mx-1 border-t px-1 pt-3 pb-4">
+            <Composer
+              label={asNote ? t("noteLabel") : t("replyLabel")}
+              sendLabel={asNote ? t("addNote") : t("send")}
+              quickReplies={template ? [templateBody(template)] : []}
+              upload={async (file) => {
+                const uploaded = await uploadFile("admin", file, "evidence");
+                return { id: uploaded.id, name: file.name };
+              }}
+              extra={<Switch label={t("asNote")} checked={asNote} onCheckedChange={setAsNote} />}
+              onSend={async (draft) => {
+                try {
+                  if (asNote)
+                    await api.POST("/v1/admin/conversations/{conversationId}/notes", {
+                      params: {
+                        path: { conversationId: initial.id },
+                        header: { "Idempotency-Key": newIdempotencyKey() },
+                      },
+                      body: { body: draft.body, ...(draft.fileIds.length ? { fileIds: draft.fileIds } : {}) },
+                    });
+                  else
+                    await api.POST("/v1/admin/conversations/{conversationId}/messages", {
+                      params: {
+                        path: { conversationId: initial.id },
+                        header: { "Idempotency-Key": newIdempotencyKey() },
+                      },
+                      body: {
+                        ...(draft.body ? { body: draft.body } : {}),
+                        ...(draft.fileIds.length ? { fileIds: draft.fileIds } : {}),
+                        ...(template && templateBody(template) === draft.body ? { cannedResponseId: template } : {}),
+                      },
+                    });
+                  setTemplate("");
+                  // The box frees at once; the thread catches up (U5.7 §2).
+                  void refresh();
+                } catch (error) {
+                  throw new Error(problemMessage(error, t("sendFailed")));
+                }
+              }}
+            />
+          </div>
         ) : null}
       </div>
 
-      <aside className="border-border flex flex-col gap-4 rounded-xl border p-4 text-sm" aria-label={t("details")}>
+      <aside
+        className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 text-sm lg:sticky lg:top-20"
+        aria-label={t("details")}
+      >
         <div className="flex flex-wrap gap-2">
           <StatusChip map={CONVERSATION_STATUS} value={conversation.status} />
           {conversation.sla.state ? <StatusChip map={CONVERSATION_SLA} value={conversation.sla.state} /> : null}
@@ -189,11 +199,8 @@ export function InboxThread({ initial }: { initial: Conversation }) {
               dueAt={conversation.sla.firstResponseDueAt}
               state={conversation.sla.state === "overdue" ? "breached" : "on_track"}
               absolute={format.dateTime(conversation.sla.firstResponseDueAt)}
-              format={(ms, overdue) =>
-                overdue
-                  ? t("overdueBy", { minutes: Math.round(ms / 60_000) })
-                  : t("dueIn", { minutes: Math.round(ms / 60_000) })
-              }
+              // The distance is negative once the time has passed: "เลยมา 1 วัน 13 ชม.", never "-2261 นาที".
+              format={(ms, overdue) => sla(Math.abs(ms), overdue)}
             />
           </div>
         ) : null}
@@ -246,16 +253,27 @@ export function InboxThread({ initial }: { initial: Conversation }) {
                 options={canned.data.map((c) => ({ value: c.id, label: c.title }))}
               />
             ) : null}
-            {conversation.assignee?.id !== me.id ? (
-              <Button size="sm" variant="secondary" loading={busy === "assign"} onClick={() => void act("assign")}>
-                {t("assignToMe")}
-              </Button>
-            ) : null}
-            {conversation.status !== "closed" ? (
-              <Button size="sm" variant="ghost" loading={busy === "close"} onClick={() => void act("close")}>
-                {t("close")}
-              </Button>
-            ) : null}
+            {/* One step forward — take the conversation — and closing it one deliberate step away in "⋯". */}
+            <div className="flex items-center gap-2">
+              {conversation.assignee?.id !== me.id ? (
+                <Button
+                  className="flex-1"
+                  variant="secondary"
+                  loading={busy === "assign"}
+                  onClick={() => void act("assign")}
+                >
+                  {t("assignToMe")}
+                </Button>
+              ) : null}
+              {conversation.status !== "closed" ? (
+                <DropdownMenu
+                  label={t("close")}
+                  align="end"
+                  items={[{ id: "close", label: t("close"), icon: "archive", onSelect: () => void act("close") }]}
+                  trigger={<IconButton name="more" variant="secondary" label={t("close")} />}
+                />
+              ) : null}
+            </div>
           </div>
         ) : null}
       </aside>

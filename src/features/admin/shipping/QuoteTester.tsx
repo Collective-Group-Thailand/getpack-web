@@ -13,6 +13,7 @@ import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, problemMessage, Section } from "../console";
 import { POSTCODE, startOfDay, today } from "./rates";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 /**
  * What a customer would pay to ship a parcel (`admin.customerShippingRates.quote`, D-013): the
@@ -61,7 +62,7 @@ export function QuoteTester() {
           <Input inputMode="numeric" value={volume} onChange={(e) => setVolume(e.target.value)} />
         </Field>
         <Field label={t("at")} className="w-44">
-          <Input type="date" value={at} onChange={(e) => setAt(e.target.value)} />
+          <ConsoleDateField type="date" value={at} onChange={(e) => setAt(e.target.value)} />
         </Field>
         <Button type="submit" variant="secondary" disabled={!ready} loading={quote.isPending}>
           {t("run")}

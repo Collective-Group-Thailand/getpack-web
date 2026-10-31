@@ -30,6 +30,7 @@ import {
   Section,
   useCan,
 } from "../console";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Request = Schemas["AdminPrivacyRequestDto"];
 type RequestStatus = Schemas["PrivacyRequestStatus"];
@@ -153,6 +154,7 @@ function Requests() {
   return (
     <div className="flex flex-col gap-4 pt-4">
       <SegmentedControl
+        className="max-w-full self-start overflow-x-auto"
         label={t("status")}
         value={status}
         onValueChange={(value) => {
@@ -174,7 +176,19 @@ function Requests() {
           getRowId={(row) => row.id}
           loading={query.isPending}
           rowTone={(row) => (row.overdue && row.status === "submitted" ? "danger" : undefined)}
-          empty={<EmptyState icon="shield" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="shield"
+              title={t("empty")}
+              action={
+                status !== "all" ? (
+                  <Button variant="secondary" onClick={() => setStatus("all")}>
+                    {t("all")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
         />
       )}
       {data && data.meta.total > data.meta.perPage ? (
@@ -311,7 +325,7 @@ function Consents() {
           }}
         >
           <Field label={t("effectiveFrom")} required>
-            <Input
+            <ConsoleDateField
               type="date"
               value={draft.effectiveFrom}
               min={today()}
@@ -425,7 +439,7 @@ function Agreements() {
           }}
         >
           <Field label={t("effectiveFrom")} required>
-            <Input
+            <ConsoleDateField
               type="date"
               value={draft.effectiveFrom}
               min={today()}

@@ -486,7 +486,8 @@
       "skipped": "Cancelled"
     },
     "dueTitle": "Due to ship",
-    "deliveryBy": "Expected with the customer on {date}"
+    "deliveryBy": "Expected with the customer on {date}",
+    "times": "{count, plural, one {# time} other {# times}}"
   },
   "group": {
     "title": "Order group",

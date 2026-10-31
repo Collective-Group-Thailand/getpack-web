@@ -29,7 +29,8 @@
     "you": "คุณ",
     "unassigned": "ยังไม่มีผู้รับผิดชอบ",
     "mine": "ของฉัน",
-    "productType": "ประเภทสินค้า"
+    "productType": "ประเภทสินค้า",
+    "emptyAction": "ดูคำสั่งซื้อรอตรวจไฟล์"
   },
   "actions": {
     "labels": {

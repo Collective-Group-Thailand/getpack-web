@@ -5,7 +5,6 @@ import { getTranslations } from "next-intl/server";
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { CalculatorWorkspace } from "@/features/admin/cs";
 import { CALCULATORS } from "@/features/admin/cs/calculators";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 export async function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
@@ -22,12 +21,7 @@ export default async function CalculatorPage({ params }: { params: Promise<{ typ
   return (
     <ConsolePage width="full" className="max-w-[96rem]">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/cs" }, { label: t(`types.${calculator.key}.name`) }]}
-          />
-        }
+        back={{ href: "/cs", label: t("title") }}
         title={t(`types.${calculator.key}.name`)}
         description={t(`types.${calculator.key}.description`)}
       />

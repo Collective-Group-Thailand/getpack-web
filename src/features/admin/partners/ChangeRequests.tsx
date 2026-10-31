@@ -1,6 +1,6 @@
 "use client";
 
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -10,16 +10,14 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
-import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
-import { EmptyState } from "@/ui/components/EmptyState";
+import type { DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
-import { Pagination } from "@/ui/components/Pagination";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, FormDialog, FormError, QueryError, useCan } from "../console";
+import { adminBrowserApis, FormDialog, FormError, QueueTabs, ResourceList, useCan } from "../console";
+import { ALL_REQUESTS, changeRequestsList } from "./resources";
 
 type Request = Schemas["FactoryChangeRequestDto"];
 type Status = Schemas["FactoryChangeRequestStatus"];
@@ -63,25 +61,9 @@ const TAB: Record<Topic, string> = {
  */
 export function ChangeRequests() {
   const t = useTranslations("partners.requests");
-  const tList = useTranslations("console.list");
   const queryClient = useQueryClient();
   const canManage = useCan("partners.manage");
-  const [status, setStatus] = useState<Status | "all">("open");
-  const [topic, setTopic] = useState<Topic | "">("");
-  const [page, setPage] = useState(1);
   const [answering, setAnswering] = useState<{ request: Request; status: Answer; response: string } | null>(null);
-  const query = useQuery({
-    queryKey: queryKeys.list("admin", "factory_change_request", { status, topic, page }),
-    placeholderData: keepPreviousData,
-    queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/factory-change-requests", {
-          params: {
-            query: { page, perPage: 25, ...(status === "all" ? {} : { status }), ...(topic ? { topic } : {}) },
-          },
-        })
-      ).data!,
-  });
 
   const columns: DataTableColumn<Request>[] = [
     {
@@ -145,7 +127,7 @@ export function ChangeRequests() {
               row.status === "open" || row.status === "in_progress" ? (
                 <Button
                   size="sm"
-                  variant="secondary"
+                  variant="ghost"
                   onClick={() =>
                     setAnswering({ request: row, status: row.status === "open" ? "in_progress" : "done", response: "" })
                   }
@@ -158,67 +140,42 @@ export function ChangeRequests() {
       : []),
   ];
 
-  const data = query.data;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <SegmentedControl
-          label={t("status")}
-          value={status}
-          onValueChange={(value) => {
-            setStatus(value as Status | "all");
-            setPage(1);
-          }}
-          options={[
-            ...(["open", "in_progress", "done", "declined"] as const).map((s) => ({
-              value: s,
-              label: t(`statuses.${s}`),
-            })),
-            { value: "all", label: t("all") },
-          ]}
-        />
-        <Field label={t("topic")} className="w-56">
-          <NativeSelect
-            value={topic}
-            onValueChange={(value) => {
-              setTopic(value as Topic | "");
-              setPage(1);
-            }}
-            options={[
-              { value: "", label: t("allTopics") },
-              ...TOPICS.map((x) => ({ value: x, label: t(`topics.${x}`) })),
+      <ResourceList
+        views={
+          <QueueTabs
+            countFrom={changeRequestsList}
+            label={t("status")}
+            param="status"
+            tabs={[
+              { value: null, label: t("statuses.open") },
+              ...(["in_progress", "done", "declined"] as const).map((s) => ({ value: s, label: t(`statuses.${s}`) })),
+              { value: ALL_REQUESTS, label: t("all") },
             ]}
           />
-        </Field>
-      </div>
-      {query.isError ? (
-        <QueryError error={query.error} onRetry={() => void query.refetch()} />
-      ) : (
-        <DataTable
-          caption={t("title")}
-          columns={columns}
-          rows={data?.data ?? []}
-          getRowId={(row) => row.id}
-          loading={query.isPending}
-          empty={<EmptyState icon="inbox" title={t("empty")} />}
-        />
-      )}
-      {data && data.meta.total > data.meta.perPage ? (
-        <Pagination
-          page={data.meta.page}
-          perPage={data.meta.perPage}
-          total={data.meta.total}
-          onPageChange={setPage}
-          labels={{
-            nav: tList("pagination"),
-            previous: tList("previous"),
-            next: tList("next"),
-            range: (from, to, total) => tList("range", { from, to, total }),
-            pageOf: (current, pages) => tList("pageOf", { page: current, pages }),
-            perPage: tList("perPage"),
-          }}
-        />
-      ) : null}
+        }
+        resource={changeRequestsList}
+        columns={columns}
+        caption={t("title")}
+        savedViews={false}
+        filters={[
+          {
+            id: "topic",
+            label: t("topic"),
+            kind: "select",
+            options: TOPICS.map((x) => ({ value: x, label: t(`topics.${x}`) })),
+          },
+        ]}
+        empty={{
+          title: t("empty"),
+          action: (
+            <Button asChild variant="secondary" iconEnd="arrow-right">
+              <Link href="/partners">{t("emptyAction")}</Link>
+            </Button>
+          ),
+        }}
+      />
       {answering ? (
         <FormDialog
           title={t("answerTitle", { code: answering.request.factoryCode })}

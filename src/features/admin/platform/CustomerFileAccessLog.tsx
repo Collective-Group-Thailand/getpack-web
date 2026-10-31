@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -101,12 +102,35 @@ export function CustomerFileAccessLog() {
   const actorName = (row: Entry) => row.actor.name ?? t(`actorTypes.${row.actor.type}`);
 
   const columns: DataTableColumn<Entry>[] = [
-    { id: "occurredAt", header: t("columns.when"), cell: (row) => <When at={row.occurredAt} /> },
-    { id: "actor", header: t("columns.actor"), cell: actorName },
+    {
+      id: "occurredAt",
+      header: t("columns.when"),
+      className: "whitespace-nowrap",
+      cell: (row) => <When at={row.occurredAt} absoluteOnly />,
+    },
+    {
+      id: "actor",
+      header: t("columns.actor"),
+      cell: (row) =>
+        row.actor.type === "user" && row.actor.id ? (
+          <Link href={`/users/${row.actor.id}`} className="text-primary hover:underline">
+            {actorName(row)}
+          </Link>
+        ) : (
+          actorName(row)
+        ),
+    },
     {
       id: "order",
       header: t("columns.order"),
-      cell: (row) => <span className="tabular-nums">{row.order?.orderCode ?? "—"}</span>,
+      cell: (row) =>
+        row.order ? (
+          <Link href={`/orders/${row.order.id}`} className="text-primary tabular-nums hover:underline">
+            {row.order.orderCode}
+          </Link>
+        ) : (
+          <span className="text-muted">{t("noOrder")}</span>
+        ),
     },
     { id: "kind", header: t("columns.kind"), cell: (row) => t(`kinds.${row.fileKind}`) },
     {
@@ -131,14 +155,18 @@ export function CustomerFileAccessLog() {
       id: "open",
       header: <span className="sr-only">{t("columns.details")}</span>,
       hideable: false,
-      className: "w-12 text-end",
+      // The whole card opens the entry on a phone; the chevron is for the desk table.
+      className: "w-12 text-end max-md:hidden!",
       cell: (row) => (
         <IconButton
-          name="eye"
+          name="chevron-right"
           size="sm"
           variant="ghost"
           label={t("openEntry", { order: row.order?.orderCode ?? row.fileId.slice(0, 8) })}
-          onClick={() => setOpen(row)}
+          onClick={(event) => {
+            event.stopPropagation();
+            setOpen(row);
+          }}
         />
       ),
     },
@@ -146,7 +174,20 @@ export function CustomerFileAccessLog() {
 
   return (
     <div className="flex flex-col gap-3">
-      <Toolbar label={t("filters")}>
+      <Toolbar
+        label={t("filters")}
+        className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]"
+      >
+        <FilterControl
+          filter={{ id: "from", label: t("from"), kind: "date" }}
+          value={filters.from}
+          onChange={(value) => setFilter("from", value)}
+        />
+        <FilterControl
+          filter={{ id: "to", label: t("to"), kind: "date" }}
+          value={filters.to}
+          onChange={(value) => setFilter("to", value)}
+        />
         <FilterControl
           filter={{
             id: "kind",
@@ -180,22 +221,12 @@ export function CustomerFileAccessLog() {
           value={filters.fileId}
           onChange={(value) => setFilter("fileId", value)}
         />
-        <FilterControl
-          filter={{ id: "from", label: t("from"), kind: "date" }}
-          value={filters.from}
-          onChange={(value) => setFilter("from", value)}
-        />
-        <FilterControl
-          filter={{ id: "to", label: t("to"), kind: "date" }}
-          value={filters.to}
-          onChange={(value) => setFilter("to", value)}
-        />
-        {Object.keys(filters).length > 0 ? (
-          <Button variant="ghost" onClick={() => update({ filters: {} })}>
-            {t("clear")}
-          </Button>
-        ) : null}
-        <div className="ms-auto">
+        <div className="col-span-full flex items-center justify-end gap-2 xl:col-span-1">
+          {Object.keys(filters).length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={() => update({ filters: {} })}>
+              {t("clear")}
+            </Button>
+          ) : null}
           <ExportButton resource="customer_file_access_logs" query={fileAccessLogExportQuery(filters)} />
         </div>
       </Toolbar>
@@ -208,8 +239,25 @@ export function CustomerFileAccessLog() {
         loading={feed.isFetching && rows.length === 0}
         density="compact"
         rowTone={(row) => (row.reason ? "warning" : undefined)}
+        onRowClick={setOpen}
         error={feed.isError ? <QueryError error={feed.error} onRetry={() => void feed.refetch()} /> : undefined}
-        empty={<EmptyState icon="history" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="history"
+            title={t("empty")}
+            action={
+              Object.keys(filters).length > 0 ? (
+                <Button variant="secondary" onClick={() => update({ filters: {} })}>
+                  {t("clear")}
+                </Button>
+              ) : (
+                <Button asChild variant="secondary">
+                  <Link href="/users">{t("openUsers")}</Link>
+                </Button>
+              )
+            }
+          />
+        }
       />
       {feed.hasNextPage ? (
         <Button
@@ -234,7 +282,16 @@ export function CustomerFileAccessLog() {
             items={[
               { term: t("columns.when"), description: <When at={open.occurredAt} absoluteOnly /> },
               { term: t("columns.actor"), description: `${actorName(open)} (${t(`actorTypes.${open.actor.type}`)})` },
-              { term: t("columns.order"), description: open.order?.orderCode ?? t("noOrder") },
+              {
+                term: t("columns.order"),
+                description: open.order ? (
+                  <Link href={`/orders/${open.order.id}`} className="text-primary hover:underline">
+                    {open.order.orderCode}
+                  </Link>
+                ) : (
+                  t("noOrder")
+                ),
+              },
               { term: t("columns.kind"), description: t(`kinds.${open.fileKind}`) },
               { term: t("fileId"), description: <span className="text-xs break-all tabular-nums">{open.fileId}</span> },
               {

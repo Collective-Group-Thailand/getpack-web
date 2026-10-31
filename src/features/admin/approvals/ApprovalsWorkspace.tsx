@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -23,8 +24,11 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { StatusBadge } from "@/ui/components/StatusBadge";
 import { toast } from "@/ui/components/Toast";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { IconButton } from "@/ui/components/IconButton";
+import { ViewTabs } from "@/ui/components/ViewTabs";
 import { Icon } from "@/ui/icons";
-import { cn } from "@/ui/lib/cn";
+import { Row, RowList } from "@/ui/components/RowList";
 
 import {
   adminBrowserApis,
@@ -71,25 +75,29 @@ export function ApprovalsWorkspace({
     { value: "matrix", label: t("tabs.matrix"), href: "/approvals?tab=matrix" },
   ];
   const active = tab === "inbox" && !canAct ? "all" : tab;
+  // The same read as the inbox list below (shared cache), so the tab's count is its rows.
+  const inboxCount = useQuery({
+    queryKey: queryKeys.list("admin", "approval", { inbox: true }),
+    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/approvals/inbox")).data!,
+    initialData: initialInbox ?? undefined,
+    enabled: canAct,
+    staleTime: STALE_TIME.live,
+  }).data?.length;
 
   return (
     <div className="flex flex-col gap-4">
       <SoloOwnerModePanel />
-      <nav aria-label={t("tabs.label")} className="border-border flex gap-1 border-b">
-        {tabs.map((item) => (
-          <Link
-            key={item.value}
-            href={item.href}
-            aria-current={active === item.value ? "page" : undefined}
-            className={cn(
-              "-mb-px border-b-2 px-3 py-2 text-sm font-medium",
-              active === item.value ? "border-primary text-fg" : "text-muted hover:text-fg border-transparent",
-            )}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      <ViewTabs
+        label={t("tabs.label")}
+        current={active}
+        items={tabs.map((item) => ({
+          key: item.value,
+          href: item.href,
+          label: item.label,
+          // The inbox counts what it lists; the other views are reference, not queues.
+          count: item.value === "inbox" ? (inboxCount ?? null) : null,
+        }))}
+      />
       {active === "inbox" ? (
         <Inbox initial={initialInbox} />
       ) : active === "all" ? (
@@ -140,6 +148,7 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
   const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [approving, setApproving] = useState<string | null>(null);
+  const router = useRouter();
   const [rejecting, setRejecting] = useState<Approval | null>(null);
 
   const inbox = useQuery({
@@ -154,7 +163,18 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
     (a, b) => Date.parse(currentStep(a)?.dueAt ?? "9999") - Date.parse(currentStep(b)?.dueAt ?? "9999"),
   );
   if (!inbox.isPending && items.length === 0) {
-    return <EmptyState icon="stamp" title={t("inboxEmptyTitle")} description={t("inboxEmptyBody")} />;
+    return (
+      <EmptyState
+        icon="stamp"
+        title={t("inboxEmptyTitle")}
+        description={t("inboxEmptyBody")}
+        action={
+          <Button asChild variant="secondary">
+            <Link href="/approvals?tab=all">{t("tabs.all")}</Link>
+          </Button>
+        }
+      />
+    );
   }
 
   const actorId = actor.id;
@@ -202,34 +222,54 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
             </Button>
           ) : null}
         </div>
-        <ul className="flex flex-col gap-3" aria-label={t("tabs.inbox")}>
+        {/* One panel of hairline rows (no card per request, no stripe): the request and who asks on the left, the amount
+            and its due time across from it, then this row's quick decision. Nothing is filled here — the one filled
+            button is "approve the selected" above, and a request opens on a click for the full story. */}
+        <ul
+          className="border-border bg-surface divide-border divide-y overflow-hidden rounded-xl border"
+          aria-label={t("tabs.inbox")}
+        >
           {items.map((item) => {
             const step = currentStep(item);
             const blocked = decisionBlocker(item, actorId);
             const reason = (item.payload as Record<string, unknown>).reason;
+            const approveOne = async () => {
+              setApproving(item.id);
+              setBusy(true);
+              try {
+                await decide(item, "approve", "");
+                toast.success(t("decided.approve"));
+                settle();
+              } catch (error) {
+                toast.error(problemMessage(error, t("decideFailed")));
+              } finally {
+                setBusy(false);
+                setApproving(null);
+              }
+            };
             return (
               <li
                 key={item.id}
-                className={cn(
-                  "border-border bg-surface rounded-card flex flex-wrap items-center gap-4 border p-5",
-                  item.flags.some((flag) => CRITICAL_FLAGS.has(flag)) && "border-s-danger border-s-4",
-                )}
+                className="hover:bg-surface-subtle grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-3 px-4 py-3.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:items-center"
               >
-                {!blocked ? (
-                  <input
-                    type="checkbox"
-                    className="accent-primary size-4"
-                    checked={selected.includes(item.id)}
-                    onChange={(event) =>
-                      setSelected((current) =>
-                        event.target.checked ? [...current, item.id] : current.filter((id) => id !== item.id),
-                      )
-                    }
-                    aria-label={t("bulk.select", { name: policyLabel(item.policy) })}
-                  />
-                ) : null}
-                <Icon name={POLICY_ICONS[item.policy] ?? "stamp"} size={22} className="text-muted" />
-                <div className="min-w-0 flex-1">
+                <span className="flex size-6 items-center justify-center pt-0.5 sm:pt-0">
+                  {!blocked ? (
+                    <input
+                      type="checkbox"
+                      className="accent-primary size-4"
+                      checked={selected.includes(item.id)}
+                      onChange={(event) =>
+                        setSelected((current) =>
+                          event.target.checked ? [...current, item.id] : current.filter((id) => id !== item.id),
+                        )
+                      }
+                      aria-label={t("bulk.select", { name: policyLabel(item.policy) })}
+                    />
+                  ) : (
+                    <Icon name={POLICY_ICONS[item.policy] ?? "stamp"} size={18} className="text-muted" aria-hidden />
+                  )}
+                </span>
+                <div className="min-w-0">
                   <p className="flex flex-wrap items-center gap-2 font-semibold">
                     <Link href={`/approvals/${item.id}`} className="hover:underline">
                       {policyLabel(item.policy)}
@@ -245,55 +285,57 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
                     {t("requestedBy", { name: item.requester.displayName })}
                     {step ? ` · ${t("stepOf", { no: step.stepNo, role: roleLabel(step.role) })}` : null}
                   </p>
-                  {typeof reason === "string" && reason ? (
-                    <p className="mt-1 line-clamp-1 text-sm italic">{reason}</p>
-                  ) : null}
+                  {typeof reason === "string" && reason ? <p className="mt-1 line-clamp-1 text-sm">{reason}</p> : null}
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  {item.amount ? (
-                    <span className="text-xl font-bold tabular-nums">{format.thb(item.amount)}</span>
-                  ) : null}
-                  {item.pct ? <span className="text-muted tabular-nums">{format.percent(item.pct)}</span> : null}
-                  <SlaTimer
-                    dueAt={step?.dueAt ?? null}
-                    format={sla}
-                    absolute={step?.dueAt ? format.dateTime(step.dueAt) : undefined}
-                  />
-                </div>
-                <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/approvals/${item.id}`}>{t("open")}</Link>
-                  </Button>
+                {item.amount || item.pct || step?.dueAt ? (
+                  <div className="col-start-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 sm:col-start-3 sm:flex-col sm:items-end">
+                    {item.amount ? (
+                      <span className="text-base font-semibold tabular-nums">{format.thb(item.amount)}</span>
+                    ) : null}
+                    {item.pct ? <span className="text-muted tabular-nums">{format.percent(item.pct)}</span> : null}
+                    {step?.dueAt ? (
+                      <SlaTimer dueAt={step.dueAt} format={sla} absolute={format.dateTime(step.dueAt)} />
+                    ) : null}
+                  </div>
+                ) : (
+                  <span className="hidden sm:block" />
+                )}
+                <div className="col-start-2 flex items-center gap-2 sm:col-start-4">
                   {!blocked ? (
                     <>
-                      <Button variant="secondary" size="sm" iconStart="ban" onClick={() => setRejecting(item)}>
-                        {t("reject")}
-                      </Button>
                       <Button
+                        variant="secondary"
                         size="sm"
                         iconStart="check"
                         loading={busy && approving === item.id}
-                        onClick={async () => {
-                          setApproving(item.id);
-                          setBusy(true);
-                          try {
-                            await decide(item, "approve", "");
-                            toast.success(t("decided.approve"));
-                            settle();
-                          } catch (error) {
-                            toast.error(problemMessage(error, t("decideFailed")));
-                          } finally {
-                            setBusy(false);
-                            setApproving(null);
-                          }
-                        }}
+                        onClick={() => void approveOne()}
                       >
                         {t("approve")}
                       </Button>
+                      <DropdownMenu
+                        label={t("open")}
+                        align="end"
+                        items={[
+                          {
+                            id: "open",
+                            label: t("open"),
+                            icon: "eye",
+                            onSelect: () => router.push(`/approvals/${item.id}`),
+                          },
+                          {
+                            id: "reject",
+                            label: t("reject"),
+                            icon: "ban",
+                            tone: "destructive",
+                            onSelect: () => setRejecting(item),
+                          },
+                        ]}
+                        trigger={<IconButton name="more" size="sm" variant="ghost" label={t("open")} />}
+                      />
                     </>
                   ) : canOfferSelfApproval(item, actor, solo.data) ? (
                     // D-449 A: the reason is typed on the request's own page, never in one click from the queue.
-                    <Button asChild size="sm" iconStart="key">
+                    <Button asChild variant="secondary" size="sm" iconStart="key">
                       <Link href={`/approvals/${item.id}`}>{t("selfApprove.action")}</Link>
                     </Button>
                   ) : (
@@ -308,12 +350,7 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
         </ul>
       </section>
 
-      <section aria-labelledby="approvals-history" className="flex flex-col gap-3">
-        <h2 id="approvals-history" className="text-lg font-semibold">
-          {t("historyTitle")}
-        </h2>
-        <AllRequests initial={null} />
-      </section>
+      <RecentDecisions />
 
       <ConfirmAction
         open={rejecting !== null}
@@ -336,6 +373,73 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
         }}
       />
     </div>
+  );
+}
+
+/**
+ * The latest requests under the inbox — five rows and a way to the full list (`?tab=all`), not a second searchable
+ * table on the same page (it duplicated the "all" view and loaded as a long skeleton).
+ */
+function RecentDecisions() {
+  const t = useTranslations("approvals");
+  const tStatus = useTranslations("status");
+  const tDashboard = useTranslations("dashboard");
+  const format = useFormat();
+  const policyLabel = usePolicyLabel();
+  const recent = useQuery({
+    queryKey: queryKeys.list("admin", approvalsList.key, { page: 1, perPage: 5, sort: "createdAt", order: "desc" }),
+    queryFn: () => approvalsList.fetch(adminBrowserApis(), { page: 1, perPage: 5, sort: "createdAt", order: "desc" }),
+    staleTime: STALE_TIME.live,
+  });
+  const rows = recent.data?.data ?? [];
+  return (
+    <section aria-labelledby="approvals-history" className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <h2 id="approvals-history" className="text-lg font-semibold">
+          {t("historyTitle")}
+        </h2>
+        <Button variant="link" size="sm" asChild>
+          <Link href="/approvals?tab=all">{tDashboard("allApprovals")}</Link>
+        </Button>
+      </div>
+      {recent.isError ? (
+        <QueryError error={recent.error} onRetry={() => void recent.refetch()} />
+      ) : recent.isPending ? (
+        <div className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4" aria-busy>
+          {Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="bg-surface-subtle h-4 animate-pulse rounded-sm motion-reduce:animate-none" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="border-border bg-surface text-muted rounded-xl border px-4 py-3 text-sm">{t("noHistory")}</p>
+      ) : (
+        <RowList label={t("historyTitle")}>
+          {rows.map((row) => {
+            const meta = statusMeta(APPROVAL_STATUS, row.status);
+            return (
+              <Row
+                key={row.id}
+                href={`/approvals/${row.id}`}
+                title={
+                  <>
+                    {policyLabel(row.policy)}
+                    <StatusBadge size="sm" meta={meta} label={tStatus(meta.labelKey)} />
+                  </>
+                }
+                meta={
+                  <>
+                    {t("requestedBy", { name: row.requester.displayName })}
+                    {" · "}
+                    <When at={row.createdAt} />
+                  </>
+                }
+                aside={row.amount ? format.thb(row.amount) : undefined}
+              />
+            );
+          })}
+        </RowList>
+      )}
+    </section>
   );
 }
 
@@ -478,7 +582,17 @@ function Delegations() {
           rows={list.data ?? []}
           getRowId={(row) => row.id}
           loading={list.isPending}
-          empty={<EmptyState icon="users" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="users"
+              title={t("empty")}
+              action={
+                <Button variant="secondary" iconStart="plus" onClick={() => setCreating(true)}>
+                  {t("create")}
+                </Button>
+              }
+            />
+          }
         />
       )}
       {creating ? (

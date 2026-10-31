@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
+import { PageHeader } from "@/ui/components/PageHeader";
 import { CreditNoteWizard } from "@/features/admin/finance/credit-notes";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,8 +14,14 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 /** The credit-note wizard (accounting-design §2, §8), optionally opened from a tax invoice's order. */
 export default async function Page({ searchParams }: Props) {
   const { orderId } = await searchParams;
+  const t = await getTranslations("finance.creditNotes");
   return (
-    <ConsolePage width="narrow" className="max-w-4xl">
+    <ConsolePage width="full" className="max-w-6xl">
+      <PageHeader
+        back={{ href: "/finance/credit-notes", label: t("title") }}
+        title={t("wizard.title")}
+        description={t("wizard.description")}
+      />
       <CreditNoteWizard orderId={typeof orderId === "string" ? orderId : null} />
     </ConsolePage>
   );

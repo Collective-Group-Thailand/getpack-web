@@ -16,6 +16,7 @@ import { Stat } from "@/ui/components/Stat";
 import { toast } from "@/ui/components/Toast";
 
 import { ConfirmAction, adminBrowserApis, problemMessage, Section, useCan } from "../console";
+import { LibraryLink } from "./LibraryLink";
 import { DIMENSIONS } from "./commercial-form";
 import { styleDeskHref } from "./resources";
 
@@ -179,7 +180,7 @@ export function FitRangeBackfill() {
                 getRowId={(row) => row.code}
               />
             ) : (
-              <EmptyState title={t("noChanges")} />
+              <EmptyState title={t("noChanges")} action={<LibraryLink to="library" />} />
             )}
           </Section>
           <Section title={t("incompleteTitle", { count: shown.incomplete.length })} description={t("incompleteIntro")}>
@@ -191,7 +192,7 @@ export function FitRangeBackfill() {
                 getRowId={(row) => row.code}
               />
             ) : (
-              <EmptyState title={t("allComplete")} />
+              <EmptyState title={t("allComplete")} action={<LibraryLink to="library" />} />
             )}
           </Section>
           {shown.notApplicable.length ? (

@@ -8,7 +8,9 @@
     "nextStyles": "Next styles",
     "fitRanges": "Fit ranges",
     "content": "Page content",
-    "studioFeatured": "Studio featured"
+    "studioFeatured": "Studio featured",
+    "openLibrary": "Go to the style library",
+    "openImports": "Import style files"
   },
   "list": {
     "title": "Style library",
@@ -76,7 +78,8 @@
       "reference": "International code (FEFCO / ECMA)",
       "referenceVerified": "Verified: {code}",
       "referenceToVerify": "To verify: {code} (not shown until verified)",
-      "noReference": "None (not needed)"
+      "noReference": "None (not needed)",
+      "openCount": "{count} still open before it can show"
     },
     "approveAsMarketing": "Approve as Marketing",
     "approveAsPrepress": "Approve as Prepress",

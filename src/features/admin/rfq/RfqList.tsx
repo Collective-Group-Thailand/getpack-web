@@ -174,20 +174,23 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("queuesLabel")}
-        // Four queues people work from (UX audit, /rfq); "quoted" and "overdue" are the status filter
-        // and the red rows, sorted by SLA, rather than tabs of their own.
-        tabs={[
-          ...(["new", "mine", "need_info", "awaiting_factory"] as const).map((queue) => ({
-            value: queue,
-            label: t(`queues.${queue}`),
-            ...(COUNTED[queue] ? { countKey: COUNTED[queue] } : {}),
-          })),
-          { value: null, label: t("queues.all") },
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={rfqList}
+            label={t("queuesLabel")}
+            // Four queues people work from (UX audit, /rfq); "quoted" and "overdue" are the status filter
+            // and the red rows, sorted by SLA, rather than tabs of their own.
+            tabs={[
+              ...(["new", "mine", "need_info", "awaiting_factory"] as const).map((queue) => ({
+                value: queue,
+                label: t(`queues.${queue}`),
+                ...(COUNTED[queue] ? { countKey: COUNTED[queue] } : {}),
+              })),
+              { value: null, label: t("queues.all") },
+            ]}
+          />
+        }
         resource={rfqList}
         columns={columns}
         caption={t("title")}
@@ -250,7 +253,8 @@ function ClaimButton({ rfqId, actorId }: { rfqId: string; actorId: string }) {
   return (
     <Button
       size="sm"
-      variant="secondary"
+      // Quiet: the same quick step on every unassigned row, never a column of outlined buttons.
+      variant="ghost"
       iconStart="user-plus"
       loading={claim.isPending}
       onClick={() => claim.mutate()}

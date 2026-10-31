@@ -9,12 +9,12 @@ import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
@@ -26,9 +26,13 @@ import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { uploadFile } from "@/features/shared/files/upload";
+import { ProductPlate, productFamilyOf } from "@/ui/components/ProductIllustration";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 import { FileImage } from "../catalogue/FileImage";
 import { adminBrowserApis, FormDialog, problemMessage, QueryError, Section, useCan, useProductTypes } from "../console";
+import { DetailSkeleton } from "../console/DetailSkeleton";
 import {
   type AdminStyleDetail,
   type AdminStyleVariant,
@@ -36,8 +40,8 @@ import {
   PUBLISH_REASONS,
   type PublishReason,
 } from "./resources";
+import { LibraryLink } from "./LibraryLink";
 import { StyleCommercial } from "./StyleCommercial";
-import { StyleLibraryNav } from "./StyleLibraryNav";
 
 interface Loaded {
   style: AdminStyleDetail;
@@ -86,7 +90,7 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
   const query = useQuery({ queryKey: key, queryFn: () => readStyle(styleId) });
   const [tab, setTab] = useState("readiness");
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
-  if (!query.data) return null;
+  if (!query.data) return <DetailSkeleton />;
   const { style, etag } = query.data;
 
   // A sign-off or a save answers the base, but not its new ETag: read it again for the next If-Match.
@@ -97,14 +101,9 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
   const shown = style.variants.publishable;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("library"), href: LIBRARY_HREF }, { label: style.code }]}
-          />
-        }
+        back={{ href: LIBRARY_HREF, label: t("library") }}
         title={style.nameTh}
         description={style.nameEn}
         meta={
@@ -118,58 +117,64 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
             {style.status === "retired" ? <Badge>{t("retired")}</Badge> : null}
           </>
         }
-        actions={
-          storefront && shown > 0 ? (
-            <Button asChild variant="secondary" iconEnd="external">
-              <a href={`${storefront}/styles/${style.code.toLowerCase()}`} target="_blank" rel="noreferrer">
-                {t("openStorefront")}
-              </a>
-            </Button>
-          ) : null
+      />
+      <DetailLayout
+        aside={
+          <Readiness part="checklist" style={style} onChanged={changed} onReason={() => setTab("variants")}>
+            {storefront && shown > 0 ? (
+              <div data-fill="row" className="flex flex-col">
+                <Button asChild variant="secondary" iconEnd="external">
+                  <a href={`${storefront}/styles/${style.code.toLowerCase()}`} target="_blank" rel="noreferrer">
+                    {t("openStorefront")}
+                  </a>
+                </Button>
+              </div>
+            ) : null}
+          </Readiness>
         }
-      />
-      <StyleLibraryNav />
-      <Tabs
-        label={t("tabsLabel")}
-        value={tab}
-        onValueChange={setTab}
-        items={[
-          {
-            value: "readiness",
-            label: t("tabs.readiness"),
-            content: <Readiness style={style} onChanged={changed} onReason={() => setTab("variants")} />,
-          },
-          {
-            value: "storefront",
-            label: t("tabs.storefront"),
-            content: (
-              <>
-                <div className="pt-4">
+      >
+        <Tabs
+          label={t("tabsLabel")}
+          value={tab}
+          onValueChange={setTab}
+          items={[
+            {
+              value: "readiness",
+              label: t("tabs.readiness"),
+              content: (
+                <Readiness part="detail" style={style} onChanged={changed} onReason={() => setTab("variants")} />
+              ),
+            },
+            {
+              value: "storefront",
+              label: t("tabs.storefront"),
+              content: (
+                <div className="flex flex-col gap-5">
                   <PhotoPanel key={`photo-${style.version}`} style={style} etag={etag} onChanged={changed} />
+                  <Curation key={style.version} style={style} etag={etag} onChanged={changed} />
                 </div>
-                <Curation key={style.version} style={style} etag={etag} onChanged={changed} />
-              </>
-            ),
-          },
-          {
-            value: "commercial",
-            label: t("tabs.commercial"),
-            content: (
-              <StyleCommercial key={`commercial-${style.version}`} style={style} etag={etag} onChanged={changed} />
-            ),
-          },
-          {
-            value: "variants",
-            label: t("tabs.variants", { count: style.variants.total }),
-            content: <Variants styleId={style.id} reasons={style.reasonCounts} tStyles={tStyles} />,
-          },
-          {
-            value: "recipes",
-            label: t("tabs.recipes", { count: style.recipes.length }),
-            content: <Recipes style={style} onChanged={changed} />,
-          },
-        ]}
-      />
+              ),
+            },
+            {
+              value: "commercial",
+              label: t("tabs.commercial"),
+              content: (
+                <StyleCommercial key={`commercial-${style.version}`} style={style} etag={etag} onChanged={changed} />
+              ),
+            },
+            {
+              value: "variants",
+              label: t("tabs.variants", { count: style.variants.total }),
+              content: <Variants styleId={style.id} reasons={style.reasonCounts} tStyles={tStyles} />,
+            },
+            {
+              value: "recipes",
+              label: t("tabs.recipes", { count: style.recipes.length }),
+              content: <Recipes style={style} onChanged={changed} />,
+            },
+          ]}
+        />
+      </DetailLayout>
     </div>
   );
 }
@@ -177,13 +182,19 @@ export function StyleWorkspace({ styleId, storefront }: { styleId: string; store
 /* ------------------------------------------------------------------------------- readiness */
 
 function Readiness({
+  part,
   style,
   onChanged,
   onReason,
+  children,
 }: {
+  /** The sign-off checklist (the record's side panel) or what keeps variants off the storefront and the facts. */
+  part: "checklist" | "detail";
   style: AdminStyleDetail;
   onChanged: () => void;
   onReason: () => void;
+  /** Under the checklist: the way to the storefront. */
+  children?: React.ReactNode;
 }) {
   const t = useTranslations("styleLibrary.detail");
   const tStyles = useTranslations("styles");
@@ -290,25 +301,63 @@ function Readiness({
     },
   ];
 
-  return (
-    <div className="flex flex-col gap-5 pt-4">
-      <Section title={t("readinessTitle")} description={t("readinessIntro")}>
-        <ul className="divide-border flex flex-col divide-y">
+  const referenceDialog =
+    reference !== null ? (
+      <FormDialog
+        title={t("verifyReference")}
+        description={t("verifyReferenceIntro", { code: style.referenceCode ?? "" })}
+        submitLabel={t("verifyReference")}
+        onClose={() => setReference(null)}
+        onSubmit={async () => {
+          await adminBrowserApis().contract.POST("/v1/admin/styles/{styleId}/actions/verify-reference", {
+            params: { path: { styleId: style.id } },
+            body: { referenceCode: reference.trim() },
+          });
+          toast.success(t("referenceVerified"));
+          onChanged();
+        }}
+      >
+        <Field label={t("referenceCode")} hint={t("referenceHint")} required>
+          <Input value={reference} onChange={(e) => setReference(e.target.value)} autoFocus />
+        </Field>
+      </FormDialog>
+    ) : null;
+
+  if (part === "checklist") {
+    const open = rows.filter((row) => !row.done).length;
+    return (
+      <ActionPanel id="style-readiness" tone="neutral" title={t("readinessTitle")} description={t("readinessIntro")}>
+        <ul className="divide-border border-border flex flex-col divide-y border-y">
           {rows.map((row) => (
-            <li key={row.key} className="flex flex-wrap items-center gap-3 py-3">
-              <Badge tone={row.done ? "success" : "warning"} icon={row.done ? "check" : "clock"}>
-                {row.done ? t("check.done") : t("check.open")}
-              </Badge>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{row.label}</p>
-                <p className="text-muted text-sm">{row.detail}</p>
+            <li key={row.key} className="flex flex-col gap-2 py-3">
+              <div className="flex items-start gap-2.5">
+                <Icon
+                  name={row.done ? "check" : "clock"}
+                  size={18}
+                  className={cn("mt-0.5 shrink-0", row.done ? "text-success" : "text-warning-subtle-fg")}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    <span className="sr-only">{row.done ? t("check.done") : t("check.open")} </span>
+                    {row.label}
+                  </p>
+                  <p className="text-muted text-sm [overflow-wrap:anywhere]">{row.detail}</p>
+                </div>
               </div>
-              {row.action}
+              {row.action ? <div className="ps-7">{row.action}</div> : null}
             </li>
           ))}
         </ul>
-      </Section>
+        {open === 0 ? null : <p className="text-muted text-xs">{t("check.openCount", { count: open })}</p>}
+        {children}
+        {referenceDialog}
+      </ActionPanel>
+    );
+  }
 
+  return (
+    <div className="flex flex-col gap-5">
       <Section title={t("reasonsTitle")} description={t("reasonsIntro")}>
         {style.reasonCounts.length === 0 ? (
           <p className="text-success text-sm">{t("noReasons", { count: style.variants.publishable })}</p>
@@ -350,27 +399,6 @@ function Readiness({
           ]}
         />
       </Section>
-
-      {reference !== null ? (
-        <FormDialog
-          title={t("verifyReference")}
-          description={t("verifyReferenceIntro", { code: style.referenceCode ?? "" })}
-          submitLabel={t("verifyReference")}
-          onClose={() => setReference(null)}
-          onSubmit={async () => {
-            await adminBrowserApis().contract.POST("/v1/admin/styles/{styleId}/actions/verify-reference", {
-              params: { path: { styleId: style.id } },
-              body: { referenceCode: reference.trim() },
-            });
-            toast.success(t("referenceVerified"));
-            onChanged();
-          }}
-        >
-          <Field label={t("referenceCode")} hint={t("referenceHint")} required>
-            <Input value={reference} onChange={(e) => setReference(e.target.value)} autoFocus />
-          </Field>
-        </FormDialog>
-      ) : null}
     </div>
   );
 }
@@ -413,7 +441,17 @@ function PhotoPanel({ style, etag, onChanged }: { style: AdminStyleDetail; etag:
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         {photo ? (
           <div className="relative w-full shrink-0 sm:w-56">
-            <FileImage fileId={photo.fileId} alt={photo.alt.th} className="aspect-square w-full rounded-md" />
+            <FileImage
+              fileId={photo.fileId}
+              alt={photo.alt.th}
+              className="aspect-square w-full rounded-md"
+              fallback={
+                <ProductPlate
+                  family={productFamilyOf(style.productTypeCode ?? style.category)}
+                  className="aspect-square w-full rounded-md"
+                />
+              }
+            />
             <div className="absolute start-2 top-2">
               {photo.source === "ai-render" ? (
                 <Badge tone="warning">{t("sourceRender")}</Badge>
@@ -806,7 +844,7 @@ function Variants({
           rows={data?.data ?? []}
           getRowId={(row) => row.id}
           loading={query.isPending}
-          empty={<EmptyState icon="layers" title={t("empty")} />}
+          empty={<EmptyState icon="layers" title={t("empty")} action={<LibraryLink to="imports" />} />}
         />
       )}
       {data && data.meta.total > 0 ? (
@@ -892,7 +930,7 @@ function Recipes({ style, onChanged }: { style: AdminStyleDetail; onChanged: () 
         columns={columns}
         rows={style.recipes}
         getRowId={(row) => row.id}
-        empty={<EmptyState icon="document" title={t("empty")} />}
+        empty={<EmptyState icon="document" title={t("empty")} action={<LibraryLink to="imports" />} />}
       />
     </div>
   );

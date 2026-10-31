@@ -73,7 +73,14 @@
       "coa_change": "แก้ผังบัญชี",
       "tax_setting_change": "แก้การตั้งค่าภาษี",
       "document_series_change": "แก้เลขที่เอกสาร"
-    }
+    },
+    "nowTitle": "ต้องทำตอนนี้",
+    "openReports": "เปิดรายงานการเงิน",
+    "openPayments": "ดูการรับชำระ",
+    "periodsTitle": "งวดบัญชี",
+    "allPeriods": "ปิดงวดทุกเดือน",
+    "openCash": "ดูยอดเงินสดรายวัน",
+    "openAging": "ดูอายุลูกหนี้"
   },
   "slips": {
     "title": "ตรวจสลิปโอนเงิน",
@@ -822,7 +829,8 @@
       "gateway_settlement": "ยอดโอนจากผู้ให้บริการชำระเงิน",
       "tax_report": "แบบแสดงรายการภาษี",
       "fixed_asset": "สินทรัพย์ถาวร",
-      "depreciation_run": "การคิดค่าเสื่อมราคา"
+      "depreciation_run": "การคิดค่าเสื่อมราคา",
+      "points_entry": "รายการคะแนนสะสม"
     },
     "dimensionNames": {
       "campaign": "แคมเปญ",
@@ -857,7 +865,8 @@
     "rejectedTitle": "ไม่อนุมัติ",
     "rejectedBody": "ผู้ตรวจสอบไม่อนุมัติรายการนี้ จึงไม่มีการบันทึกบัญชี",
     "autoReverseTitle": "กลับรายการอัตโนมัติ",
-    "autoReverseBody": "ระบบจะบันทึกรายการกลับอัตโนมัติในวันที่ {date}"
+    "autoReverseBody": "ระบบจะบันทึกรายการกลับอัตโนมัติในวันที่ {date}",
+    "sourceOther": "รายการในระบบ"
   },
   "payables": {
     "nav": {
@@ -944,7 +953,8 @@
         "hire_of_work": "จ้างทำของ 3%",
         "transport": "ค่าขนส่ง 1%",
         "service": "ค่าบริการ 3%",
-        "none": "ไม่หัก"
+        "none": "ไม่หัก",
+        "commission": "ค่านายหน้า"
       }
     },
     "goodsReceipts": {
@@ -1078,7 +1088,8 @@
         "hire_of_work": "จ้างทำของ 3%",
         "transport": "ค่าขนส่ง 1%",
         "service": "ค่าบริการ 3%",
-        "none": "ไม่หัก"
+        "none": "ไม่หัก",
+        "commission": "ค่านายหน้า"
       },
       "journals": "รายการบัญชี",
       "validate": "ยืนยันว่าถูกต้อง",
@@ -1124,13 +1135,15 @@
         "carrier": "ขนส่ง",
         "freelancer": "ฟรีแลนซ์",
         "service": "ผู้ให้บริการ",
-        "other": "อื่น ๆ"
+        "other": "อื่น ๆ",
+        "sales_agent": "ตัวแทนขาย"
       },
       "whtCategories": {
         "hire_of_work": "จ้างทำของ 3%",
         "transport": "ค่าขนส่ง 1%",
         "service": "ค่าบริการ 3%",
-        "none": "ไม่หัก"
+        "none": "ไม่หัก",
+        "commission": "ค่านายหน้า"
       },
       "outcomes": {
         "confirmed": "ยืนยันทางโทรศัพท์แล้ว",
@@ -1217,7 +1230,8 @@
         "needCall": "กรอกเบอร์และเวลาที่โทร",
         "save": "บันทึก",
         "saved": "บันทึกการโทรยืนยันแล้ว"
-      }
+      },
+      "unnamed": "ไม่มีในทะเบียนผู้ขาย"
     },
     "bill": {
       "title": "บันทึกบิลของ {vendor}",
@@ -1772,7 +1786,8 @@
         "operating": "ดำเนินงาน",
         "investing": "ลงทุน",
         "financing": "จัดหาเงิน",
-        "non_cash": "ไม่ใช่เงินสด"
+        "non_cash": "ไม่ใช่เงินสด",
+        "equity": "ส่วนของผู้ถือหุ้น"
       },
       "dimensions": {
         "order": "คำสั่งซื้อ",
@@ -2175,7 +2190,8 @@
       "newRateHint": "เช่น 7 หรือ 1.5",
       "effectiveFrom": "มีผลตั้งแต่",
       "effectiveHint": "วันนี้หรือหลังจากนี้",
-      "reason": "เหตุผล"
+      "reason": "เหตุผล",
+      "openAllSettings": "เปิดหน้าตั้งค่าระบบ"
     },
     "series": {
       "title": "เลขที่เอกสาร",
@@ -2196,7 +2212,18 @@
         "bs": "ใบวางบิลโรงงาน (BS)",
         "pv": "ใบสำคัญจ่าย (PV)",
         "wt": "หนังสือรับรอง 50 ทวิ (WT)",
-        "jv": "ใบสำคัญทั่วไป (JV)"
+        "jv": "ใบสำคัญทั่วไป (JV)",
+        "qt": "ใบเสนอราคา (QT)",
+        "order_group": "กลุ่มคำสั่งซื้อ",
+        "job": "งานผลิต",
+        "claim": "เคลม",
+        "shipment": "การจัดส่ง",
+        "rfq": "คำขอใบเสนอราคา (RFQ)",
+        "support_ticket": "เรื่องที่ติดต่อเข้ามา",
+        "rfq_basket": "ตะกร้าคำขอใบเสนอราคา",
+        "order": "คำสั่งซื้อ",
+        "customer": "รหัสลูกค้า",
+        "company": "รหัสบริษัท"
       },
       "prefix": "คำนำหน้า",
       "format": "รูปแบบ",
@@ -2602,7 +2629,10 @@
       "tooLarge": "{name} ใหญ่เกินกำหนด",
       "wrongType": "{name} ไม่ใช่ไฟล์ที่รับ",
       "whatItShows": "แสดงอะไร"
-    }
+    },
+    "progress": "ความคืบหน้า",
+    "stepsDone": "เสร็จแล้ว {done} จาก {total} ขั้นตอน",
+    "submittedBy": "ส่งตรวจทานโดย"
   },
   "reports": {
     "nav": {
@@ -2737,7 +2767,8 @@
       "account": "บัญชี",
       "amount": "ผลต่อเงินสด",
       "nothing": "ไม่มีรายการในส่วนนี้",
-      "sectionTotal": "รวม {amount}"
+      "sectionTotal": "รวม {amount}",
+      "totalOf": "รวม{section}"
     },
     "rollForwards": {
       "points": "หนี้สินคะแนนสะสม (2330)",
@@ -2778,7 +2809,8 @@
         "fixed_assets": "สินทรัพย์ถาวร ({code})"
       },
       "asOf": "ยอดบัญชีย่อย ณ {at}"
-    }
+    },
+    "amount": "จำนวนเงิน"
   },
   "audit": {
     "nav": {
@@ -2956,6 +2988,8 @@
     "declineNote": "เหตุผล",
     "approved": "อนุมัติแล้ว ออกฉบับใหม่แล้ว",
     "declined": "แจ้งไม่อนุมัติแล้ว",
-    "failed": "บันทึกไม่สำเร็จ"
+    "failed": "บันทึกไม่สำเร็จ",
+    "decidedBy": "ผู้พิจารณา",
+    "decidedAt": "พิจารณาเมื่อ"
   }
 }

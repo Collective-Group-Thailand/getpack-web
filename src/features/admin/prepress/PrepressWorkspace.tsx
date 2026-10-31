@@ -8,7 +8,7 @@ import { useState } from "react";
 import { adminPrepressActions } from "@/domain/next-actions/admin";
 import { ARTWORK_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -54,6 +54,7 @@ export function PrepressWorkspace({
   tab: PrepressTab;
 }) {
   const t = useTranslations("prepress.detail");
+  const tConsole = useTranslations("console.actions");
   const pathname = usePathname();
   const actor = useActor();
   const productTypes = useProductTypes();
@@ -166,32 +167,38 @@ export function PrepressWorkspace({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-bg z-sticky sticky top-16 -mx-4 border-b border-transparent px-4 pt-1 pb-3 md:-mx-6 md:px-6">
-        <PageHeader
-          breadcrumbs={
-            <Breadcrumbs
-              label={t("breadcrumb")}
-              items={[{ label: t("desk"), href: "/prepress" }, { label: order.orderCode }]}
-            />
-          }
-          title={<span className="tabular-nums">{order.orderCode}</span>}
-          meta={<StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />}
-          description={t("headline", {
-            type: productTypes.labelOf(order.productTypeCode),
-            quantity: order.quantityOrdered,
-          })}
-          actions={<PrepressActionBar actions={actions} onAction={run} />}
-        />
-      </div>
+      <PageHeader
+        back={{ href: "/prepress", label: t("desk") }}
+        title={<span className="tabular-nums">{order.orderCode}</span>}
+        meta={<StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />}
+        description={t("headline", {
+          type: productTypes.labelOf(order.productTypeCode),
+          quantity: order.quantityOrdered,
+        })}
+      />
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <DetailLayout
+        aside={
+          <>
+            {/* The file's next step leads the side column, where it stays in view while the file is read. */}
+            <ActionPanel
+              id="prepress-next"
+              title={tConsole("nextTitle")}
+              tone={actions.length ? "primary" : "neutral"}
+              description={actions.length ? undefined : tConsole("nothingNext")}
+            >
+              <PrepressActionBar actions={actions} onAction={run} layout="panel" />
+            </ActionPanel>
+            <PrepressRail
+              order={order}
+              owner={owner}
+              onAssign={offered.has("assign") ? () => setAction("assign") : undefined}
+            />
+          </>
+        }
+      >
         <Tabs label={t("tabsLabel")} items={tabs} value={shown} onValueChange={go} />
-        <PrepressRail
-          order={order}
-          owner={owner}
-          onAssign={offered.has("assign") ? () => setAction("assign") : undefined}
-        />
-      </div>
+      </DetailLayout>
 
       {/* Keyed by the open action, so each opening starts with empty fields. */}
       <PrepressActionDialogs

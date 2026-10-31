@@ -119,5 +119,7 @@
   "latestTitle": "Latest for me",
   "taggedNone": "Nobody has tagged you or sent you anything yet",
   "allClearTitle": "Nothing waiting in your queues",
-  "allClearBody": "New work shows here, soonest due first"
+  "allClearBody": "New work shows here, soonest due first",
+  "figuresTitle": "Today's figures",
+  "figuresLink": "Open analytics"
 }

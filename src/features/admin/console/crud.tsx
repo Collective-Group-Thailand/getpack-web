@@ -75,6 +75,8 @@ export interface CrudListProps<TRow extends object, TValues extends FieldValues>
     empty?: string;
   };
   toolbarEnd?: React.ReactNode;
+  /** The list's views (`QueueTabs`), on the toolbar's one row (see `ResourceList`). */
+  views?: React.ReactNode;
 }
 
 export function CrudList<TRow extends object, TValues extends FieldValues>({
@@ -87,6 +89,7 @@ export function CrudList<TRow extends object, TValues extends FieldValues>({
   initial,
   labels,
   toolbarEnd,
+  views,
 }: CrudListProps<TRow, TValues>) {
   const t = useTranslations("console.crud");
   const canManage = useCan(...(config.manage ? [config.manage] : []));
@@ -137,7 +140,21 @@ export function CrudList<TRow extends object, TValues extends FieldValues>({
         filters={filters}
         searchLabel={searchLabel}
         initial={initial}
-        empty={labels.empty ? { title: labels.empty } : undefined}
+        views={views}
+        empty={
+          labels.empty
+            ? {
+                title: labels.empty,
+                // The way on from an empty list is the list's own "create", outlined (the toolbar keeps the filled one).
+                action:
+                  canManage && config.form?.create ? (
+                    <Button variant="secondary" iconStart="plus" onClick={() => setEditing({ row: null })}>
+                      {labels.create ?? t("create")}
+                    </Button>
+                  ) : undefined,
+              }
+            : undefined
+        }
         toolbarEnd={
           <>
             {toolbarEnd}

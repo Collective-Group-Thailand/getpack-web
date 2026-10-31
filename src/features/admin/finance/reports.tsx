@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
 import { isZeroMoney } from "@/domain/money";
 import { useFormat } from "@/features/shared/format";
@@ -14,19 +13,22 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
+import { DeskSection } from "@/ui/components/DeskPage";
 import { Pagination } from "@/ui/components/Pagination";
+import { Skeleton } from "@/ui/components/Skeleton";
+import { StatStrip } from "@/ui/components/RowList";
+import { Statement, type StatementRow } from "@/ui/components/Statement";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
+import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis } from "../console/api";
-import { Section } from "../console/FormDialog";
 import { QueryError } from "../console/QueryError";
 import { SectionNav } from "../console/SectionNav";
 import { downloadCsv, toCsv } from "./csv";
 import { AccountPicker, useAccounts } from "./ledger";
-import { Figure, journalHref, sourceHref } from "./shared";
+import { PeriodBar, EmptyLink } from "./frame";
+import { journalHref, sourceHref, useSourceLabel } from "./shared";
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 const thisMonth = () => bangkokToday().slice(0, 7);
@@ -64,34 +66,31 @@ function useParams(defaults: Record<string, string>) {
   return [values, set] as const;
 }
 
-function MonthRange({
-  from,
-  to,
-  onChange,
+/** "ม.ค. 2569 – ต.ค. 2569": the months a statement covers. */
+function useMonthsLabel() {
+  const format = useFormat();
+  return (from: string, to: string) => {
+    const a = format.date(`${from}-01`, { style: "month" });
+    const b = format.date(`${to}-01`, { style: "month" });
+    return from === to ? a : `${a} – ${b}`;
+  };
+}
+
+/** The report's toolbar over its body, the body without a second title (the page header names the report). */
+function ReportBody({
+  bar,
+  narrow = false,
+  children,
 }: {
-  from: string;
-  to: string;
-  onChange: (patch: Record<string, string>) => void;
+  bar: React.ReactNode;
+  /** A statement reads down one column: its figures stay near their labels instead of across a wide screen. */
+  narrow?: boolean;
+  children: React.ReactNode;
 }) {
-  const t = useTranslations("finance.reports");
   return (
-    <div className="flex flex-wrap items-end gap-2">
-      <Field label={t("from")} className="w-40">
-        <Input
-          type="month"
-          value={from}
-          max={to}
-          onChange={(event) => event.target.value && onChange({ from: event.target.value })}
-        />
-      </Field>
-      <Field label={t("to")} className="w-40">
-        <Input
-          type="month"
-          value={to}
-          min={from}
-          onChange={(event) => event.target.value && onChange({ to: event.target.value })}
-        />
-      </Field>
+    <div className="flex flex-col gap-4">
+      {bar}
+      <div className={cn("flex flex-col gap-4", narrow && "max-w-4xl")}>{children}</div>
     </div>
   );
 }
@@ -135,6 +134,7 @@ export function TrialBalanceView() {
   const t = useTranslations("finance.reports.trialBalance");
   const tReports = useTranslations("finance.reports");
   const format = useFormat();
+  const months = useMonthsLabel();
   const [params, set] = useParams({ from: yearStart(), to: thisMonth(), zero: "false" });
   const report = useQuery({
     queryKey: queryKeys.detail("admin", "trial-balance", `${params.from}:${params.to}:${params.zero}`),
@@ -168,31 +168,37 @@ export function TrialBalanceView() {
     },
   ];
   return (
-    <Section
-      title={t("title")}
-      description={t("description")}
-      actions={
-        <div className="flex flex-wrap items-end gap-3">
-          <MonthRange from={params.from!} to={params.to!} onChange={set} />
-          <Switch
-            label={t("includeZero")}
-            checked={params.zero === "true"}
-            onCheckedChange={(checked) => set({ zero: String(checked) })}
-          />
-          <Button
-            variant="secondary"
-            iconStart="download"
-            disabled={!data}
-            onClick={() => data && downloadCsv(`trial-balance-${params.from}-${params.to}.csv`, trialBalanceCsv(data))}
-          >
-            {tReports("export")}
-          </Button>
-        </div>
+    <ReportBody
+      bar={
+        <PeriodBar
+          range={{ from: params.from!, to: params.to!, fromLabel: tReports("from"), toLabel: tReports("to") }}
+          onChange={set}
+          controls={
+            <Switch
+              label={t("includeZero")}
+              checked={params.zero === "true"}
+              onCheckedChange={(checked) => set({ zero: String(checked) })}
+            />
+          }
+          tools={
+            <Button
+              variant="secondary"
+              iconStart="download"
+              disabled={!data}
+              onClick={() =>
+                data && downloadCsv(`trial-balance-${params.from}-${params.to}.csv`, trialBalanceCsv(data))
+              }
+            >
+              {tReports("export")}
+            </Button>
+          }
+        />
       }
     >
       {report.isError ? <QueryError error={report.error} onRetry={() => void report.refetch()} /> : null}
       {data ? (
-        <div className="mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-muted text-sm tabular-nums">{months(params.from!, params.to!)}</p>
           <Check ok={data.balanced} okLabel={t("balanced")} badLabel={t("unbalanced")} />
         </div>
       ) : null}
@@ -205,18 +211,22 @@ export function TrialBalanceView() {
         density="compact"
       />
       {data ? (
-        <dl className="mt-3 grid gap-3 sm:grid-cols-4">
-          <Figure label={t("totalOpening")} amount={data.totals.opening} />
-          <Figure label={t("totalDebit")} amount={data.totals.debit} />
-          <Figure label={t("totalCredit")} amount={data.totals.credit} />
-          <Figure
-            label={t("totalClosing")}
-            amount={data.totals.closing}
-            tone={isZeroMoney(data.totals.closing) ? "success" : "danger"}
-          />
-        </dl>
+        <StatStrip
+          label={t("title")}
+          items={[
+            { key: "opening", label: t("totalOpening"), value: format.thb(data.totals.opening) },
+            { key: "debit", label: t("totalDebit"), value: format.thb(data.totals.debit) },
+            { key: "credit", label: t("totalCredit"), value: format.thb(data.totals.credit) },
+            {
+              key: "closing",
+              label: t("totalClosing"),
+              value: format.thb(data.totals.closing),
+              tone: isZeroMoney(data.totals.closing) ? "success" : "danger",
+            },
+          ]}
+        />
       ) : null}
-    </Section>
+    </ReportBody>
   );
 }
 
@@ -226,7 +236,7 @@ export function TrialBalanceView() {
 export function GlDetailView() {
   const t = useTranslations("finance.reports.glDetail");
   const tReports = useTranslations("finance.reports");
-  const tJournals = useTranslations("finance.journals");
+  const sourceLabel = useSourceLabel();
   const format = useFormat();
   const accounts = useAccounts();
   const [params, set] = useParams({ account: "1121", from: yearStart(), to: thisMonth(), page: "1" });
@@ -268,8 +278,7 @@ export function GlDetailView() {
       header: t("source"),
       cell: (row) => {
         const href = sourceHref(row.sourceType && row.sourceId ? { type: row.sourceType, id: row.sourceId } : null);
-        const label =
-          row.sourceNo ?? (row.sourceType ? tJournals(`sourceTypes.${row.sourceType}`) : tJournals("manual"));
+        const label = sourceLabel({ type: row.sourceType, number: row.sourceNo });
         return href ? (
           <Link href={href} className="text-primary text-sm hover:underline">
             {label}
@@ -306,63 +315,72 @@ export function GlDetailView() {
     { id: "balance", header: t("balance"), numeric: true, cell: (row) => format.thb(row.balance) },
   ];
   return (
-    <Section
-      title={data ? t("titleOf", { code: data.accountCode, name: data.nameTh }) : t("title")}
-      description={t("description")}
-      actions={
-        <div className="flex flex-wrap items-end gap-3">
-          <Field label={t("account")} className="w-72">
-            <AccountPicker
-              label={t("account")}
-              value={params.account!}
-              onChange={(account) => account && set({ account, page: "1" })}
-              accounts={accounts.data ?? []}
-              allowControl
-            />
-          </Field>
-          <MonthRange from={params.from!} to={params.to!} onChange={(patch) => set({ ...patch, page: "1" })} />
-          <Button
-            variant="secondary"
-            iconStart="download"
-            disabled={!data}
-            onClick={() =>
-              data &&
-              downloadCsv(
-                `gl-${data.accountCode}-${params.from}-${params.to}-p${params.page}.csv`,
-                toCsv<Line>(
-                  [
-                    { header: "entryDate", value: (row) => row.entryDate },
-                    { header: "documentDate", value: (row) => row.documentDate },
-                    { header: "entryNo", value: (row) => row.entryNo },
-                    { header: "jvNumber", value: (row) => row.jvNumber },
-                    { header: "rule", value: (row) => row.ruleKey },
-                    { header: "sourceType", value: (row) => row.sourceType },
-                    { header: "sourceNo", value: (row) => row.sourceNo },
-                    { header: "description", value: (row) => row.description },
-                    { header: "debit", value: (row) => row.debit },
-                    { header: "credit", value: (row) => row.credit },
-                    { header: "balance", value: (row) => row.balance },
-                    { header: "journalEntryId", value: (row) => row.journalEntryId },
-                    { header: "domainEventId", value: (row) => row.domainEventId },
-                  ],
-                  data.lines,
-                ),
-              )
-            }
-          >
-            {tReports("export")}
-          </Button>
-        </div>
+    <ReportBody
+      bar={
+        <PeriodBar
+          range={{ from: params.from!, to: params.to!, fromLabel: tReports("from"), toLabel: tReports("to") }}
+          onChange={(patch) => set({ ...patch, page: "1" })}
+          controls={
+            <div className="w-full sm:w-72">
+              <AccountPicker
+                label={t("account")}
+                value={params.account!}
+                onChange={(account) => account && set({ account, page: "1" })}
+                accounts={accounts.data ?? []}
+                allowControl
+              />
+            </div>
+          }
+          tools={
+            <Button
+              variant="secondary"
+              iconStart="download"
+              disabled={!data}
+              onClick={() =>
+                data &&
+                downloadCsv(
+                  `gl-${data.accountCode}-${params.from}-${params.to}-p${params.page}.csv`,
+                  toCsv<Line>(
+                    [
+                      { header: "entryDate", value: (row) => row.entryDate },
+                      { header: "documentDate", value: (row) => row.documentDate },
+                      { header: "entryNo", value: (row) => row.entryNo },
+                      { header: "jvNumber", value: (row) => row.jvNumber },
+                      { header: "rule", value: (row) => row.ruleKey },
+                      { header: "sourceType", value: (row) => row.sourceType },
+                      { header: "sourceNo", value: (row) => row.sourceNo },
+                      { header: "description", value: (row) => row.description },
+                      { header: "debit", value: (row) => row.debit },
+                      { header: "credit", value: (row) => row.credit },
+                      { header: "balance", value: (row) => row.balance },
+                      { header: "journalEntryId", value: (row) => row.journalEntryId },
+                      { header: "domainEventId", value: (row) => row.domainEventId },
+                    ],
+                    data.lines,
+                  ),
+                )
+              }
+            >
+              {tReports("export")}
+            </Button>
+          }
+        />
       }
     >
+      {data ? (
+        <h2 className="text-lg font-semibold">{t("titleOf", { code: data.accountCode, name: data.nameTh })}</h2>
+      ) : null}
       {report.isError ? <QueryError error={report.error} onRetry={() => void report.refetch()} /> : null}
       {data ? (
-        <dl className="mb-3 grid gap-3 sm:grid-cols-4">
-          <Figure label={t("opening")} amount={data.opening} />
-          <Figure label={t("debit")} amount={data.debit} />
-          <Figure label={t("credit")} amount={data.credit} />
-          <Figure label={t("closing")} amount={data.closing} />
-        </dl>
+        <StatStrip
+          label={t("title")}
+          items={[
+            { key: "opening", label: t("opening"), value: format.thb(data.opening) },
+            { key: "debit", label: t("debit"), value: format.thb(data.debit) },
+            { key: "credit", label: t("credit"), value: format.thb(data.credit) },
+            { key: "closing", label: t("closing"), value: format.thb(data.closing) },
+          ]}
+        />
       ) : null}
       <DataTable
         caption={t("title")}
@@ -371,7 +389,13 @@ export function GlDetailView() {
         loading={report.isPending}
         getRowId={(row) => `${row.journalEntryId}-${row.debit}-${row.credit}-${row.balance}`}
         density="compact"
-        empty={<EmptyState icon="document" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="document"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/ledger/journals" label="ledger.nav.journals" />}
+          />
+        }
       />
       {data && data.total > 50 ? (
         <Pagination
@@ -390,7 +414,7 @@ export function GlDetailView() {
           }}
         />
       ) : null}
-    </Section>
+    </ReportBody>
   );
 }
 
@@ -402,7 +426,8 @@ type BalanceLine = Schemas["BalanceLineDto"];
 export function BalanceSheetView() {
   const t = useTranslations("finance.reports.balanceSheet");
   const format = useFormat();
-  const [params, set] = useParams({ asOf: bangkokToday() });
+  const today = bangkokToday();
+  const [params, set] = useParams({ asOf: today });
   const report = useQuery({
     queryKey: queryKeys.detail("admin", "balance-sheet", params.asOf!),
     queryFn: async () =>
@@ -413,71 +438,52 @@ export function BalanceSheetView() {
       ).data!,
   });
   const data = report.data;
-  const table = (caption: string, rows: BalanceLine[]) => (
-    <DataTable
-      caption={caption}
-      showCaption
-      rows={rows}
-      getRowId={(row) => row.accountCode}
-      density="compact"
-      columns={[
-        {
-          id: "account",
-          header: t("account"),
-          cell: (row) => (
-            <Link
-              href={`/finance/reports/gl-detail?account=${row.accountCode}`}
-              className="text-primary hover:underline"
-            >
-              <span className="tabular-nums">{row.accountCode}</span> {row.nameTh}
-            </Link>
-          ),
-        },
-        { id: "balance", header: t("balance"), numeric: true, cell: (row) => format.thb(row.balance) },
-      ]}
-    />
-  );
+  const lines = (section: string, rows: BalanceLine[]): StatementRow[] =>
+    rows.map((row) => ({
+      key: `${section}-${row.accountCode}`,
+      label: `${row.accountCode} ${row.nameTh}`,
+      amount: format.thb(row.balance),
+      href: `/finance/reports/gl-detail?account=${row.accountCode}`,
+    }));
   return (
-    <Section
-      title={t("title", { date: format.date(params.asOf!) })}
-      description={t("description")}
-      actions={
-        <Field label={t("asOf")} className="w-44">
-          <Input
-            type="date"
-            value={params.asOf}
-            onChange={(event) => event.target.value && set({ asOf: event.target.value })}
-          />
-        </Field>
-      }
-    >
+    <ReportBody bar={<PeriodBar day={{ value: params.asOf!, label: t("asOf"), max: today }} onChange={set} />}>
       {report.isError ? <QueryError error={report.error} onRetry={() => void report.refetch()} /> : null}
       {data ? (
-        <div className="flex flex-col gap-4">
-          <Check
-            ok={isZeroMoney(data.difference)}
-            okLabel={t("balanced")}
-            badLabel={t("differs", { amount: format.thb(data.difference) })}
-          />
-          <div className="grid gap-4 xl:grid-cols-2">
-            {table(t("assets"), data.assets)}
-            <div className="flex flex-col gap-4">
-              {table(t("liabilities"), data.liabilities)}
-              {table(t("equity"), data.equity)}
-              <dl className="grid gap-3 sm:grid-cols-2">
-                <Figure label={t("priorYears")} amount={data.priorYearsProfit} />
-                <Figure label={t("currentYear")} amount={data.currentYearProfit} />
-              </dl>
-            </div>
-          </div>
-          <dl className="grid gap-3 sm:grid-cols-3">
-            <Figure label={t("totalAssets")} amount={data.totals.assets} />
-            <Figure label={t("totalLiabilities")} amount={data.totals.liabilities} />
-            <Figure label={t("totalEquity")} amount={data.totals.equity} />
-          </dl>
-        </div>
+        <Statement
+          caption={t("title", { date: format.date(data.asOf) })}
+          title={t("title", { date: format.date(data.asOf) })}
+          period={t("description")}
+          status={
+            <Check
+              ok={isZeroMoney(data.difference)}
+              okLabel={t("balanced")}
+              badLabel={t("differs", { amount: format.thb(data.difference) })}
+            />
+          }
+          headers={{ label: t("account"), amount: t("balance") }}
+          rows={[
+            { key: "assets", label: t("assets"), kind: "heading" },
+            ...lines("a", data.assets),
+            { key: "total-assets", label: t("totalAssets"), amount: format.thb(data.totals.assets), kind: "total" },
+            { key: "liabilities", label: t("liabilities"), kind: "heading" },
+            ...lines("l", data.liabilities),
+            {
+              key: "total-liabilities",
+              label: t("totalLiabilities"),
+              amount: format.thb(data.totals.liabilities),
+              kind: "subtotal",
+            },
+            { key: "equity", label: t("equity"), kind: "heading" },
+            ...lines("e", data.equity),
+            { key: "prior", label: t("priorYears"), amount: format.thb(data.priorYearsProfit) },
+            { key: "current", label: t("currentYear"), amount: format.thb(data.currentYearProfit) },
+            { key: "total-equity", label: t("totalEquity"), amount: format.thb(data.totals.equity), kind: "subtotal" },
+          ]}
+        />
+      ) : report.isPending ? (
+        <Skeleton className="h-96" />
       ) : null}
-    </Section>
+    </ReportBody>
   );
 }
 
@@ -492,11 +498,16 @@ const DIMENSIONS = [
   "cost_centre",
 ] as const satisfies readonly Schemas["ProfitAndLossDimension"][];
 
-/** Profit and loss, pivoted by a dimension: margin per factory, product type, channel, campaign, cost centre (§3). */
+/**
+ * Profit and loss (§3): the statement of the period from the API's totals — revenue, cost of sales, gross margin,
+ * expenses, net profit — and, pivoted by a dimension, the same figures per factory, product type, channel, campaign
+ * or cost centre underneath.
+ */
 export function ProfitAndLossView() {
   const t = useTranslations("finance.reports.profitAndLoss");
   const tReports = useTranslations("finance.reports");
   const format = useFormat();
+  const months = useMonthsLabel();
   const [params, set] = useParams({ from: yearStart(), to: thisMonth(), by: "none" });
   const dimension = params.by as Schemas["ProfitAndLossDimension"];
   const report = useQuery({
@@ -533,68 +544,105 @@ export function ProfitAndLossView() {
       cell: (row) => <span className="font-semibold">{format.thb(row.netProfit)}</span>,
     },
   ];
+  // The whole company is one line: its margin % is the API's (the totals carry none).
+  const whole = dimension === "none" && data?.lines.length === 1 ? data.lines[0] : undefined;
   return (
-    <Section
-      title={t("title")}
-      description={t("description")}
-      actions={
-        <div className="flex flex-wrap items-end gap-3">
-          <MonthRange from={params.from!} to={params.to!} onChange={set} />
-          <Field label={t("by")} className="w-48">
-            <SearchableSelect
-              value={dimension}
-              onValueChange={(by) => set({ by })}
-              options={DIMENSIONS.map((value) => ({ value, label: t(`dimensions.${value}`) }))}
-            />
-          </Field>
-          <Button
-            variant="secondary"
-            iconStart="download"
-            disabled={!data}
-            onClick={() =>
-              data &&
-              downloadCsv(
-                `profit-and-loss-${dimension}-${params.from}-${params.to}.csv`,
-                toCsv<Line>(
-                  [
-                    { header: dimension, value: (row) => row.dimension },
-                    { header: "revenue", value: (row) => row.revenue },
-                    { header: "costOfSales", value: (row) => row.costOfSales },
-                    { header: "grossMargin", value: (row) => row.grossMargin },
-                    { header: "grossMarginPct", value: (row) => row.grossMarginPct },
-                    { header: "expenses", value: (row) => row.expenses },
-                    { header: "netProfit", value: (row) => row.netProfit },
-                  ],
-                  data.lines,
-                ),
-              )
-            }
-          >
-            {tReports("export")}
-          </Button>
-        </div>
+    <ReportBody
+      narrow
+      bar={
+        <PeriodBar
+          range={{ from: params.from!, to: params.to!, fromLabel: tReports("from"), toLabel: tReports("to") }}
+          onChange={set}
+          controls={
+            <label className="flex min-w-0 items-center gap-2">
+              <span className="text-muted shrink-0 text-sm">{t("by")}</span>
+              <div className="w-44">
+                <SearchableSelect
+                  value={dimension}
+                  onValueChange={(by) => set({ by })}
+                  options={DIMENSIONS.map((value) => ({ value, label: t(`dimensions.${value}`) }))}
+                />
+              </div>
+            </label>
+          }
+          tools={
+            <Button
+              variant="secondary"
+              iconStart="download"
+              disabled={!data}
+              onClick={() =>
+                data &&
+                downloadCsv(
+                  `profit-and-loss-${dimension}-${params.from}-${params.to}.csv`,
+                  toCsv<Line>(
+                    [
+                      { header: dimension, value: (row) => row.dimension },
+                      { header: "revenue", value: (row) => row.revenue },
+                      { header: "costOfSales", value: (row) => row.costOfSales },
+                      { header: "grossMargin", value: (row) => row.grossMargin },
+                      { header: "grossMarginPct", value: (row) => row.grossMarginPct },
+                      { header: "expenses", value: (row) => row.expenses },
+                      { header: "netProfit", value: (row) => row.netProfit },
+                    ],
+                    data.lines,
+                  ),
+                )
+              }
+            >
+              {tReports("export")}
+            </Button>
+          }
+        />
       }
     >
       {report.isError ? <QueryError error={report.error} onRetry={() => void report.refetch()} /> : null}
-      <DataTable
-        caption={t("title")}
-        columns={columns}
-        rows={data?.lines ?? []}
-        loading={report.isPending}
-        getRowId={(row) => row.dimension}
-        density="compact"
-        empty={<EmptyState icon="chart" title={t("empty")} />}
-      />
       {data ? (
-        <dl className="mt-3 grid gap-3 sm:grid-cols-5">
-          <Figure label={t("revenue")} amount={data.totals.revenue} />
-          <Figure label={t("costOfSales")} amount={data.totals.costOfSales} />
-          <Figure label={t("grossMargin")} amount={data.totals.grossMargin} />
-          <Figure label={t("expenses")} amount={data.totals.expenses} />
-          <Figure label={t("netProfit")} amount={data.totals.netProfit} />
-        </dl>
+        <Statement
+          caption={t("title")}
+          title={t("title")}
+          period={months(params.from!, params.to!)}
+          headers={{ label: t(`dimensions.${dimension}`), amount: tReports("amount") }}
+          rows={[
+            { key: "revenue", label: t("revenue"), amount: format.thb(data.totals.revenue), level: 0 },
+            { key: "cost", label: t("costOfSales"), amount: format.thb(data.totals.costOfSales), level: 0 },
+            { key: "gross", label: t("grossMargin"), amount: format.thb(data.totals.grossMargin), kind: "subtotal" },
+            ...(whole?.grossMarginPct != null
+              ? [
+                  {
+                    key: "pct",
+                    label: t("grossMarginPct"),
+                    amount: format.percent(whole.grossMarginPct),
+                    level: 2 as const,
+                  },
+                ]
+              : []),
+            { key: "expenses", label: t("expenses"), amount: format.thb(data.totals.expenses), level: 0 },
+            { key: "net", label: t("netProfit"), amount: format.thb(data.totals.netProfit), kind: "total" },
+          ]}
+        />
+      ) : report.isPending ? (
+        <Skeleton className="h-72" />
       ) : null}
-    </Section>
+      {dimension !== "none" ? (
+        <DeskSection title={t(`dimensions.${dimension}`)}>
+          <DataTable
+            caption={t(`dimensions.${dimension}`)}
+            columns={columns}
+            rows={data?.lines ?? []}
+            loading={report.isPending}
+            getRowId={(row) => row.dimension}
+            density="compact"
+            empty={
+              <EmptyState
+                icon="chart"
+                title={t("empty")}
+                action={<EmptyLink href="/finance/ledger/dimensions" label="ledger.nav.dimensions" />}
+              />
+            }
+          />
+        </DeskSection>
+      ) : null}
+    </ReportBody>
   );
 }
 
@@ -603,7 +651,9 @@ export function ProfitAndLossView() {
 /** The indirect cash-flow statement: net profit, then each account's movement by its cash-flow class. */
 export function CashFlowView() {
   const t = useTranslations("finance.reports.cashFlow");
+  const tReports = useTranslations("finance.reports");
   const format = useFormat();
+  const months = useMonthsLabel();
   const [params, set] = useParams({ from: yearStart(), to: thisMonth() });
   const report = useQuery({
     queryKey: queryKeys.detail("admin", "cash-flow", `${params.from}:${params.to}`),
@@ -615,58 +665,60 @@ export function CashFlowView() {
       ).data!,
   });
   const data = report.data;
-  const section = (caption: string, rows: Schemas["CashLineDto"][], total: string) => (
-    <div>
-      <DataTable
-        caption={caption}
-        showCaption
-        rows={rows}
-        getRowId={(row) => row.accountCode}
-        density="compact"
-        empty={<EmptyState icon="coins" title={t("nothing")} />}
-        columns={[
-          {
-            id: "account",
-            header: t("account"),
-            cell: (row) => (
-              <span>
-                <span className="tabular-nums">{row.accountCode}</span> {row.nameTh}
-              </span>
-            ),
-          },
-          { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.amount) },
-        ]}
-      />
-      <p className="mt-1 text-end text-sm font-semibold tabular-nums">
-        {t("sectionTotal", { amount: format.thb(total) })}
-      </p>
-    </div>
-  );
+  const section = (key: string, title: string, rows: Schemas["CashLineDto"][], total: string): StatementRow[] => [
+    { key, label: title, kind: "heading" },
+    ...(rows.length
+      ? rows.map((row) => ({
+          key: `${key}-${row.accountCode}`,
+          label: `${row.accountCode} ${row.nameTh}`,
+          amount: format.thb(row.amount),
+          href: `/finance/reports/gl-detail?account=${row.accountCode}&from=${params.from}&to=${params.to}`,
+        }))
+      : [{ key: `${key}-none`, label: t("nothing"), level: 2 as const }]),
+    { key: `${key}-total`, label: t("totalOf", { section: title }), amount: format.thb(total), kind: "subtotal" },
+  ];
   return (
-    <Section
-      title={t("title")}
-      description={t("description")}
-      actions={<MonthRange from={params.from!} to={params.to!} onChange={set} />}
+    <ReportBody
+      narrow
+      bar={
+        <PeriodBar
+          range={{ from: params.from!, to: params.to!, fromLabel: tReports("from"), toLabel: tReports("to") }}
+          onChange={set}
+        />
+      }
     >
       {report.isError ? <QueryError error={report.error} onRetry={() => void report.refetch()} /> : null}
       {data ? (
-        <div className="flex flex-col gap-4">
-          <Check
-            ok={isZeroMoney(data.difference)}
-            okLabel={t("agrees")}
-            badLabel={t("differs", { amount: format.thb(data.difference) })}
+        <>
+          <Statement
+            caption={t("title")}
+            title={t("title")}
+            period={months(params.from!, params.to!)}
+            status={
+              <Check
+                ok={isZeroMoney(data.difference)}
+                okLabel={t("agrees")}
+                badLabel={t("differs", { amount: format.thb(data.difference) })}
+              />
+            }
+            headers={{ label: t("account"), amount: t("amount") }}
+            rows={[
+              { key: "profit", label: t("netProfit"), amount: format.thb(data.netProfit), level: 0 },
+              ...section("operating", t("operating"), data.operating.adjustments, data.operating.total),
+              ...section("investing", t("investing"), data.investing.lines, data.investing.total),
+              ...section("financing", t("financing"), data.financing.lines, data.financing.total),
+              { key: "net", label: t("netChange"), amount: format.thb(data.netChange), kind: "total" },
+            ]}
           />
-          <dl className="grid gap-3 sm:grid-cols-3">
-            <Figure label={t("netProfit")} amount={data.netProfit} />
-            <Figure label={t("netChange")} amount={data.netChange} />
-            <Figure label={t("cashMovement")} amount={data.cashMovement} />
+          <dl className="text-muted flex flex-wrap justify-end gap-x-3 px-1 text-sm">
+            <dt>{t("cashMovement")}</dt>
+            <dd className="text-fg font-semibold tabular-nums">{format.thb(data.cashMovement)}</dd>
           </dl>
-          {section(t("operating"), data.operating.adjustments, data.operating.total)}
-          {section(t("investing"), data.investing.lines, data.investing.total)}
-          {section(t("financing"), data.financing.lines, data.financing.total)}
-        </div>
+        </>
+      ) : report.isPending ? (
+        <Skeleton className="h-96" />
       ) : null}
-    </Section>
+    </ReportBody>
   );
 }
 
@@ -679,6 +731,7 @@ export function CashFlowView() {
  */
 export function RollForwardsView() {
   const t = useTranslations("finance.reports.rollForwards");
+  const tReports = useTranslations("finance.reports");
   const format = useFormat();
   const [params, set] = useParams({ from: yearStart(), to: thisMonth() });
   const options = (accountCode: "2330" | "2130") => ({
@@ -695,7 +748,7 @@ export function RollForwardsView() {
   const table = (title: string, note: string, query: typeof points) => {
     const data = query.data;
     return (
-      <Section
+      <DeskSection
         title={title}
         description={data ? `${note} ${t("normalSide", { side: t(`sides.${data.normalSide}`) })}` : note}
       >
@@ -744,17 +797,23 @@ export function RollForwardsView() {
             {t("openGl", { code: data.accountCode })}
           </Link>
         ) : null}
-      </Section>
+      </DeskSection>
     );
   };
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex justify-end">
-        <MonthRange from={params.from!} to={params.to!} onChange={set} />
+    <ReportBody
+      bar={
+        <PeriodBar
+          range={{ from: params.from!, to: params.to!, fromLabel: tReports("from"), toLabel: tReports("to") }}
+          onChange={set}
+        />
+      }
+    >
+      <div className="flex flex-col gap-7">
+        {table(t("points"), t("pointsNote"), points)}
+        {table(t("retention"), t("retentionNote"), retention)}
       </div>
-      {table(t("points"), t("pointsNote"), points)}
-      {table(t("retention"), t("retentionNote"), retention)}
-    </div>
+    </ReportBody>
   );
 }
 
@@ -767,8 +826,8 @@ export function RollForwardsView() {
 export function ReconciliationView() {
   const t = useTranslations("finance.reports.reconciliation");
   const format = useFormat();
-  const [params] = useParams({ period: thisMonth() });
-  const [shown, setShown] = useState(params.period!);
+  const [params, set] = useParams({ period: thisMonth() });
+  const shown = params.period!;
   const report = useQuery({
     queryKey: queryKeys.detail("admin", "subledger-reconciliation", shown),
     queryFn: async () =>
@@ -780,15 +839,8 @@ export function ReconciliationView() {
   });
   const data = report.data;
   return (
-    <Section
-      title={t("title")}
-      description={data ? `${t("description")} ${t("asOf", { at: format.dateTime(data.asOf) })}` : t("description")}
-      actions={
-        <Field label={t("assetsMonth")} className="w-40">
-          <Input type="month" value={shown} onChange={(event) => event.target.value && setShown(event.target.value)} />
-        </Field>
-      }
-    >
+    <ReportBody bar={<PeriodBar month={{ value: shown, label: t("assetsMonth") }} onChange={set} />}>
+      {data ? <p className="text-muted text-sm">{t("asOf", { at: format.dateTime(data.asOf) })}</p> : null}
       {report.isError ? <QueryError error={report.error} onRetry={() => void report.refetch()} /> : null}
       <DataTable
         caption={t("title")}
@@ -826,6 +878,6 @@ export function ReconciliationView() {
           },
         ]}
       />
-    </Section>
+    </ReportBody>
   );
 }

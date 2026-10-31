@@ -18,6 +18,7 @@ import { adminBrowserApis } from "../../console/api";
 import { bangkokDay, useFactoryPart, useFactoryRefresh } from "../hooks";
 import { FormDialog, Section, VersionTable, type VersionRow } from "../parts";
 import type { Factory } from "../resources";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Holder<V> = { current: V | null; upcoming: V[] };
 type Kind = "arrangement" | "participation" | "tolerance" | "payout";
@@ -358,7 +359,7 @@ export function Terms({ factory }: { factory: Factory }) {
             </div>
           ) : null}
           <Field label={t("effectiveFrom")} hint={t("effectiveHint")}>
-            <Input
+            <ConsoleDateField
               type="date"
               value={common.effectiveFrom}
               onChange={(event) => setCommon({ ...common, effectiveFrom: event.target.value })}

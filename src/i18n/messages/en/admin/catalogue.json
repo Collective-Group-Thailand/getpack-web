@@ -478,7 +478,10 @@
     "catalogueTitle": "Catalogue",
     "catalogueDescription": "The platform's master data: types, materials, patterns, products and geography. No prices — those are each factory's.",
     "cmsTitle": "Site content",
-    "cmsDescription": "Banners, the home page, articles, FAQs, videos and SEO"
+    "cmsDescription": "Banners, the home page, articles, FAQs, videos and SEO",
+    "searchLabel": "Search tables",
+    "searchPlaceholder": "Table name or what it holds",
+    "noMatch": "No table matches the search"
   },
   "file": {
     "remove": "Remove",
@@ -633,7 +636,8 @@
       "quote": "Quote",
       "undo": "Undo",
       "redo": "Redo"
-    }
+    },
+    "details": "Article details"
   },
   "links": {
     "requests": "Structural design requests",
@@ -713,7 +717,9 @@
     "declineTitle": "Decline this request",
     "reason": "Reason (the customer sees it)",
     "reasonRequired": "Give a reason",
-    "declined": "Request closed"
+    "declined": "Request closed",
+    "emptyAction": "Open the style library",
+    "lede": "Structures customers asked for that the style library does not have yet, by step — from assigning a designer to approval and publishing."
   },
   "intakes": {
     "title": "Dielines from factories",
@@ -790,7 +796,8 @@
       "deviation": "Largest deviation {max} mm · mean {mean} mm (accepted ≤ {tolerance} mm)",
       "mirrored": "Drawn mirrored (seen from the inside)",
       "save": "Save the match"
-    }
+    },
+    "emptyAction": "View active factories"
   },
   "rowCount": "{count} rows",
   "cases": {

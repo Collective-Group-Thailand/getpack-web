@@ -43,8 +43,8 @@ export type OrdersInitial =
 
 /**
  * Orders, queue first (F2 2.2, A.3 "work queues first"). Each tab is a URL — `?queue=late` can
- * be bookmarked or sent — and its count and overdue state come from the dashboard summary, so
- * the badge and the list agree with the home page.
+ * be bookmarked or sent — and its count is the rows it opens (the same read, `meta.total`), as is the
+ * sidebar badge, which counts the tab the desk opens on.
  *
  * The queues are getpack-api's (`admin.orderOperations.queue`); slips waiting for review are the
  * Finance slip queue, not an order queue. The last tab is every order (`admin.orders.list`), with
@@ -55,22 +55,25 @@ export type OrdersInitial =
  */
 export function OrdersList({ initial }: { initial: OrdersInitial }) {
   const t = useTranslations("orders.list");
-  return (
-    <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("queuesLabel")}
-        tabs={[
-          // No `?queue=` is the first queue, so the desk opens on it.
-          ...ORDER_QUEUES.map((queue, index) => ({
-            value: index === 0 ? null : queue,
-            label: t(`queues.${queue}`),
-            countKey: `orders.${queue}`,
-          })),
-          { value: ALL_ORDERS, label: t("queues.all") },
-        ]}
-      />
-      {initial.view === "all" ? <AllOrders initial={initial.page} /> : <QueueOrders initial={initial.page} />}
-    </div>
+  const views = (
+    <QueueTabs
+      label={t("queuesLabel")}
+      // Each tab counts the rows it opens: a queue its queue, "all" every order — with the same search.
+      countFrom={(value) => (value === ALL_ORDERS ? allOrdersList : ordersList)}
+      tabs={[
+        // No `?queue=` is the first queue, so the desk opens on it.
+        ...ORDER_QUEUES.map((queue, index) => ({
+          value: index === 0 ? null : queue,
+          label: t(`queues.${queue}`),
+        })),
+        { value: ALL_ORDERS, label: t("queues.all") },
+      ]}
+    />
+  );
+  return initial.view === "all" ? (
+    <AllOrders initial={initial.page} views={views} />
+  ) : (
+    <QueueOrders initial={initial.page} views={views} />
   );
 }
 
@@ -117,11 +120,12 @@ function ReminderButton({ ids, clear }: { ids: string[]; clear: () => void }) {
   );
 }
 
-function CreateButton() {
+/** The page's one primary action (in its header): an order on a customer's behalf starts at the CS calculator. */
+export function CreateOrderButton() {
   const t = useTranslations("orders.list");
   const canCreate = useCan("carts.manage_on_behalf");
   return canCreate ? (
-    <Button size="sm" iconStart="plus" asChild>
+    <Button iconStart="plus" asChild>
       <Link href="/cs">{t("create")}</Link>
     </Button>
   ) : null;
@@ -150,7 +154,7 @@ function OrderCode({
   );
 }
 
-function QueueOrders({ initial }: { initial: InitialPage<OrderQueueItem> | null }) {
+function QueueOrders({ initial, views }: { initial: InitialPage<OrderQueueItem> | null; views: React.ReactNode }) {
   const t = useTranslations("orders.list");
   const tStatus = useTranslations("status");
   const format = useFormat();
@@ -219,9 +223,17 @@ function QueueOrders({ initial }: { initial: InitialPage<OrderQueueItem> | null 
       searchLabel={t("search")}
       searchPlaceholder={t("searchPlaceholder")}
       bulkActions={canManage ? (ids, clear) => <ReminderButton ids={ids} clear={clear} /> : undefined}
-      toolbarEnd={<CreateButton />}
+      views={views}
       rowHref={(row) => `/orders/${row.orderId}`}
-      empty={{ title: t("emptyTitle"), description: t("emptyBody") }}
+      empty={{
+        title: t("emptyTitle"),
+        description: t("emptyBody"),
+        action: (
+          <Button asChild variant="secondary">
+            <Link href={`/orders?queue=${ALL_ORDERS}`}>{t("queues.all")}</Link>
+          </Button>
+        ),
+      }}
     />
   );
 }
@@ -248,7 +260,7 @@ function DueDate({ date }: { date: string | null }) {
   );
 }
 
-function AllOrders({ initial }: { initial: InitialPage<OrderListItem> | null }) {
+function AllOrders({ initial, views }: { initial: InitialPage<OrderListItem> | null; views: React.ReactNode }) {
   const t = useTranslations("orders.list");
   const tStatus = useTranslations("status");
   const format = useFormat();
@@ -382,7 +394,8 @@ function AllOrders({ initial }: { initial: InitialPage<OrderListItem> | null }) 
       searchPlaceholder={t("searchPrefix")}
       rowTone={(row) => (row.hasSlipToReview ? "warning" : undefined)}
       bulkActions={canManage ? (ids, clear) => <ReminderButton ids={ids} clear={clear} /> : undefined}
-      toolbarEnd={<CreateButton />}
+      views={views}
+      rowHref={(row) => `/orders/${row.orderId}`}
       empty={{ title: t("emptyAllTitle"), description: t("emptyAllBody") }}
     />
   );

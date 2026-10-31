@@ -53,7 +53,18 @@
       "waived": "Waived",
       "planned": "Planned"
     },
-    "openOrder": "Open the order"
+    "openOrder": "Open the order",
+    "viewsLabel": "Board views",
+    "boardScroll": "Production stage columns",
+    "emptyTitle": "No jobs on the board",
+    "emptyBody": "Jobs appear here once an order is released to production and sent to a factory.",
+    "emptyAction": "Orders waiting for production",
+    "emptyAtRiskTitle": "No jobs at risk",
+    "emptyAtRiskBody": "Every job on the board is on schedule.",
+    "emptyFilteredTitle": "No jobs match these filters",
+    "showAll": "Show all jobs",
+    "stepsDone": "{done}/{total} steps",
+    "promisedShort": "Due {date}"
   },
   "inspections": {
     "title": "QC inspections",
@@ -100,7 +111,10 @@
     "scheduledAt": "When",
     "inspector": "Inspector",
     "inspectorHint": "Empty means you",
-    "me": "Me"
+    "me": "Me",
+    "statusesLabel": "Inspection status",
+    "all": "All",
+    "emptyAction": "Open the production board"
   },
   "scorecards": {
     "title": "Factory scorecards",
@@ -209,7 +223,8 @@
     "remakes": "{count} remakes, latest {amount}",
     "all": "All",
     "empty": "No tooling yet",
-    "emptyHint": "Items appear once an order that paid for plates or a die block is delivered."
+    "emptyHint": "Items appear once an order that paid for plates or a die block is delivered.",
+    "openBoard": "Open the production board"
   },
   "routes": {
     "title": "Milestone routes",
@@ -279,6 +294,8 @@
       "effectiveFrom": "Effective from",
       "effectiveHint": "Today means a minute from now",
       "reason": "Reason"
-    }
+    },
+    "openBoard": "Open the production board",
+    "stepCount": "{count} steps"
   }
 }

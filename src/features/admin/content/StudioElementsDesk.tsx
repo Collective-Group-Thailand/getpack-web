@@ -127,6 +127,18 @@ export function StudioElementsDesk() {
       : []),
   ];
 
+  const openCreate = () =>
+    setDraft({
+      code: "",
+      nameTh: "",
+      nameEn: "",
+      kind: "shape",
+      path: "",
+      tags: [],
+      requiresRight: false,
+      tagsText: "",
+    });
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
@@ -149,21 +161,7 @@ export function StudioElementsDesk() {
         </Field>
         <span className="flex-1" />
         {canManage ? (
-          <Button
-            iconStart="plus"
-            onClick={() =>
-              setDraft({
-                code: "",
-                nameTh: "",
-                nameEn: "",
-                kind: "shape",
-                path: "",
-                tags: [],
-                requiresRight: false,
-                tagsText: "",
-              })
-            }
-          >
+          <Button iconStart="plus" onClick={openCreate}>
             {t("create")}
           </Button>
         ) : null}
@@ -177,7 +175,19 @@ export function StudioElementsDesk() {
           rows={query.data ?? []}
           getRowId={(row) => row.id}
           loading={query.isPending}
-          empty={<EmptyState icon="pen-tool" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="pen-tool"
+              title={t("empty")}
+              action={
+                canManage ? (
+                  <Button variant="secondary" iconStart="plus" onClick={openCreate}>
+                    {t("create")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
         />
       )}
       {draft ? (

@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { adminServerApis } from "@/features/admin/console/api.server";
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { RolesMatrix } from "@/features/admin/iam";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,16 +22,7 @@ export default async function RolesPage() {
   }
   return (
     <ConsolePage>
-      <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: tUsers("title"), href: "/users" }, { label: t("title") }]}
-          />
-        }
-        title={t("title")}
-        description={t("description")}
-      />
+      <PageHeader back={{ href: "/users", label: tUsers("title") }} title={t("title")} description={t("description")} />
       <RolesMatrix initial={initial} />
     </ConsolePage>
   );

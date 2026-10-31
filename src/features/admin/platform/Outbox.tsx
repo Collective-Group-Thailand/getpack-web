@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -11,10 +12,19 @@ import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, ConfirmAction, problemMessage, ResourceList, shortRef, type InitialPage } from "../console";
-import { outboxList, type OutboxMessage } from "./resources";
+import {
+  adminBrowserApis,
+  ConfirmAction,
+  problemMessage,
+  QueueTabs,
+  ResourceList,
+  shortRef,
+  type InitialPage,
+} from "../console";
+import { ALL_EVENTS, outboxList, type OutboxMessage } from "./resources";
 
-const STATUSES: OutboxMessage["status"][] = ["pending", "dispatched", "failed", "dead"];
+/** The tabs after the dead letters (the default): what will be retried, what waits, what went out. */
+const STATUSES: OutboxMessage["status"][] = ["failed", "pending", "dispatched"];
 const TONES = { pending: "neutral", dispatched: "success", failed: "warning", dead: "danger" } as const;
 
 /**
@@ -60,7 +70,7 @@ export function Outbox({ initial }: { initial: InitialPage<OutboxMessage> | null
       className: "text-end",
       cell: (row) =>
         row.status === "dispatched" ? null : (
-          <Button size="sm" variant="secondary" iconStart="refresh" onClick={() => setReplaying(row)}>
+          <Button size="sm" variant="ghost" iconStart="refresh" onClick={() => setReplaying(row)}>
             {t("replay")}
           </Button>
         ),
@@ -70,21 +80,33 @@ export function Outbox({ initial }: { initial: InitialPage<OutboxMessage> | null
   return (
     <>
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={outboxList}
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("statuses.dead") },
+              ...STATUSES.map((value) => ({ value, label: t(`statuses.${value}`) })),
+              { value: ALL_EVENTS, label: t("all") },
+            ]}
+          />
+        }
         resource={outboxList}
         columns={columns}
         caption={t("title")}
         initial={initial}
         savedViews={false}
-        filters={[
-          {
-            id: "status",
-            label: t("columns.status"),
-            kind: "select",
-            options: STATUSES.map((value) => ({ value, label: t(`statuses.${value}`) })),
-          },
-        ]}
         rowTone={(row) => (row.status === "dead" ? "danger" : undefined)}
-        empty={{ title: t("empty"), description: t("emptyBody") }}
+        empty={{
+          title: t("empty"),
+          description: t("emptyBody"),
+          action: (
+            <Button asChild variant="secondary" iconEnd="arrow-right">
+              <Link href="/ops">{t("openOps")}</Link>
+            </Button>
+          ),
+        }}
       />
       <ConfirmAction
         open={replaying !== null}

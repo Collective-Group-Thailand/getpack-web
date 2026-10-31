@@ -10,6 +10,7 @@ import type { DataTableColumn } from "@/ui/components/DataTable";
 
 import { CrudList, defineResource, type FieldDef, type InitialPage } from "../console";
 import { flagsList, type FeatureFlag } from "./resources";
+import { plainDescription } from "./settings/shape";
 
 const AUDIENCES = ["customer", "staff", "partner"] as const;
 
@@ -100,9 +101,23 @@ export function FeatureFlags({ initial }: { initial: InitialPage<FeatureFlag> | 
     {
       id: "key",
       header: t("columns.key"),
-      cell: (row) => <span className="text-xs font-medium tabular-nums">{row.key}</span>,
+      className: "min-w-64",
+      cell: (row) => (
+        <span className="flex flex-col gap-0.5">
+          <span className="font-medium">{t.has(`items.${row.key}.label`) ? t(`items.${row.key}.label`) : row.key}</span>
+          <code className="text-muted font-mono text-xs">{row.key}</code>
+        </span>
+      ),
     },
-    { id: "description", header: t("columns.description"), cell: (row) => row.description },
+    {
+      id: "description",
+      header: t("columns.description"),
+      cell: (row) => (
+        <span className="text-muted text-sm text-pretty">
+          {t.has(`items.${row.key}.help`) ? t(`items.${row.key}.help`) : plainDescription(row.description)}
+        </span>
+      ),
+    },
     {
       id: "enabled",
       header: t("columns.state"),
@@ -115,6 +130,7 @@ export function FeatureFlags({ initial }: { initial: InitialPage<FeatureFlag> | 
     {
       id: "rules",
       header: t("columns.rules"),
+      className: "whitespace-nowrap",
       cell: (row) =>
         [
           row.rules.percentage !== undefined ? t("rulePercentage", { pct: row.rules.percentage }) : null,
@@ -125,7 +141,12 @@ export function FeatureFlags({ initial }: { initial: InitialPage<FeatureFlag> | 
           .filter(Boolean)
           .join(" · ") || t("everyone"),
     },
-    { id: "updatedAt", header: t("columns.updatedAt"), cell: (row) => <When at={row.updatedAt} /> },
+    {
+      id: "updatedAt",
+      header: t("columns.updatedAt"),
+      className: "whitespace-nowrap",
+      cell: (row) => <When at={row.updatedAt} />,
+    },
   ];
 
   return (
@@ -135,7 +156,10 @@ export function FeatureFlags({ initial }: { initial: InitialPage<FeatureFlag> | 
       columns={columns}
       caption={t("title")}
       initial={initial}
-      labels={{ editTitle: (flag) => t("editTitle", { key: flag.key }) }}
+      labels={{
+        editTitle: (flag) =>
+          t("editTitle", { key: t.has(`items.${flag.key}.label`) ? t(`items.${flag.key}.label`) : flag.key }),
+      }}
     />
   );
 }

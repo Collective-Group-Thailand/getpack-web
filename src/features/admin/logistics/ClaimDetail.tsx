@@ -11,7 +11,7 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
+import { ActionPanel } from "@/ui/components/DetailLayout";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
@@ -106,6 +106,7 @@ async function runStep(claimId: string, step: Step, idempotencyKey: string, note
  */
 export function ClaimDetail({ claimId }: { claimId: string }) {
   const t = useTranslations("logistics.claim");
+  const tActions = useTranslations("console.actions");
   const tClaims = useTranslations("logistics.claims");
   const tProblems = useTranslations("problems");
   const format = useFormat();
@@ -144,12 +145,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("claims"), href: "/claims" }, { label: claim.claimNo }]}
-          />
-        }
+        back={{ href: "/claims", label: t("claims") }}
         title={claim.claimNo}
         meta={
           <>
@@ -159,34 +155,11 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           </>
         }
         description={t("summary", { order: claim.orderCode, factory: claim.factoryCode ?? "–" })}
-        actions={
-          <NextActionBar
-            actions={claim.nextActions.map((action) => ({
-              ...action,
-              disabledReason: reasonText(action.disabledReason),
-            }))}
-            supported={SUPPORTED}
-            labelOf={(verb) => (t.has(`verbs.${verb}`) ? t(`verbs.${verb}`) : undefined)}
-            onAction={(verb) => {
-              if (verb === "resolve") {
-                setResolution(resolutions[0] ?? "");
-                setAmount(claim.claimedAmount ?? "");
-                setQuantity(claim.claimedQuantity === null ? "" : String(claim.claimedQuantity));
-                setNote("");
-                setRetyped("");
-                setResolving({ key: newIdempotencyKey() });
-              } else if (verb === "override_liability") {
-                setLiability(claim.liability);
-                setReason("");
-                setOverriding({ key: newIdempotencyKey() });
-              } else if (STEPS.has(verb)) setStep(verb as Step);
-            }}
-          />
-        }
       />
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="flex flex-col gap-5">
+      {/* The claim on the left; on the right the next step in a panel (first on a phone), then the liability. */}
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <Section title={t("claim")}>
             <p className="mb-3 text-sm">{claim.description}</p>
             <DescriptionList
@@ -276,7 +249,37 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="order-first flex min-w-0 flex-col gap-5 lg:order-none lg:col-start-2 lg:row-start-1">
+          <ActionPanel
+            id="claim-next"
+            tone={claim.nextActions.length > 0 ? "primary" : "neutral"}
+            title={tActions("nextTitle")}
+            description={claim.nextActions.length > 0 ? undefined : tActions("nothingNext")}
+          >
+            <NextActionBar
+              layout="panel"
+              actions={claim.nextActions.map((action) => ({
+                ...action,
+                disabledReason: reasonText(action.disabledReason),
+              }))}
+              supported={SUPPORTED}
+              labelOf={(verb) => (t.has(`verbs.${verb}`) ? t(`verbs.${verb}`) : undefined)}
+              onAction={(verb) => {
+                if (verb === "resolve") {
+                  setResolution(resolutions[0] ?? "");
+                  setAmount(claim.claimedAmount ?? "");
+                  setQuantity(claim.claimedQuantity === null ? "" : String(claim.claimedQuantity));
+                  setNote("");
+                  setRetyped("");
+                  setResolving({ key: newIdempotencyKey() });
+                } else if (verb === "override_liability") {
+                  setLiability(claim.liability);
+                  setReason("");
+                  setOverriding({ key: newIdempotencyKey() });
+                } else if (STEPS.has(verb)) setStep(verb as Step);
+              }}
+            />
+          </ActionPanel>
           <Section title={t("liability")}>
             <p className="text-lg font-semibold">{tClaims(`liabilities.${claim.liability}`)}</p>
             <p className="text-muted text-sm">

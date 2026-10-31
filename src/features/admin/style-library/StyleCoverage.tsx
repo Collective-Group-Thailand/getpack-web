@@ -12,6 +12,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Meter } from "@/ui/components/Meter";
 
 import { adminBrowserApis, QueryError, Section } from "../console";
+import { LibraryLink } from "./LibraryLink";
 
 type Category = Schemas["CategoryCoverageDto"];
 type Process = Schemas["ProcessCoverageDto"];
@@ -126,7 +127,7 @@ export function StyleCoverage() {
           rows={data?.categories ?? []}
           getRowId={(row) => row.category}
           loading={query.isPending}
-          empty={<EmptyState icon="layers" title={t("empty")} />}
+          empty={<EmptyState icon="layers" title={t("empty")} action={<LibraryLink to="imports" />} />}
         />
       </Section>
       <Section title={t("processesTitle")} description={t("processesIntro")}>
@@ -142,7 +143,7 @@ export function StyleCoverage() {
           getRowId={(row) => row.code}
           loading={query.isPending}
           rowTone={(row) => (row.factories === 0 && row.variantsNeeding > 0 ? "danger" : undefined)}
-          empty={<EmptyState icon="factory" title={t("empty")} />}
+          empty={<EmptyState icon="factory" title={t("empty")} action={<LibraryLink to="library" />} />}
         />
       </Section>
     </div>

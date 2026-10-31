@@ -1,18 +1,18 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { cn } from "@/ui/lib/cn";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Skeleton } from "@/ui/components/Skeleton";
@@ -21,6 +21,7 @@ import { bangkokToday } from "../analytics/period";
 import { adminBrowserApis, QueryError, useCan, useProductTypes } from "../console";
 import { useReportCatalogue, type ReportDefinition } from "./data";
 import { ReportExport } from "./ReportExport";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Cell = string | number | boolean | null;
 type ColumnType = Schemas["ReportColumnType"];
@@ -78,6 +79,9 @@ function filtersOf(definition: ReportDefinition, draft: Draft): Filters | null {
  * dates, a month or an "as of" date, as the report defines), its own filters, and a typed preview
  * of the first rows. The full data is the export (`admin.reports.export`). Nothing is summed here.
  */
+/** The first column of a wide report, pinned while the rest scrolls under it. */
+const STICKY = "sticky start-0 z-10 border-e";
+
 export function ReportView({ reportKey }: { reportKey: string }) {
   const t = useTranslations("reports");
   const format = useFormat();
@@ -114,8 +118,13 @@ export function ReportView({ reportKey }: { reportKey: string }) {
   const name = definition ? (format.locale === "en" ? definition.nameEn : definition.nameTh) : "";
   // The API sends codes; the words are ours, with the code itself when we have none.
   const keyed = (group: string, key: string) => (t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key);
-  const cell = (type: ColumnType, value: Cell) => {
+  const cell = (type: ColumnType, value: Cell, key?: string) => {
     if (value === null || value === "") return "–";
+    // Codes the console can name: a channel or provider in words, a product type by its catalogue name.
+    if (type === "text" && typeof value === "string" && key) {
+      if (key === "channel" || key === "provider") return keyed(`values.${key}`, value);
+      if (key === "productType") return productTypes.labelOf(value);
+    }
     switch (type) {
       case "money":
         return format.thb(String(value));
@@ -159,9 +168,7 @@ export function ReportView({ reportKey }: { reportKey: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs label={t("breadcrumb")} items={[{ label: t("title"), href: "/reports" }, { label: name }]} />
-        }
+        back={{ href: "/reports", label: t("title") }}
         title={name || t("title")}
         description={description}
         actions={
@@ -176,7 +183,17 @@ export function ReportView({ reportKey }: { reportKey: string }) {
         }
       />
       {definitions.isError ? <QueryError error={definitions.error} onRetry={() => void definitions.refetch()} /> : null}
-      {definitions.data && !definition ? <EmptyState icon="lock" title={t("unavailable")} /> : null}
+      {definitions.data && !definition ? (
+        <EmptyState
+          icon="lock"
+          title={t("unavailable")}
+          action={
+            <Button asChild variant="secondary">
+              <Link href="/reports">{t("nav.reports")}</Link>
+            </Button>
+          }
+        />
+      ) : null}
 
       {definition ? (
         <form
@@ -200,14 +217,14 @@ export function ReportView({ reportKey }: { reportKey: string }) {
                   {draft.preset === "custom" ? (
                     <>
                       <Field label={t("from")} required={filter.required}>
-                        <Input
+                        <ConsoleDateField
                           type="date"
                           value={draft.from}
                           onChange={(event) => setDraft({ ...draft, from: event.target.value })}
                         />
                       </Field>
                       <Field label={t("to")} required={filter.required}>
-                        <Input
+                        <ConsoleDateField
                           type="date"
                           value={draft.to}
                           onChange={(event) => setDraft({ ...draft, to: event.target.value })}
@@ -220,7 +237,7 @@ export function ReportView({ reportKey }: { reportKey: string }) {
             if (filter.key === "period")
               return filter.kind === "month" ? (
                 <Field key="month" label={t("month")} required={filter.required}>
-                  <Input
+                  <ConsoleDateField
                     type="month"
                     value={draft.month}
                     onChange={(event) => setDraft({ ...draft, month: event.target.value })}
@@ -228,7 +245,7 @@ export function ReportView({ reportKey }: { reportKey: string }) {
                 </Field>
               ) : (
                 <Field key="asOf" label={t("asOf")} required={filter.required}>
-                  <Input
+                  <ConsoleDateField
                     type="date"
                     value={draft.asOf}
                     onChange={(event) => setDraft({ ...draft, asOf: event.target.value })}
@@ -272,23 +289,29 @@ export function ReportView({ reportKey }: { reportKey: string }) {
             {t("generatedAt", { at: format.dateTime(data.generatedAt) })}
           </p>
           {/* CONTRACT-GAP admin.reports — no pagination past the 200-row preview; the export has every row. */}
-          <div className="bg-surface overflow-x-auto rounded-lg border">
-            <table className="w-full text-sm">
+          {/* Wide reports scroll sideways inside their own box; the first column stays put while they do. */}
+          <div className="bg-surface border-border rounded-card relative max-w-full overflow-x-auto border">
+            <table className="w-full border-separate border-spacing-0 text-sm">
               <caption className="sr-only">{name}</caption>
               <thead className="bg-surface-subtle">
                 <tr className="text-muted text-left text-xs">
-                  {data.columns.map((item) => (
+                  {data.columns.map((item, at) => (
                     <th
                       key={item.key}
                       scope="col"
-                      className={`px-3 py-2 font-medium ${NUMERIC.includes(item.type) ? "text-right" : ""}`}
+                      className={cn(
+                        "border-border border-b px-3 py-2 text-start font-medium whitespace-nowrap",
+                        NUMERIC.includes(item.type) && "text-end",
+                        at === 0 && STICKY,
+                        at === 0 && "bg-surface-subtle",
+                      )}
                     >
                       {format.locale === "en" ? item.labelEn : item.labelTh}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-border divide-y">
+              <tbody>
                 {data.rows.length === 0 ? (
                   <tr>
                     <td colSpan={data.columns.length} className="text-muted px-3 py-6 text-center">
@@ -297,13 +320,18 @@ export function ReportView({ reportKey }: { reportKey: string }) {
                   </tr>
                 ) : (
                   data.rows.map((row, at) => (
-                    <tr key={at}>
-                      {data.columns.map((item) => (
+                    <tr key={at} className="hover:bg-surface-subtle">
+                      {data.columns.map((item, column) => (
                         <td
                           key={item.key}
-                          className={`px-3 py-2 ${NUMERIC.includes(item.type) ? "text-right tabular-nums" : ""}`}
+                          className={cn(
+                            "border-border border-b px-3 py-1.5 whitespace-nowrap",
+                            NUMERIC.includes(item.type) && "text-end tabular-nums",
+                            column === 0 && STICKY,
+                            column === 0 && "bg-surface",
+                          )}
                         >
-                          {cell(item.type, row[item.key] ?? null)}
+                          {cell(item.type, row[item.key] ?? null, item.key)}
                         </td>
                       ))}
                     </tr>
@@ -312,12 +340,17 @@ export function ReportView({ reportKey }: { reportKey: string }) {
               </tbody>
               {/* The API's totals over every row of the report, not only the previewed ones; nothing is added up here. */}
               {data.columns.some((item) => item.total) ? (
-                <tfoot className="bg-surface-subtle border-t font-semibold">
+                <tfoot className="bg-surface-subtle font-semibold">
                   <tr>
                     {data.columns.map((item, at) => (
                       <td
                         key={item.key}
-                        className={`px-3 py-2 ${NUMERIC.includes(item.type) ? "text-right tabular-nums" : ""}`}
+                        className={cn(
+                          "px-3 py-2 whitespace-nowrap",
+                          NUMERIC.includes(item.type) && "text-end tabular-nums",
+                          at === 0 && STICKY,
+                          at === 0 && "bg-surface-subtle",
+                        )}
                       >
                         {item.total ? cell(item.type, data.totals[item.key] ?? null) : at === 0 ? t("totals") : null}
                       </td>

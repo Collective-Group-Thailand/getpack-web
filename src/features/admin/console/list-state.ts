@@ -99,6 +99,14 @@ export function toApiQuery(state: ListState): Record<string, string | number> {
   };
 }
 
+/** The query a count needs: the search and filters, without paging or sort (they never change `meta.total`). */
+export function toCountQuery(state: ListState): Record<string, string | number> {
+  const query = toApiQuery(state);
+  return Object.fromEntries(
+    Object.entries(query).filter(([key]) => !["page", "perPage", "sort", "order"].includes(key)),
+  );
+}
+
 /**
  * Applies a change. Anything that alters *which* rows match — search, a filter, the page size,
  * the sort — goes back to page 1, or the person is left on page 9 of a list with three pages.

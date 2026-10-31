@@ -2,7 +2,7 @@
 
 import { cn } from "../lib/cn";
 import { IconButton } from "./IconButton";
-import { Select } from "./Select";
+import { NativeSelect } from "./NativeSelect";
 
 export interface PaginationLabels {
   /** Accessible name of the whole control, e.g. "เลื่อนหน้า". */
@@ -46,6 +46,8 @@ export function Pagination({
   const pages = Math.max(1, Math.ceil(total / perPage));
   const from = total === 0 ? 0 : (page - 1) * perPage + 1;
   const to = Math.min(total, page * perPage);
+  // A list whose default page is 10 or 20 still shows its size, not an empty select (admin audit: blank per-page).
+  const sizes = pageSizes.includes(perPage) ? pageSizes : [...pageSizes, perPage].sort((a, b) => a - b);
 
   return (
     <nav aria-label={labels.nav} className={cn("flex flex-wrap items-center justify-between gap-3 text-sm", className)}>
@@ -54,12 +56,13 @@ export function Pagination({
       </p>
       <div className="flex items-center gap-2">
         {onPerPageChange ? (
-          <Select
+          // Native: its value shows from the first paint (the Radix trigger stayed blank until its list had mounted).
+          <NativeSelect
             aria-label={labels.perPage}
             value={String(perPage)}
             onValueChange={(value) => onPerPageChange(Number(value))}
-            options={pageSizes.map((size) => ({ value: String(size), label: String(size) }))}
-            className="h-8 w-20 text-sm"
+            options={sizes.map((size) => ({ value: String(size), label: String(size) }))}
+            className="h-9 w-20 text-sm"
           />
         ) : null}
         <IconButton

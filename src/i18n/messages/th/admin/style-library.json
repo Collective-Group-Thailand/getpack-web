@@ -8,7 +8,9 @@
     "nextStyles": "แบบที่ลูกค้าตามหา",
     "fitRanges": "เติมช่วงขนาด",
     "content": "เนื้อหาหน้าแบบกล่อง",
-    "studioFeatured": "แบบแนะนำในสตูดิโอ"
+    "studioFeatured": "แบบแนะนำในสตูดิโอ",
+    "openLibrary": "ไปที่คลังแบบกล่อง",
+    "openImports": "นำเข้าไฟล์แบบกล่อง"
   },
   "list": {
     "title": "คลังแบบกล่อง",
@@ -76,7 +78,8 @@
       "reference": "รหัสสากล (FEFCO / ECMA)",
       "referenceVerified": "ยืนยันแล้ว: {code}",
       "referenceToVerify": "รอยืนยัน: {code} (ไม่แสดงบนเว็บจนกว่าจะยืนยัน)",
-      "noReference": "ไม่มีรหัสสากล (ไม่จำเป็น)"
+      "noReference": "ไม่มีรหัสสากล (ไม่จำเป็น)",
+      "openCount": "ยังเหลือ {count} ข้อก่อนแสดงบนเว็บ"
     },
     "approveAsMarketing": "อนุมัติในนามการตลาด",
     "approveAsPrepress": "อนุมัติในนาม Prepress",

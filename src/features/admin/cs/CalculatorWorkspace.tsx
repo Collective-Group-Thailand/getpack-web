@@ -45,17 +45,28 @@ const MAX_TIERS = 5;
  */
 export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
   const t = useTranslations("cs.workspace");
+  const tPicker = useTranslations("cs.picker");
   const { types, isPending } = useProductTypes();
   const instant = types.filter((row) => row.calculatorKey === type && row.quoteMode === "instant");
   if (isPending) return <Skeleton className="h-[40rem]" />;
   if (!isPublished(type) || instant.length === 0) {
     return (
-      <Callout tone="info" title={t("rfqOnlyTitle")}>
-        <p>{isPublished(type) ? t("rfqOnlyByCatalogue") : t("rfqOnlyNotPublished")}</p>
-        <Link href="/rfq" className="text-primary underline">
-          {t("openRfq")}
-        </Link>
-      </Callout>
+      // A type priced by RFQ only is a turn, not a dead end: the RFQ desk is the way on, the other calculators beside it.
+      <EmptyState
+        icon="chat"
+        title={t("rfqOnlyTitle")}
+        description={isPublished(type) ? t("rfqOnlyByCatalogue") : t("rfqOnlyNotPublished")}
+        action={
+          <Button asChild>
+            <Link href="/rfq">{t("openRfq")}</Link>
+          </Button>
+        }
+        secondary={
+          <Link href="/cs" className="text-primary font-medium hover:underline">
+            {tPicker("title")}
+          </Link>
+        }
+      />
     );
   }
   return <Workspace calculator={type} productTypes={instant} />;
@@ -349,6 +360,7 @@ function Workspace({
 
       <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
         {!calculation ? (
+          // The result's place beside the form: the next step is the form itself (no action of its own).
           <EmptyState icon="calculator" title={t("noResultsTitle")} description={t("noResultsBody")} />
         ) : (
           <Card padding="md">

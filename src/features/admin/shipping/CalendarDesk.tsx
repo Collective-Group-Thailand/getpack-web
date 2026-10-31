@@ -19,6 +19,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, ConfirmAction, FormDialog, FormError, problemMessage, QueryError, useCan } from "../console";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Day = Schemas["CalendarDayDto"];
 type Kind = Schemas["NationalDayKind"];
@@ -43,6 +44,8 @@ export function CalendarDesk() {
   const canImport = useCan("catalog.import");
   const [year, setYear] = useState(thisYear);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const addDay = () =>
+    setDraft({ day: `${year}-01-01`, kind: "holiday", observance: "all", nameTh: "", nameEn: "", isNew: true });
   const [removing, setRemoving] = useState<Day | null>(null);
   const query = useQuery({
     queryKey: queryKeys.list("admin", "calendar_day", { year }),
@@ -154,19 +157,7 @@ export function CalendarDesk() {
             </Button>
           ) : null}
           {canManage ? (
-            <Button
-              iconStart="plus"
-              onClick={() =>
-                setDraft({
-                  day: `${year}-01-01`,
-                  kind: "holiday",
-                  observance: "all",
-                  nameTh: "",
-                  nameEn: "",
-                  isNew: true,
-                })
-              }
-            >
+            <Button iconStart="plus" onClick={addDay}>
               {t("add")}
             </Button>
           ) : null}
@@ -181,7 +172,20 @@ export function CalendarDesk() {
           rows={days}
           getRowId={(row) => row.day}
           loading={query.isPending}
-          empty={<EmptyState icon="calendar" title={t("empty", { year })} description={t("emptyHint")} />}
+          empty={
+            <EmptyState
+              icon="calendar"
+              action={
+                canManage ? (
+                  <Button variant="secondary" iconStart="plus" onClick={addDay}>
+                    {t("add")}
+                  </Button>
+                ) : undefined
+              }
+              title={t("empty", { year })}
+              description={t("emptyHint")}
+            />
+          }
         />
       )}
 
@@ -208,7 +212,7 @@ export function CalendarDesk() {
           }}
         >
           <Field label={t("day")} required>
-            <Input
+            <ConsoleDateField
               type="date"
               disabled={!draft.isNew}
               value={draft.day}

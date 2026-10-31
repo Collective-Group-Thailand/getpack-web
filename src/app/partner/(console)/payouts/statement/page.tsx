@@ -52,8 +52,20 @@ export default async function StatementOfAccountPage({ searchParams }: Props) {
           action="/payouts/statement"
           label={t("title")}
           fields={[
-            { name: "from", label: t("from"), value: data?.from ?? query.from ?? "", type: "date" },
-            { name: "to", label: t("to"), value: data?.to ?? query.to ?? "", type: "date" },
+            {
+              name: "from",
+              label: t("from"),
+              value: data?.from ?? query.from ?? "",
+              type: "date",
+              display: (data?.from ?? query.from) ? format.date((data?.from ?? query.from)!) : undefined,
+            },
+            {
+              name: "to",
+              label: t("to"),
+              value: data?.to ?? query.to ?? "",
+              type: "date",
+              display: (data?.to ?? query.to) ? format.date((data?.to ?? query.to)!) : undefined,
+            },
           ]}
           submit={t("show")}
         />

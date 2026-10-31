@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { prefetchList } from "@/features/admin/console/prefetch.server";
-import { OrdersList, OrdersNav } from "@/features/admin/orders";
+import { CreateOrderButton, OrdersList, OrdersNav } from "@/features/admin/orders";
 import { ALL_ORDERS, allOrdersList, ordersList } from "@/features/admin/orders/resources";
 import { PageHeader } from "@/ui/components/PageHeader";
 
@@ -23,7 +23,7 @@ export default async function OrdersPage({ searchParams }: Props) {
       : ({ view: "queue", page: await prefetchList(ordersList, params) } as const);
   return (
     <ConsolePage>
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader title={t("title")} description={t("description")} actions={<CreateOrderButton />} />
       <OrdersNav />
       <OrdersList initial={initial} />
     </ConsolePage>

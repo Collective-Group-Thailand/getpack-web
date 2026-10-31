@@ -146,6 +146,14 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
       : []),
   ];
 
+  const openGenerate = () => {
+    setKind(batches.data?.length ? "bulk_unique" : "single");
+    setCode("");
+    setCount("100");
+    setPrefix("");
+    setGenerating({ key: newIdempotencyKey() });
+  };
+
   return (
     <Section
       title={t("title")}
@@ -164,18 +172,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
             </Button>
           ) : null}
           {canGenerate ? (
-            <Button
-              size="sm"
-              variant="secondary"
-              iconStart="plus"
-              onClick={() => {
-                setKind(batches.data?.length ? "bulk_unique" : "single");
-                setCode("");
-                setCount("100");
-                setPrefix("");
-                setGenerating({ key: newIdempotencyKey() });
-              }}
-            >
+            <Button size="sm" variant="secondary" iconStart="plus" onClick={openGenerate}>
               {t("generate")}
             </Button>
           ) : null}
@@ -223,7 +220,20 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
         getRowId={(row) => row.id}
         loading={codes.isPending}
         density="compact"
-        empty={<EmptyState icon="ticket" title={t("empty")} description={t("emptyBody")} />}
+        empty={
+          <EmptyState
+            icon="ticket"
+            title={t("empty")}
+            description={t("emptyBody")}
+            action={
+              canGenerate ? (
+                <Button variant="secondary" iconStart="plus" onClick={openGenerate}>
+                  {t("generate")}
+                </Button>
+              ) : undefined
+            }
+          />
+        }
       />
       {(codes.data?.meta.total ?? 0) > rows.length ? (
         <p className="text-muted mt-2 text-xs">{t("more", { shown: rows.length, total: codes.data!.meta.total })}</p>

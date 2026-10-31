@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -9,10 +10,10 @@ import { When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { Combobox, type ComboboxOption } from "@/ui/components/Combobox";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -83,7 +84,18 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
       id: "scope",
       header: t("grants.scope"),
       cell: (grant) =>
-        grant.scopeId ? `${t(`scopes.${grant.scopeType}`)} · ${grant.scopeId.slice(0, 8)}` : t("scopes.platform"),
+        grant.scopeId && (grant.scopeType === "factory" || grant.scopeType === "company") ? (
+          <Link
+            href={grant.scopeType === "factory" ? `/partners/${grant.scopeId}` : `/companies/${grant.scopeId}`}
+            className="text-primary hover:underline"
+          >
+            {t(`scopes.${grant.scopeType}`)}
+          </Link>
+        ) : grant.scopeId ? (
+          t(`scopes.${grant.scopeType}`)
+        ) : (
+          t("scopes.platform")
+        ),
     },
     { id: "validFrom", header: t("grants.validFrom"), cell: (grant) => <When at={grant.validFrom} absoluteOnly /> },
     {
@@ -108,76 +120,114 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
       : []),
   ];
 
+  const manage = canManage && !self;
+  const assign = canAssign && !self;
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("users"), href: "/users" }, { label: user.displayName }]}
-          />
-        }
+        back={{ href: "/users", label: t("users") }}
         title={user.displayName}
         meta={
           <>
             <StatusBadge meta={meta} label={tStatus(meta.labelKey)} />
             <Badge>{t(`kinds.${user.kind}`)}</Badge>
+            {user.roles.map((grant) => (
+              <Badge key={grant.id} tone="neutral">
+                {roleLabel(grant.role)}
+              </Badge>
+            ))}
           </>
         }
         description={user.email ?? undefined}
-        actions={
-          canManage && !self ? (
-            <>
-              <Button variant="secondary" size="sm" iconStart="log-out" onClick={() => setAction("revoke_sessions")}>
-                {t("actions.revokeSessions")}
-              </Button>
-              {user.status === "active" ? (
-                <Button variant="destructive" size="sm" iconStart="user-x" onClick={() => setAction("deactivate")}>
-                  {t("actions.deactivate")}
-                </Button>
-              ) : (
-                <Button size="sm" iconStart="check" onClick={() => setAction("reactivate")}>
-                  {t("actions.reactivate")}
-                </Button>
-              )}
-            </>
-          ) : undefined
-        }
       />
-      {self ? <Callout tone="info" title={t("selfHint")} /> : null}
 
-      <Card padding="lg">
-        <CardHeader>
-          <CardTitle>{t("profile")}</CardTitle>
-        </CardHeader>
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("email"), description: user.email ?? "—" },
-            { term: t("phone"), description: user.phone ?? "—" },
-            { term: t("createdAt"), description: <When at={user.createdAt} /> },
-            { term: t("lastLogin"), description: <When at={user.lastLoginAt} /> },
-          ]}
-        />
-      </Card>
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="user-actions"
+            tone="neutral"
+            title={t("panelTitle")}
+            description={self ? t("selfHint") : !manage && !assign ? t("readOnly") : undefined}
+          >
+            {manage || assign ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                {assign ? (
+                  <Button iconStart="plus" onClick={() => setGranting(true)}>
+                    {t("grants.add")}
+                  </Button>
+                ) : null}
+                {manage && user.status !== "active" ? (
+                  <Button variant="secondary" iconStart="check" onClick={() => setAction("reactivate")}>
+                    {t("actions.reactivate")}
+                  </Button>
+                ) : null}
+                {manage ? (
+                  <Button variant="secondary" iconStart="log-out" onClick={() => setAction("revoke_sessions")}>
+                    {t("actions.revokeSessions")}
+                  </Button>
+                ) : null}
+                {manage && user.status === "active" ? (
+                  <Button
+                    variant="ghost"
+                    className="text-danger"
+                    iconStart="user-x"
+                    onClick={() => setAction("deactivate")}
+                  >
+                    {t("actions.deactivate")}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        <section aria-labelledby="user-profile" className="flex flex-col gap-3">
+          <h2 id="user-profile" className="text-lg font-semibold">
+            {t("profile")}
+          </h2>
+          <div className="border-border bg-surface rounded-card border p-4 sm:p-5">
+            <DescriptionList
+              columns={2}
+              items={[
+                { term: t("email"), description: user.email ?? "—" },
+                { term: t("phone"), description: user.phone ?? "—" },
+                { term: t("createdAt"), description: <When at={user.createdAt} /> },
+                { term: t("lastLogin"), description: <When at={user.lastLoginAt} /> },
+              ]}
+            />
+          </div>
+        </section>
 
-      <Card padding="lg">
-        <CardHeader className="flex items-center justify-between gap-2">
-          <CardTitle>{t("grants.title")}</CardTitle>
-          {canAssign && !self ? (
-            <Button size="sm" iconStart="plus" onClick={() => setGranting(true)}>
-              {t("grants.add")}
-            </Button>
-          ) : null}
-        </CardHeader>
-        <DataTable
-          caption={t("grants.title")}
-          columns={grantColumns}
-          rows={user.roles}
-          getRowId={(grant) => grant.id}
-          empty={t("grants.empty")}
-        />
-      </Card>
+        <section aria-labelledby="user-grants" className="flex flex-col gap-3">
+          <h2 id="user-grants" className="text-lg font-semibold">
+            {t("grants.title")}
+          </h2>
+          <DataTable
+            caption={t("grants.title")}
+            columns={grantColumns}
+            rows={user.roles}
+            getRowId={(grant) => grant.id}
+            empty={
+              <EmptyState
+                icon="shield"
+                title={t("grants.empty")}
+                action={
+                  assign ? (
+                    <Button variant="secondary" iconStart="plus" onClick={() => setGranting(true)}>
+                      {t("grants.add")}
+                    </Button>
+                  ) : (
+                    <Button asChild variant="secondary">
+                      <Link href="/users/roles">{t("openRoles")}</Link>
+                    </Button>
+                  )
+                }
+              />
+            }
+          />
+        </section>
+      </DetailLayout>
 
       {granting ? <GrantRole user={user} onClose={() => setGranting(false)} onGranted={refresh} /> : null}
 

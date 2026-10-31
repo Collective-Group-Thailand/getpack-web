@@ -2,17 +2,22 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { MEMO_STATUS, QUOTE_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { IconButton } from "@/ui/components/IconButton";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
@@ -41,8 +46,13 @@ const CHANNELS = ["web", "cs", "line", "b2b"] as const;
  * no discount — CS gives one at checkout (D-052). Since v0.5.0 a row names its channel, the
  * customer's code and the RFQ it came from, and carries CS's internal note and its spec in words.
  */
+/** Whether a quotation's validity has passed (Bangkok day). */
+const expired = (validUntil: string | null) =>
+  validUntil !== null && validUntil.slice(0, 10) < new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+
 export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | null }) {
   const t = useTranslations("cs.quotations");
+  const router = useRouter();
   const canOrder = useCan("carts.manage_on_behalf");
   const tStatus = useTranslations("status");
   const format = useFormat();
@@ -50,32 +60,33 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
   // Six columns (UX audit, /quotations): the code with its product, the customer, quantities, the
   // total, the status, and how long it holds — the channel and the date kept one click away.
   const columns: DataTableColumn<Quotation>[] = [
-    {
-      id: "quoteCode",
-      header: t("columns.code"),
-      sortable: true,
-      cell: (row) => (
-        <div className="min-w-0">
-          <Link
-            href={`/quotations/${row.id}`}
-            className="text-primary font-medium whitespace-nowrap tabular-nums hover:underline"
-          >
-            {/* A code is issued at share or PDF; until then, say so rather than show part of a UUID. */}
-            {row.quoteCode ?? <span className="text-muted font-sans font-normal">{t("noCode")}</span>}
-          </Link>
-          <p className="text-muted truncate text-xs">{labelOf(row.productTypeCode)}</p>
-        </div>
-      ),
-    },
+    // Most quotations have no number until they are shared, so the customer and the product lead the row and the
+    // number follows (UX audit, /quotations).
     {
       id: "customer",
       header: t("columns.customer"),
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate">{row.customer?.displayName ?? "—"}</p>
-          {row.customerCode ? <p className="text-muted text-xs tabular-nums">{row.customerCode}</p> : null}
+          <p className="truncate font-medium">{row.customer?.displayName ?? "—"}</p>
+          <p className="text-muted truncate text-xs">
+            {[labelOf(row.productTypeCode), row.customerCode].filter(Boolean).join(" · ")}
+          </p>
         </div>
       ),
+    },
+    {
+      id: "quoteCode",
+      header: t("columns.code"),
+      sortable: true,
+      cell: (row) =>
+        // A code is issued at share or PDF; until then, say so rather than show part of a UUID.
+        row.quoteCode ? (
+          <Link href={`/quotations/${row.id}`} className="text-primary whitespace-nowrap tabular-nums hover:underline">
+            {row.quoteCode}
+          </Link>
+        ) : (
+          <span className="text-muted text-sm">{t("noCode")}</span>
+        ),
     },
     {
       id: "channel",
@@ -120,18 +131,32 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
     {
       id: "actions",
       header: <span className="sr-only">{t("columns.actions")}</span>,
-      cell: (row) => (
-        <span className="flex justify-end gap-1">
-          {canOrder && (row.status === "saved" || row.status === "shared") ? (
-            <Button asChild size="sm" variant="ghost" iconStart="cart">
-              <Link href={`/orders/new?quote=${row.id}`}>{t("toOrder")}</Link>
-            </Button>
-          ) : null}
-          <Button asChild size="sm" variant="ghost" iconStart="document">
-            <Link href={`/quotations/${row.id}`}>{t("open")}</Link>
-          </Button>
-        </span>
-      ),
+      // The row opens the quotation; the one other step — an order from it — sits behind "⋯", and only while the
+      // quotation still holds (not past its date, not converted).
+      cell: (row) =>
+        canOrder && (row.status === "saved" || row.status === "shared") && !expired(row.validUntil) ? (
+          <span className="flex justify-end">
+            <DropdownMenu
+              label={t("columns.actions")}
+              align="end"
+              items={[
+                {
+                  id: "open",
+                  label: t("open"),
+                  icon: "document",
+                  onSelect: () => router.push(`/quotations/${row.id}`),
+                },
+                {
+                  id: "order",
+                  label: t("toOrder"),
+                  icon: "cart",
+                  onSelect: () => router.push(`/orders/new?quote=${row.id}`),
+                },
+              ]}
+              trigger={<IconButton name="more" size="sm" variant="ghost" label={t("columns.actions")} />}
+            />
+          </span>
+        ) : null,
     },
   ];
   return (
@@ -163,6 +188,7 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
 
 export function QuotationDetail({ quoteId }: { quoteId: string }) {
   const t = useTranslations("cs.quotations");
+  const tActions = useTranslations("console.actions");
   const locale = useLocale();
   const format = useFormat();
   const { labelOf } = useProductTypes();
@@ -177,6 +203,7 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
   const data = quote.data;
   if (!data) return null;
   type Option = (typeof data.options)[number];
+  const orderable = canOrder && ["saved", "shared"].includes(data.status) && data.customer && !expired(data.validUntil);
   const columns: DataTableColumn<Option>[] = [
     { id: "quantity", header: t("columns.quantity"), numeric: true, cell: (row) => format.number(row.quantity) },
     { id: "unitPrice", header: t("columns.unitPrice"), numeric: true, cell: (row) => format.thb(row.unitPrice) },
@@ -188,13 +215,14 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
       header: t("columns.lead"),
       cell: (row) => (row.leadTimeDays === null ? "—" : t("leadDays", { days: row.leadTimeDays })),
     },
-    ...(canOrder && ["saved", "shared"].includes(data.status) && data.customer
+    ...(orderable
       ? [
           {
             id: "order",
             header: <span className="sr-only">{t("columns.actions")}</span>,
+            // One option's order, outlined: the panel's filled button orders the first option.
             cell: (row: Option) => (
-              <Button size="sm" asChild>
+              <Button size="sm" variant="ghost" iconStart="cart" asChild>
                 <Link href={`/orders/new?quote=${data.id}&option=${row.id}`}>{t("createOrder")}</Link>
               </Button>
             ),
@@ -202,15 +230,11 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
         ]
       : []),
   ];
+  const first = data.options[0];
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/quotations" }, { label: data.quoteCode ?? t("noCode") }]}
-          />
-        }
+        back={{ href: "/quotations", label: t("title") }}
         title={data.quoteCode ? <span className="tabular-nums">{data.quoteCode}</span> : t("draftTitle")}
         meta={<StatusChip map={QUOTE_STATUS} value={data.status} size="md" />}
         description={t("headline", {
@@ -218,58 +242,98 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
           product: labelOf(data.productTypeCode),
           until: format.date(data.validUntil),
         })}
-        actions={
-          <>
-            <QuoteActions quote={data} />
-            <Button variant="secondary" iconStart="download" loading={pdf.isPending} onClick={() => pdf.mutate()}>
-              {t("exportPdf")}
-            </Button>
-          </>
-        }
       />
-      <Card padding="lg">
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("columns.customer"), description: data.customer?.displayName ?? "—" },
-            {
-              term: t("customerCode"),
-              description: <span className="tabular-nums">{data.customerCode ?? "—"}</span>,
-            },
-            { term: t("columns.channel"), description: t(`channels.${data.channel}`) },
-            ...(data.rfq
-              ? [
-                  {
-                    term: t("rfq"),
-                    description: (
-                      <Link href={`/rfq/${data.rfq.id}`} className="text-primary tabular-nums hover:underline">
-                        {data.rfq.rfqCode}
-                      </Link>
-                    ),
-                  },
-                ]
-              : []),
-            { term: t("createdBy"), description: data.createdBy?.displayName ?? "—" },
-            ...(data.note ? [{ term: t("note"), description: data.note, wide: true }] : []),
-          ]}
-        />
-      </Card>
-      {data.summary.specs.length > 0 ? (
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="quote-next"
+            tone={orderable || data.status === "expired" ? "primary" : "neutral"}
+            title={tActions("nextTitle")}
+          >
+            <SummaryRows
+              rows={[
+                ...(first
+                  ? [
+                      {
+                        key: "total",
+                        label: t("columns.total"),
+                        value: <span className="font-semibold tabular-nums">{format.thb(first.grossAmount)}</span>,
+                      },
+                    ]
+                  : []),
+                { key: "valid", label: t("columns.validUntil"), value: <ValidUntil date={data.validUntil} /> },
+              ]}
+            />
+            <ActionStack>
+              {orderable && first ? (
+                <Button size="lg" iconStart="cart" asChild>
+                  <Link href={`/orders/new?quote=${data.id}&option=${first.id}`}>{t("createOrder")}</Link>
+                </Button>
+              ) : null}
+              <QuoteActions quote={data} size="lg" />
+              <Button
+                size="lg"
+                variant="secondary"
+                iconStart="download"
+                loading={pdf.isPending}
+                onClick={() => pdf.mutate()}
+              >
+                {t("exportPdf")}
+              </Button>
+            </ActionStack>
+          </ActionPanel>
+        }
+      >
         <Card padding="lg">
-          <CardHeader>
-            <CardTitle>{t("specs")}</CardTitle>
-          </CardHeader>
           <DescriptionList
             columns={3}
-            items={data.summary.specs.map((spec) => ({
-              term: locale === "en" ? spec.labelEn : spec.labelTh,
-              description: locale === "en" ? spec.valueEn : spec.valueTh,
-            }))}
+            items={[
+              { term: t("columns.customer"), description: data.customer?.displayName ?? "—" },
+              {
+                term: t("customerCode"),
+                description: <span className="tabular-nums">{data.customerCode ?? "—"}</span>,
+              },
+              { term: t("columns.channel"), description: t(`channels.${data.channel}`) },
+              ...(data.rfq
+                ? [
+                    {
+                      term: t("rfq"),
+                      description: (
+                        <Link href={`/rfq/${data.rfq.id}`} className="text-primary tabular-nums hover:underline">
+                          {data.rfq.rfqCode}
+                        </Link>
+                      ),
+                    },
+                  ]
+                : []),
+              { term: t("createdBy"), description: data.createdBy?.displayName ?? "—" },
+              ...(data.note ? [{ term: t("note"), description: data.note, wide: true }] : []),
+            ]}
           />
         </Card>
-      ) : null}
-      <DataTable caption={t("options")} showCaption columns={columns} rows={data.options} getRowId={(row) => row.id} />
-      <QuoteLevers quote={data} />
+        {data.summary.specs.length > 0 ? (
+          <Card padding="lg">
+            <CardHeader>
+              <CardTitle>{t("specs")}</CardTitle>
+            </CardHeader>
+            <DescriptionList
+              columns={3}
+              items={data.summary.specs.map((spec) => ({
+                term: locale === "en" ? spec.labelEn : spec.labelTh,
+                description: locale === "en" ? spec.valueEn : spec.valueTh,
+              }))}
+            />
+          </Card>
+        ) : null}
+        <DataTable
+          caption={t("options")}
+          showCaption
+          columns={columns}
+          rows={data.options}
+          getRowId={(row) => row.id}
+        />
+        <QuoteLevers quote={data} />
+      </DetailLayout>
     </div>
   );
 }

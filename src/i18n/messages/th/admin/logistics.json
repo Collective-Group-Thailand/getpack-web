@@ -30,7 +30,8 @@
     "paymentHold": "รอชำระก่อนส่ง",
     "carrierRequested": "โรงงานขอขนส่งสำรอง",
     "splitFrom": "แยกจาก {no}",
-    "reviewPod": "ตรวจหลักฐาน"
+    "reviewPod": "ตรวจหลักฐาน",
+    "emptyAction": "ดูบอร์ดงานผลิต"
   },
   "shipment": {
     "pageTitle": "การจัดส่ง",
@@ -228,7 +229,9 @@
       "waybill": "ดาวน์โหลดใบปะหน้า",
       "waybillFailed": "ดาวน์โหลดใบปะหน้าไม่สำเร็จ",
       "notIssuable": "ออกลิงก์ได้เมื่อแพ็กเสร็จแล้วจนถึงก่อนส่งถึง"
-    }
+    },
+    "pieces": "{quantity} ชิ้น",
+    "cartonOf": "กล่อง {n}/{total}"
   },
   "claims": {
     "title": "เคลม",

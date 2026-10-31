@@ -40,6 +40,7 @@ import {
 } from "./rates";
 import { RatesTable, type RateRow } from "./RatesTable";
 import { useCustomerZones } from "./zones";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Summary = Schemas["FactoryRateVersionSummaryDto"];
 type Rate = Schemas["FactoryRateDto"];
@@ -280,7 +281,26 @@ export function FactoryRateCard({ factoryId }: { factoryId: string }) {
           getRowId={(row) => row.id}
           loading={versions.isPending}
           rowTone={(row) => (row.id === shownId ? "info" : undefined)}
-          empty={<EmptyState icon="truck" title={t("noVersions")} description={t("noVersionsHint")} />}
+          empty={
+            <EmptyState
+              icon="truck"
+              action={
+                canManage && !card.data?.open ? (
+                  <Button
+                    variant="secondary"
+                    iconStart="plus"
+                    onClick={() =>
+                      setCreating({ effectiveFrom: today(), reason: "", copy: Boolean(card.data?.current) })
+                    }
+                  >
+                    {t("newVersion")}
+                  </Button>
+                ) : undefined
+              }
+              title={t("noVersions")}
+              description={t("noVersionsHint")}
+            />
+          }
         />
       </Section>
 
@@ -397,7 +417,7 @@ export function FactoryRateCard({ factoryId }: { factoryId: string }) {
           }}
         >
           <Field label={tVersion("effectiveFrom")} required>
-            <Input
+            <ConsoleDateField
               type="date"
               min={today()}
               value={creating.effectiveFrom}

@@ -89,7 +89,25 @@ export function LineMenusDesk() {
           rows={query.data ?? []}
           getRowId={(row) => row.key}
           loading={query.isPending}
-          empty={<EmptyState icon="chat" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="chat"
+              title={t("empty")}
+              action={
+                canManage ? (
+                  <Button
+                    variant="secondary"
+                    iconStart="plus"
+                    onClick={() =>
+                      setDraft({ key: "", audience: "guest", providerMenuId: "", active: true, isNew: true })
+                    }
+                  >
+                    {t("create")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
         />
       )}
       {draft ? (

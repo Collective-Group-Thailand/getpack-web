@@ -8,15 +8,17 @@ import { useState } from "react";
 
 import { isZeroMoney } from "@/domain/money";
 import { ASSET_STATUS, PERIOD_STATUS } from "@/domain/status";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
@@ -42,8 +44,9 @@ import {
   useCostCentres,
   useFiscalYears,
 } from "./ledger";
+import { StatusViews, FinanceDateField, EmptyLink } from "./frame";
 import { fixedAssetsList, type FixedAsset } from "./resources";
-import { Figure, fieldErrorsOf, SourceJournals } from "./shared";
+import { fieldErrorsOf, SourceJournals } from "./shared";
 
 type Category = Schemas["AssetCategoryDto"];
 
@@ -130,20 +133,22 @@ export function AssetRegister({ initial }: { initial: InitialPage<FixedAsset> | 
     <>
       <ResourceList
         resource={fixedAssetsList}
+        rowHref={(row) => `/finance/assets/${row.id}`}
+        views={
+          <StatusViews
+            resource={fixedAssetsList}
+            label={t("columns.status")}
+            statuses={(["active", "fully_depreciated", "disposed", "written_off"] as const).map((value) => ({
+              value,
+              label: t(`statuses.${value}`),
+            }))}
+          />
+        }
         columns={columns}
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
         filters={[
-          {
-            id: "status",
-            label: t("columns.status"),
-            kind: "select",
-            options: (["active", "fully_depreciated", "disposed", "written_off"] as const).map((value) => ({
-              value,
-              label: t(`statuses.${value}`),
-            })),
-          },
           {
             id: "categoryId",
             label: t("columns.category"),
@@ -158,7 +163,10 @@ export function AssetRegister({ initial }: { initial: InitialPage<FixedAsset> | 
             </Button>
           ) : null
         }
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: <EmptyLink href="/finance/assets/categories" label="assets.nav.categories" />,
+        }}
       />
       {registering ? <RegisterAsset onClose={() => setRegistering(false)} /> : null}
     </>
@@ -263,8 +271,7 @@ function RegisterAsset({ onClose }: { onClose: () => void }) {
       </Field>
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label={t("acquiredOn")} error={errors.acquiredOn}>
-          <Input
-            type="date"
+          <FinanceDateField
             value={form.acquiredOn}
             onChange={(event) => setForm({ ...form, acquiredOn: event.target.value })}
           />
@@ -360,86 +367,104 @@ export function AssetDetail({ assetId }: { assetId: string }) {
   const data = asset.data;
   if (!data) return null;
   const category = categories.data?.find((item) => item.id === data.categoryId);
+  const dispose = canDispose && ["active", "fully_depreciated"].includes(data.status);
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: tList("title"), href: "/finance/assets" }, { label: data.assetNo }]}
-          />
-        }
+        back={{ href: "/finance/assets", label: tList("title") }}
         title={t("title", { asset: data.assetNo, name: data.name })}
         meta={<StatusChip map={ASSET_STATUS} value={data.status} size="md" />}
-        actions={
-          canDispose && ["active", "fully_depreciated"].includes(data.status) ? (
-            <Button variant="secondary" onClick={() => setDisposing(true)}>
-              {t("dispose")}
-            </Button>
-          ) : null
-        }
       />
-      <Section title={t("values")}>
-        <dl className="grid gap-3 sm:grid-cols-4">
-          <Figure label={t("cost")} amount={data.cost} />
-          <Figure label={t("residual")} amount={data.residualValue} />
-          <Figure label={t("accumulated")} amount={data.accumulatedDepreciation} />
-          <Figure label={t("nbv")} amount={data.netBookValue} />
-        </dl>
-        <DescriptionList
-          className="mt-4"
-          columns={3}
-          items={[
-            {
-              term: t("category"),
-              description: category ? `${category.nameTh} (${category.code})` : data.categoryCode,
-            },
-            { term: t("acquiredOn"), description: format.date(data.acquiredOn) },
-            { term: t("depreciationStart"), description: format.date(data.depreciationStartOn, { style: "month" }) },
-            { term: t("life"), description: tList("months", { count: data.usefulLifeMonths }) },
-            { term: t("method"), description: t("straightLine") },
-            { term: t("source"), description: t(`sources.${data.source}`) },
-            {
-              term: t("accounts"),
-              description: (
-                <span className="text-sm tabular-nums">
-                  {data.assetAccountCode}
-                  {data.creditAccountCode ? ` / ${data.creditAccountCode}` : ""}
-                </span>
-              ),
-            },
-            { term: t("costCentre"), description: data.costCentreCode ?? "—" },
-            { term: t("location"), description: data.location ?? "—" },
-            ...(data.disposedOn
-              ? [
-                  { term: t("disposedOn"), description: format.date(data.disposedOn) },
-                  { term: t("proceeds"), description: format.thb(data.disposalProceeds) },
-                ]
-              : []),
-          ]}
-        />
-      </Section>
-      <Section title={t("schedule")} description={t("scheduleNote")}>
-        <DataTable
-          caption={t("schedule")}
-          rows={schedule.data ?? []}
-          loading={schedule.isPending}
-          getRowId={(row) => `${row.runId}-${row.period}`}
-          density="compact"
-          empty={<EmptyState icon="calendar" title={t("noDepreciation")} />}
-          columns={[
-            { id: "period", header: t("period"), cell: (row) => format.date(`${row.period}-01`, { style: "month" }) },
-            { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.amount) },
-            {
-              id: "after",
-              header: t("accumulatedAfter"),
-              numeric: true,
-              cell: (row) => format.thb(row.accumulatedAfter),
-            },
-          ]}
-        />
-      </Section>
-      <SourceJournals sourceType="fixed_asset" sourceId={data.id} />
+      <DetailLayout
+        aside={
+          <ActionPanel id="asset-panel" tone="neutral" title={t("nbv")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(data.netBookValue)}</p>
+            <SummaryRows
+              rows={[
+                { key: "cost", label: t("cost"), value: <span className="tabular-nums">{format.thb(data.cost)}</span> },
+                {
+                  key: "residual",
+                  label: t("residual"),
+                  value: <span className="tabular-nums">{format.thb(data.residualValue)}</span>,
+                },
+                {
+                  key: "accumulated",
+                  label: t("accumulated"),
+                  value: <span className="tabular-nums">{format.thb(data.accumulatedDepreciation)}</span>,
+                },
+              ]}
+            />
+            {dispose ? (
+              <ActionStack>
+                <Button variant="ghost" className="text-danger" onClick={() => setDisposing(true)}>
+                  {t("dispose")}
+                </Button>
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        <Section title={t("values")}>
+          <DescriptionList
+            columns={3}
+            items={[
+              {
+                term: t("category"),
+                description: category ? `${category.nameTh} (${category.code})` : data.categoryCode,
+              },
+              { term: t("acquiredOn"), description: format.date(data.acquiredOn) },
+              { term: t("depreciationStart"), description: format.date(data.depreciationStartOn, { style: "month" }) },
+              { term: t("life"), description: tList("months", { count: data.usefulLifeMonths }) },
+              { term: t("method"), description: t("straightLine") },
+              { term: t("source"), description: t(`sources.${data.source}`) },
+              {
+                term: t("accounts"),
+                description: (
+                  <span className="text-sm tabular-nums">
+                    {data.assetAccountCode}
+                    {data.creditAccountCode ? ` / ${data.creditAccountCode}` : ""}
+                  </span>
+                ),
+              },
+              { term: t("costCentre"), description: data.costCentreCode ?? "—" },
+              { term: t("location"), description: data.location ?? "—" },
+              ...(data.disposedOn
+                ? [
+                    { term: t("disposedOn"), description: format.date(data.disposedOn) },
+                    { term: t("proceeds"), description: format.thb(data.disposalProceeds) },
+                  ]
+                : []),
+            ]}
+          />
+        </Section>
+        <Section title={t("schedule")} description={t("scheduleNote")}>
+          <DataTable
+            caption={t("schedule")}
+            rows={schedule.data ?? []}
+            loading={schedule.isPending}
+            getRowId={(row) => `${row.runId}-${row.period}`}
+            density="compact"
+            empty={
+              <EmptyState
+                icon="calendar"
+                title={t("noDepreciation")}
+                action={<EmptyLink href="/finance/assets/depreciation" label="assets.nav.depreciation" />}
+              />
+            }
+            columns={[
+              { id: "period", header: t("period"), cell: (row) => format.date(`${row.period}-01`, { style: "month" }) },
+              { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.amount) },
+              {
+                id: "after",
+                header: t("accumulatedAfter"),
+                numeric: true,
+                cell: (row) => format.thb(row.accumulatedAfter),
+              },
+            ]}
+          />
+        </Section>
+        <SourceJournals sourceType="fixed_asset" sourceId={data.id} />
+      </DetailLayout>
       {disposing ? <DisposeAsset asset={data} onClose={() => setDisposing(false)} /> : null}
     </div>
   );
@@ -494,8 +519,7 @@ function DisposeAsset({ asset, onClose }: { asset: FixedAsset; onClose: () => vo
         ]}
       />
       <Field label={t("disposedOn")} hint={t("disposedOnHint")}>
-        <Input
-          type="date"
+        <FinanceDateField
           value={disposedOn}
           onChange={(event) => setDisposedOn(event.target.value || bangkokToday())}
         />
@@ -607,7 +631,13 @@ export function DepreciationView() {
           loading={preview.isPending}
           getRowId={(row) => row.assetId}
           density="compact"
-          empty={<EmptyState icon="calendar" title={data?.alreadyRun ? t("nothingLeft") : t("nothing")} />}
+          empty={
+            <EmptyState
+              icon="calendar"
+              title={data?.alreadyRun ? t("nothingLeft") : t("nothing")}
+              action={<EmptyLink href="/finance/assets" label="assets.nav.register" />}
+            />
+          }
           columns={[
             {
               id: "asset",
@@ -642,7 +672,13 @@ export function DepreciationView() {
           loading={runs.isPending}
           getRowId={(row) => row.id}
           density="compact"
-          empty={<EmptyState icon="calendar" title={t("noRuns")} />}
+          empty={
+            <EmptyState
+              icon="calendar"
+              title={t("noRuns")}
+              action={<EmptyLink href="/finance/assets/roll-forward" label="assets.nav.rollForward" />}
+            />
+          }
           columns={[
             { id: "period", header: t("month"), cell: (row) => format.date(`${row.period}-01`, { style: "month" }) },
             { id: "runOn", header: t("runOn"), cell: (row) => format.date(row.runOn) },
@@ -939,10 +975,10 @@ export function AssetRollForward() {
         actions={
           <div className="flex flex-wrap items-end gap-2">
             <Field label={t("from")} className="w-40">
-              <Input type="month" value={from} onChange={(event) => setFrom(event.target.value || from)} />
+              <FinanceDateField type="month" value={from} onChange={(event) => setFrom(event.target.value || from)} />
             </Field>
             <Field label={t("to")} className="w-40">
-              <Input type="month" value={to} onChange={(event) => setTo(event.target.value || to)} />
+              <FinanceDateField type="month" value={to} onChange={(event) => setTo(event.target.value || to)} />
             </Field>
           </div>
         }
@@ -954,7 +990,13 @@ export function AssetRollForward() {
           loading={report.isPending}
           getRowId={(row) => row.category}
           density="compact"
-          empty={<EmptyState icon="archive" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="archive"
+              title={t("empty")}
+              action={<EmptyLink href="/finance/assets" label="assets.nav.register" />}
+            />
+          }
           columns={[
             { id: "category", header: t("columns.category"), cell: (row) => row.name },
             money("openingCost"),

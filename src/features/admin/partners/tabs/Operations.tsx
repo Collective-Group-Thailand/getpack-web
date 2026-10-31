@@ -20,6 +20,7 @@ import { bangkokDay, useFactoryPart, useFactoryRefresh } from "../hooks";
 import { CapabilityItemsDialog, EditCapabilityDialog, EditMachineDialog } from "../CapabilityDialogs";
 import { FormDialog, Section } from "../parts";
 import type { Factory } from "../resources";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Capability = Schemas["CapabilityDto"];
 type Week = Schemas["CapacityWeekDto"];
@@ -514,7 +515,7 @@ export function Operations({ factory }: { factory: Factory }) {
             </Field>
           </div>
           <Field label={t("effectiveFrom")} hint={t("effectiveHint")}>
-            <Input
+            <ConsoleDateField
               type="date"
               value={capacity.effectiveFrom}
               onChange={(event) => setCapacity({ ...capacity, effectiveFrom: event.target.value })}

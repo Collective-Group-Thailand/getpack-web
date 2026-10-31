@@ -10,14 +10,12 @@ import { ifMatch } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
-import { Meter } from "@/ui/components/Meter";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Tabs } from "@/ui/components/Tabs";
+import { RecordNav } from "@/ui/components/RecordNav";
 import { toast } from "@/ui/components/Toast";
 
 import { ConfirmAction, problemMessage, QueryError, StatusChip, useCan } from "../console";
@@ -100,7 +98,7 @@ export function FactoryWorkspace({
     window.history.replaceState(null, "", next === "onboarding" ? pathname : `${pathname}?tab=${next}`);
   };
 
-  const tabs = [
+  const parts: { value: string; label: string; content: React.ReactNode }[] = [
     { value: "onboarding", label: t("tabs.onboarding"), content: <Onboarding factory={factory} /> },
     { value: "profile", label: t("tabs.profile"), content: <Profile factory={factory} /> },
     { value: "compliance", label: t("tabs.compliance"), content: <Compliance factory={factory} /> },
@@ -116,30 +114,35 @@ export function FactoryWorkspace({
     { value: "erp", label: t("tabs.erp"), content: <ErpSupport factory={factory} /> },
   ];
   const offered = canManage ? OFFERED[factory.status] : [];
+  // Eleven parts in four groups beside the record (CAPTURE-PLAN-ADMIN G2): who it is, what it can make, the
+  // commercial terms, and getpack's oversight — one column of items, not a row of eleven tabs.
+  const GROUPS: { key: string; items: readonly FactoryTab[] }[] = [
+    { key: "profile", items: ["onboarding", "profile", "compliance"] },
+    { key: "capability", items: ["operations", "processes", "hours"] },
+    { key: "commercial", items: ["terms", "pricing", "shipping"] },
+    { key: "oversight", items: ["visits", "erp"] },
+  ];
+  const shown = new Map(parts.map((part) => [part.value as string, part]));
+  const open = shown.get(current) ?? parts[0]!;
+  const complete = factory.onboarding.total > 0 && factory.onboarding.done >= factory.onboarding.total;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("partners"), href: "/partners" }, { label: factory.code }]}
-          />
-        }
+        back={{ href: "/partners", label: t("partners") }}
         title={name}
         meta={
           <>
             <span className="text-muted text-sm tabular-nums">{factory.code}</span>
             <StatusChip map={FACTORY_STATUS} value={factory.status} size="md" />
+            {/* Where onboarding stands, in one badge (was a heavy progress bar under the title). */}
+            <Badge tone={complete ? "success" : "warning"} icon={complete ? "check" : "clock"}>
+              {t("steps", { done: factory.onboarding.done, total: factory.onboarding.total })}
+            </Badge>
             <Badge>{t(`modes.${factory.onboardingMode}`)}</Badge>
           </>
         }
-        description={
-          <>
-            {t("steps", { done: factory.onboarding.done, total: factory.onboarding.total })}
-            {factory.status === "trial" ? ` · ${t("trialJobs", { count: factory.trialJobsCompleted })}` : null}
-          </>
-        }
+        description={factory.status === "trial" ? t("trialJobs", { count: factory.trialJobsCompleted }) : undefined}
         actions={
           canManage ? (
             <>
@@ -173,16 +176,21 @@ export function FactoryWorkspace({
         }
       />
 
-      {/* Not inside the header's description: a meter is a block, and a <p> cannot hold one. */}
-      <div className="-mt-3 max-w-sm">
-        <Meter
-          label={t("onboarding")}
-          value={factory.onboarding.total ? Math.round((factory.onboarding.done / factory.onboarding.total) * 100) : 0}
-          valueText={t("steps", { done: factory.onboarding.done, total: factory.onboarding.total })}
-        />
-      </div>
-
-      <Tabs label={t("tabsLabel")} items={tabs} value={current} onValueChange={go} />
+      <RecordNav
+        label={t("tabsLabel")}
+        current={open.value}
+        onSelect={go}
+        groups={GROUPS.map((group) => ({
+          key: group.key,
+          label: t(`groups.${group.key}`),
+          items: group.items.flatMap((key) => {
+            const part = shown.get(key);
+            return part ? [{ key, label: part.label }] : [];
+          }),
+        })).filter((group) => group.items.length > 0)}
+      >
+        {open.content}
+      </RecordNav>
 
       {action && action !== "activate" && action !== "owner" ? (
         <ConfirmAction

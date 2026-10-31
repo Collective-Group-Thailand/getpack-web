@@ -241,7 +241,8 @@
       "campaignFixed": "Fixed once created",
       "minOrderValue": "THB, incl. VAT, of the matching lines",
       "minQuantity": "Pieces on a matching line",
-      "unitPrice": "THB per piece, incl. VAT"
+      "unitPrice": "THB per piece, incl. VAT",
+      "noProductTypes": "Product types could not be read from the catalogue; left empty, the promotion applies to every type"
     },
     "kindHints": {
       "coupon": "Customers type a code; generate codes after saving",
@@ -314,7 +315,10 @@
     },
     "reason": "Reason",
     "reasonHint": "Recorded in the audit log",
-    "systemManaged": "Referral promotions are managed by the system and cannot be changed here"
+    "systemManaged": "Referral promotions are managed by the system and cannot be changed here",
+    "summary": "Promotion summary",
+    "period": "Period",
+    "usageLabel": "How this promotion has been used"
   },
   "coupons": {
     "title": "Coupon codes",

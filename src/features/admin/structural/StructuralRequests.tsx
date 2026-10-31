@@ -1,24 +1,17 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
 import { STRUCTURAL_REQUEST_STATUS } from "@/domain/status";
 import { When } from "@/features/shared/format";
-import { queryKeys } from "@/lib/api/query-keys";
-import type { Schemas } from "@/lib/api/types";
-import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
-import { EmptyState } from "@/ui/components/EmptyState";
-import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { Button } from "@/ui/components/Button";
+import type { DataTableColumn } from "@/ui/components/DataTable";
 
-import { adminBrowserApis, QueryError, StatusChip } from "../console";
+import { QueueTabs, ResourceList, StatusChip, useProductTypes } from "../console";
+import { STRUCTURAL_QUEUE, structuralRequestsList, type StructuralRequest } from "./resources";
 
-type Row = Schemas["AdminStructuralRequestDto"];
-
-/** The statuses as the desk's tabs show them: the work first (D-273). */
-const QUEUE = ["submitted", "assigned", "quoted", "delivered", "approved"] as const;
+type Row = StructuralRequest;
 
 /**
  * Structural design requests (U3.6, D-273): what customers asked for that the library lacks, by
@@ -27,16 +20,7 @@ const QUEUE = ["submitted", "assigned", "quoted", "delivered", "approved"] as co
 export function StructuralRequests() {
   const t = useTranslations("catalogue.structural");
   const tStatus = useTranslations("status");
-  const [status, setStatus] = useState<string>("all");
-  const query = useQuery({
-    queryKey: queryKeys.list("admin", "structural-requests", { status }),
-    queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/structural-requests", {
-          params: { query: status === "all" ? {} : { status: status as Row["status"] } },
-        })
-      ).data!,
-  });
+  const productTypes = useProductTypes();
 
   const columns: DataTableColumn<Row>[] = [
     {
@@ -47,7 +31,7 @@ export function StructuralRequests() {
           <Link href={`/structural-requests/${row.id}`} className="text-primary line-clamp-2 hover:underline">
             {row.description}
           </Link>
-          <p className="text-muted text-xs">{row.productTypeCode}</p>
+          <p className="text-muted text-xs">{productTypes.labelOf(row.productTypeCode)}</p>
         </div>
       ),
     },
@@ -62,28 +46,31 @@ export function StructuralRequests() {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <SegmentedControl
-        label={t("statusesLabel")}
-        value={status}
-        onValueChange={setStatus}
-        options={[
-          { value: "all", label: t("all") },
-          ...QUEUE.map((s) => ({ value: s, label: tStatus(STRUCTURAL_REQUEST_STATUS[s].labelKey) })),
-        ]}
-      />
-      {query.isError ? (
-        <QueryError error={query.error} onRetry={() => void query.refetch()} />
-      ) : (
-        <DataTable
-          caption={t("title")}
-          columns={columns}
-          rows={query.data ?? []}
-          getRowId={(row) => row.id}
-          loading={query.isPending}
-          empty={<EmptyState icon="inbox" title={t("empty")} />}
+    <ResourceList
+      views={
+        <QueueTabs
+          countFrom={structuralRequestsList}
+          label={t("statusesLabel")}
+          param="status"
+          tabs={[
+            { value: null, label: t("all") },
+            ...STRUCTURAL_QUEUE.map((s) => ({ value: s, label: tStatus(STRUCTURAL_REQUEST_STATUS[s].labelKey) })),
+          ]}
         />
-      )}
-    </div>
+      }
+      resource={structuralRequestsList}
+      columns={columns}
+      caption={t("title")}
+      savedViews={false}
+      rowHref={(row) => `/structural-requests/${row.id}`}
+      empty={{
+        title: t("empty"),
+        action: (
+          <Button asChild variant="secondary" iconEnd="arrow-right">
+            <Link href="/style-library">{t("emptyAction")}</Link>
+          </Button>
+        ),
+      }}
+    />
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -17,15 +16,10 @@ import { Skeleton } from "@/ui/components/Skeleton";
 
 import { QueryError, Section } from "../console";
 import { JourneyExport } from "./AnalyticsExtras";
+import { aboveBefore, FunnelSteps } from "./FunnelSteps";
 import type { Period } from "./period";
 
-const Chart = dynamic(() => import("@/ui/components/Chart").then((module) => module.Chart), {
-  ssr: false,
-  loading: () => <Skeleton className="h-64 w-full" />,
-});
-
 type Journey = Schemas["ScorecardJourney"];
-type Step = Schemas["JourneyStepCountDto"];
 type WeekCheck = Schemas["JourneyWeekCheckDto"];
 
 /**
@@ -36,7 +30,6 @@ type WeekCheck = Schemas["JourneyWeekCheckDto"];
  */
 export function JourneyFunnels({ period }: { period: Period | null }) {
   const t = useTranslations("analytics.journeys");
-  const tAll = useTranslations("analytics");
   const format = useFormat();
   const [journey, setJourney] = useState<Journey>("discovery_price");
 
@@ -52,6 +45,10 @@ export function JourneyFunnels({ period }: { period: Period | null }) {
   const stepName = (step: string) => (t.has(`steps.${step}`) ? t(`steps.${step}`) : step);
   const journeyName = (key: Journey) => t(`journeys.${key}`);
   const percent = (value: string | null) => (value === null ? "—" : format.percent(value, 1));
+  // Last ÷ first can pass 100 % because steps are counted apart (see `FunnelSteps`): then it is no completion rate,
+  // so no percentage is shown — the words say the last step counted more sessions than the first.
+  const ratio = (value: string | null) =>
+    aboveBefore(value) ? <span className="text-muted text-xs">{t("aboveFirst")}</span> : percent(value);
 
   return (
     <Section
@@ -82,38 +79,18 @@ export function JourneyFunnels({ period }: { period: Period | null }) {
           ) : null}
           {funnel && funnel.steps.length > 0 ? (
             <>
-              <Chart
-                kind="bar"
-                title={t("chart", { journey: journeyName(journey) })}
-                data={funnel.steps.map((step) => ({ step: stepName(step.step), sessions: step.sessions }))}
-                index="step"
-                indexLabel={t("step")}
-                series={[{ key: "sessions", label: t("sessions") }]}
-                formatValue={(value) => format.number(value)}
-                labels={{ showTable: tAll("showTable"), hideTable: tAll("hideTable") }}
-              />
-              <DataTable<Step>
+              <FunnelSteps
                 caption={t("chart", { journey: journeyName(journey) })}
-                columns={[
-                  { id: "step", header: t("step"), cell: (step) => stepName(step.step) },
-                  {
-                    id: "sessions",
-                    header: t("sessions"),
-                    numeric: true,
-                    cell: (step) => format.number(step.sessions),
-                  },
-                  {
-                    id: "conversion",
-                    header: t("conversion"),
-                    numeric: true,
-                    cell: (step) => (step.fromPreviousPct === null ? t("first") : percent(step.fromPreviousPct)),
-                  },
-                ]}
-                rows={funnel.steps}
-                getRowId={(step) => step.step}
-                density="compact"
+                steps={funnel.steps.map((step) => ({
+                  key: step.step,
+                  label: stepName(step.step),
+                  sessions: step.sessions,
+                  fromPreviousPct: step.fromPreviousPct,
+                }))}
               />
-              <p className="text-sm">{t("overall", { pct: percent(funnel.conversionPct) })}</p>
+              {aboveBefore(funnel.conversionPct) ? null : (
+                <p className="text-sm">{t("lastToFirst", { pct: percent(funnel.conversionPct) })}</p>
+              )}
             </>
           ) : (
             <p className="text-muted text-sm">{t("empty")}</p>
@@ -125,15 +102,15 @@ export function JourneyFunnels({ period }: { period: Period | null }) {
                 { id: "week", header: t("week"), cell: (check) => format.date(check.weekStart) },
                 {
                   id: "now",
-                  header: t("weekConversion"),
+                  header: t("weekRatio"),
                   numeric: true,
-                  cell: (check) => percent(check.conversionPct),
+                  cell: (check) => ratio(check.conversionPct),
                 },
                 {
                   id: "before",
-                  header: t("previousConversion"),
+                  header: t("previousRatio"),
                   numeric: true,
-                  cell: (check) => percent(check.previousConversionPct),
+                  cell: (check) => ratio(check.previousConversionPct),
                 },
                 { id: "drop", header: t("drop"), numeric: true, cell: (check) => percent(check.dropPct) },
                 {

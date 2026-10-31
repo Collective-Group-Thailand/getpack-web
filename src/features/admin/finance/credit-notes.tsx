@@ -16,6 +16,7 @@ import { Callout } from "@/ui/components/Callout";
 import { type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
+import { EDGE_BAR, FormColumns, FormSummary, SummaryRows } from "@/ui/components/FormLayout";
 import { Input, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { SearchInput } from "@/ui/components/SearchInput";
@@ -27,11 +28,11 @@ import { useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
 import { ConfirmAction } from "../console/ConfirmAction";
 import { useDebouncedValue } from "../console/filters";
-import { Section } from "../console/FormDialog";
 import { problemMessage } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { StatusChip } from "../console/StatusChip";
+import { StatusViews, EmptyLink } from "./frame";
 import { useReasons } from "./documents";
 import { CN_KINDS, creditRequestsList, type CreditNoteRequest, type CustomerDocument } from "./resources";
 import { DocumentLink, fieldErrorsOf } from "./shared";
@@ -96,21 +97,20 @@ export function CreditNoteRequests({ initial }: { initial: InitialPage<CreditNot
   return (
     <ResourceList
       resource={creditRequestsList}
+      views={
+        <StatusViews
+          resource={creditRequestsList}
+          label={t("columns.status")}
+          statuses={(["pending_approval", "issued", "rejected", "withdrawn"] as const).map((value) => ({
+            value,
+            label: tStatus(CREDIT_NOTE_REQUEST_STATUS[value].labelKey),
+          }))}
+        />
+      }
       columns={columns}
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      filters={[
-        {
-          id: "status",
-          label: t("columns.status"),
-          kind: "select",
-          options: (["pending_approval", "issued", "rejected", "withdrawn"] as const).map((value) => ({
-            value,
-            label: tStatus(CREDIT_NOTE_REQUEST_STATUS[value].labelKey),
-          })),
-        },
-      ]}
       toolbarEnd={
         canRequest ? (
           <Button asChild size="sm" iconStart="plus">
@@ -118,7 +118,7 @@ export function CreditNoteRequests({ initial }: { initial: InitialPage<CreditNot
           </Button>
         ) : null
       }
-      empty={{ title: t("empty") }}
+      empty={{ title: t("empty"), action: <EmptyLink href="/finance/documents" label="nav.items.documents" /> }}
     />
   );
 }
@@ -336,17 +336,46 @@ export function CreditNoteWizard({ orderId }: { orderId: string | null }) {
         <Callout tone="warning" title={t("approvalTitle")}>
           {t("approvalBody")}
         </Callout>
-        <div>
-          <Button disabled={!invoice || !kind || !done.amount} onClick={() => setConfirming(true)}>
-            {t("submit")}
-          </Button>
-        </div>
       </div>
     ),
   };
+  const ready = Boolean(invoice && kind && done.amount);
 
   return (
-    <Section title={t("title")} description={t("description")}>
+    <FormColumns
+      aside={
+        <FormSummary
+          title={t("steps.review")}
+          barClassName={EDGE_BAR}
+          action={
+            <Button disabled={!ready} onClick={() => setConfirming(true)}>
+              {t("submit")}
+            </Button>
+          }
+        >
+          <SummaryRows
+            rows={[
+              {
+                key: "invoice",
+                label: t("invoice"),
+                value: invoice ? <span className="tabular-nums">{invoice.docNumber}</span> : null,
+              },
+              { key: "buyer", label: t("buyer"), value: invoice?.buyer.name ?? null },
+              { key: "kind", label: t("kind"), value: kind ? tDocs(`cnKinds.${kind}`) : null },
+              {
+                key: "amount",
+                label: t("amount"),
+                value: done.amount ? (
+                  <span className="font-semibold tabular-nums">{format.thb(moneyText(amount))}</span>
+                ) : null,
+              },
+              { key: "settle", label: t("settleTo"), value: tCredit(`settlements.${settleTo}`) },
+            ]}
+          />
+          <p className="text-muted text-sm text-pretty">{t("approvalBody")}</p>
+        </FormSummary>
+      }
+    >
       <Stepper
         aria-label={t("stepsLabel")}
         headingLevel={2}
@@ -411,6 +440,6 @@ export function CreditNoteWizard({ orderId }: { orderId: string | null }) {
           }}
         />
       ) : null}
-    </Section>
+    </FormColumns>
   );
 }

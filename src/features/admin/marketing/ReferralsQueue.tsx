@@ -105,19 +105,22 @@ export function ReferralsQueue({ initial }: { initial: InitialPage<Referral> | n
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...REFERRAL_STATUSES.map((status) => ({
-            value: status,
-            label: tStatus(REFERRAL_STATUS[status].labelKey),
-            ...(status === "under_review" ? { countKey: "marketing.referral_review" } : {}),
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={referralsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...REFERRAL_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(REFERRAL_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         resource={referralsList}
         columns={columns}
         caption={t("title")}

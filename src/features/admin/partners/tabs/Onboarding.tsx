@@ -7,7 +7,7 @@ import { ONBOARDING_STEP_STATUS } from "@/domain/status";
 import { When } from "@/features/shared/format";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
@@ -79,18 +79,21 @@ export function Onboarding({ factory }: { factory: Factory }) {
           {
             id: "update",
             header: <span className="sr-only">{t("update")}</span>,
+            className: "w-12 text-end",
+            // One quiet edit per row (was "ปรับ …" spelled out thirteen times in bold): the step is in the row.
             cell: (row: Step) => (
-              <Button
+              <IconButton
+                name="edit"
                 size="sm"
                 variant="ghost"
+                className="text-muted hover:text-fg"
+                label={t("updateStep", { step: t(`steps.${row.step}`) })}
                 onClick={() => {
                   setEditing(row);
                   setStatus(row.status === "approved" ? "approved" : "in_progress");
                   setNotes(row.notes ?? "");
                 }}
-              >
-                {t("updateStep", { step: t(`steps.${row.step}`) })}
-              </Button>
+              />
             ),
           },
         ]
@@ -99,14 +102,54 @@ export function Onboarding({ factory }: { factory: Factory }) {
 
   return (
     <Section title={t("title")} description={factory.onboardingMode === "assisted" ? t("assistedNote") : t("selfNote")}>
-      <DataTable
-        caption={t("title")}
-        columns={columns}
-        rows={steps.data ?? []}
-        getRowId={(row) => row.step}
-        loading={steps.isPending}
-        density="compact"
-      />
+      {/* Thirteen steps read as one table on a desk; on a phone, one line each (step, state, when) rather than
+          thirteen tall cards. */}
+      <div className="hidden md:block">
+        <DataTable
+          caption={t("title")}
+          columns={columns}
+          rows={steps.data ?? []}
+          getRowId={(row) => row.step}
+          loading={steps.isPending}
+          density="compact"
+        />
+      </div>
+      <ul
+        className="border-border divide-border bg-surface rounded-card divide-y border md:hidden"
+        aria-label={t("title")}
+      >
+        {(steps.data ?? []).map((row) => (
+          <li key={row.step} className="flex items-center gap-3 px-4 py-2.5">
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{t(`steps.${row.step}`)}</p>
+              <p className="text-muted text-xs">
+                {row.enteredByStaff ? (row.factorySignedOffAt ? t("signedOff") : t("awaitingSignOff")) : t("byFactory")}
+                {row.completedAt ? (
+                  <>
+                    {" · "}
+                    <When at={row.completedAt} />
+                  </>
+                ) : null}
+              </p>
+            </div>
+            <StatusChip map={ONBOARDING_STEP_STATUS} value={row.status} />
+            {canManage ? (
+              <IconButton
+                name="edit"
+                size="sm"
+                variant="ghost"
+                className="text-muted hover:text-fg"
+                label={t("updateStep", { step: t(`steps.${row.step}`) })}
+                onClick={() => {
+                  setEditing(row);
+                  setStatus(row.status === "approved" ? "approved" : "in_progress");
+                  setNotes(row.notes ?? "");
+                }}
+              />
+            ) : null}
+          </li>
+        ))}
+      </ul>
       {editing ? (
         <FormDialog
           title={t("updateTitle", { step: t(`steps.${editing.step}`) })}

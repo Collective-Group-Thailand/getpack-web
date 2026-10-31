@@ -144,7 +144,12 @@
     "groupCode": "Order group",
     "poNumber": "PO number",
     "companyId": "Company",
-    "companyCode": "Company"
+    "companyCode": "Company",
+    "origin": "Origin",
+    "factory": "Factory",
+    "direction": "Price direction",
+    "productType": "Product type",
+    "proposedEffectiveFrom": "Proposed effective from"
   },
   "delegations": {
     "title": "Delegations",
@@ -304,5 +309,13 @@
   "autoApproved": {
     "title": "Auto-approved",
     "body": "This request's amount is within the policy's auto-approve amount, so no second approval was needed (recorded with the reason \"below threshold\")."
+  },
+  "values": {
+    "origin": {
+      "factory_proposal": "Factory proposal"
+    },
+    "direction": {
+      "factory_to_getpack": "Factory's price to getpack"
+    }
   }
 }

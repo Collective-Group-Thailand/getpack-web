@@ -7,7 +7,6 @@ import { listFor } from "@/features/admin/catalogue/resources";
 import { tableByKey } from "@/features/admin/catalogue/tables";
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { prefetchList } from "@/features/admin/console/prefetch.server";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 type Props = {
@@ -31,12 +30,7 @@ export default async function CmsTablePage({ params, searchParams }: Props) {
   return (
     <ConsolePage>
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("home.cmsTitle"), href: "/cms" }, { label: t(`tables.${def.key}.title`) }]}
-          />
-        }
+        back={{ href: "/cms", label: t("home.cmsTitle") }}
         title={t(`tables.${def.key}.title`)}
         description={t(`tables.${def.key}.description`)}
       />

@@ -9,9 +9,10 @@ import { STYLE_INTAKE_STATUS } from "@/domain/status";
 import { When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
@@ -40,6 +41,7 @@ const DECIDED: Intake["status"][] = ["approved_recipe", "approved_template", "re
  */
 export function StyleIntakeDetail({ intakeId }: { intakeId: string }) {
   const t = useTranslations("catalogue.intakes");
+  const tConsole = useTranslations("console.actions");
   const queryClient = useQueryClient();
   const canImport = useCan("styles.import");
   const canApprove = useCan("styles.approve_recipe");
@@ -75,118 +77,131 @@ export function StyleIntakeDetail({ intakeId }: { intakeId: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/style-intakes" }, { label: intake.title }]}
-          />
-        }
+        back={{ href: "/style-intakes", label: t("title") }}
         title={intake.title}
         meta={<StatusChip map={STYLE_INTAKE_STATUS} value={intake.status} size="md" />}
-        actions={
-          canApprove && open ? (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => {
-                  setBaseCode(intake.matchedRecipe?.baseCode ?? intake.proposedBaseCode ?? "");
-                  setDialog("approve");
-                }}
-              >
-                {t("approve")}
-              </Button>
-              <Button variant="ghost" className="text-danger" onClick={() => setDialog("reject")}>
-                {t("reject")}
-              </Button>
-            </div>
-          ) : null
-        }
+        description={`${intake.factory.code} · ${intake.factory.name}`}
       />
 
-      <Section title={t("provenance")}>
-        <DescriptionList
-          columns={2}
-          items={[
-            { term: t("factory"), description: `${intake.factory.code} · ${intake.factory.name}` },
-            { term: t("proposedBase"), description: intake.proposedBaseCode ?? "—" },
-            {
-              term: t("file"),
-              description: (
-                <Button size="sm" variant="secondary" iconStart="download" onClick={() => file.mutate(intake.file.id)}>
-                  {intake.file.originalName}
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="intake-next"
+            title={tConsole("nextTitle")}
+            tone={canApprove && open ? "primary" : "neutral"}
+            description={canApprove && open ? t("approveBody") : tConsole("nothingNext")}
+          >
+            {canApprove && open ? (
+              <ActionStack>
+                <Button
+                  size="lg"
+                  iconStart="check"
+                  onClick={() => {
+                    setBaseCode(intake.matchedRecipe?.baseCode ?? intake.proposedBaseCode ?? "");
+                    setDialog("approve");
+                  }}
+                >
+                  {t("approve")}
                 </Button>
-              ),
-            },
-            {
-              term: t("sha256"),
-              description: <span className="text-xs break-all tabular-nums">{intake.fileSha256}</span>,
-            },
-            { term: t("terms"), description: t("termsVersion", { version: intake.termsVersion }) },
-            { term: t("submitted"), description: <When at={intake.createdAt} /> },
-            { term: t("note"), description: intake.note ?? "—" },
-            ...(intake.reviewedBy
-              ? [{ term: t("reviewed"), description: t("reviewedBy", { name: intake.reviewedBy.displayName }) }]
-              : []),
-            ...(intake.matchedRecipe
-              ? [
-                  {
-                    term: t("matchedRecipe"),
-                    description: `${intake.matchedRecipe.baseCode} · ${intake.matchedRecipe.id}`,
-                  },
-                ]
-              : []),
-            ...(intake.templateBaseCode ? [{ term: t("templateOf"), description: intake.templateBaseCode }] : []),
-            ...(intake.resultRecipe
-              ? [
-                  {
-                    term: t("resultRecipe"),
-                    description: `${intake.resultRecipe.baseCode} · ${intake.resultRecipe.id}`,
-                  },
-                ]
-              : []),
-            ...(intake.rejectReason ? [{ term: t("rejectReason"), description: intake.rejectReason }] : []),
-          ]}
-        />
-      </Section>
-
-      {intake.deviations?.length ? (
-        <Section title={t("deviations")}>
-          <ul className="flex flex-col gap-1 text-sm">
-            {intake.deviations.map((d) => (
-              <li key={d.aspect}>
-                <span className="font-medium">{d.aspect}</span>
-                <span className="text-muted">{t("deviationSep")}</span>
-                <span className="tabular-nums">{d.note}</span>
-              </li>
-            ))}
-          </ul>
+                <Button size="lg" variant="destructive" iconStart="close" onClick={() => setDialog("reject")}>
+                  {t("reject")}
+                </Button>
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        <Section title={t("provenance")}>
+          <DescriptionList
+            columns={2}
+            items={[
+              { term: t("factory"), description: `${intake.factory.code} · ${intake.factory.name}` },
+              { term: t("proposedBase"), description: intake.proposedBaseCode ?? "—" },
+              {
+                term: t("file"),
+                description: (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    iconStart="download"
+                    onClick={() => file.mutate(intake.file.id)}
+                  >
+                    {intake.file.originalName}
+                  </Button>
+                ),
+              },
+              {
+                term: t("sha256"),
+                description: <span className="text-xs break-all tabular-nums">{intake.fileSha256}</span>,
+              },
+              { term: t("terms"), description: t("termsVersion", { version: intake.termsVersion }) },
+              { term: t("submitted"), description: <When at={intake.createdAt} /> },
+              { term: t("note"), description: intake.note ?? "—" },
+              ...(intake.reviewedBy
+                ? [{ term: t("reviewed"), description: t("reviewedBy", { name: intake.reviewedBy.displayName }) }]
+                : []),
+              ...(intake.matchedRecipe
+                ? [
+                    {
+                      term: t("matchedRecipe"),
+                      description: `${intake.matchedRecipe.baseCode} · ${intake.matchedRecipe.id}`,
+                    },
+                  ]
+                : []),
+              ...(intake.templateBaseCode ? [{ term: t("templateOf"), description: intake.templateBaseCode }] : []),
+              ...(intake.resultRecipe
+                ? [
+                    {
+                      term: t("resultRecipe"),
+                      description: `${intake.resultRecipe.baseCode} · ${intake.resultRecipe.id}`,
+                    },
+                  ]
+                : []),
+              ...(intake.rejectReason ? [{ term: t("rejectReason"), description: intake.rejectReason }] : []),
+            ]}
+          />
         </Section>
-      ) : null}
 
-      {canImport && open ? (
-        <Section title={t("matchTitle")} description={isDxf ? t("matchBody") : t("pdfBody")}>
-          {isDxf ? (
-            <IntakeMatcher
-              proposedBaseCode={intake.proposedBaseCode}
-              busy={matching}
-              onMatch={async (body) => {
-                setMatching(true);
-                try {
-                  const { data } = await adminBrowserApis().contract.POST(
-                    "/v1/admin/style-intakes/{intakeId}/actions/match",
-                    { ...path, body },
-                  );
-                  settle(data);
-                  toast.success(t("matched"));
-                } catch (error) {
-                  toast.error(problemMessage(error, t("failed")));
-                } finally {
-                  setMatching(false);
-                }
-              }}
-            />
-          ) : null}
-        </Section>
-      ) : null}
+        {intake.deviations?.length ? (
+          <Section title={t("deviations")}>
+            <ul className="flex flex-col gap-1 text-sm">
+              {intake.deviations.map((d) => (
+                <li key={d.aspect}>
+                  <span className="font-medium">{d.aspect}</span>
+                  <span className="text-muted">{t("deviationSep")}</span>
+                  <span className="tabular-nums">{d.note}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        ) : null}
+
+        {canImport && open ? (
+          <Section title={t("matchTitle")} description={isDxf ? t("matchBody") : t("pdfBody")}>
+            {isDxf ? (
+              <IntakeMatcher
+                proposedBaseCode={intake.proposedBaseCode}
+                busy={matching}
+                onMatch={async (body) => {
+                  setMatching(true);
+                  try {
+                    const { data } = await adminBrowserApis().contract.POST(
+                      "/v1/admin/style-intakes/{intakeId}/actions/match",
+                      { ...path, body },
+                    );
+                    settle(data);
+                    toast.success(t("matched"));
+                  } catch (error) {
+                    toast.error(problemMessage(error, t("failed")));
+                  } finally {
+                    setMatching(false);
+                  }
+                }}
+              />
+            ) : null}
+          </Section>
+        ) : null}
+      </DetailLayout>
 
       {dialog === "approve" ? (
         <FormDialog

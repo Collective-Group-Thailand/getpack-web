@@ -54,16 +54,19 @@ export function ProposalsList({ initial }: { initial: InitialPage<ProposalSummar
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("directionsLabel")}
-        param="direction"
-        tabs={[
-          { value: null, label: t("all") },
-          { value: "factory_to_getpack", label: t("directions.factory_to_getpack"), countKey: "partners.proposals" },
-          { value: "getpack_to_factory", label: t("directions.getpack_to_factory") },
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={proposalsList}
+            label={t("directionsLabel")}
+            param="direction"
+            tabs={[
+              { value: null, label: t("all") },
+              { value: "factory_to_getpack", label: t("directions.factory_to_getpack") },
+              { value: "getpack_to_factory", label: t("directions.getpack_to_factory") },
+            ]}
+          />
+        }
         resource={proposalsList}
         columns={columns}
         caption={t("title")}

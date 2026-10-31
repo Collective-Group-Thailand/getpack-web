@@ -5,18 +5,18 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { AGENT_COMMISSION_STATUS, AGENT_STATEMENT_STATUS } from "@/domain/status";
+import { AGENT_STATEMENT_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
-import { EmptyState } from "@/ui/components/EmptyState";
+import type { DataTableColumn } from "@/ui/components/DataTable";
+import { DateField } from "@/ui/components/DateField";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { Stat } from "@/ui/components/Stat";
+import { Statement, type StatementRow } from "@/ui/components/Statement";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -28,17 +28,16 @@ import {
   QueryError,
   QueueTabs,
   ResourceList,
-  Section,
   StatusChip,
   useCan,
   type InitialPage,
 } from "../console";
+import { DetailSkeleton } from "../console/DetailSkeleton";
 import { CommissionWhat } from "./Commissions";
 import {
   AGENT_KINDS,
   STATEMENT_STATUSES,
   statementsList,
-  type AgentCommission,
   type AgentStatement,
   type AgentStatementDetail,
 } from "./resources";
@@ -95,18 +94,22 @@ export function StatementsList({ initial }: { initial: InitialPage<AgentStatemen
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...STATEMENT_STATUSES.map((status) => ({
-            value: status,
-            label: tStatus(AGENT_STATEMENT_STATUS[status].labelKey),
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={statementsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...STATEMENT_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(AGENT_STATEMENT_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         resource={statementsList}
         columns={columns}
         caption={t("title")}
@@ -115,7 +118,7 @@ export function StatementsList({ initial }: { initial: InitialPage<AgentStatemen
         rowHref={(row) => `/agents/statements/${row.id}`}
         rowTone={(row) => (row.status === "draft" ? "warning" : undefined)}
         filters={[
-          { id: "period", label: t("columns.period"), kind: "text", placeholder: "2026-09" },
+          { id: "period", label: t("columns.period"), kind: "month" },
           {
             id: "kind",
             label: t("columns.kind"),
@@ -135,7 +138,15 @@ export function StatementsList({ initial }: { initial: InitialPage<AgentStatemen
             </>
           ) : null
         }
-        empty={{ title: t("empty"), description: t("emptyHint") }}
+        empty={{
+          title: t("empty"),
+          description: t("emptyHint"),
+          action: canApprove ? (
+            <Button variant="secondary" iconStart="refresh" onClick={() => setDialog("generate")}>
+              {t("generate")}
+            </Button>
+          ) : undefined,
+        }}
       />
       {dialog ? <MonthDialog action={dialog} onClose={() => setDialog(null)} /> : null}
     </div>
@@ -147,6 +158,8 @@ function MonthDialog({ action, onClose }: { action: "generate" | "export"; onClo
   const tGenerate = useTranslations("agents.generate");
   const tPayroll = useTranslations("agents.payroll");
   const copy = action === "generate" ? tGenerate : tPayroll;
+  const tFilters = useTranslations("console.filters");
+  const format = useFormat();
   const refresh = useRefreshAgents();
   const [period, setPeriod] = useState(previousMonth());
   return (
@@ -170,7 +183,12 @@ function MonthDialog({ action, onClose }: { action: "generate" | "export"; onClo
       }}
     >
       <Field label={copy("month")} hint={copy("monthHint")} required>
-        <Input type="month" value={period} onChange={(event) => setPeriod(event.target.value)} />
+        <DateField
+          type="month"
+          value={period}
+          display={MONTH.test(period) ? format.date(`${period}-01`, { style: "month" }) : tFilters("pickMonth")}
+          onChange={(event) => setPeriod(event.target.value)}
+        />
       </Field>
     </FormDialog>
   );
@@ -185,6 +203,7 @@ async function readStatement(statementId: string) {
 }
 
 type StatementAction = "approve" | "void" | "markPaid";
+const STATEMENT_ACTION_ORDER: readonly StatementAction[] = ["approve", "markPaid", "void"];
 
 /**
  * One statement (D-420): its lines and totals, and the step it is waiting for — approval (which
@@ -193,6 +212,7 @@ type StatementAction = "approve" | "void" | "markPaid";
  */
 export function StatementDetail({ statementId }: { statementId: string }) {
   const t = useTranslations("agents.statement");
+  const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const queryClient = useQueryClient();
   const refresh = useRefreshAgents();
@@ -204,7 +224,7 @@ export function StatementDetail({ statementId }: { statementId: string }) {
   const query = useQuery({ queryKey: key, queryFn: async () => (await readStatement(statementId)).data });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const s: AgentStatementDetail | undefined = query.data;
-  if (!s) return null;
+  if (!s) return <DetailSkeleton />;
 
   const employee = s.agent.kind === "employee";
   const settle = () => {
@@ -219,26 +239,39 @@ export function StatementDetail({ statementId }: { statementId: string }) {
         ? ["markPaid"]
         : [];
 
-  const columns: DataTableColumn<AgentCommission>[] = [
-    { id: "what", header: t("columns.what"), cell: (row) => <CommissionWhat row={row} /> },
+  const ordered = [...actions].sort((x, y) => STATEMENT_ACTION_ORDER.indexOf(x) - STATEMENT_ACTION_ORDER.indexOf(y));
+  // The statement as it is paid: its commission lines, the total, the tax withheld and what is paid — every figure
+  // the API's, nothing added up here.
+  const statementRows: StatementRow[] = [
+    ...s.entries.map((row) => ({
+      key: row.id,
+      level: 1 as const,
+      label: (
+        <span className="flex flex-col gap-0.5 py-0.5">
+          <CommissionWhat row={row} />
+          {row.earnedAt ? (
+            <span className="text-muted text-xs">
+              {t("columns.earned")} {format.date(row.earnedAt)}
+            </span>
+          ) : null}
+        </span>
+      ),
+      amount: format.thb(row.amount),
+    })),
+    { key: "total", kind: "subtotal", label: t("total"), amount: format.thb(s.totalAmount) },
     {
-      id: "status",
-      header: t("columns.status"),
-      cell: (row) => <StatusChip map={AGENT_COMMISSION_STATUS} value={row.status} />,
+      key: "wht",
+      level: 1,
+      label: t("wht"),
+      amount: s.whtAmount ? format.thb(s.whtAmount) : employee ? t("viaPayroll") : "–",
     },
-    { id: "earnedAt", header: t("columns.earned"), cell: (row) => (row.earnedAt ? format.date(row.earnedAt) : "–") },
-    { id: "amount", header: t("columns.amount"), numeric: true, cell: (row) => format.thb(row.amount) },
+    { key: "paid", kind: "total", label: t("paid"), amount: s.paidAmount ? format.thb(s.paidAmount) : "–" },
   ];
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("statements"), href: "/agents/statements" }, { label: s.statementNo }]}
-          />
-        }
+        back={{ href: "/agents/statements", label: t("statements") }}
         title={s.statementNo}
         meta={
           <>
@@ -254,78 +287,70 @@ export function StatementDetail({ statementId }: { statementId: string }) {
             · <span className="tabular-nums">{s.agent.code}</span>
           </span>
         }
-        actions={actions.map((item) => (
-          <Button
-            key={item}
-            variant={item === "void" ? "ghost" : "primary"}
-            iconStart={item === "approve" ? "stamp" : item === "markPaid" ? "wallet" : undefined}
-            onClick={() => setAction(item)}
-          >
-            {t(`actions.${item}.label`)}
-          </Button>
-        ))}
       />
 
-      {s.status === "voided" && s.voidReason ? (
-        <Callout tone="info" title={t("voided")}>
-          {s.voidReason}
-        </Callout>
-      ) : null}
-      {s.status === "approved" && !employee ? (
-        <Callout tone="info" title={t("awaitingPayout")}>
-          {t("awaitingPayoutBody")}
-        </Callout>
-      ) : null}
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label={t("total")} value={format.thb(s.totalAmount)} />
-        <Stat label={t("wht")} value={s.whtAmount ? format.thb(s.whtAmount) : employee ? t("viaPayroll") : "–"} />
-        <Stat
-          label={t("paid")}
-          value={s.paidAmount ? format.thb(s.paidAmount) : "–"}
-          tone={s.paidAt ? "success" : "neutral"}
-        />
-        <Stat label={t("lines")} value={format.number(s.entryCount)} />
-      </div>
-
-      <Section title={t("timeline")}>
-        <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
-          {(
-            [
-              [
-                t("approvedAt"),
-                s.approvedAt
-                  ? `${format.dateTime(s.approvedAt)}${s.approvedBy ? ` · ${s.approvedBy.displayName}` : ""}`
-                  : "–",
-              ],
-              [t("exportedAt"), s.exportedAt ? format.dateTime(s.exportedAt) : "–"],
-              [t("paidAt"), s.paidAt ? format.date(s.paidAt) : "–"],
-            ] as const
-          ).map(([term, value]) => (
-            <div key={term} className="flex flex-col">
-              <dt className="text-muted text-xs">{term}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-        {s.vendorInvoiceId ? (
-          <p className="mt-3 text-sm">
-            <Link href={`/finance/payables/invoices/${s.vendorInvoiceId}`} className="text-primary hover:underline">
-              {t("openBill")}
-            </Link>
-          </p>
+      <DetailLayout
+        aside={
+          <ActionPanel id="statement-panel" tone={ordered.length ? "primary" : "neutral"} title={t("timeline")}>
+            <SummaryRows
+              rows={[
+                {
+                  key: "approved",
+                  label: t("approvedAt"),
+                  value: s.approvedAt
+                    ? `${format.dateTime(s.approvedAt)}${s.approvedBy ? ` · ${s.approvedBy.displayName}` : ""}`
+                    : "–",
+                },
+                { key: "exported", label: t("exportedAt"), value: s.exportedAt ? format.dateTime(s.exportedAt) : "–" },
+                { key: "paid", label: t("paidAt"), value: s.paidAt ? format.date(s.paidAt) : "–" },
+                { key: "lines", label: t("lines"), value: format.number(s.entryCount) },
+              ]}
+            />
+            {s.vendorInvoiceId ? (
+              <Link
+                href={`/finance/payables/invoices/${s.vendorInvoiceId}`}
+                className="text-primary text-sm font-medium hover:underline"
+              >
+                {t("openBill")}
+              </Link>
+            ) : null}
+            {ordered.length ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                {ordered.map((item) => (
+                  <Button
+                    key={item}
+                    variant={item === "void" ? "ghost" : "primary"}
+                    className={item === "void" ? "text-danger" : undefined}
+                    iconStart={item === "approve" ? "stamp" : item === "markPaid" ? "wallet" : undefined}
+                    onClick={() => setAction(item)}
+                  >
+                    {t(`actions.${item}.label`)}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {s.status === "voided" && s.voidReason ? (
+          <Callout tone="info" title={t("voided")}>
+            {s.voidReason}
+          </Callout>
         ) : null}
-      </Section>
+        {s.status === "approved" && !employee ? (
+          <Callout tone="info" title={t("awaitingPayout")}>
+            {t("awaitingPayoutBody")}
+          </Callout>
+        ) : null}
 
-      <Section title={t("entries")}>
-        <DataTable
+        <Statement
           caption={t("entries")}
-          columns={columns}
-          rows={s.entries}
-          getRowId={(row) => row.id}
-          empty={<EmptyState icon="coins" title={t("noEntries")} />}
+          title={t("entries")}
+          period={format.date(s.periodStart, { style: "month" })}
+          headers={{ label: t("columns.what"), amount: t("columns.amount") }}
+          rows={statementRows}
         />
-      </Section>
+      </DetailLayout>
 
       {action ? (
         <ConfirmAction
@@ -371,10 +396,10 @@ export function StatementDetail({ statementId }: { statementId: string }) {
         >
           {action === "markPaid" ? (
             <Field label={t("paidOn")} required>
-              <Input
-                type="date"
+              <DateField
                 value={paidOn}
                 max={bangkokToday()}
+                display={paidOn ? format.date(paidOn) : tFilters("pickDate")}
                 onChange={(event) => setPaidOn(event.target.value)}
               />
             </Field>

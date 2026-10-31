@@ -7,7 +7,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { INSTALMENT_STATUS, ORDER_GROUP_STATUS, ORDER_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DataTable } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -42,12 +41,7 @@ export function OrderGroup({ groupId }: { groupId: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("orders"), href: "/orders" }, { label: data.groupCode }]}
-          />
-        }
+        back={{ href: "/orders", label: t("orders") }}
         title={<span className="tabular-nums">{data.groupCode}</span>}
         meta={<StatusChip map={ORDER_GROUP_STATUS} value={data.status} size="md" />}
         actions={<GroupActions group={data} />}

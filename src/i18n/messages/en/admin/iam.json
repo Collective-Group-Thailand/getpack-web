@@ -114,7 +114,10 @@
       "submit": "Grant",
       "granted": "Role granted",
       "failed": "Could not grant the role"
-    }
+    },
+    "panelTitle": "Manage account",
+    "readOnly": "Your role can only view this account",
+    "openRoles": "View roles and permissions"
   },
   "roles": {
     "title": "Roles and permissions",

@@ -25,6 +25,7 @@ import {
   useCan,
   type InitialPage,
 } from "../console";
+import { AgentStats } from "./AgentStats";
 import { RecordPicker } from "./Pickers";
 import { AGENT_KINDS, AGENT_STATUSES, agentsList, type Agent } from "./resources";
 import { KindBadge, planOptions, usePlans, useRefreshAgents } from "./shared";
@@ -87,16 +88,21 @@ export function AgentsList({ initial }: { initial: InitialPage<Agent> | null }) 
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...AGENT_STATUSES.map((status) => ({ value: status, label: tStatus(AGENT_STATUS[status].labelKey) })),
-        ]}
-      />
+    <div className="flex flex-col gap-5">
+      <AgentStats />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={agentsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...AGENT_STATUSES.map((status) => ({ value: status, label: tStatus(AGENT_STATUS[status].labelKey) })),
+            ]}
+          />
+        }
         resource={agentsList}
         columns={columns}
         caption={t("title")}
@@ -120,7 +126,15 @@ export function AgentsList({ initial }: { initial: InitialPage<Agent> | null }) 
             </Button>
           ) : null
         }
-        empty={{ title: t("empty"), description: t("emptyHint") }}
+        empty={{
+          title: t("empty"),
+          description: t("emptyHint"),
+          action: canManage ? (
+            <Button variant="secondary" iconStart="user-plus" onClick={() => setCreating(true)}>
+              {t("createEmployee")}
+            </Button>
+          ) : undefined,
+        }}
       />
       {creating ? <CreateEmployeeDialog onClose={() => setCreating(false)} /> : null}
     </div>

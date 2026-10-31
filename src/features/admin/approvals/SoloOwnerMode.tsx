@@ -107,7 +107,7 @@ export function SoloOwnerModePanel() {
             </Button>
           </div>
         ) : (
-          <Button size="sm" iconStart="key" onClick={() => setTurningOn(true)}>
+          <Button size="sm" variant="secondary" iconStart="key" onClick={() => setTurningOn(true)}>
             {t("turnOn")}
           </Button>
         )

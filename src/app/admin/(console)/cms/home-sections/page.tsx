@@ -6,7 +6,6 @@ import { listFor } from "@/features/admin/catalogue/resources";
 import { tableByKey } from "@/features/admin/catalogue/tables";
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { prefetchList } from "@/features/admin/console/prefetch.server";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,12 +20,7 @@ export default async function HomeSectionsPage({ searchParams }: Props) {
   return (
     <ConsolePage>
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("home.cmsTitle"), href: "/cms" }, { label: t("tables.home-sections.title") }]}
-          />
-        }
+        back={{ href: "/cms", label: t("home.cmsTitle") }}
         title={t("tables.home-sections.title")}
         description={t("tables.home-sections.description")}
       />

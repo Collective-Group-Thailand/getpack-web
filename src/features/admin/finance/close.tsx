@@ -7,15 +7,17 @@ import { useState } from "react";
 
 import { CLOSE_STATUS, CLOSE_TASK_STATUS, PERIOD_STATUS } from "@/domain/status";
 import { uploadFile } from "@/features/shared/files/upload";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat, When } from "@/features/shared/format";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { DataTable } from "@/ui/components/DataTable";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
@@ -96,6 +98,7 @@ export function CloseIndex() {
  */
 export function CloseChecklistView({ month }: { month: string }) {
   const t = useTranslations("finance.close");
+  const tSteps = useTranslations("finance.close.steps");
   const format = useFormat();
   const queryClient = useQueryClient();
   const actor = useActor();
@@ -123,12 +126,7 @@ export function CloseChecklistView({ month }: { month: string }) {
   };
   const header = (data?: Checklist) => (
     <PageHeader
-      breadcrumbs={
-        <Breadcrumbs
-          label={t("breadcrumb")}
-          items={[{ label: t("title"), href: "/finance/close" }, { label: monthLabel }]}
-        />
-      }
+      back={{ href: "/finance/close", label: t("title") }}
       title={t("checklistTitle", { month: monthLabel })}
       description={t("description")}
       meta={
@@ -141,7 +139,6 @@ export function CloseChecklistView({ month }: { month: string }) {
           </>
         ) : null
       }
-      actions={data ? checklistActions(data) : null}
     />
   );
 
@@ -186,40 +183,101 @@ export function CloseChecklistView({ month }: { month: string }) {
   const submitterIsMe = data.submittedBy?.id === actor.id;
   const remaining = data.tasks.filter((task) => task.key !== "review" && !["done", "waived"].includes(task.status));
 
+  const steps = data.tasks.filter((task) => task.key !== "review");
+  const done = steps.filter((task) => ["done", "waived"].includes(task.status)).length;
+  const actions = checklistActions(data);
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {header(data)}
-      {data.status === "open" && remaining.length ? (
-        <Callout tone="info" title={t("remainingTitle", { count: remaining.length })}>
-          {t("remainingBody")}
-        </Callout>
-      ) : null}
-      {data.status === "in_review" ? (
-        <Callout tone="warning" title={t("inReviewTitle")}>
-          {submitterIsMe
-            ? t("inReviewMine")
-            : t("inReviewBody", { name: data.submittedBy?.name ?? "", at: format.dateTime(data.submittedAt) })}
-        </Callout>
-      ) : null}
-      {data.status === "closed" ? (
-        <Callout tone="success" title={t("closedTitle")}>
-          {t("closedBody", { name: data.closedBy?.name ?? "", at: format.dateTime(data.closedAt) })}
-          {data.auditorSignedOffAt ? ` ${t("signedOff", { at: format.dateTime(data.auditorSignedOffAt) })}` : ""}
-        </Callout>
-      ) : null}
-      {data.status === "locked" ? (
-        <Callout tone="neutral" title={t("lockedTitle")}>
-          {t("lockedBody")}
-        </Callout>
-      ) : null}
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="close-panel"
+            tone={data.status === "open" || data.status === "in_review" ? "primary" : "neutral"}
+            title={t("progress")}
+            description={t("stepsDone", { done, total: steps.length })}
+          >
+            <div className="bg-surface rounded-thumb h-1.5 overflow-hidden" aria-hidden>
+              <div
+                className="bg-primary h-full"
+                style={{ width: `${steps.length ? (done / steps.length) * 100 : 0}%` }}
+              />
+            </div>
+            <ol className="flex flex-col text-sm">
+              {data.tasks.map((task) => (
+                <li key={task.id}>
+                  <a
+                    href={`#step-${task.key}`}
+                    className="hover:bg-surface flex min-h-9 items-center gap-2 rounded-lg px-2"
+                  >
+                    <span className="text-muted w-5 shrink-0 text-end tabular-nums">{task.stepNo}</span>
+                    <span className="min-w-0 flex-1 truncate">{tSteps(`${task.key}.title`)}</span>
+                    <StatusChip map={CLOSE_TASK_STATUS} value={task.status} />
+                  </a>
+                </li>
+              ))}
+            </ol>
+            {actions}
+            <SummaryRows
+              rows={[
+                ...(data.submittedBy
+                  ? [
+                      {
+                        key: "submitted",
+                        label: t("submittedBy"),
+                        value: `${data.submittedBy.name} · ${format.dateTime(data.submittedAt)}`,
+                      },
+                    ]
+                  : []),
+                ...(data.closedBy
+                  ? [
+                      {
+                        key: "closed",
+                        label: t("closedTitle"),
+                        value: `${data.closedBy.name} · ${format.dateTime(data.closedAt)}`,
+                      },
+                    ]
+                  : []),
+                ...(data.auditorSignedOffAt
+                  ? [{ key: "signed", label: t("signOff"), value: format.dateTime(data.auditorSignedOffAt) }]
+                  : []),
+              ]}
+            />
+          </ActionPanel>
+        }
+      >
+        {data.status === "open" && remaining.length ? (
+          <Callout tone="info" title={t("remainingTitle", { count: remaining.length })}>
+            {t("remainingBody")}
+          </Callout>
+        ) : null}
+        {data.status === "in_review" ? (
+          <Callout tone="warning" title={t("inReviewTitle")}>
+            {submitterIsMe
+              ? t("inReviewMine")
+              : t("inReviewBody", { name: data.submittedBy?.name ?? "", at: format.dateTime(data.submittedAt) })}
+          </Callout>
+        ) : null}
+        {data.status === "closed" ? (
+          <Callout tone="success" title={t("closedTitle")}>
+            {t("closedBody", { name: data.closedBy?.name ?? "", at: format.dateTime(data.closedAt) })}
+            {data.auditorSignedOffAt ? ` ${t("signedOff", { at: format.dateTime(data.auditorSignedOffAt) })}` : ""}
+          </Callout>
+        ) : null}
+        {data.status === "locked" ? (
+          <Callout tone="neutral" title={t("lockedTitle")}>
+            {t("lockedBody")}
+          </Callout>
+        ) : null}
 
-      <ol className="flex flex-col gap-3">
-        {data.tasks.map((task) => (
-          <li key={task.id}>
-            <TaskCard checklist={data} task={task} onChange={refresh} />
-          </li>
-        ))}
-      </ol>
+        <ol className="flex flex-col gap-3">
+          {data.tasks.map((task) => (
+            <li key={task.id} id={`step-${task.key}`} className="scroll-mt-24">
+              <TaskCard checklist={data} task={task} onChange={refresh} />
+            </li>
+          ))}
+        </ol>
+      </DetailLayout>
 
       {action === "submit" ? (
         <ConfirmAction
@@ -316,34 +374,40 @@ export function CloseChecklistView({ month }: { month: string }) {
   function checklistActions(data: Checklist) {
     const mine = data.submittedBy?.id === actor.id;
     const onAction = setAction;
+    const submit = canManage && data.status === "open";
+    const review = canApprove && data.status === "in_review";
+    const sign = canSignOff && data.status === "closed" && !data.auditorSignedOffAt;
+    const lock = canApprove && data.status === "closed";
+    if (!submit && !review && !sign && !lock) return null;
     return (
-      <>
-        {canManage && data.status === "open" ? (
+      <ActionStack>
+        {submit ? (
           <Button disabled={remaining.length > 0} onClick={() => onAction("submit")}>
             {t("submit")}
           </Button>
         ) : null}
-        {canApprove && data.status === "in_review" ? (
-          <>
-            <Button variant="ghost" onClick={() => onAction("return")}>
-              {t("return")}
-            </Button>
-            <Button disabled={mine} title={mine ? t("ownSubmission") : undefined} onClick={() => onAction("approve")}>
-              {t("approve")}
-            </Button>
-          </>
+        {review ? (
+          <Button disabled={mine} title={mine ? t("ownSubmission") : undefined} onClick={() => onAction("approve")}>
+            {t("approve")}
+          </Button>
         ) : null}
-        {canSignOff && data.status === "closed" && !data.auditorSignedOffAt ? (
+        {review && mine ? <p className="text-muted text-xs">{t("ownSubmission")}</p> : null}
+        {sign ? (
           <Button variant="secondary" onClick={() => onAction("signOff")}>
             {t("signOff")}
           </Button>
         ) : null}
-        {canApprove && data.status === "closed" ? (
-          <Button variant="secondary" iconStart="lock" onClick={() => onAction("lock")}>
+        {review ? (
+          <Button variant="ghost" className="text-danger" onClick={() => onAction("return")}>
+            {t("return")}
+          </Button>
+        ) : null}
+        {lock ? (
+          <Button variant="ghost" className="text-danger" iconStart="lock" onClick={() => onAction("lock")}>
             {t("lock")}
           </Button>
         ) : null}
-      </>
+      </ActionStack>
     );
   }
 }

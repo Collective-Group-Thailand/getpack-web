@@ -8,25 +8,40 @@ import { JOURNAL_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { DeskSection } from "@/ui/components/DeskPage";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 import { useActor, useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
-import { Section } from "../console/FormDialog";
 import { QueryError } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { StatusChip } from "../console/StatusChip";
+import { StatusViews } from "./frame";
 import { JournalActions } from "./ledger";
 import { JOURNAL_KINDS, JOURNAL_STATUSES, journalsList } from "./resources";
-import { journalHref, sourceHref, StaffName, type Journal } from "./shared";
+import { journalHref, sourceHref, StaffName, useSourceLabel, type Journal } from "./shared";
 
 type Line = Journal["lines"][number];
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The console page of a line's dimension, for the dimensions that are records with one. */
+const DIMENSION_HREF: Partial<Record<string, (id: string) => string>> = {
+  order: (id) => `/orders/${id}`,
+  customer: (id) => `/customers/${id}`,
+  company: (id) => `/companies/${id}`,
+  factory: (id) => `/partners/${id}`,
+  vendor: (id) => `/finance/payables/vendors/${id}`,
+  campaign: (id) => `/marketing/campaigns/${id}`,
+  promotion: (id) => `/marketing/promotions/${id}`,
+};
 
 /**
  * One journal entry (accounting-design §1): immutable once posted, balanced, and carrying where it
@@ -35,6 +50,7 @@ type Line = Journal["lines"][number];
  */
 export function JournalDetail({ journalId }: { journalId: string }) {
   const t = useTranslations("finance.journals");
+  const sourceLabel = useSourceLabel();
   const format = useFormat();
   const actor = useActor();
   const query = useQuery({
@@ -78,11 +94,27 @@ export function JournalDetail({ journalId }: { journalId: string }) {
       header: t("dimensions"),
       cell: (row) => (
         <span className="text-muted flex flex-wrap gap-1 text-xs">
-          {Object.entries(row.dimensions).map(([dimension, value]) => (
-            <Badge key={dimension} tone="neutral" size="sm">
-              {t(`dimensionNames.${dimension}`)}: {String(value).slice(0, 8)}
-            </Badge>
-          ))}
+          {Object.entries(row.dimensions).map(([dimension, value]) => {
+            const name = t(`dimensionNames.${dimension}`);
+            const id = String(value);
+            // A record's id is not a name: the dimension links to the record where the console has a page for it.
+            if (!UUID.test(id))
+              return (
+                <Badge key={dimension} tone="neutral" size="sm">
+                  {name}: {id}
+                </Badge>
+              );
+            const to = DIMENSION_HREF[dimension]?.(id);
+            return to ? (
+              <Link key={dimension} href={to} className="text-primary hover:underline">
+                {name}
+              </Link>
+            ) : (
+              <Badge key={dimension} tone="neutral" size="sm">
+                {name}
+              </Badge>
+            );
+          })}
         </span>
       ),
     },
@@ -113,18 +145,12 @@ export function JournalDetail({ journalId }: { journalId: string }) {
     },
   ];
 
+  const sourceName = sourceLabel(source);
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[
-              { label: t("journals"), href: "/finance/ledger/journals" },
-              { label: journal.entryNo ?? t("draft") },
-            ]}
-          />
-        }
+        back={{ href: "/finance/ledger/journals", label: t("journals") }}
         title={t("title", { number: journal.entryNo ?? journal.jvNumber ?? t("draft") })}
         meta={
           <>
@@ -133,125 +159,158 @@ export function JournalDetail({ journalId }: { journalId: string }) {
           </>
         }
         description={journal.description}
-        actions={<JournalActions journal={journal} isMaker={journal.createdBy === actor.id} />}
       />
 
-      {journal.status === "pending_approval" ? (
-        <Callout tone="warning" title={t("waitingTitle")}>
-          {journal.createdBy === actor.id ? t("waitingMaker") : t("waitingBody")}{" "}
-          {journal.approvalRequestId ? (
-            <Link href={`/approvals/${journal.approvalRequestId}`} className="text-primary hover:underline">
-              {t("openApproval")}
+      <DetailLayout
+        aside={
+          <ActionPanel id="journal-panel" tone={journal.status === "draft" ? "primary" : "neutral"} title={t("amount")}>
+            <SummaryRows
+              rows={[
+                {
+                  key: "debit",
+                  label: t("totalDebit"),
+                  value: <span className="font-semibold tabular-nums">{format.thb(journal.totalDebit)}</span>,
+                },
+                {
+                  key: "credit",
+                  label: t("totalCredit"),
+                  value: <span className="font-semibold tabular-nums">{format.thb(journal.totalCredit)}</span>,
+                },
+                { key: "date", label: t("entryDate"), value: format.date(journal.entryDate) },
+                { key: "maker", label: t("maker"), value: <StaffName id={journal.createdBy} /> },
+                {
+                  key: "checker",
+                  label: t("checker"),
+                  value: journal.approvedBy ? <StaffName id={journal.approvedBy} /> : null,
+                },
+                {
+                  key: "posted",
+                  label: t("postedAt"),
+                  value: journal.postedAt ? <When at={journal.postedAt} absoluteOnly /> : null,
+                },
+              ]}
+            />
+            <JournalActions journal={journal} isMaker={journal.createdBy === actor.id} layout="panel" />
+            {journal.approvalRequestId ? (
+              <Link href={`/approvals/${journal.approvalRequestId}`} className="text-primary text-sm hover:underline">
+                {t("openApproval")}
+              </Link>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {journal.status === "pending_approval" ? (
+          <Callout tone="warning" title={t("waitingTitle")}>
+            {journal.createdBy === actor.id ? t("waitingMaker") : t("waitingBody")}
+          </Callout>
+        ) : null}
+        {journal.status === "rejected" ? (
+          <Callout tone="danger" title={t("rejectedTitle")}>
+            {journal.rejectionReason ?? t("rejectedBody")}
+          </Callout>
+        ) : null}
+        {journal.autoReverseOn && journal.status !== "rejected" ? (
+          <Callout tone="info" title={t("autoReverseTitle")}>
+            {t("autoReverseBody", { date: format.date(journal.autoReverseOn) })}
+          </Callout>
+        ) : null}
+        {journal.reversedById ? (
+          <Callout tone="warning" title={t("reversedTitle")}>
+            <Link href={journalHref(journal.reversedById)} className="text-primary hover:underline">
+              {t("openReversal")}
             </Link>
-          ) : null}
-        </Callout>
-      ) : null}
-      {journal.status === "rejected" ? (
-        <Callout tone="danger" title={t("rejectedTitle")}>
-          {journal.rejectionReason ?? t("rejectedBody")}
-        </Callout>
-      ) : null}
-      {journal.autoReverseOn && journal.status !== "rejected" ? (
-        <Callout tone="info" title={t("autoReverseTitle")}>
-          {t("autoReverseBody", { date: format.date(journal.autoReverseOn) })}
-        </Callout>
-      ) : null}
+          </Callout>
+        ) : null}
 
-      {journal.reversedById ? (
-        <Callout tone="warning" title={t("reversedTitle")}>
-          <Link href={journalHref(journal.reversedById)} className="text-primary hover:underline">
-            {t("openReversal")}
-          </Link>
-        </Callout>
-      ) : null}
+        <DeskSection title={t("lines")}>
+          <DataTable
+            caption={t("lines")}
+            columns={columns}
+            rows={journal.lines}
+            getRowId={(row) => String(row.lineNo)}
+            density="compact"
+          />
+          <dl className="ms-auto grid w-full max-w-xs grid-cols-2 gap-x-6 gap-y-1 text-sm">
+            <dt className="text-muted">{t("totalDebit")}</dt>
+            <dd className="border-border-strong border-t pt-1 text-end font-semibold tabular-nums">
+              {format.thb(journal.totalDebit)}
+            </dd>
+            <dt className="text-muted">{t("totalCredit")}</dt>
+            <dd className="text-end font-semibold tabular-nums">{format.thb(journal.totalCredit)}</dd>
+          </dl>
+        </DeskSection>
 
-      <Section title={t("trail")} description={t("trailNote")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            {
-              term: t("source"),
-              description: source ? (
-                href ? (
-                  <Link href={href} className="text-primary tabular-nums hover:underline">
-                    {source.number ?? source.id.slice(0, 8)}
-                  </Link>
-                ) : (
-                  <span className="tabular-nums">{source.number ?? source.id.slice(0, 8)}</span>
-                )
-              ) : (
-                t("manual")
-              ),
-            },
-            { term: t("sourceType"), description: source ? t(`sourceTypes.${source.type}`) : "—" },
-            {
-              term: t("event"),
-              description: journal.domainEventId ? (
-                <Link
-                  href={`/outbox?q=${journal.domainEventId}`}
-                  className="text-primary text-xs tabular-nums hover:underline"
-                >
-                  {journal.domainEventId}
-                </Link>
-              ) : (
-                "—"
-              ),
-            },
-            {
-              term: t("rule"),
-              description: journal.postingRule
-                ? t("ruleVersion", { rule: journal.postingRule, version: journal.postingRuleVersion ?? 1 })
-                : "—",
-            },
-            { term: t("documentDate"), description: format.date(journal.documentDate) },
-            { term: t("entryDate"), description: format.date(journal.entryDate) },
-            {
-              term: t("period"),
-              description: period ? t("periodName", { year: period.year, no: period.periodNo }) : "—",
-            },
-            { term: t("maker"), description: <StaffName id={journal.createdBy} /> },
-            { term: t("checker"), description: journal.approvedBy ? <StaffName id={journal.approvedBy} /> : "—" },
-            { term: t("postedAt"), description: <When at={journal.postedAt} absoluteOnly /> },
-            {
-              term: t("reverses"),
-              description: journal.reversesId ? (
-                <Link href={journalHref(journal.reversesId)} className="text-primary hover:underline">
-                  {t("openOriginal")}
-                </Link>
-              ) : (
-                "—"
-              ),
-            },
-            {
-              term: t("approval"),
-              description: journal.approvalRequestId ? (
-                <Link href={`/approvals/${journal.approvalRequestId}`} className="text-primary hover:underline">
-                  {t("openApproval")}
-                </Link>
-              ) : (
-                "—"
-              ),
-            },
-          ]}
-        />
-      </Section>
-
-      <Section title={t("lines")}>
-        <DataTable
-          caption={t("lines")}
-          columns={columns}
-          rows={journal.lines}
-          getRowId={(row) => String(row.lineNo)}
-          density="compact"
-        />
-        <dl className="ms-auto mt-3 grid max-w-xs grid-cols-2 gap-x-6 text-sm">
-          <dt className="text-muted">{t("totalDebit")}</dt>
-          <dd className="text-end font-semibold tabular-nums">{format.thb(journal.totalDebit)}</dd>
-          <dt className="text-muted">{t("totalCredit")}</dt>
-          <dd className="text-end font-semibold tabular-nums">{format.thb(journal.totalCredit)}</dd>
-        </dl>
-      </Section>
+        <DeskSection title={t("trail")} description={t("trailNote")}>
+          <div className="border-border bg-surface rounded-xl border p-4 sm:p-5">
+            <DescriptionList
+              columns={3}
+              items={[
+                {
+                  term: t("source"),
+                  description: href ? (
+                    <Link href={href} className="text-primary tabular-nums hover:underline">
+                      {sourceName}
+                    </Link>
+                  ) : (
+                    <span className="tabular-nums">{sourceName}</span>
+                  ),
+                },
+                {
+                  term: t("sourceType"),
+                  description: source ? sourceLabel({ type: source.type, number: null }) : "—",
+                },
+                {
+                  term: t("event"),
+                  description: journal.domainEventId ? (
+                    <Link
+                      href={`/outbox?q=${journal.domainEventId}`}
+                      className="text-primary text-xs [overflow-wrap:anywhere] tabular-nums hover:underline"
+                    >
+                      {journal.domainEventId}
+                    </Link>
+                  ) : (
+                    "—"
+                  ),
+                },
+                {
+                  term: t("rule"),
+                  description: journal.postingRule
+                    ? t("ruleVersion", { rule: journal.postingRule, version: journal.postingRuleVersion ?? 1 })
+                    : "—",
+                },
+                { term: t("documentDate"), description: format.date(journal.documentDate) },
+                {
+                  term: t("period"),
+                  description: period ? t("periodName", { year: period.year, no: period.periodNo }) : "—",
+                },
+                {
+                  term: t("reverses"),
+                  description: journal.reversesId ? (
+                    <Link href={journalHref(journal.reversesId)} className="text-primary hover:underline">
+                      {t("openOriginal")}
+                    </Link>
+                  ) : (
+                    "—"
+                  ),
+                },
+              ]}
+            />
+          </div>
+        </DeskSection>
+      </DetailLayout>
     </div>
+  );
+}
+
+/** The ledger's one way to start a manual entry, in the page header (shown to those who may make one). */
+export function NewJournalButton() {
+  const t = useTranslations("finance.journals");
+  const canManage = useCan("ledger.journals.manage");
+  if (!canManage) return null;
+  return (
+    <Button asChild iconStart="plus">
+      <Link href="/finance/ledger/journals/new">{t("newManual")}</Link>
+    </Button>
   );
 }
 
@@ -261,6 +320,7 @@ export function JournalDetail({ journalId }: { journalId: string }) {
  */
 export function JournalsList({ initial }: { initial: InitialPage<Journal> | null }) {
   const t = useTranslations("finance.journals");
+  const sourceLabel = useSourceLabel();
   const format = useFormat();
   const canManage = useCan("ledger.journals.manage");
   const columns: DataTableColumn<Journal>[] = [
@@ -294,7 +354,8 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
       header: t("source"),
       cell: (row) => {
         const href = sourceHref(row.source);
-        const label = row.source ? (row.source.number ?? row.source.id.slice(0, 8)) : t("manual");
+        // The document's number, or — when the API sends none (points, a stock count) — what kind of record it is.
+        const label = sourceLabel(row.source);
         return href ? (
           <Link href={href} className="text-primary text-sm whitespace-nowrap tabular-nums hover:underline">
             {label}
@@ -318,12 +379,13 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
       caption={t("journals")}
       initial={initial}
       searchLabel={t("search")}
-      toolbarEnd={
-        canManage ? (
-          <Button asChild size="sm" iconStart="plus">
-            <Link href="/finance/ledger/journals/new">{t("newManual")}</Link>
-          </Button>
-        ) : null
+      rowHref={(row) => journalHref(row.id)}
+      views={
+        <StatusViews
+          resource={journalsList}
+          label={t("status")}
+          statuses={JOURNAL_STATUSES.map((value) => ({ value, label: t(`statuses.${value}`) }))}
+        />
       }
       filters={[
         { id: "accountCode", label: t("account"), kind: "text", placeholder: "1210" },
@@ -333,16 +395,17 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
           kind: "select",
           options: JOURNAL_KINDS.map((value) => ({ value, label: t(`kinds.${value}`) })),
         },
-        {
-          id: "status",
-          label: t("status"),
-          kind: "select",
-          options: JOURNAL_STATUSES.map((value) => ({ value, label: t(`statuses.${value}`) })),
-        },
         { id: "from", label: t("from"), kind: "date" },
         { id: "to", label: t("to"), kind: "date" },
       ]}
-      empty={{ title: t("none") }}
+      empty={{
+        title: t("none"),
+        action: canManage ? (
+          <Button asChild variant="secondary" iconStart="plus">
+            <Link href="/finance/ledger/journals/new">{t("newManual")}</Link>
+          </Button>
+        ) : undefined,
+      }}
     />
   );
 }

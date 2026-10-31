@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { useFormat } from "@/features/shared/format";
+import { DateField } from "@/ui/components/DateField";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { SearchInput } from "@/ui/components/SearchInput";
@@ -12,6 +14,8 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 export type FilterDef =
   | { id: string; label: string; kind: "select"; options: readonly { value: string; label: string }[] }
   | { id: string; label: string; kind: "date" }
+  /** A calendar month, `YYYY-MM` in the URL; shown as the month in the reader's language. */
+  | { id: string; label: string; kind: "month" }
   | { id: string; label: string; kind: "text"; placeholder?: string };
 
 /** Radix Select cannot hold an empty value, so "any" is a sentinel that never reaches the URL. */
@@ -27,6 +31,7 @@ export function FilterControl({
   onChange: (value: string | null) => void;
 }) {
   const t = useTranslations("console.filters");
+  const format = useFormat();
 
   return (
     <Field label={filter.label} className="min-w-40">
@@ -37,7 +42,18 @@ export function FilterControl({
           options={[{ value: ANY, label: t("any") }, ...filter.options]}
         />
       ) : filter.kind === "date" ? (
-        <Input type="date" value={value ?? ""} onChange={(event) => onChange(event.target.value || null)} />
+        <DateField
+          value={value ?? ""}
+          display={value ? format.date(value) : t("pickDate")}
+          onChange={(event) => onChange(event.target.value || null)}
+        />
+      ) : filter.kind === "month" ? (
+        <DateField
+          type="month"
+          value={value ?? ""}
+          display={value ? format.date(`${value}-01`, { style: "month" }) : t("pickMonth")}
+          onChange={(event) => onChange(event.target.value || null)}
+        />
       ) : (
         <TextFilter value={value ?? ""} onChange={onChange} placeholder={filter.placeholder} />
       )}
@@ -97,7 +113,7 @@ export function ListSearch({
   const [text, setText] = useDebouncedValue(value, onChange);
   return (
     // The placeholder says what to type; the label stays for screen readers only (UX audit: one-line toolbar).
-    <Field label={label} labelHidden className="w-full max-w-sm">
+    <Field label={label} labelHidden className="w-full md:w-64 xl:w-72">
       <SearchInput
         value={text}
         onValueChange={setText}

@@ -15,11 +15,20 @@ export const flagsList = defineList<FeatureFlag>({
   getRowName: (row) => row.key,
 });
 
+/** The outbox tab that is every event; no `?status=` is the dead letters, the ones a person has to look at. */
+export const ALL_EVENTS = "all";
+
 export const outboxList = defineList<OutboxMessage>({
   key: "outbox",
-  fetch: async ({ contract }, query) =>
-    (await contract.GET("/v1/admin/outbox", { params: { query: query as never } })).data!,
+  fetch: async ({ contract }, { status, ...query }) => {
+    const chosen = !status ? "dead" : status === ALL_EVENTS ? null : status;
+    return (
+      await contract.GET("/v1/admin/outbox", {
+        params: { query: { ...query, ...(chosen ? { status: chosen } : {}) } as never },
+      })
+    ).data!;
+  },
   getRowId: (row) => row.eventId,
   getRowName: (row) => row.type,
-  defaults: { filterKeys: ["status"], filters: { status: "dead" } },
+  defaults: { filterKeys: ["status"] },
 });

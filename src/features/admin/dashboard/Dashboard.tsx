@@ -1,9 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format";
 import { useNotifications } from "@/features/shared/shell/notifications";
@@ -11,10 +11,13 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
+import { DeskSection, StatsRow, type SummaryItem } from "@/ui/components/DeskPage";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { PageHeader } from "@/ui/components/PageHeader";
+import { Row, RowList } from "@/ui/components/RowList";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { SlaTimer } from "@/ui/components/SlaTimer";
-import { Icon, type IconName } from "@/ui/icons";
+import { type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 // By path, not through the console barrel: the barrel holds the form engine (zod,
@@ -22,8 +25,9 @@ import { cn } from "@/ui/lib/cn";
 import { useActor, useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
 import { QueryError } from "../console/QueryError";
-import { useQueues } from "../console/queues";
+import { listTotalQuery, useQueues } from "../console/queues";
 import { useSlaFormat } from "../console/useSlaFormat";
+import { rowsSourceAt } from "../shell/badges";
 import { browserPath } from "../shell/menu";
 
 type Dashboard = Schemas["AdminDashboardDto"];
@@ -45,19 +49,30 @@ const QUEUE_ICONS: Record<string, IconName> = {
   finance: "wallet",
 };
 
+/** "(D-074)", "(D-221, D-300)", "(D-061: 4 business hours)": decision references are for the team, not the desk. */
+const DECISION_REF = /\s*\(D-\d{3}[^)]*\)/g;
+
+/** Today in Bangkok, `YYYY-MM-DD`. */
+const bangkokToday = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+
 /**
- * The back-office home (F2 A.2.8): work queues first — the actionable queues this person may
- * work, with counts and SLA state, then what is waiting for their approval.
+ * The back-office home (F2 A.2.8): a calm operations page. First what needs me now — the queues with work, the most
+ * urgent four as figures and the rest as rows, each count read from the list it opens so the number and the rows
+ * agree — then today's figures from the API, then what waits for my approval and the latest updates to me.
  *
  * Which queues appear is the API's decision (`admin.dashboard.get`), not a role check here; a key
  * the UI has no label for still shows, as itself.
  */
 export function Dashboard({ initial }: { initial: Dashboard | null }) {
   const t = useTranslations("dashboard");
+  const tOps = useTranslations("platform.ops");
+  const tAnalytics = useTranslations("analytics");
+  const locale = useLocale();
   const format = useFormat();
   const sla = useSlaFormat();
   const actor = useActor();
   const canAct = useCan("approvals.act");
+  const canSales = useCan("analytics.read");
   const queues = useQueues();
   const data = queues.data ?? initial ?? undefined;
 
@@ -67,6 +82,18 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
     enabled: canAct,
     staleTime: STALE_TIME.live,
   });
+  const [day] = useState(bangkokToday);
+  const sales = useQuery({
+    queryKey: queryKeys.list("admin", "analytics", { part: "sales-today", from: day, to: day }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/analytics/sales", {
+          params: { query: { from: day, to: day, interval: "day" } },
+        })
+      ).data!,
+    enabled: canSales,
+    staleTime: STALE_TIME.live,
+  });
 
   const label = (key: string) => (t.has(`queues.${key}`) ? t(`queues.${key}`) : key);
   const [showEmpty, setShowEmpty] = useState(false);
@@ -74,10 +101,26 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
   const [now] = useState(() => Date.now());
   const notifications = useNotifications("admin");
 
-  // UX audit, dashboard: what to do today first — the queues with work, most urgent first (late
-  // ones, then the soonest SLA) — as up to four large cards; every other queue with work as one
-  // compact row; empty queues folded away.
-  const busy = [...(data?.queues ?? [])]
+  // A queue that opens one of the work lists counts that list's rows (the same read as its tab), so "รอชำระ 4"
+  // opens four rows; any other queue keeps the dashboard's count.
+  const all = data?.queues ?? [];
+  const sources = all.map((queue) => rowsSourceAt(browserPath(queue.path)));
+  const totals = useQueries({
+    queries: sources.map((source, index) =>
+      source
+        ? listTotalQuery(source)
+        : { queryKey: ["admin", "dashboard-count", all[index]?.key], queryFn: () => null, enabled: false },
+    ),
+  });
+  const counted = all.map((queue, index) => {
+    const rows = totals[index]?.data;
+    const count = typeof rows === "number" ? rows : queue.count;
+    return { ...queue, count, overdueCount: Math.min(queue.overdueCount, count) };
+  });
+
+  // What to do today first — the queues with work, most urgent first (late ones, then the soonest SLA): four as
+  // figures, every other queue with work as one row, empty queues folded away.
+  const busy = counted
     .filter((queue) => queue.count > 0)
     .sort(
       (a, b) =>
@@ -87,7 +130,7 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
     );
   const today = busy.slice(0, 4);
   const others = busy.slice(4);
-  const empty = (data?.queues ?? []).filter((queue) => queue.count === 0);
+  const empty = counted.filter((queue) => queue.count === 0);
   const totalToday = busy.reduce((sum, queue) => sum + queue.count, 0);
   const totalOverdue = busy.reduce((sum, queue) => sum + queue.overdueCount, 0);
   const soon = (queue: { nextDueAt: string | null }) =>
@@ -95,119 +138,117 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
   const tagged = (notifications.data?.items ?? []).filter((item) => /mention|tag/i.test(item.eventType));
   const feed = (tagged.length > 0 ? tagged : (notifications.data?.items ?? [])).slice(0, 5);
 
+  const figures: SummaryItem[] = today.map((queue) => {
+    const late = queue.overdueCount > 0;
+    return {
+      key: queue.key,
+      label: label(queue.key),
+      icon: QUEUE_ICONS[queue.key.split(".")[0] ?? ""] ?? "inbox",
+      value: format.number(queue.count),
+      tone: late ? "danger" : soon(queue) ? "warning" : "neutral",
+      hint: late ? (
+        t("overdue", { count: queue.overdueCount })
+      ) : queue.nextDueAt ? (
+        <SlaTimer dueAt={queue.nextDueAt} format={sla} />
+      ) : (
+        t("nothingDue")
+      ),
+      href: browserPath(queue.path),
+    };
+  });
+
+  // A system alert names its signal by key ("แจ้งเตือนระบบ: acceptance_overdue") with an English body: the desk reads
+  // the signal's Thai name and opens /ops for the figures.
+  const describe = (item: (typeof feed)[number]) => {
+    const signal = item.title?.match(/:\s*([a-z][a-z0-9_]+)\s*$/)?.[1];
+    if (signal && tOps.has(`signals.${signal}`)) {
+      const kind = locale === "en" ? item.eventTypeLabelEn : item.eventTypeLabelTh;
+      return { title: `${kind}: ${tOps(`signals.${signal}`)}`, body: null, href: item.url ?? "/ops" };
+    }
+    const body = item.body.replace(DECISION_REF, "");
+    return { title: item.title ?? body, body: item.title ? body : null, href: item.url };
+  };
+
   return (
     <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">{t("hello", { name: actor.displayName })}</h1>
-        <p className="text-muted mt-1.5 text-sm">
-          {format.date(new Date(now).toISOString(), { style: "long" })}
-          {data ? (
-            <>
-              {" · "}
-              {t.rich("todaySummary", {
-                count: totalToday,
-                overdue: totalOverdue,
-                strong: (chunks) => <strong className="text-fg font-semibold">{chunks}</strong>,
-                danger: (chunks) => <strong className="text-danger-subtle-fg font-semibold">{chunks}</strong>,
-              })}
-            </>
-          ) : null}
-        </p>
-      </header>
+      <PageHeader
+        title={t("hello", { name: actor.displayName })}
+        description={
+          <>
+            {format.date(new Date(now).toISOString(), { style: "long" })}
+            {data ? (
+              <>
+                {" · "}
+                {t.rich("todaySummary", {
+                  count: totalToday,
+                  overdue: totalOverdue,
+                  strong: (chunks) => <strong className="text-fg font-semibold">{chunks}</strong>,
+                  danger: (chunks) => <strong className="text-danger-subtle-fg font-semibold">{chunks}</strong>,
+                })}
+              </>
+            ) : null}
+          </>
+        }
+      />
 
-      <section aria-labelledby="dashboard-queues" className="flex flex-col gap-3">
-        <h2 id="dashboard-queues" className="text-muted text-sm font-medium">
-          {t("todayTitle")}
-        </h2>
+      <DeskSection id="dashboard-queues" title={t("todayTitle")}>
         {queues.isError && !data ? (
           <QueryError error={queues.error} onRetry={() => void queues.refetch()} />
         ) : !data ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton key={index} className="h-36" />
+              <Skeleton key={index} className="h-28" />
             ))}
           </div>
         ) : data.queues.length === 0 ? (
-          <EmptyState icon="inbox" title={t("noQueuesTitle")} description={t("noQueuesBody")} />
+          <EmptyState
+            icon="inbox"
+            title={t("noQueuesTitle")}
+            description={t("noQueuesBody")}
+            action={
+              <Button asChild variant="secondary">
+                <Link href="/approvals">{t("allApprovals")}</Link>
+              </Button>
+            }
+          />
         ) : today.length === 0 ? (
-          <EmptyState icon="success" title={t("allClearTitle")} description={t("allClearBody")} />
+          <EmptyState
+            icon="success"
+            title={t("allClearTitle")}
+            description={t("allClearBody")}
+            action={
+              <Button asChild variant="secondary">
+                <Link href="/orders">{t("openQueue")}</Link>
+              </Button>
+            }
+          />
         ) : (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {today.map((queue) => {
-              const late = queue.overdueCount > 0;
-              return (
-                <li key={queue.key}>
-                  <Link
-                    href={browserPath(queue.path)}
-                    className={cn(
-                      "group border-border bg-surface rounded-card focus-visible:ring-focus-ring hover:shadow-lift flex h-full flex-col gap-2 border border-s-4 p-5 transition-shadow outline-none focus-visible:ring-2",
-                      late ? "border-s-danger" : soon(queue) ? "border-s-warning" : "border-s-primary",
-                    )}
-                  >
-                    <span className="text-muted flex items-center gap-2 text-sm">
-                      <Icon name={QUEUE_ICONS[queue.key.split(".")[0] ?? ""] ?? "inbox"} size={16} aria-hidden="true" />
-                      {label(queue.key)}
-                    </span>
-                    <span className="text-4xl font-bold tabular-nums">{format.number(queue.count)}</span>
-                    <span
-                      className={cn(
-                        "text-sm",
-                        late
-                          ? "text-danger-subtle-fg font-medium"
-                          : soon(queue)
-                            ? "text-warning-subtle-fg"
-                            : "text-muted",
-                      )}
-                    >
-                      {late ? (
-                        t("overdue", { count: queue.overdueCount })
-                      ) : queue.nextDueAt ? (
-                        <SlaTimer dueAt={queue.nextDueAt} format={sla} />
-                      ) : (
-                        t("nothingDue")
-                      )}
-                    </span>
-                    <span className="mt-auto pt-1 text-sm font-semibold group-hover:underline">
-                      {t("openQueue")} <span aria-hidden="true">→</span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <StatsRow label={t("todayTitle")} items={figures} columns={figures.length === 3 ? 3 : 4} />
         )}
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         {data && (others.length > 0 || empty.length > 0) ? (
-          <section aria-labelledby="dashboard-other" className="border-border bg-surface rounded-card border">
-            <h2 id="dashboard-other" className="border-border border-b px-5 py-3.5 font-semibold">
-              {t("otherQueues")}
-            </h2>
-            <ul className="divide-border divide-y">
-              {[...others, ...(showEmpty ? empty : [])].map((queue) => (
-                <li key={queue.key}>
-                  <Link
+          <div className="flex flex-col gap-2">
+            <h3 className="text-muted text-sm font-medium">{t("otherQueues")}</h3>
+            {others.length > 0 || showEmpty ? (
+              <RowList label={t("otherQueues")}>
+                {[...others, ...(showEmpty ? empty : [])].map((queue) => (
+                  <Row
+                    key={queue.key}
                     href={browserPath(queue.path)}
-                    className="hover:bg-surface-subtle flex items-center justify-between gap-3 px-5 py-3 text-sm"
-                  >
-                    {label(queue.key)}
-                    <span
-                      className={cn(
-                        "tabular-nums",
-                        queue.overdueCount > 0
-                          ? "text-danger-subtle-fg font-semibold"
-                          : queue.count === 0 && "text-muted",
-                      )}
-                    >
-                      {format.number(queue.count)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                    icon={QUEUE_ICONS[queue.key.split(".")[0] ?? ""] ?? "inbox"}
+                    tone={queue.overdueCount > 0 ? "danger" : "neutral"}
+                    title={label(queue.key)}
+                    meta={queue.overdueCount > 0 ? t("overdue", { count: queue.overdueCount }) : undefined}
+                    aside={
+                      <span className={cn("font-semibold", queue.count === 0 && "text-muted font-normal")}>
+                        {format.number(queue.count)}
+                      </span>
+                    }
+                  />
+                ))}
+              </RowList>
+            ) : null}
             {empty.length > 0 ? (
-              <p className="border-border text-muted border-t px-5 py-3 text-xs">
+              <p className="text-muted text-sm">
                 {showEmpty ? t("emptyShown", { count: empty.length }) : t("emptyHidden", { count: empty.length })}{" "}
                 <button
                   type="button"
@@ -219,71 +260,92 @@ export function Dashboard({ initial }: { initial: Dashboard | null }) {
                 </button>
               </p>
             ) : null}
-          </section>
+          </div>
+        ) : null}
+      </DeskSection>
+
+      {canSales && sales.data ? (
+        <DeskSection
+          id="dashboard-figures"
+          title={t("figuresTitle")}
+          actions={
+            <Button variant="link" size="sm" asChild>
+              <Link href="/analytics">{t("figuresLink")}</Link>
+            </Button>
+          }
+        >
+          <StatsRow
+            label={t("figuresTitle")}
+            columns={3}
+            items={[
+              { key: "gmv", label: tAnalytics("kpis.gmv"), value: format.thb(sales.data.totals.gmv) },
+              {
+                key: "placed",
+                label: tAnalytics("trend.groupsPlaced"),
+                value: format.number(sales.data.totals.groupsPlaced),
+              },
+              { key: "paid", label: tAnalytics("kpis.groupsPaid"), value: format.number(sales.data.totals.groupsPaid) },
+            ]}
+          />
+        </DeskSection>
+      ) : null}
+
+      <div className="grid items-start gap-8 lg:grid-cols-2">
+        {canAct ? (
+          <DeskSection
+            id="dashboard-approvals"
+            title={t("approvalsTitle")}
+            actions={
+              <Button variant="link" size="sm" asChild>
+                <Link href="/approvals">{t("allApprovals")}</Link>
+              </Button>
+            }
+          >
+            {inbox.data && inbox.data.length === 0 ? (
+              <p className="border-border bg-surface text-muted rounded-xl border px-4 py-3 text-sm">
+                {t("noApprovals")}
+              </p>
+            ) : (
+              <RowList label={t("approvalsTitle")}>
+                {(inbox.data ?? []).slice(0, 5).map((item) => (
+                  <Row
+                    key={item.id}
+                    href={`/approvals/${item.id}`}
+                    title={t.has(`policies.${item.policy}`) ? t(`policies.${item.policy}`) : item.policy}
+                    meta={item.requester.displayName}
+                    aside={item.amount ? format.thb(item.amount) : undefined}
+                  />
+                ))}
+              </RowList>
+            )}
+          </DeskSection>
         ) : null}
 
-        <section aria-labelledby="dashboard-tagged" className="border-border bg-surface rounded-card border">
-          <h2 id="dashboard-tagged" className="border-border border-b px-5 py-3.5 font-semibold">
-            {tagged.length > 0 ? t("taggedTitle") : t("latestTitle")}
-          </h2>
+        <DeskSection id="dashboard-tagged" title={tagged.length > 0 ? t("taggedTitle") : t("latestTitle")}>
           {feed.length === 0 ? (
-            <p className="text-muted px-5 py-4 text-sm">{t("taggedNone")}</p>
+            <p className="border-border bg-surface text-muted rounded-xl border px-4 py-3 text-sm">{t("taggedNone")}</p>
           ) : (
-            <ul className="divide-border divide-y">
-              {feed.map((item) => (
-                <li key={item.id} className="px-5 py-3 text-sm">
-                  {item.url ? (
-                    <Link href={browserPath(item.url)} className="font-medium hover:underline">
-                      {item.title ?? item.body}
-                    </Link>
-                  ) : (
-                    <span className="font-medium">{item.title ?? item.body}</span>
-                  )}
-                  {item.title ? <p className="text-muted mt-0.5 line-clamp-2">{item.body}</p> : null}
-                  <p className="text-muted mt-1 text-xs">{format.relative(item.createdAt)}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-
-      {canAct ? (
-        <section aria-labelledby="dashboard-approvals" className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <h2 id="dashboard-approvals" className="text-base font-semibold">
-              {t("approvalsTitle")}
-            </h2>
-            <Button variant="link" size="sm" asChild>
-              <Link href="/approvals">{t("allApprovals")}</Link>
-            </Button>
-          </div>
-          {inbox.data && inbox.data.length === 0 ? (
-            <p className="text-muted text-sm">{t("noApprovals")}</p>
-          ) : (
-            <ul className="divide-border border-border bg-surface divide-y rounded-lg border">
-              {(inbox.data ?? []).slice(0, 5).map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href={`/approvals/${item.id}`}
-                    className="hover:bg-surface-subtle flex items-center justify-between gap-3 px-4 py-3 text-sm"
-                  >
-                    <span className="font-medium">
-                      {t.has(`policies.${item.policy}`) ? t(`policies.${item.policy}`) : item.policy}
-                    </span>
-                    <span className="text-muted">{item.requester.displayName}</span>
-                    {item.amount ? (
-                      <span className="ms-auto tabular-nums">{format.thb(item.amount)}</span>
+            <ul className="border-border bg-surface divide-border divide-y rounded-xl border">
+              {feed.map((item) => {
+                const shown = describe(item);
+                return (
+                  <li key={item.id} className="px-4 py-3 text-sm">
+                    {shown.href ? (
+                      <Link href={browserPath(shown.href)} className="font-medium hover:underline">
+                        {shown.title}
+                      </Link>
                     ) : (
-                      <span className="ms-auto" />
+                      <span className="font-medium">{shown.title}</span>
                     )}
-                  </Link>
-                </li>
-              ))}
+                    {shown.body ? <p className="text-muted mt-0.5 line-clamp-2">{shown.body}</p> : null}
+                    <p className="text-muted mt-1 text-xs">{format.relative(item.createdAt)}</p>
+                  </li>
+                );
+              })}
             </ul>
           )}
-        </section>
-      ) : null}
+        </DeskSection>
+      </div>
     </div>
   );
 }

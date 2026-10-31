@@ -9,6 +9,7 @@ import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { useActor } from "../console/actor";
+import { usePublishDesks } from "../shell/subnav";
 
 interface NavItem {
   key: string;
@@ -83,75 +84,62 @@ export function financeDesks(permissions: readonly string[]) {
 const isActive = (item: NavItem, pathname: string) =>
   item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
+/**
+ * The finance desks go to the main sidebar, nested and grouped under "การเงิน" (one navigation column — the second
+ * sidebar squeezed every finance table). Only while the sidebar is collapsed to icons does the page carry them, as
+ * one light line that scrolls sideways; a phone reaches them from the menu drawer.
+ */
 export function FinanceNav() {
   const t = useTranslations("finance.nav");
   const pathname = usePathname();
   const actor = useActor();
   const groups = financeDesks(actor.permissions);
-  const row = useRef<HTMLUListElement>(null);
+  const row = useRef<HTMLElement>(null);
+  const listed = usePublishDesks(
+    groups.map((group) => ({
+      label: t(`groups.${group.group}`),
+      items: group.items.map((item) => ({
+        href: item.href,
+        label: t(`items.${item.key}`),
+        ...(item.exact ? { exact: true } : {}),
+      })),
+    })),
+  );
 
-  // On a phone the desks are one scrolling row: keep the current one in view.
   useEffect(() => {
-    row.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "center" });
+    const current = row.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    const box = row.current;
+    if (current && box && box.scrollWidth > box.clientWidth) {
+      box.scrollLeft = current.offsetLeft - (box.clientWidth - current.offsetWidth) / 2;
+    }
   }, [pathname]);
 
+  if (listed) return null;
   return (
-    <nav aria-label={t("label")} className="lg:w-52 lg:shrink-0">
-      {/* A phone gets one scrolling row; a desk-sized screen a grouped column beside the work. */}
-      <ul ref={row} className="border-border flex gap-1 overflow-x-auto border-b px-4 pb-px lg:hidden">
-        {groups
-          .flatMap((group) => group.items)
-          .map((item) => (
-            <li key={item.key} className="shrink-0">
-              <Link
-                href={item.href}
-                aria-current={isActive(item, pathname) ? "page" : undefined}
-                className={cn(
-                  "inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-base font-medium whitespace-nowrap",
-                  isActive(item, pathname) ? "border-primary text-fg" : "text-muted hover:text-fg border-transparent",
-                )}
-              >
-                <Icon name={item.icon} size={16} aria-hidden />
-                {t(`items.${item.key}`)}
-              </Link>
-            </li>
-          ))}
-      </ul>
-      <div className="hidden flex-col gap-5 py-6 ps-4 lg:flex">
-        {groups.map((group) => (
-          <div key={group.group}>
-            <p className="text-muted mb-1 px-3 text-sm font-semibold">{t(`groups.${group.group}`)}</p>
-            <ul className="flex flex-col gap-0.5">
-              {group.items.map((item) => {
-                const current = isActive(item, pathname);
-                return (
-                  <li key={item.key}>
-                    <Link
-                      href={item.href}
-                      aria-current={current ? "page" : undefined}
-                      // The main menu's marking (and the factory app's): a teal edge and teal words on a tint.
-                      className={cn(
-                        "flex min-h-9 items-center gap-2.5 rounded-e-lg border-s-[3px] px-3 text-base",
-                        current
-                          ? "border-primary bg-primary-subtle text-primary-subtle-fg font-semibold"
-                          : "text-fg hover:bg-surface border-transparent font-medium",
-                      )}
-                    >
-                      <Icon
-                        name={item.icon}
-                        size={18}
-                        className={current ? "text-primary" : "text-muted"}
-                        aria-hidden
-                      />
-                      {t(`items.${item.key}`)}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </div>
+    <nav
+      ref={row}
+      aria-label={t("label")}
+      className="relative flex [scrollbar-width:none] items-center gap-x-1 overflow-x-auto overscroll-x-contain px-4 pt-3 text-sm md:px-8 [&::-webkit-scrollbar]:hidden"
+    >
+      {groups
+        .flatMap((group) => group.items)
+        .map((item) => {
+          const active = isActive(item, pathname);
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "focus-visible:ring-focus-ring inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-2.5 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-inset md:min-h-8",
+                active ? "text-fg font-semibold" : "text-muted hover:text-fg font-medium",
+              )}
+            >
+              <Icon name={item.icon} size={16} className={active ? "text-primary" : undefined} aria-hidden />
+              {t(`items.${item.key}`)}
+            </Link>
+          );
+        })}
     </nav>
   );
 }

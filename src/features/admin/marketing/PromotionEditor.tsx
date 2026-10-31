@@ -11,11 +11,13 @@ import { PROMOTION_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
-import { Field } from "@/ui/components/Field";
+import { DateField } from "@/ui/components/DateField";
+import { StatsRow } from "@/ui/components/DeskPage";
+import { Field, FormSection } from "@/ui/components/Field";
+import { EDGE_BAR, FormColumns, FormSummary, SummaryRows } from "@/ui/components/FormLayout";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
@@ -28,11 +30,11 @@ import {
   ConfirmAction,
   problemMessage,
   QueryError,
-  Section,
   StatusChip,
   useActor,
   useProductTypes,
 } from "../console";
+import { DetailSkeleton } from "../console/DetailSkeleton";
 import { CouponCodes } from "./CouponCodes";
 import type { Promotion } from "./resources";
 import { bangkokDayOf, bangkokMidnight } from "./time";
@@ -95,6 +97,9 @@ type Draft = {
   usageLimitPerCustomer: string;
   budgetAmount: string;
 };
+
+/** The panel's lifecycle steps in the order they are offered: starting first, ending (final) last. */
+const LIFECYCLE_ORDER = ["activate", "resume", "pause", "end"];
 
 const blankTier = () => ({ min: "", pct: "" });
 
@@ -253,6 +258,8 @@ export async function readPromotion(promotionId: string) {
  */
 export function PromotionEditor({ promotionId, campaignId }: { promotionId?: string; campaignId?: string | null }) {
   const t = useTranslations("marketing.promotion");
+  const tList = useTranslations("marketing.promotions");
+  const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const en = useLocale() === "en";
   const router = useRouter();
@@ -277,7 +284,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const item = query.data;
-  if (promotionId && !item) return null;
+  if (promotionId && !item) return <DetailSkeleton />;
   const form = draft ?? fromPromotion(item!);
   const set = (patch: Partial<Draft>) => setDraft({ ...form, ...patch });
   const setConditions = (patch: Partial<Draft["conditions"]>) => set({ conditions: { ...form.conditions, ...patch } });
@@ -363,21 +370,65 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const setTier = (index: number, patch: Partial<Draft["benefit"]["tiers"][number]>) =>
     setBenefit({ tiers: benefit.tiers.map((other, at) => (at === index ? { ...other, ...patch } : other)) });
 
+  const lifecycle = [...actions].sort(
+    (x, y) => LIFECYCLE_ORDER.indexOf(wording(x)) - LIFECYCLE_ORDER.indexOf(wording(y)),
+  );
+  // Bringing a promotion to life is the one filled step while there is nothing to save; with unsaved changes the
+  // save is, and the rest are outlined, ending last.
+  const lifecycleLeads = lifecycle.some((next) => next.action === "activate") && !draft;
+  const saveButton = editable ? (
+    <Button
+      iconStart="save"
+      variant={lifecycleLeads ? "secondary" : "primary"}
+      loading={saving}
+      disabled={Boolean(item) && !draft}
+      onClick={() => void save()}
+    >
+      {item ? t("save") : t("create")}
+    </Button>
+  ) : null;
+  const figure = (() => {
+    switch (benefit.type) {
+      case "percent":
+        return filled(benefit.pct) ? `${benefit.pct}%` : "";
+      case "fixed":
+        return filled(benefit.amount) ? format.thb(Number(benefit.amount).toFixed(2)) : "";
+      case "unit_price_override":
+        return filled(benefit.unitPrice) ? format.thb(Number(benefit.unitPrice).toFixed(2)) : "";
+      case "points_multiplier":
+        return filled(benefit.multiplier) ? `× ${benefit.multiplier}` : "";
+      case "bonus_points":
+        return filled(benefit.points) ? format.number(Number(benefit.points)) : "";
+      case "free_revision_rounds":
+        return filled(benefit.rounds) ? format.number(Number(benefit.rounds)) : "";
+      default:
+        return "";
+    }
+  })();
+  const what =
+    item && !draft
+      ? en
+        ? item.benefitSummaryEn
+        : item.benefitSummaryTh
+      : [t(`benefits.${benefit.type}`), figure].filter(Boolean).join(" · ");
+  const period = form.startsOn
+    ? `${format.date(form.startsOn)} – ${form.endsOn ? format.date(form.endsOn) : tList("noEnd")}`
+    : "";
+  const picked = (values: readonly string[], label: (value: string) => string) =>
+    values.length ? values.map(label).join(", ") : tFilters("any");
+  const typeOptions = productTypes.types
+    .filter((type) => type.status === "active" || form.conditions.productTypeCodes.includes(type.code))
+    .map((type) => ({ value: type.code, label: en ? type.nameEn : type.nameTh }));
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("promotions"), href: "/marketing/promotions" }, { label: item?.name ?? t("new") }]}
-          />
-        }
+        back={{ href: "/marketing/promotions", label: t("promotions") }}
         title={item?.name ?? t("newTitle")}
         meta={
           item ? (
             <>
               <StatusChip map={PROMOTION_STATUS} value={item.status} size="md" />
-              <span className="text-muted text-sm">{en ? item.benefitSummaryEn : item.benefitSummaryTh}</span>
               {item.campaign ? (
                 <Link
                   href={`/marketing/campaigns/${item.campaign.id}`}
@@ -389,123 +440,149 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
             </>
           ) : undefined
         }
-        actions={
-          <>
-            {actions.map((next) => (
-              <Button
-                key={next.action}
-                variant={next.action === "end" ? "ghost" : next.action === "pause" ? "secondary" : "primary"}
-                onClick={() => setAction(next)}
-              >
-                {t(`actions.${wording(next)}.label`)}
-              </Button>
-            ))}
-            {editable ? (
-              <Button iconStart="save" loading={saving} disabled={Boolean(item) && !draft} onClick={() => void save()}>
-                {item ? t("save") : t("create")}
-              </Button>
-            ) : null}
-          </>
-        }
+        description={item ? (en ? item.benefitSummaryEn : item.benefitSummaryTh) : undefined}
       />
 
       {item ? (
-        <dl className="grid gap-3 sm:grid-cols-3">
-          {(
-            [
-              ["redemptions", format.number(item.usage.redemptions)],
-              ["discount", format.thb(item.usage.discountAmount)],
-              ["capped", format.thb(item.usage.cappedAmount)],
-            ] as const
-          ).map(([name, value]) => (
-            <div key={name} className="bg-surface rounded-md border p-3">
-              <dt className="text-muted text-xs">{t(`usage.${name}`)}</dt>
-              <dd className="text-lg font-semibold tabular-nums">{value}</dd>
-            </div>
-          ))}
-        </dl>
+        <StatsRow
+          label={t("usageLabel")}
+          columns={3}
+          items={[
+            { key: "redemptions", label: t("usage.redemptions"), value: format.number(item.usage.redemptions) },
+            { key: "discount", label: t("usage.discount"), value: format.thb(item.usage.discountAmount) },
+            { key: "capped", label: t("usage.capped"), value: format.thb(item.usage.cappedAmount) },
+          ]}
+        />
       ) : null}
       {systemManaged ? <Callout tone="info" title={t("systemManaged")} /> : null}
 
-      <Section title={t("basics")}>
-        <div className="grid gap-3 md:grid-cols-2">
-          <Field label={t("fields.name")} required className="md:col-span-2">
-            <Input value={form.name} disabled={!editable} onChange={(event) => set({ name: event.target.value })} />
-          </Field>
-          <Field label={t("fields.kind")} hint={item ? t("hints.kindFixed") : t(`kindHints.${form.kind}`)}>
-            <SearchableSelect
-              value={form.kind}
-              disabled={Boolean(item) || !editable}
-              onValueChange={(kind) => set({ kind: kind as Draft["kind"] })}
-              options={(["coupon", "automatic", "referral"] as const).map((value) => ({
-                value,
-                label: t(`kinds.${value}`),
-              }))}
-            />
-          </Field>
-          <Field label={t("fields.campaign")} hint={item ? t("hints.campaignFixed") : undefined}>
-            <SearchableSelect
-              value={form.campaignId || "none"}
-              disabled={Boolean(item) || !editable}
-              onValueChange={(value) => set({ campaignId: value === "none" ? "" : value })}
-              options={[
-                { value: "none", label: t("noCampaign") },
-                ...(campaigns.data?.data ?? [])
-                  .filter((row) => row.status !== "ended" || row.id === form.campaignId)
-                  .map((row) => ({ value: row.id, label: `${row.code} · ${row.name}` })),
+      <FormColumns
+        aside={
+          <FormSummary title={t("summary")} barClassName={EDGE_BAR} action={saveButton}>
+            <SummaryRows
+              rows={[
+                { key: "kind", label: t("fields.kind"), value: t(`kinds.${form.kind}`) },
+                { key: "benefit", label: t("benefit"), value: what },
+                { key: "period", label: t("period"), value: period },
+                {
+                  key: "channels",
+                  label: t("fields.channels"),
+                  value: picked(form.conditions.channels, (value) => t(`channels.${value}`)),
+                },
+                {
+                  key: "types",
+                  label: t("fields.productTypes"),
+                  value: picked(form.conditions.productTypeCodes, productTypes.labelOf),
+                },
+                {
+                  key: "budget",
+                  label: t("fields.budgetAmount"),
+                  value: filled(form.budgetAmount) ? format.thb(Number(form.budgetAmount).toFixed(2)) : "",
+                },
               ]}
             />
-          </Field>
-          <Field label={t("fields.startsOn")} required>
-            <Input
-              type="date"
-              value={form.startsOn}
-              disabled={!editable}
-              onChange={(event) => set({ startsOn: event.target.value })}
-            />
-          </Field>
-          <Field label={t("fields.endsOn")} hint={t("hints.endsOn")}>
-            <Input
-              type="date"
-              value={form.endsOn}
-              disabled={!editable}
-              onChange={(event) => set({ endsOn: event.target.value })}
-            />
-          </Field>
-          <Field label={t("fields.priority")} hint={t("hints.priority")} required>
-            <NumberInput
-              step={1}
-              value={form.priority}
-              disabled={!editable}
-              onChange={(event) => set({ priority: event.target.value })}
-            />
-          </Field>
-          <Field label={t("fields.stacking")} hint={t(`stackingHints.${form.stacking}`)}>
-            <SearchableSelect
-              value={form.stacking}
-              disabled={!editable}
-              onValueChange={(stacking) => set({ stacking: stacking as Draft["stacking"] })}
-              options={(["exclusive", "stackable", "best_of"] as const).map((value) => ({
-                value,
-                label: t(`stacking.${value}`),
-              }))}
-            />
-          </Field>
-          <Field label={t("fields.stackGroup")} hint={t("hints.stackGroup")}>
-            <Input
-              value={form.stackGroup}
-              disabled={!editable}
-              onChange={(event) => set({ stackGroup: event.target.value })}
-            />
-          </Field>
-        </div>
-      </Section>
+            {lifecycle.length ? (
+              <div data-fill="row" className="border-border flex flex-col gap-2 border-t pt-4">
+                {lifecycle.map((next) => (
+                  <Button
+                    key={next.action}
+                    variant={
+                      next.action === "activate" && lifecycleLeads
+                        ? "primary"
+                        : next.action === "end"
+                          ? "ghost"
+                          : "secondary"
+                    }
+                    className={next.action === "end" ? "text-danger" : undefined}
+                    onClick={() => setAction(next)}
+                  >
+                    {t(`actions.${wording(next)}.label`)}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
+          </FormSummary>
+        }
+      >
+        <FormSection card step={1} title={t("basics")}>
+          <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
+            <Field label={t("fields.name")} required className="md:col-span-2">
+              <Input value={form.name} disabled={!editable} onChange={(event) => set({ name: event.target.value })} />
+            </Field>
+            <Field label={t("fields.kind")} hint={item ? t("hints.kindFixed") : t(`kindHints.${form.kind}`)}>
+              <SearchableSelect
+                value={form.kind}
+                disabled={Boolean(item) || !editable}
+                onValueChange={(kind) => set({ kind: kind as Draft["kind"] })}
+                options={(["coupon", "automatic", "referral"] as const).map((value) => ({
+                  value,
+                  label: t(`kinds.${value}`),
+                }))}
+              />
+            </Field>
+            <Field label={t("fields.campaign")} hint={item ? t("hints.campaignFixed") : undefined}>
+              <SearchableSelect
+                value={form.campaignId || "none"}
+                disabled={Boolean(item) || !editable}
+                onValueChange={(value) => set({ campaignId: value === "none" ? "" : value })}
+                options={[
+                  { value: "none", label: t("noCampaign") },
+                  ...(campaigns.data?.data ?? [])
+                    .filter((row) => row.status !== "ended" || row.id === form.campaignId)
+                    .map((row) => ({ value: row.id, label: `${row.code} · ${row.name}` })),
+                ]}
+              />
+            </Field>
+            <Field label={t("fields.startsOn")} required>
+              <DateField
+                value={form.startsOn}
+                display={form.startsOn ? format.date(form.startsOn) : tFilters("pickDate")}
+                disabled={!editable}
+                onChange={(event) => set({ startsOn: event.target.value })}
+              />
+            </Field>
+            <Field label={t("fields.endsOn")} hint={t("hints.endsOn")}>
+              <DateField
+                value={form.endsOn}
+                min={form.startsOn || undefined}
+                display={form.endsOn ? format.date(form.endsOn) : tFilters("pickDate")}
+                disabled={!editable}
+                onChange={(event) => set({ endsOn: event.target.value })}
+              />
+            </Field>
+            <Field label={t("fields.priority")} hint={t("hints.priority")} required>
+              <NumberInput
+                step={1}
+                value={form.priority}
+                disabled={!editable}
+                onChange={(event) => set({ priority: event.target.value })}
+              />
+            </Field>
+            <Field label={t("fields.stacking")} hint={t(`stackingHints.${form.stacking}`)}>
+              <SearchableSelect
+                value={form.stacking}
+                disabled={!editable}
+                onValueChange={(stacking) => set({ stacking: stacking as Draft["stacking"] })}
+                options={(["exclusive", "stackable", "best_of"] as const).map((value) => ({
+                  value,
+                  label: t(`stacking.${value}`),
+                }))}
+              />
+            </Field>
+            <Field label={t("fields.stackGroup")} hint={t("hints.stackGroup")}>
+              <Input
+                value={form.stackGroup}
+                disabled={!editable}
+                onChange={(event) => set({ stackGroup: event.target.value })}
+              />
+            </Field>
+          </div>
+        </FormSection>
 
-      <Section title={t("conditions")} description={t("conditionsNote")}>
-        <div className="flex flex-col gap-4">
+        <FormSection card step={2} title={t("conditions")} description={t("conditionsNote")}>
           <fieldset>
             <legend className="mb-2 text-sm font-medium">{t("fields.channels")}</legend>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-x-5 gap-y-3">
               {CHANNELS.map((channel) => (
                 <Checkbox
                   key={channel}
@@ -521,7 +598,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
           </fieldset>
           <fieldset>
             <legend className="mb-2 text-sm font-medium">{t("fields.segments")}</legend>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-x-5 gap-y-3">
               {SEGMENTS.map((segment) => (
                 <Checkbox
                   key={segment}
@@ -537,23 +614,33 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
           </fieldset>
           <fieldset>
             <legend className="mb-2 text-sm font-medium">{t("fields.productTypes")}</legend>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {productTypes.options.map((option) => (
-                <Checkbox
-                  key={option.value}
-                  label={option.label}
-                  disabled={!editable}
-                  checked={form.conditions.productTypeCodes.includes(option.value)}
-                  onCheckedChange={(on) =>
-                    setConditions({
-                      productTypeCodes: toggle(form.conditions.productTypeCodes, option.value, on === true),
-                    })
-                  }
-                />
-              ))}
-            </div>
+            {productTypes.isPending && productTypes.fetchStatus !== "idle" ? (
+              <div aria-busy="true" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {[0, 1, 2, 3, 4, 5].map((slot) => (
+                  <span key={slot} className="bg-surface-subtle h-6 rounded-md" />
+                ))}
+              </div>
+            ) : typeOptions.length ? (
+              <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+                {typeOptions.map((option) => (
+                  <Checkbox
+                    key={option.value}
+                    label={option.label}
+                    disabled={!editable}
+                    checked={form.conditions.productTypeCodes.includes(option.value)}
+                    onCheckedChange={(on) =>
+                      setConditions({
+                        productTypeCodes: toggle(form.conditions.productTypeCodes, option.value, on === true),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted text-sm">{t("hints.noProductTypes")}</p>
+            )}
           </fieldset>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
             {number(
               t("fields.minOrderValue"),
               form.conditions.minOrderValue,
@@ -566,176 +653,174 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
               (value) => setConditions({ minQuantity: value }),
               t("hints.minQuantity"),
             )}
-            <div className="flex items-end pb-2">
-              <Switch
-                label={t("fields.firstOrderOnly")}
-                disabled={!editable}
-                checked={form.conditions.firstOrderOnly}
-                onCheckedChange={(firstOrderOnly) => setConditions({ firstOrderOnly })}
-              />
-            </div>
           </div>
-        </div>
-      </Section>
+          <Switch
+            label={t("fields.firstOrderOnly")}
+            disabled={!editable}
+            checked={form.conditions.firstOrderOnly}
+            onCheckedChange={(firstOrderOnly) => setConditions({ firstOrderOnly })}
+          />
+        </FormSection>
 
-      <Section title={t("benefit")} description={t("benefitNote")}>
-        {redeemed ? <Callout tone="info" className="mb-3" title={t("benefitLocked")} /> : null}
-        <div className="grid gap-3 md:grid-cols-3">
-          <Field label={t("fields.benefitType")}>
-            <SearchableSelect
-              value={benefit.type}
-              disabled={!editable || redeemed}
-              onValueChange={(type) => setBenefit({ type: type as BenefitType })}
-              options={BENEFITS.map((value) => ({ value, label: t(`benefits.${value}`) }))}
-            />
-          </Field>
-          {benefit.type === "percent"
-            ? number(t("fields.pct"), benefit.pct, (pct) => setBenefit({ pct }), undefined, "%", redeemed)
-            : null}
-          {benefit.type === "fixed"
-            ? number(
-                t("fields.amount"),
-                benefit.amount,
-                (amount) => setBenefit({ amount }),
-                t("hints.baht"),
-                undefined,
-                redeemed,
-              )
-            : null}
-          {benefit.type === "tiered" ? (
-            <Field label={t("fields.basis")}>
+        <FormSection card step={3} title={t("benefit")} description={t("benefitNote")}>
+          {redeemed ? <Callout tone="info" title={t("benefitLocked")} /> : null}
+          <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
+            <Field label={t("fields.benefitType")}>
               <SearchableSelect
-                value={benefit.basis}
+                value={benefit.type}
                 disabled={!editable || redeemed}
-                onValueChange={(basis) => setBenefit({ basis: basis as Draft["benefit"]["basis"] })}
-                options={(["value", "quantity"] as const).map((value) => ({ value, label: t(`bases.${value}`) }))}
+                onValueChange={(type) => setBenefit({ type: type as BenefitType })}
+                options={BENEFITS.map((value) => ({ value, label: t(`benefits.${value}`) }))}
               />
             </Field>
-          ) : null}
-          {benefit.type === "percent" || benefit.type === "tiered"
-            ? number(
-                t("fields.maxAmount"),
-                benefit.maxAmount,
-                (maxAmount) => setBenefit({ maxAmount }),
-                t("hints.cap"),
-                undefined,
-                redeemed,
-              )
-            : null}
-          {benefit.type === "unit_price_override"
-            ? number(
-                t("fields.unitPrice"),
-                benefit.unitPrice,
-                (unitPrice) => setBenefit({ unitPrice }),
-                t("hints.unitPrice"),
-                undefined,
-                redeemed,
-              )
-            : null}
-          {benefit.type === "free_revision_rounds"
-            ? number(
-                t("fields.rounds"),
-                benefit.rounds,
-                (rounds) => setBenefit({ rounds }),
-                undefined,
-                undefined,
-                redeemed,
-              )
-            : null}
-          {benefit.type === "points_multiplier"
-            ? number(
-                t("fields.multiplier"),
-                benefit.multiplier,
-                (multiplier) => setBenefit({ multiplier }),
-                undefined,
-                "×",
-                redeemed,
-              )
-            : null}
-          {benefit.type === "bonus_points"
-            ? number(
-                t("fields.points"),
-                benefit.points,
-                (points) => setBenefit({ points }),
-                undefined,
-                undefined,
-                redeemed,
-              )
-            : null}
-        </div>
-        {benefit.type === "tiered" ? (
-          <fieldset className="mt-3 flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-medium">{t("fields.tiers")}</legend>
-            {benefit.tiers.map((tier, index) => (
-              <div key={index} className="grid grid-cols-[1fr_8rem_auto] items-end gap-2">
-                <Field label={t(`fields.tierFrom.${benefit.basis}`, { no: index + 1 })}>
-                  <NumberInput
-                    min={0}
-                    step="any"
-                    value={tier.min}
-                    disabled={!editable || redeemed}
-                    onChange={(event) => setTier(index, { min: event.target.value })}
-                  />
-                </Field>
-                <Field label={t("fields.tierPct", { no: index + 1 })}>
-                  <NumberInput
-                    min={0}
-                    step="any"
-                    unit="%"
-                    value={tier.pct}
-                    disabled={!editable || redeemed}
-                    onChange={(event) => setTier(index, { pct: event.target.value })}
-                  />
-                </Field>
-                <IconButton
-                  name="trash"
-                  variant="ghost"
-                  label={t("removeTier", { no: index + 1 })}
-                  disabled={!editable || redeemed || benefit.tiers.length === 1}
-                  onClick={() => setBenefit({ tiers: benefit.tiers.filter((_, at) => at !== index) })}
+            {benefit.type === "percent"
+              ? number(t("fields.pct"), benefit.pct, (pct) => setBenefit({ pct }), undefined, "%", redeemed)
+              : null}
+            {benefit.type === "fixed"
+              ? number(
+                  t("fields.amount"),
+                  benefit.amount,
+                  (amount) => setBenefit({ amount }),
+                  t("hints.baht"),
+                  undefined,
+                  redeemed,
+                )
+              : null}
+            {benefit.type === "tiered" ? (
+              <Field label={t("fields.basis")}>
+                <SearchableSelect
+                  value={benefit.basis}
+                  disabled={!editable || redeemed}
+                  onValueChange={(basis) => setBenefit({ basis: basis as Draft["benefit"]["basis"] })}
+                  options={(["value", "quantity"] as const).map((value) => ({ value, label: t(`bases.${value}`) }))}
                 />
-              </div>
-            ))}
-            {editable && !redeemed ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                iconStart="plus"
-                className="self-start"
-                onClick={() => setBenefit({ tiers: [...benefit.tiers, blankTier()] })}
-              >
-                {t("addTier")}
-              </Button>
+              </Field>
             ) : null}
-          </fieldset>
-        ) : null}
-        <p className="text-muted mt-3 text-xs">{t("marginGuard")}</p>
-      </Section>
+            {benefit.type === "percent" || benefit.type === "tiered"
+              ? number(
+                  t("fields.maxAmount"),
+                  benefit.maxAmount,
+                  (maxAmount) => setBenefit({ maxAmount }),
+                  t("hints.cap"),
+                  undefined,
+                  redeemed,
+                )
+              : null}
+            {benefit.type === "unit_price_override"
+              ? number(
+                  t("fields.unitPrice"),
+                  benefit.unitPrice,
+                  (unitPrice) => setBenefit({ unitPrice }),
+                  t("hints.unitPrice"),
+                  undefined,
+                  redeemed,
+                )
+              : null}
+            {benefit.type === "free_revision_rounds"
+              ? number(
+                  t("fields.rounds"),
+                  benefit.rounds,
+                  (rounds) => setBenefit({ rounds }),
+                  undefined,
+                  undefined,
+                  redeemed,
+                )
+              : null}
+            {benefit.type === "points_multiplier"
+              ? number(
+                  t("fields.multiplier"),
+                  benefit.multiplier,
+                  (multiplier) => setBenefit({ multiplier }),
+                  undefined,
+                  "×",
+                  redeemed,
+                )
+              : null}
+            {benefit.type === "bonus_points"
+              ? number(
+                  t("fields.points"),
+                  benefit.points,
+                  (points) => setBenefit({ points }),
+                  undefined,
+                  undefined,
+                  redeemed,
+                )
+              : null}
+          </div>
+          {benefit.type === "tiered" ? (
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-sm font-medium">{t("fields.tiers")}</legend>
+              {benefit.tiers.map((tier, index) => (
+                <div key={index} className="grid grid-cols-[minmax(0,1fr)_8rem_auto] items-end gap-2">
+                  <Field label={t(`fields.tierFrom.${benefit.basis}`, { no: index + 1 })}>
+                    <NumberInput
+                      min={0}
+                      step="any"
+                      value={tier.min}
+                      disabled={!editable || redeemed}
+                      onChange={(event) => setTier(index, { min: event.target.value })}
+                    />
+                  </Field>
+                  <Field label={t("fields.tierPct", { no: index + 1 })}>
+                    <NumberInput
+                      min={0}
+                      step="any"
+                      unit="%"
+                      value={tier.pct}
+                      disabled={!editable || redeemed}
+                      onChange={(event) => setTier(index, { pct: event.target.value })}
+                    />
+                  </Field>
+                  <IconButton
+                    name="trash"
+                    variant="ghost"
+                    label={t("removeTier", { no: index + 1 })}
+                    disabled={!editable || redeemed || benefit.tiers.length === 1}
+                    onClick={() => setBenefit({ tiers: benefit.tiers.filter((_, at) => at !== index) })}
+                  />
+                </div>
+              ))}
+              {editable && !redeemed ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  iconStart="plus"
+                  className="self-start"
+                  onClick={() => setBenefit({ tiers: [...benefit.tiers, blankTier()] })}
+                >
+                  {t("addTier")}
+                </Button>
+              ) : null}
+            </fieldset>
+          ) : null}
+          <p className="text-muted text-xs">{t("marginGuard")}</p>
+        </FormSection>
 
-      <Section title={t("limits")}>
-        <div className="grid gap-3 md:grid-cols-3">
-          {number(
-            t("fields.usageLimitTotal"),
-            form.usageLimitTotal,
-            (usageLimitTotal) => set({ usageLimitTotal }),
-            t("hints.unlimited"),
-          )}
-          {number(
-            t("fields.usageLimitPerCustomer"),
-            form.usageLimitPerCustomer,
-            (usageLimitPerCustomer) => set({ usageLimitPerCustomer }),
-            t("hints.unlimited"),
-          )}
-          {number(
-            t("fields.budgetAmount"),
-            form.budgetAmount,
-            (budgetAmount) => set({ budgetAmount }),
-            t("hints.budget"),
-          )}
-        </div>
-      </Section>
+        <FormSection card step={4} title={t("limits")}>
+          <div className="grid gap-x-4 gap-y-4 md:grid-cols-3">
+            {number(
+              t("fields.usageLimitTotal"),
+              form.usageLimitTotal,
+              (usageLimitTotal) => set({ usageLimitTotal }),
+              t("hints.unlimited"),
+            )}
+            {number(
+              t("fields.usageLimitPerCustomer"),
+              form.usageLimitPerCustomer,
+              (usageLimitPerCustomer) => set({ usageLimitPerCustomer }),
+              t("hints.unlimited"),
+            )}
+            {number(
+              t("fields.budgetAmount"),
+              form.budgetAmount,
+              (budgetAmount) => set({ budgetAmount }),
+              t("hints.budget"),
+            )}
+          </div>
+        </FormSection>
 
-      {item?.kind === "coupon" ? <CouponCodes promotion={item} /> : null}
+        {item?.kind === "coupon" ? <CouponCodes promotion={item} /> : null}
+      </FormColumns>
 
       {action && item ? (
         <ConfirmAction

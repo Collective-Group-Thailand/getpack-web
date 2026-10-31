@@ -14,10 +14,12 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconButton } from "@/ui/components/IconButton";
 import { JsonView } from "@/ui/components/JsonView";
+import Link from "next/link";
 import { Toolbar } from "@/ui/components/PageHeader";
 import { Sheet } from "@/ui/components/Sheet";
 import { StatusBadge } from "@/ui/components/StatusBadge";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
 
 import {
   adminBrowserApis,
@@ -29,6 +31,7 @@ import {
   useCan,
   useListState,
 } from "../console";
+import { auditLines, auditRecordHref } from "./audit-links";
 
 type Entry = Schemas["AuditEntryDto"];
 
@@ -41,6 +44,30 @@ const CATEGORIES: Schemas["AuditCategory"][] = [
   "approval",
   "iam",
 ];
+/** The record types the log names in words (`audit.resourceTypes`); the filter offers these. */
+const RESOURCE_TYPES = [
+  "user",
+  "order",
+  "setting",
+  "factory",
+  "company",
+  "approval_request",
+  "shipment",
+  "sample",
+  "sales_agent",
+  "payout_run",
+  "journal_entry",
+  "tax_report",
+  "vendor",
+  "vendor_invoice",
+  "customer_document",
+  "file",
+  "api_client",
+  "notification_template",
+  "close_task",
+  "bank_statement_line",
+  "report_schedule",
+] as const;
 const FILTER_KEYS = ["category", "outcome", "action", "resourceType", "resourceId", "actorId", "from", "to"] as const;
 const PAGE = 50;
 
@@ -105,12 +132,21 @@ export function AuditLog() {
   const rows = feed.data?.pages.flatMap((page) => page.data) ?? [];
 
   const columns: DataTableColumn<Entry>[] = [
-    { id: "occurredAt", header: t("columns.when"), cell: (row) => <When at={row.occurredAt} /> },
-    { id: "category", header: t("columns.category"), cell: (row) => t(`categories.${row.category}`) },
+    {
+      id: "occurredAt",
+      header: t("columns.when"),
+      className: "whitespace-nowrap",
+      cell: (row) => <When at={row.occurredAt} absoluteOnly />,
+    },
     {
       id: "action",
       header: t("columns.action"),
-      cell: (row) => <span className="text-xs tabular-nums">{row.action}</span>,
+      cell: (row) => <code className="font-mono text-xs [overflow-wrap:anywhere]">{row.action}</code>,
+    },
+    {
+      id: "category",
+      header: t("columns.category"),
+      cell: (row) => <span className="text-muted">{t(`categories.${row.category}`)}</span>,
     },
     {
       id: "outcome",
@@ -120,24 +156,24 @@ export function AuditLog() {
         return <StatusBadge size="sm" meta={meta} label={tStatus(meta.labelKey)} />;
       },
     },
-    { id: "actor", header: t("columns.actor"), cell: (row) => row.actor.name ?? t(`actorTypes.${row.actor.type}`) },
-    {
-      id: "resource",
-      header: t("columns.resource"),
-      cell: (row) => <span className="text-xs">{shortRef(row.resourceType, row.resourceId)}</span>,
-    },
+    { id: "actor", header: t("columns.actor"), cell: (row) => <Actor entry={row} /> },
+    { id: "resource", header: t("columns.resource"), cell: (row) => <Entity entry={row} /> },
     {
       id: "open",
       header: <span className="sr-only">{t("columns.details")}</span>,
       hideable: false,
-      className: "w-12 text-end",
+      // The whole card opens the entry on a phone; the chevron is for the desk table.
+      className: "w-12 text-end max-md:hidden!",
       cell: (row) => (
         <IconButton
-          name="eye"
+          name="chevron-right"
           size="sm"
           variant="ghost"
           label={t("openEntry", { action: row.action })}
-          onClick={() => setOpen(row)}
+          onClick={(event) => {
+            event.stopPropagation();
+            setOpen(row);
+          }}
         />
       ),
     },
@@ -145,7 +181,20 @@ export function AuditLog() {
 
   return (
     <div className="flex flex-col gap-3">
-      <Toolbar label={t("filters")}>
+      <Toolbar
+        label={t("filters")}
+        className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]"
+      >
+        <FilterControl
+          filter={{ id: "from", label: t("from"), kind: "date" }}
+          value={filters.from}
+          onChange={(value) => setFilter("from", value)}
+        />
+        <FilterControl
+          filter={{ id: "to", label: t("to"), kind: "date" }}
+          value={filters.to}
+          onChange={(value) => setFilter("to", value)}
+        />
         <FilterControl
           filter={{
             id: "category",
@@ -175,37 +224,33 @@ export function AuditLog() {
           onChange={(value) => setFilter("action", value)}
         />
         <FilterControl
-          filter={{ id: "resourceType", label: t("resourceType"), kind: "text" }}
+          filter={{
+            id: "resourceType",
+            label: t("resourceType"),
+            kind: "select",
+            options: RESOURCE_TYPES.map((value) => ({ value, label: t(`resourceTypes.${value}`) })),
+          }}
           value={filters.resourceType}
           onChange={(value) => setFilter("resourceType", value)}
         />
-        <FilterControl
-          filter={{ id: "from", label: t("from"), kind: "date" }}
-          value={filters.from}
-          onChange={(value) => setFilter("from", value)}
-        />
-        <FilterControl
-          filter={{ id: "to", label: t("to"), kind: "date" }}
-          value={filters.to}
-          onChange={(value) => setFilter("to", value)}
-        />
-        {Object.keys(filters).length > 0 ? (
-          <Button variant="ghost" onClick={() => update({ filters: {} })}>
-            {t("clear")}
-          </Button>
-        ) : null}
-        {canExport ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            iconStart="download"
-            className="ms-auto"
-            loading={exportCsv.isPending}
-            onClick={() => exportCsv.mutate()}
-          >
-            {t("export")}
-          </Button>
-        ) : null}
+        <div className="col-span-full flex items-center justify-end gap-2 xl:col-span-1">
+          {Object.keys(filters).length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={() => update({ filters: {} })}>
+              {t("clear")}
+            </Button>
+          ) : null}
+          {canExport ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              iconStart="download"
+              loading={exportCsv.isPending}
+              onClick={() => exportCsv.mutate()}
+            >
+              {t("export")}
+            </Button>
+          ) : null}
+        </div>
       </Toolbar>
 
       <DataTable
@@ -216,8 +261,25 @@ export function AuditLog() {
         loading={feed.isFetching && rows.length === 0}
         density="compact"
         rowTone={(row) => (row.outcome === "denied" ? "warning" : row.outcome === "failure" ? "danger" : undefined)}
+        onRowClick={setOpen}
         error={feed.isError ? <QueryError error={feed.error} onRetry={() => void feed.refetch()} /> : undefined}
-        empty={<EmptyState icon="history" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="history"
+            title={t("empty")}
+            action={
+              Object.keys(filters).length > 0 ? (
+                <Button variant="secondary" onClick={() => update({ filters: {} })}>
+                  {t("clear")}
+                </Button>
+              ) : (
+                <Button asChild variant="secondary">
+                  <Link href="/users">{t("openUsers")}</Link>
+                </Button>
+              )
+            }
+          />
+        }
       />
       {feed.hasNextPage ? (
         <Button
@@ -237,35 +299,107 @@ export function AuditLog() {
         closeLabel={t("close")}
       >
         {open ? (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-5">
             <DescriptionList
               columns={1}
               items={[
                 { term: t("columns.when"), description: <When at={open.occurredAt} absoluteOnly /> },
-                { term: t("columns.action"), description: <span className="tabular-nums">{open.action}</span> },
                 {
-                  term: t("columns.actor"),
-                  description: `${open.actor.name ?? "—"} (${t(`actorTypes.${open.actor.type}`)})`,
+                  term: t("columns.action"),
+                  description: (
+                    <span className="flex flex-wrap items-center gap-2">
+                      <code className="font-mono text-sm">{open.action}</code>
+                      <span className="text-muted text-sm">{t(`categories.${open.category}`)}</span>
+                    </span>
+                  ),
                 },
+                { term: t("columns.actor"), description: <Actor entry={open} /> },
                 ...(open.onBehalfOf ? [{ term: t("onBehalfOf"), description: open.onBehalfOf }] : []),
-                {
-                  term: t("columns.resource"),
-                  description: open.resourceType ? `${open.resourceType} ${open.resourceId ?? ""}` : "—",
-                },
+                { term: t("columns.resource"), description: <Entity entry={open} /> },
                 {
                   term: t("requestId"),
-                  description: <span className="text-xs tabular-nums">{open.requestId ?? "—"}</span>,
+                  description: (
+                    <code className="font-mono text-xs [overflow-wrap:anywhere]">{open.requestId ?? "—"}</code>
+                  ),
                 },
               ]}
             />
-            <div>
-              <p className="mb-1 text-sm font-medium">{t("data")}</p>
-              <p className="text-muted mb-2 text-xs">{t("redacted")}</p>
-              <JsonView value={open.data} label={t("data")} />
-            </div>
+            <section aria-labelledby="audit-data" className="flex flex-col gap-2">
+              <div>
+                <h3 id="audit-data" className="text-sm font-semibold">
+                  {t("data")}
+                </h3>
+                <p className="text-muted text-xs">{t("redacted")}</p>
+              </div>
+              <AuditData data={open.data} />
+              <details className="group">
+                <summary className="text-muted hover:text-fg cursor-pointer text-xs font-medium">{t("raw")}</summary>
+                <JsonView value={open.data} label={t("data")} className="mt-2" />
+              </details>
+            </section>
           </div>
         ) : null}
       </Sheet>
     </div>
+  );
+}
+
+/** Who did it: a person links to their account; a system or an outside client is named by its kind. */
+function Actor({ entry }: { entry: Entry }) {
+  const t = useTranslations("platform.audit");
+  const kind = t(`actorTypes.${entry.actor.type}`);
+  if (entry.actor.type === "user" && entry.actor.id)
+    return (
+      <Link href={`/users/${entry.actor.id}`} className="text-primary hover:underline">
+        {entry.actor.name ?? kind}
+      </Link>
+    );
+  return <span className={entry.actor.name ? undefined : "text-muted"}>{entry.actor.name ?? kind}</span>;
+}
+
+/** The record the entry is about: a link to its page when the console has one. */
+function Entity({ entry }: { entry: Entry }) {
+  const t = useTranslations("platform.audit");
+  if (!entry.resourceType) return <span className="text-muted">—</span>;
+  const type = t.has(`resourceTypes.${entry.resourceType}`)
+    ? t(`resourceTypes.${entry.resourceType}`)
+    : entry.resourceType;
+  const href = auditRecordHref(entry.resourceType, entry.resourceId);
+  return href ? (
+    <Link href={href} className="text-primary hover:underline">
+      {type}
+    </Link>
+  ) : (
+    <span>{entry.resourceId ? shortRef(type, entry.resourceId) : type}</span>
+  );
+}
+
+const plain = (value: unknown) =>
+  value === null || value === undefined ? "—" : typeof value === "object" ? JSON.stringify(value) : String(value);
+
+/** The entry's data as lines: changed fields as "before → after", the rest as field and value. */
+function AuditData({ data }: { data: unknown }) {
+  const t = useTranslations("platform.audit");
+  const lines = auditLines(data);
+  if (!lines.length) return <p className="text-muted text-sm">{t("noData")}</p>;
+  return (
+    <dl className="border-border divide-border rounded-control divide-y border text-sm">
+      {lines.map((line, at) => (
+        <div key={`${line.key}-${at}`} className="grid gap-1 px-3 py-2 sm:grid-cols-[9rem_minmax(0,1fr)]">
+          <dt className="text-muted font-mono text-xs [overflow-wrap:anywhere]">{line.key || t("change")}</dt>
+          <dd className="[overflow-wrap:anywhere]">
+            {"value" in line ? (
+              plain(line.value)
+            ) : (
+              <span className="flex flex-wrap items-center gap-1.5">
+                <span className="text-muted line-through decoration-1">{plain(line.before)}</span>
+                <Icon name="arrow-right" size={14} label={t("changedTo")} />
+                <span className="font-medium">{plain(line.after)}</span>
+              </span>
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

@@ -7,8 +7,9 @@ import { useState } from "react";
 import { ifMatch } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { IconButton } from "@/ui/components/IconButton";
 import { toast } from "@/ui/components/Toast";
 
 import { ConfirmAction, problemMessage, useCan, type InitialPage } from "../console";
@@ -47,10 +48,21 @@ export function ProductTypes({ initial }: { initial: InitialPage<CatalogueRow> |
                   id: "changeQuoteMode",
                   header: t("column"),
                   hideable: false,
+                  // One quiet menu per row instead of fourteen outlined buttons down the column.
                   cell: (row) => (
-                    <Button size="sm" variant="secondary" onClick={() => setTarget(row)}>
-                      {row.quoteMode === "instant" ? t("toRfq") : t("toInstant")}
-                    </Button>
+                    <DropdownMenu
+                      label={t("column")}
+                      align="end"
+                      items={[
+                        {
+                          id: "quoteMode",
+                          label: row.quoteMode === "instant" ? t("toRfq") : t("toInstant"),
+                          icon: "refresh",
+                          onSelect: () => setTarget(row),
+                        },
+                      ]}
+                      trigger={<IconButton name="more" size="sm" variant="ghost" label={t("column")} />}
+                    />
                   ),
                 },
               ]

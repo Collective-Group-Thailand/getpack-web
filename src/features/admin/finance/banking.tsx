@@ -43,7 +43,8 @@ import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { SectionNav } from "../console/SectionNav";
 import { StatusChip } from "../console/StatusChip";
-import { bankLinesList, settlementsList, type BankLine, type SettlementSummary } from "./resources";
+import { FinanceDateField, EmptyLink } from "./frame";
+import { unidentifiedList, bankLinesList, settlementsList, type BankLine, type SettlementSummary } from "./resources";
 import { AccountNo, fieldErrorsOf } from "./shared";
 import { invalidateMoney } from "./slips";
 
@@ -150,8 +151,7 @@ export function CashPosition() {
         description={t("description")}
         actions={
           <Field label={t("asOf")} className="w-44">
-            <Input
-              type="date"
+            <FinanceDateField
               value={asOf}
               max={bangkokToday()}
               onChange={(event) => setAsOf(event.target.value || bangkokToday())}
@@ -276,24 +276,27 @@ export function BankLines({ initial }: { initial: InitialPage<BankLine> | null }
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="matchStatus"
-        tabs={[
-          // No `matchStatus` in the URL is the list's default: what still needs a person.
-          { value: null, label: t("unmatched"), countKey: "finance.unmatched_bank_lines" },
-          { value: "matched", label: t("matched") },
-          { value: "unidentified", label: t("unidentified") },
-          { value: "ignored", label: t("ignored") },
-        ]}
-      />
       <ResourceList
         resource={bankLinesList}
+        views={
+          <QueueTabs
+            label={t("statusesLabel")}
+            param="matchStatus"
+            countFrom={bankLinesList}
+            tabs={[
+              // No `matchStatus` in the URL is the list's default: what still needs a person.
+              { value: null, label: t("unmatched") },
+              { value: "matched", label: t("matched") },
+              { value: "unidentified", label: t("unidentified") },
+              { value: "ignored", label: t("ignored") },
+            ]}
+          />
+        }
         columns={columns}
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        empty={{ title: t("empty") }}
+        empty={{ title: t("empty"), action: <EmptyLink href="/finance/banking/import" label="banking.nav.import" /> }}
       />
       {openId ? <LineSheet lineId={openId} line={opened} onClose={() => setOpen(null)} /> : null}
     </div>
@@ -438,7 +441,12 @@ function LineSheet({ lineId, line: known, onClose }: { lineId: string; line: Ban
               {suggestions.isError ? (
                 <QueryError error={suggestions.error} onRetry={() => void suggestions.refetch()} />
               ) : (suggestions.data ?? []).length === 0 && !suggestions.isPending ? (
-                <EmptyState icon="search" title={t("noSuggestions")} description={t("noSuggestionsBody")} />
+                <EmptyState
+                  icon="search"
+                  title={t("noSuggestions")}
+                  description={t("noSuggestionsBody")}
+                  action={<EmptyLink href="/finance/banking/unidentified" label="banking.nav.unidentified" />}
+                />
               ) : (
                 <ul className="flex flex-col gap-2">
                   {(suggestions.data ?? []).map((item) => {
@@ -713,8 +721,7 @@ function SettlementImport({ accounts }: { accounts: Schemas["CompanyBankAccountD
           />
         </Field>
         <Field label={t("date")} required requiredLabel={tCommon("state.required")}>
-          <Input
-            type="date"
+          <FinanceDateField
             value={form.settlementDate}
             max={bangkokToday()}
             onChange={(event) => setForm({ ...form, settlementDate: event.target.value })}
@@ -783,8 +790,9 @@ export function UnidentifiedReceipts() {
       <QueueTabs
         label={t("statusesLabel")}
         param="status"
+        countFrom={unidentifiedList}
         tabs={[
-          { value: null, label: t("open"), countKey: "finance.unidentified_receipts" },
+          { value: null, label: t("open") },
           { value: "matched", label: t("matched") },
           { value: "refunded", label: t("refunded") },
         ]}
@@ -797,7 +805,13 @@ export function UnidentifiedReceipts() {
           rows={rows.data ?? []}
           loading={rows.isPending}
           getRowId={(row) => row.id}
-          empty={<EmptyState icon="inbox" title={t("empty")} />}
+          empty={
+            <EmptyState
+              icon="inbox"
+              title={t("empty")}
+              action={<EmptyLink href="/finance/banking/lines" label="banking.nav.lines" />}
+            />
+          }
           columns={[
             { id: "receivedOn", header: t("receivedOn"), cell: (row) => format.date(row.receivedOn) },
             {

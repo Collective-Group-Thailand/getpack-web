@@ -11,10 +11,10 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import type { DataTableColumn } from "@/ui/components/DataTable";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
@@ -34,6 +34,7 @@ import {
   useCan,
   type InitialPage,
 } from "../console";
+import { DetailSkeleton } from "../console/DetailSkeleton";
 import { APPLICATION_STATUSES, applicationsList, type AgentApplication } from "./resources";
 import { planOptions, TermsList, usePlans, useRefreshAgents } from "./shared";
 
@@ -42,6 +43,7 @@ export function ApplicationsQueue({ initial }: { initial: InitialPage<AgentAppli
   const t = useTranslations("agents.applications");
   const tStatus = useTranslations("status");
   const tJuristic = useTranslations("agents.juristic");
+  const tNav = useTranslations("agents.nav");
 
   const columns: DataTableColumn<AgentApplication>[] = [
     {
@@ -83,18 +85,22 @@ export function ApplicationsQueue({ initial }: { initial: InitialPage<AgentAppli
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all") },
-          ...APPLICATION_STATUSES.map((status) => ({
-            value: status,
-            label: tStatus(AGENT_APPLICATION_STATUS[status].labelKey),
-          })),
-        ]}
-      />
       <ResourceList
+        views={
+          <QueueTabs
+            countFrom={applicationsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...APPLICATION_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(AGENT_APPLICATION_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         resource={applicationsList}
         columns={columns}
         caption={t("title")}
@@ -102,7 +108,14 @@ export function ApplicationsQueue({ initial }: { initial: InitialPage<AgentAppli
         searchLabel={t("search")}
         rowHref={(row) => `/agents/applications/${row.id}`}
         rowTone={(row) => (row.status === "submitted" && row.checks.length ? "warning" : undefined)}
-        empty={{ title: t("empty") }}
+        empty={{
+          title: t("empty"),
+          action: (
+            <Button variant="secondary" asChild>
+              <Link href="/agents">{tNav("toAgents")}</Link>
+            </Button>
+          ),
+        }}
       />
     </div>
   );
@@ -167,7 +180,7 @@ export function ApplicationReview({ applicationId }: { applicationId: string }) 
   });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const app = query.data;
-  if (!app) return null;
+  if (!app) return <DetailSkeleton />;
 
   const options = planOptions(plans.data, "freelance");
   const plan = planId || options[0]?.value || "";
@@ -201,25 +214,20 @@ export function ApplicationReview({ applicationId }: { applicationId: string }) 
     ],
   ];
   const list = (items: [string, React.ReactNode][]) => (
-    <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+    <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
       {items.map(([term, value]) => (
-        <div key={term} className="flex flex-col">
+        <div key={term} className="flex min-w-0 flex-col gap-0.5">
           <dt className="text-muted text-xs">{term}</dt>
-          <dd>{value}</dd>
+          <dd className="[overflow-wrap:anywhere]">{value}</dd>
         </div>
       ))}
     </dl>
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("applications"), href: "/agents/applications" }, { label: app.legalName }]}
-          />
-        }
+        back={{ href: "/agents/applications", label: t("applications") }}
         title={app.legalName}
         meta={
           <>
@@ -227,65 +235,78 @@ export function ApplicationReview({ applicationId }: { applicationId: string }) 
             <span className="text-muted text-sm">{t("submittedAt", { date: format.dateTime(app.submittedAt) })}</span>
           </>
         }
-        actions={
-          open && canManage ? (
-            <>
-              <Button variant="ghost" onClick={() => setRejecting(true)}>
-                {t("reject")}
-              </Button>
-              <Button iconStart="check" onClick={() => setApproving(true)}>
-                {t("approve")}
-              </Button>
-            </>
-          ) : app.agentId ? (
-            <Button variant="secondary" asChild>
-              <Link href={`/agents/${app.agentId}`}>{t("openAgent")}</Link>
-            </Button>
-          ) : null
-        }
       />
 
-      {app.checks.length ? (
-        <Callout tone="warning" title={t("checksTitle")}>
-          <ul className="list-disc ps-5">
-            {app.checks.map((check) => (
-              <li key={check}>{t.has(`checks.${check}`) ? t(`checks.${check}`) : check}</li>
-            ))}
-          </ul>
-        </Callout>
-      ) : null}
-      {app.decisionReason ? (
-        <Callout tone={app.status === "rejected" ? "danger" : "info"} title={t("decision")}>
-          {app.decisionReason}
-          {app.decidedBy ? (
-            <p className="text-muted mt-1 text-xs">
-              {app.decidedBy.displayName} · {app.decidedAt ? format.dateTime(app.decidedAt) : null}
-            </p>
-          ) : null}
-        </Callout>
-      ) : null}
+      <DetailLayout
+        aside={
+          <ActionPanel
+            id="application-decision"
+            tone={open && canManage ? "primary" : "neutral"}
+            title={open && canManage ? t("decidePanel") : t("decision")}
+            description={
+              app.decisionReason ? (
+                <>
+                  <p className="whitespace-pre-line">{app.decisionReason}</p>
+                  {app.decidedBy ? (
+                    <p className="mt-1 text-xs">
+                      {app.decidedBy.displayName} · {app.decidedAt ? format.dateTime(app.decidedAt) : null}
+                    </p>
+                  ) : null}
+                </>
+              ) : undefined
+            }
+          >
+            {open && canManage ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                <Button iconStart="check" onClick={() => setApproving(true)}>
+                  {t("approve")}
+                </Button>
+                <Button variant="ghost" className="text-danger" onClick={() => setRejecting(true)}>
+                  {t("reject")}
+                </Button>
+              </div>
+            ) : app.agentId ? (
+              <div data-fill="row" className="flex flex-col gap-2">
+                <Button variant="secondary" asChild>
+                  <Link href={`/agents/${app.agentId}`}>{t("openAgent")}</Link>
+                </Button>
+              </div>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {app.checks.length ? (
+          <Callout tone="warning" title={t("checksTitle")}>
+            <ul className="list-disc ps-5">
+              {app.checks.map((check) => (
+                <li key={check}>{t.has(`checks.${check}`) ? t(`checks.${check}`) : check}</li>
+              ))}
+            </ul>
+          </Callout>
+        ) : null}
 
-      <Section title={t("who")}>{list(rows)}</Section>
-      <Section title={t("payment")} description={t("paymentNote")}>
-        {list(bank)}
-      </Section>
-      <Section title={t("documents")}>
-        <div className="flex flex-wrap gap-2">
-          <FileButton fileId={app.idDocument.id} name={t("idDocument")} />
-          {app.bankBook ? <FileButton fileId={app.bankBook.id} name={t("bankBook")} /> : null}
-        </div>
-        <p className="text-muted mt-2 text-sm">
-          {t("agreement", {
-            version: app.agreementVersionNo,
-            date: format.dateTime(app.agreementAcceptedAt),
-          })}
-        </p>
-      </Section>
-      {app.pitch ? (
-        <Section title={t("pitch")}>
-          <p className="text-sm whitespace-pre-line">{app.pitch}</p>
+        <Section title={t("who")}>{list(rows)}</Section>
+        <Section title={t("payment")} description={t("paymentNote")}>
+          {list(bank)}
         </Section>
-      ) : null}
+        <Section title={t("documents")}>
+          <div className="flex flex-wrap gap-2">
+            <FileButton fileId={app.idDocument.id} name={t("idDocument")} />
+            {app.bankBook ? <FileButton fileId={app.bankBook.id} name={t("bankBook")} /> : null}
+          </div>
+          <p className="text-muted mt-2 text-sm">
+            {t("agreement", {
+              version: app.agreementVersionNo,
+              date: format.dateTime(app.agreementAcceptedAt),
+            })}
+          </p>
+        </Section>
+        {app.pitch ? (
+          <Section title={t("pitch")}>
+            <p className="text-sm whitespace-pre-line">{app.pitch}</p>
+          </Section>
+        ) : null}
+      </DetailLayout>
 
       {approving ? (
         <FormDialog

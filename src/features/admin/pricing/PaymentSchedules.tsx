@@ -11,6 +11,7 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { Checkbox } from "@/ui/components/Checkbox";
+import { DateField } from "@/ui/components/DateField";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
@@ -128,20 +129,21 @@ export function PaymentSchedules() {
               </Button>
             ) : null}
           </CardHeader>
-          <ol className="flex flex-col gap-2">
+          <ol className="divide-border border-border flex flex-col divide-y border-t">
             {template.instalments.map((instalment, index) => (
               <li
                 key={index}
-                className="border-border flex flex-wrap items-baseline justify-between gap-2 border-t pt-2 text-sm"
+                className="grid grid-cols-[minmax(0,1fr)_4.5rem] items-baseline gap-x-4 gap-y-0.5 py-2.5 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_4.5rem]"
               >
                 <span className="font-medium">
-                  {index + 1}. {locale === "en" ? instalment.labelEn : instalment.labelTh}
+                  <span className="text-muted me-2 tabular-nums">{index + 1}</span>
+                  {locale === "en" ? instalment.labelEn : instalment.labelTh}
                 </span>
-                <span className="text-muted">
+                <span className="text-muted max-sm:order-last max-sm:col-span-2">
                   {tTrigger(instalment.dueTrigger, { days: instalment.dueOffsetDays ?? 0 })} ·{" "}
                   {tBefore(instalment.requiredBefore)}
                 </span>
-                <span className="font-semibold tabular-nums">{format.percent(instalment.pct)}</span>
+                <span className="text-end font-semibold tabular-nums">{format.percent(instalment.pct)}</span>
               </li>
             ))}
           </ol>
@@ -153,6 +155,8 @@ export function PaymentSchedules() {
 }
 
 function TemplateVersionDialog({ template, onClose }: { template: Template; onClose: () => void }) {
+  const tPick = useTranslations("console.filters");
+  const dateFormat = useFormat();
   const t = useTranslations("pricing.scheduleVersion");
   const tTrigger = useTranslations("pricing.dueTriggers");
   const tBefore = useTranslations("pricing.requiredBefore");
@@ -330,10 +334,10 @@ function TemplateVersionDialog({ template, onClose }: { template: Template; onCl
           <NumberInput min={0} value={priority} onChange={(event) => setPriority(event.target.value)} />
         </Field>
         <Field label={t("effectiveFrom")} hint={t("effectiveHint")} required>
-          <Input
-            type="date"
+          <DateField
             min={today()}
             value={effectiveFrom}
+            display={effectiveFrom ? dateFormat.date(effectiveFrom) : tPick("pickDate")}
             onChange={(event) => setEffectiveFrom(event.target.value)}
           />
         </Field>

@@ -9,10 +9,11 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { DateField } from "@/ui/components/DateField";
 import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
 
 import { adminBrowserApis, QueryError, Section, useProductTypes } from "../console";
+import { LibraryLink } from "./LibraryLink";
 
 type Keyword = Schemas["NextStylesKeywordDto"];
 type Base = Schemas["NextStylesBaseDto"];
@@ -79,10 +80,11 @@ export function NextStyles() {
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end gap-4">
         <Field label={t("month")} className="w-44">
-          <Input
+          <DateField
             type="month"
             value={month}
             max={thisMonth()}
+            display={format.date(`${month}-01`, { style: "month" })}
             onChange={(e) => e.target.value && setMonth(e.target.value)}
           />
         </Field>
@@ -104,7 +106,7 @@ export function NextStyles() {
           rows={data?.zeroResultSearches ?? []}
           getRowId={(row) => `${row.surface}:${row.keyword}`}
           loading={query.isPending}
-          empty={<EmptyState icon="search" title={t("zeroEmpty")} />}
+          empty={<EmptyState icon="search" title={t("zeroEmpty")} action={<LibraryLink to="library" />} />}
         />
       </Section>
       <Section title={t("heldTitle")} description={t("heldIntro")}>
@@ -114,7 +116,7 @@ export function NextStyles() {
           rows={data?.unpublishableStyles ?? []}
           getRowId={(row) => row.baseCode}
           loading={query.isPending}
-          empty={<EmptyState icon="layers" title={t("heldEmpty")} />}
+          empty={<EmptyState icon="layers" title={t("heldEmpty")} action={<LibraryLink to="library" />} />}
         />
       </Section>
       <div className="grid gap-5 lg:grid-cols-2">
@@ -125,7 +127,7 @@ export function NextStyles() {
             rows={data?.rfqsWithoutStyle ?? []}
             getRowId={(row) => row.productTypeCode}
             loading={query.isPending}
-            empty={<EmptyState icon="inbox" title={t("rfqEmpty")} />}
+            empty={<EmptyState icon="inbox" title={t("rfqEmpty")} action={<LibraryLink to="library" />} />}
           />
         </Section>
         <Section title={t("structuralTitle")} description={t("structuralIntro")}>
@@ -135,7 +137,7 @@ export function NextStyles() {
             rows={data?.structuralRequests ?? []}
             getRowId={(row) => row.productTypeCode}
             loading={query.isPending}
-            empty={<EmptyState icon="ruler" title={t("structuralEmpty")} />}
+            empty={<EmptyState icon="ruler" title={t("structuralEmpty")} action={<LibraryLink to="library" />} />}
           />
         </Section>
       </div>

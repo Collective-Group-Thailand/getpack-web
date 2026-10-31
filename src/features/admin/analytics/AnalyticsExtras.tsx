@@ -16,6 +16,7 @@ import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, ConfirmAction, download, problemMessage, QueryError, Section, useCan } from "../console";
+import { FunnelSteps } from "./FunnelSteps";
 import type { Period } from "./period";
 
 type Metric = Schemas["StudioMetricDto"];
@@ -40,7 +41,7 @@ export function StudioFunnel({ period }: { period: Period | null }) {
     key: "medianMinutesToCart" | "artworkToCartPct" | "preflightPassPct" | "priceParityPct",
     value: Metric,
   ) => (
-    <div key={key} className="rounded-md border p-3">
+    <div key={key} className="border-border bg-surface rounded-card border p-4">
       <dt className="text-muted text-xs">{t(`metrics.${key}`)}</dt>
       <dd className="text-lg font-semibold tabular-nums">
         {value.value === null
@@ -74,19 +75,15 @@ export function StudioFunnel({ period }: { period: Period | null }) {
       {period && funnel.isPending ? <Skeleton className="h-32" /> : null}
       {funnel.data ? (
         <div className="flex flex-col gap-4">
-          <ol className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
-            {funnel.data.steps.map((step) => (
-              <li key={step.step} className="rounded-md border p-3">
-                <p className="text-muted text-xs">{t(`steps.${step.step}`)}</p>
-                <p className="text-lg font-semibold tabular-nums">{format.number(step.sessions)}</p>
-                <p className="text-muted text-xs">
-                  {step.fromPreviousPct === null
-                    ? " "
-                    : t("fromPrevious", { pct: format.percent(step.fromPreviousPct, 1) })}
-                </p>
-              </li>
-            ))}
-          </ol>
+          <FunnelSteps
+            caption={t("title")}
+            steps={funnel.data.steps.map((step) => ({
+              key: step.step,
+              label: t(`steps.${step.step}`),
+              sessions: step.sessions,
+              fromPreviousPct: step.fromPreviousPct,
+            }))}
+          />
           <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {metric("medianMinutesToCart", funnel.data.medianMinutesToCart)}
             {metric("artworkToCartPct", funnel.data.artworkToCartPct)}
@@ -207,9 +204,11 @@ export function RollupRuns({ period }: { period: Period | null }) {
       })}
       actions={
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setShowAll(!showAll)}>
-            {showAll ? t("showAttention") : t("showAll", { count: all.length })}
-          </Button>
+          {shown.length ? (
+            <Button size="sm" variant="ghost" onClick={() => setShowAll(!showAll)}>
+              {showAll ? t("showAttention") : t("showAll", { count: all.length })}
+            </Button>
+          ) : null}
           <Button
             size="sm"
             variant="secondary"
@@ -230,7 +229,17 @@ export function RollupRuns({ period }: { period: Period | null }) {
         getRowId={(row) => `${row.date}:${row.job}`}
         loading={runs.isPending && period !== null}
         density="compact"
-        empty={<EmptyState icon="activity" title={showAll ? t("empty") : t("allGood")} />}
+        empty={
+          <EmptyState
+            icon="activity"
+            title={showAll ? t("empty") : t("allGood")}
+            action={
+              <Button variant="secondary" onClick={() => setShowAll(!showAll)}>
+                {showAll ? t("showAttention") : t("showAll", { count: all.length })}
+              </Button>
+            }
+          />
+        }
       />
       <ConfirmAction
         open={confirming}

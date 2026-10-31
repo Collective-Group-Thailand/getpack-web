@@ -40,6 +40,7 @@ import {
   type Receivable,
   type WhtCertificate,
 } from "./resources";
+import { FinanceDateField, EmptyLink } from "./frame";
 import { DocumentLink, Figure } from "./shared";
 import { invalidateMoney } from "./slips";
 
@@ -135,16 +136,19 @@ export function ReceivablesList({ initial }: { initial: InitialPage<Receivable> 
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("viewsLabel")}
-        param="overdue"
-        tabs={[
-          { value: null, label: t("all") },
-          { value: "true", label: t("overdue"), countKey: "finance.overdue_b2b_invoices" },
-        ]}
-      />
       <ResourceList
         resource={receivablesList}
+        views={
+          <QueueTabs
+            label={t("viewsLabel")}
+            param="overdue"
+            countFrom={receivablesList}
+            tabs={[
+              { value: null, label: t("all") },
+              { value: "true", label: t("overdue") },
+            ]}
+          />
+        }
         columns={columns}
         caption={t("title")}
         initial={initial}
@@ -157,7 +161,7 @@ export function ReceivablesList({ initial }: { initial: InitialPage<Receivable> 
             options: RECEIVABLE_STATUSES.map((value) => ({ value, label: tStatus(RECEIVABLE_STATUS[value].labelKey) })),
           },
         ]}
-        empty={{ title: t("empty") }}
+        empty={{ title: t("empty"), action: <EmptyLink href="/finance/documents" label="nav.items.documents" /> }}
       />
       {writingOff ? (
         <ConfirmAction
@@ -235,8 +239,7 @@ export function AgingReport() {
         description={t("description")}
         actions={
           <Field label={t("asOf")} className="w-44">
-            <Input
-              type="date"
+            <FinanceDateField
               value={asOf}
               max={bangkokToday()}
               onChange={(event) => setAsOf(event.target.value || bangkokToday())}
@@ -265,7 +268,13 @@ export function AgingReport() {
               loading={query.isPending}
               getRowId={(row) => row.companyId ?? row.customerId}
               density="compact"
-              empty={<EmptyState icon="coins" title={t("empty")} />}
+              empty={
+                <EmptyState
+                  icon="coins"
+                  title={t("empty")}
+                  action={<EmptyLink href="/finance/receivables" label="receivables.nav.items" />}
+                />
+              }
             />
           </>
         )}
@@ -297,7 +306,7 @@ function Allowance() {
     <Section title={t("title")} description={`${t("description")} ${t("targetHint")}`}>
       <div className="grid gap-3 sm:grid-cols-[12rem_14rem_auto] sm:items-end">
         <Field label={t("asOf")}>
-          <Input type="date" value={asOf} max={bangkokToday()} onChange={(event) => setAsOf(event.target.value)} />
+          <FinanceDateField value={asOf} max={bangkokToday()} onChange={(event) => setAsOf(event.target.value)} />
         </Field>
         <Field label={t("target")} error={error ?? undefined} requiredLabel={tCommon("state.required")}>
           <Input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
@@ -402,23 +411,26 @@ export function WhtCertificates({ initial }: { initial: InitialPage<WhtCertifica
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          // No `status` in the URL is the list's default: the certificates still awaited.
-          { value: null, label: t("pending"), countKey: "finance.wht_certificates_missing" },
-          { value: "received", label: t("received") },
-          { value: "waived", label: t("waived") },
-        ]}
-      />
       <ResourceList
         resource={whtCertificatesList}
+        views={
+          <QueueTabs
+            label={t("statusesLabel")}
+            param="status"
+            countFrom={whtCertificatesList}
+            tabs={[
+              // No `status` in the URL is the list's default: the certificates still awaited.
+              { value: null, label: t("pending") },
+              { value: "received", label: t("received") },
+              { value: "waived", label: t("waived") },
+            ]}
+          />
+        }
         columns={columns}
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        empty={{ title: t("empty") }}
+        empty={{ title: t("empty"), action: <EmptyLink href="/finance/receivables" label="receivables.nav.items" /> }}
       />
       {recording ? <RecordCertificate certificate={recording} onClose={() => setRecording(null)} /> : null}
       {waiving ? (
@@ -489,7 +501,7 @@ function RecordCertificate({ certificate, onClose }: { certificate: WhtCertifica
           <Input value={number} onChange={(event) => setNumber(event.target.value)} autoComplete="off" />
         </Field>
         <Field label={t("date")} required requiredLabel={tCommon("state.required")}>
-          <Input type="date" value={date} max={bangkokToday()} onChange={(event) => setDate(event.target.value)} />
+          <FinanceDateField value={date} max={bangkokToday()} onChange={(event) => setDate(event.target.value)} />
         </Field>
         <Field label={t("copy")} hint={t("copyHint")}>
           <FileDropzone
@@ -578,7 +590,7 @@ export function CompanyStatements() {
             />
           </Field>
           <Field label={t("month")} className="w-44">
-            <Input type="month" value={month} onChange={(event) => setMonth(event.target.value || month)} />
+            <FinanceDateField type="month" value={month} onChange={(event) => setMonth(event.target.value || month)} />
           </Field>
         </div>
       }
@@ -603,7 +615,13 @@ export function CompanyStatements() {
             loading={statement.isPending && Boolean(chosen)}
             getRowId={(row) => row.groupId}
             density="compact"
-            empty={<EmptyState icon="document" title={t("empty")} />}
+            empty={
+              <EmptyState
+                icon="document"
+                title={t("empty")}
+                action={<EmptyLink href="/finance/receivables/aging" label="receivables.nav.aging" />}
+              />
+            }
           />
         </>
       )}
@@ -659,7 +677,13 @@ export function DunningLog({
         loading={scoped.isPending}
         getRowId={dunningList.getRowId}
         density="compact"
-        empty={<EmptyState icon="send" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="send"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/receivables" label="receivables.nav.items" />}
+          />
+        }
       />
     );
   return (
@@ -669,7 +693,10 @@ export function DunningLog({
       caption={t("title")}
       initial={initial}
       rowTone={(row) => (row.status === "failed" || row.status === "bounced" ? "warning" : undefined)}
-      empty={{ title: t("empty") }}
+      empty={{
+        title: t("empty"),
+        action: <EmptyLink href="/finance/receivables/aging" label="receivables.nav.aging" />,
+      }}
     />
   );
 }
@@ -760,7 +787,13 @@ export function PartyBalance({ customerId }: { customerId: string }) {
           rows={items.data?.data ?? []}
           loading={items.isPending}
           getRowId={(row) => row.id}
-          empty={<EmptyState icon="coins" title={t("noItems")} />}
+          empty={
+            <EmptyState
+              icon="coins"
+              title={t("noItems")}
+              action={<EmptyLink href="/finance/payments" label="nav.items.payments" />}
+            />
+          }
           columns={[
             { id: "document", header: t("document"), cell: (row) => <DocumentLink document={row.document} /> },
             { id: "dueDate", header: t("dueDate"), cell: (row) => format.date(row.dueDate) },
@@ -789,7 +822,13 @@ export function PartyBalance({ customerId }: { customerId: string }) {
               rows={credit.data?.entries ?? []}
               loading={credit.isPending}
               getRowId={(row) => row.id}
-              empty={<EmptyState icon="wallet" title={t("noCredit")} />}
+              empty={
+                <EmptyState
+                  icon="wallet"
+                  title={t("noCredit")}
+                  action={<EmptyLink href="/finance/refunds" label="nav.items.refunds" />}
+                />
+              }
               columns={[
                 { id: "createdAt", header: t("date"), cell: (row) => <When at={row.createdAt} absoluteOnly /> },
                 { id: "source", header: t("source"), cell: (row) => t(`sources.${row.source}`) },
@@ -809,7 +848,13 @@ export function PartyBalance({ customerId }: { customerId: string }) {
           rows={documents.data?.data ?? []}
           loading={documents.isPending}
           getRowId={(row) => row.id}
-          empty={<EmptyState icon="document" title={t("noDocuments")} />}
+          empty={
+            <EmptyState
+              icon="document"
+              title={t("noDocuments")}
+              action={<EmptyLink href="/finance/documents" label="nav.items.documents" />}
+            />
+          }
           columns={[
             { id: "number", header: t("document"), cell: (row) => <DocumentLink document={row} /> },
             { id: "type", header: t("type"), cell: (row) => tDocs(`types.${row.docType}`) },

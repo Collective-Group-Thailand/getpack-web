@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -17,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = await params;
   const t = await getTranslations("cs.inbox");
+  const tMenu = await getTranslations("admin.menu");
   const conversation = await (
     await serverApi("admin")
   )
@@ -28,10 +28,8 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
     });
   return (
     <ConsolePage width="full" className="max-w-[96rem]">
-      <Link href="/inbox" className="text-primary text-sm hover:underline">
-        {t("back")}
-      </Link>
       <PageHeader
+        back={{ href: "/inbox", label: tMenu("inbox") }}
         title={conversation.customer?.displayName ?? conversation.lineDisplayName ?? t("unknownCustomer")}
         description={
           conversation.subject

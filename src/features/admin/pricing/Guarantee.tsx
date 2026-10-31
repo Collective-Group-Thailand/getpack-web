@@ -14,9 +14,10 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { DateField } from "@/ui/components/DateField";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
-import { Input, NumberInput, Textarea } from "@/ui/components/Input";
+import { NumberInput, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
@@ -75,8 +76,8 @@ function Matrix({
     onChange?.([...others, { claimType: type, severity, remedies }]);
   };
   return (
-    <div className="border-border overflow-x-auto rounded-md border">
-      <table className="w-full text-sm">
+    <div className="border-border relative overflow-x-auto rounded-md border">
+      <table className="w-full min-w-[40rem] text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-surface-subtle text-muted text-xs">
           <tr>
@@ -288,6 +289,8 @@ export function GuaranteePolicy() {
 }
 
 function ProposeDialog({ from, onClose, onDone }: { from: Version | null; onClose: () => void; onDone: () => void }) {
+  const tPick = useTranslations("console.filters");
+  const dateFormat = useFormat();
   const t = useTranslations("pricing.guarantee");
   const [rules, setRules] = useState<Rule[]>(
     () => from?.rules.map((rule) => ({ ...rule, remedies: [...rule.remedies] })) ?? [],
@@ -349,10 +352,10 @@ function ProposeDialog({ from, onClose, onDone }: { from: Version | null; onClos
           />
         </Field>
         <Field label={t("effectiveFrom")} hint={t("effectiveHint")} required>
-          <Input
-            type="date"
+          <DateField
             min={today()}
             value={effectiveFrom}
+            display={effectiveFrom ? dateFormat.date(effectiveFrom) : tPick("pickDate")}
             onChange={(event) => setEffectiveFrom(event.target.value)}
           />
         </Field>

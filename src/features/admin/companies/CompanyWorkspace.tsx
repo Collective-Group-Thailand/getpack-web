@@ -13,14 +13,13 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
-import { Input, NumberInput, Textarea } from "@/ui/components/Input";
+import { NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Switch } from "@/ui/components/Switch";
@@ -53,6 +52,7 @@ import type {
   CreditVersion,
   IssuedStatement,
 } from "./resources";
+import { ConsoleDateField } from "@/features/admin/console/DateInput";
 
 type Basis = "paid_orders" | "financial_statement";
 
@@ -122,12 +122,7 @@ export function CompanyWorkspace({ companyId, tab }: { companyId: string; tab: C
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("companies"), href: "/companies" }, { label: company.companyCode ?? company.legalName }]}
-          />
-        }
+        back={{ href: "/companies", label: t("companies") }}
         title={company.legalName}
         meta={
           <>
@@ -926,7 +921,7 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
           />
           {draft.temporary ? (
             <Field label={t("validUntil")} hint={t("validUntilHint")} required>
-              <Input
+              <ConsoleDateField
                 type="date"
                 min={bangkokTomorrow()}
                 value={draft.validUntil}
@@ -1044,7 +1039,11 @@ function Statements({ company }: { company: Company }) {
         actions={
           canRead ? (
             <Field label={t("month")} className="w-44">
-              <Input type="month" value={month} onChange={(event) => setMonth(event.target.value || month)} />
+              <ConsoleDateField
+                type="month"
+                value={month}
+                onChange={(event) => setMonth(event.target.value || month)}
+              />
             </Field>
           ) : null
         }

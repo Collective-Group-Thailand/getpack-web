@@ -30,7 +30,8 @@
     "paymentHold": "Payment due before shipping",
     "carrierRequested": "Factory asked for a carrier",
     "splitFrom": "Split from {no}",
-    "reviewPod": "Review proof"
+    "reviewPod": "Review proof",
+    "emptyAction": "Open the production board"
   },
   "shipment": {
     "pageTitle": "Shipment",
@@ -228,7 +229,9 @@
       "waybill": "Download waybill",
       "waybillFailed": "Couldn't download the waybill",
       "notIssuable": "A link can be issued once the shipment is packed, until it is delivered."
-    }
+    },
+    "pieces": "{quantity} pcs",
+    "cartonOf": "Carton {n}/{total}"
   },
   "claims": {
     "title": "Claims",

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { queryKeys } from "@/lib/api/query-keys";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 import { Dialog } from "@/ui/components/Dialog";
 import { DropdownMenu, type MenuItem } from "@/ui/components/DropdownMenu";
 import { Field } from "@/ui/components/Field";
@@ -120,9 +121,8 @@ export function SavedViews({
         align="end"
         items={items}
         trigger={
-          <Button variant="secondary" size="sm" iconStart="filter">
-            {t("label")}
-          </Button>
+          // Icon-sized, so the list's views and its search keep one row (the title names it on hover).
+          <IconButton name="filter" variant="secondary" size="sm" label={t("label")} />
         }
       />
       <Dialog

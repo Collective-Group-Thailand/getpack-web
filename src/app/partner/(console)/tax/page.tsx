@@ -311,7 +311,15 @@ export default async function TaxPage({
           action="/tax"
           label={t("monthNav")}
           hidden={{ view: view === "vat" ? undefined : view, form: view === "wht" ? form : undefined }}
-          fields={[{ name: "month", label: t("month"), value: month, type: "month" }]}
+          fields={[
+            {
+              name: "month",
+              label: t("month"),
+              value: month,
+              type: "month",
+              display: format.date(`${month}-01`, { style: "month" }),
+            },
+          ]}
           submit={t("show")}
           prev={{
             href: href(view, { month: shift(month, -1), form: view === "wht" ? form : undefined }),

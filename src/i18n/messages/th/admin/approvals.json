@@ -144,7 +144,12 @@
     "groupCode": "กลุ่มคำสั่งซื้อ",
     "poNumber": "เลขที่ PO",
     "companyId": "บริษัท",
-    "companyCode": "บริษัท"
+    "companyCode": "บริษัท",
+    "origin": "ที่มา",
+    "factory": "โรงงาน",
+    "direction": "ทิศทางของราคา",
+    "productType": "ประเภทสินค้า",
+    "proposedEffectiveFrom": "เสนอให้มีผลตั้งแต่"
   },
   "delegations": {
     "title": "การมอบหมายให้อนุมัติแทน",
@@ -304,5 +309,13 @@
   "autoApproved": {
     "title": "อนุมัติอัตโนมัติ",
     "body": "ยอดของคำขอนี้ไม่เกินเกณฑ์อนุมัติอัตโนมัติของนโยบาย จึงไม่ต้องรอผู้อนุมัติคนที่สอง (บันทึกเหตุผล \"ไม่เกินเกณฑ์\" ไว้แล้ว)"
+  },
+  "values": {
+    "origin": {
+      "factory_proposal": "ข้อเสนอจากโรงงาน"
+    },
+    "direction": {
+      "factory_to_getpack": "ราคาที่โรงงานคิดกับ getpack"
+    }
   }
 }

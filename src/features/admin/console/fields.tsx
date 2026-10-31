@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { Controller, type Control, type FieldValues, type Path } from "react-hook-form";
 
+import { useFormat } from "@/features/shared/format";
+import { DateField } from "@/ui/components/DateField";
 import { FormField } from "@/ui/components/FormField";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
@@ -43,6 +45,8 @@ export function FormFields<TValues extends FieldValues>({
   const tCommon = useTranslations("common");
   const t = useTranslations("console.form");
   const tValidation = useTranslations("console.validation");
+  const tFilters = useTranslations("console.filters");
+  const format = useFormat();
   const formatError = (message: string) => (tValidation.has(message) ? tValidation(message) : message);
 
   return (
@@ -137,10 +141,10 @@ export function FormFields<TValues extends FieldValues>({
                   );
                 case "date":
                   return (
-                    <Input
-                      type="date"
+                    <DateField
                       name={name}
                       value={(value as string) ?? ""}
+                      display={value ? format.date(String(value)) : tFilters("pickDate")}
                       onChange={onChange}
                       onBlur={onBlur}
                     />

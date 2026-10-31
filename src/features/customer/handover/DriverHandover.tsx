@@ -261,7 +261,10 @@ function Trip({
       {confirmable ? (
         <>
           <div className="hidden md:block">{confirmButton}</div>
-          <MobileActionBar>{confirmButton}</MobileActionBar>
+          {/* No tab bar under it here (`HandoverFrame`): the bar sits on the bottom edge, clear of the home indicator. */}
+          <MobileActionBar className="bottom-0 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
+            {confirmButton}
+          </MobileActionBar>
           <AlertDialog
             open={asking}
             onOpenChange={(next) => (busy ? undefined : setAsking(next))}

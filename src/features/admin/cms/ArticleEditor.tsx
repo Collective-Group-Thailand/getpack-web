@@ -10,12 +10,11 @@ import { CONTENT_STATUS } from "@/domain/status";
 import { When } from "@/features/shared/format";
 import { ifMatch } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { Checkbox } from "@/ui/components/Checkbox";
-import { Field } from "@/ui/components/Field";
+import { Field, FormSection } from "@/ui/components/Field";
+import { EDGE_BAR, FormColumns, FormSummary } from "@/ui/components/FormLayout";
 import { Input, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import type { RichTextDocument } from "@/ui/components/RichTextEditor";
@@ -196,19 +195,23 @@ export function ArticleEditor({ articleId }: { articleId: string | null }) {
     };
   };
 
+  const saveButton = canManage ? (
+    <Button
+      iconStart="save"
+      loading={save.isPending}
+      onClick={() => {
+        setTouched(true);
+        if (!invalid) save.mutate(draft);
+      }}
+    >
+      {t("save")}
+    </Button>
+  ) : null;
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 md:gap-7">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[
-              { label: t("cms"), href: "/cms" },
-              { label: t("list"), href: "/cms/articles" },
-              { label: articleId ? draft.titleTh || t("untitled") : t("new") },
-            ]}
-          />
-        }
+        back={{ href: "/cms/articles", label: t("list") }}
         title={articleId ? draft.titleTh || t("untitled") : t("new")}
         meta={
           articleId && article.data ? (
@@ -222,71 +225,58 @@ export function ArticleEditor({ articleId }: { articleId: string | null }) {
             </span>
           ) : undefined
         }
-        actions={
-          canManage ? (
-            <>
-              {articleId ? (
-                <Button variant="ghost" iconStart="trash" onClick={() => setRemoving(true)}>
-                  {t("delete")}
-                </Button>
-              ) : null}
-              <Button
-                iconStart="save"
-                loading={save.isPending}
-                onClick={() => {
-                  setTouched(true);
-                  if (!invalid) save.mutate(draft);
-                }}
-              >
-                {t("save")}
-              </Button>
-            </>
-          ) : null
-        }
       />
 
       {touched && invalid ? <Callout tone="danger" title={t("errors.summary")} live /> : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <Card padding="lg">
+      <FormColumns
+        aside={
+          <FormSummary title={t("publishing")} barClassName={EDGE_BAR} action={saveButton}>
+            <Field label={t("status")}>
+              <SearchableSelect
+                value={draft.status}
+                disabled={!canManage}
+                onValueChange={(status) => update({ status })}
+                options={(["draft", "published", "archived"] as const).map((value) => ({
+                  value,
+                  label: t(`statuses.${value}`),
+                }))}
+              />
+            </Field>
+            <Field
+              label={t("slug")}
+              hint={t("slugHint")}
+              required
+              requiredLabel={tCommon("state.required")}
+              error={touched ? errors.slug : undefined}
+            >
+              <Input
+                className="tabular-nums"
+                value={draft.slug}
+                disabled={!canManage}
+                onChange={(event) => update({ slug: event.target.value })}
+              />
+            </Field>
+            {articleId && canManage ? (
+              <div data-fill="row" className="border-border flex flex-col border-t pt-3 md:order-last">
+                <Button variant="ghost" className="text-danger" iconStart="trash" onClick={() => setRemoving(true)}>
+                  {t("delete")}
+                </Button>
+              </div>
+            ) : null}
+          </FormSummary>
+        }
+      >
+        <section className="border-border bg-surface rounded-card border px-5 pt-3 pb-5 md:px-6">
           <Tabs label={t("localesLabel")} items={LOCALES.map(localeTab)} defaultValue="th" />
-        </Card>
+        </section>
 
-        <div className="flex flex-col gap-4">
-          <Card padding="md">
-            <CardHeader>
-              <CardTitle>{t("publishing")}</CardTitle>
-            </CardHeader>
-            <div className="flex flex-col gap-3">
-              <Field label={t("status")}>
-                <SearchableSelect
-                  value={draft.status}
-                  onValueChange={(status) => update({ status })}
-                  options={(["draft", "published", "archived"] as const).map((value) => ({
-                    value,
-                    label: t(`statuses.${value}`),
-                  }))}
-                />
-              </Field>
-              <Field
-                label={t("slug")}
-                hint={t("slugHint")}
-                required
-                requiredLabel={tCommon("state.required")}
-                error={touched ? errors.slug : undefined}
-              >
-                <Input
-                  className="tabular-nums"
-                  value={draft.slug}
-                  onChange={(event) => update({ slug: event.target.value })}
-                />
-              </Field>
-              <Field label={t("cover")} hint={t("coverHint")}>
-                <FileField
-                  value={draft.coverFileId}
-                  onChange={(value) => update({ coverFileId: String(value ?? "") })}
-                />
-              </Field>
+        <FormSection card title={t("details")}>
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
+            <Field label={t("cover")} hint={t("coverHint")}>
+              <FileField value={draft.coverFileId} onChange={(value) => update({ coverFileId: String(value ?? "") })} />
+            </Field>
+            <div className="flex flex-col gap-5">
               <Field label={t("seoPage")} hint={t("seoPageHint")}>
                 <SearchableSelect
                   value={draft.seoPageId || NONE}
@@ -294,32 +284,27 @@ export function ArticleEditor({ articleId }: { articleId: string | null }) {
                   options={[{ value: NONE, label: t("none") }, ...(refs.options["seo-pages"] ?? [])]}
                 />
               </Field>
+              <fieldset className="flex flex-col gap-2.5">
+                <legend className="mb-2 text-sm font-medium">{t("categories")}</legend>
+                {(refs.options["article-categories"] ?? []).map((option) => (
+                  <Checkbox
+                    key={option.value}
+                    label={option.label}
+                    checked={draft.categoryIds.includes(option.value)}
+                    onCheckedChange={(checked) =>
+                      update({
+                        categoryIds: checked
+                          ? [...draft.categoryIds, option.value]
+                          : draft.categoryIds.filter((id) => id !== option.value),
+                      })
+                    }
+                  />
+                ))}
+              </fieldset>
             </div>
-          </Card>
-          <Card padding="md">
-            <CardHeader>
-              <CardTitle>{t("categories")}</CardTitle>
-            </CardHeader>
-            <fieldset className="flex flex-col gap-2">
-              <legend className="sr-only">{t("categories")}</legend>
-              {(refs.options["article-categories"] ?? []).map((option) => (
-                <Checkbox
-                  key={option.value}
-                  label={option.label}
-                  checked={draft.categoryIds.includes(option.value)}
-                  onCheckedChange={(checked) =>
-                    update({
-                      categoryIds: checked
-                        ? [...draft.categoryIds, option.value]
-                        : draft.categoryIds.filter((id) => id !== option.value),
-                    })
-                  }
-                />
-              ))}
-            </fieldset>
-          </Card>
-        </div>
-      </div>
+          </div>
+        </FormSection>
+      </FormColumns>
 
       {articleId ? (
         <ConfirmAction

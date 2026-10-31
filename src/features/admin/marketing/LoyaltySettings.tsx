@@ -11,6 +11,7 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { DateField } from "@/ui/components/DateField";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -78,6 +79,7 @@ export function LoyaltySettings() {
 function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Setting }) {
   const t = useTranslations("marketing.loyalty");
   const tSetting = useTranslations(`marketing.loyalty.settings`);
+  const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const queryClient = useQueryClient();
   const actor = useActor();
@@ -295,7 +297,11 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
           />
           {when === "later" ? (
             <Field label={t("effectiveFrom")} required>
-              <Input type="date" value={effectiveFrom} onChange={(event) => setEffectiveFrom(event.target.value)} />
+              <DateField
+                value={effectiveFrom}
+                display={effectiveFrom ? format.date(effectiveFrom) : tFilters("pickDate")}
+                onChange={(event) => setEffectiveFrom(event.target.value)}
+              />
             </Field>
           ) : null}
           <Field label={t("reason")} required>

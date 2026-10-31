@@ -8,19 +8,20 @@ import { useState } from "react";
 
 import { DOCUMENT_STATUS, DUNNING_STATUS, RECEIVABLE_STATUS } from "@/domain/status";
 import { isZeroMoney, moneyText } from "@/domain/money";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Dialog } from "@/ui/components/Dialog";
-import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { toast } from "@/ui/components/Toast";
@@ -31,10 +32,10 @@ import { ConfirmAction } from "../console/ConfirmAction";
 import { FormDialog, Section } from "../console/FormDialog";
 import { NextActionBar } from "../console/NextActionBar";
 import { problemMessage, QueryError } from "../console/QueryError";
-import { QueueTabs } from "../console/queues";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { StatusChip } from "../console/StatusChip";
+import { DocumentSheet, StatusViews, EmptyLink } from "./frame";
 import { ETaxPanel, ReplaceDialog, ReplacementNotice, ResendETaxDialog } from "./document-corrections";
 import { DOC_TYPES, documentsList, type CustomerDocument } from "./resources";
 import { DocumentLink, fieldErrorsOf, SourceJournals } from "./shared";
@@ -118,42 +119,44 @@ export function DocumentsRegister({ initial }: { initial: InitialPage<CustomerDo
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("typesLabel")}
-        param="docType"
-        tabs={[
-          { value: null, label: t("all") },
-          ...DOC_TYPES.map((type) => ({ value: type, label: t(`types.${type}`) })),
-        ]}
-      />
-      <ResourceList
-        resource={documentsList}
-        columns={columns}
-        caption={t("title")}
-        initial={initial}
-        searchLabel={t("search")}
-        filters={[
-          {
-            id: "status",
-            label: t("columns.status"),
-            kind: "select",
-            options: (["issued", "void"] as const).map((value) => ({
-              value,
-              label: tStatus(DOCUMENT_STATUS[value].labelKey),
-            })),
-          },
-          { id: "from", label: t("from"), kind: "date" },
-          { id: "to", label: t("to"), kind: "date" },
-        ]}
-        toolbarEnd={
-          <Button asChild variant="ghost" size="sm" iconStart="receipt">
+    <ResourceList
+      resource={documentsList}
+      rowHref={(row) => `/finance/documents/${row.id}`}
+      views={
+        <StatusViews
+          resource={documentsList}
+          param="docType"
+          label={t("typesLabel")}
+          allLabel={t("all")}
+          statuses={DOC_TYPES.map((type) => ({ value: type, label: t(`types.${type}`) }))}
+        />
+      }
+      columns={columns}
+      caption={t("title")}
+      initial={initial}
+      searchLabel={t("search")}
+      filters={[
+        {
+          id: "status",
+          label: t("columns.status"),
+          kind: "select",
+          options: (["issued", "void"] as const).map((value) => ({
+            value,
+            label: tStatus(DOCUMENT_STATUS[value].labelKey),
+          })),
+        },
+        { id: "from", label: t("from"), kind: "date" },
+        { id: "to", label: t("to"), kind: "date" },
+      ]}
+      empty={{
+        title: t("empty"),
+        action: (
+          <Button asChild variant="secondary" iconStart="receipt">
             <Link href="/quotations">{t("quotations")}</Link>
           </Button>
-        }
-        empty={{ title: t("empty") }}
-      />
-    </div>
+        ),
+      }}
+    />
   );
 }
 
@@ -213,15 +216,42 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
   if (!doc) return null;
   const isTaxInvoice = doc.docType === "tr" && doc.status === "issued" && Boolean(doc.orderId);
 
+  const notes =
+    isTaxInvoice && (canCredit || canDebit) ? (
+      <>
+        {canCredit ? (
+          <Button variant="secondary" size="lg" iconStart="file-check" asChild>
+            <Link href={`/finance/credit-notes/new?orderId=${doc.orderId}`}>{t("creditNote")}</Link>
+          </Button>
+        ) : null}
+        {canDebit ? (
+          <Button variant="secondary" size="lg" iconStart="plus" onClick={() => setAction("debit")}>
+            {t("debitNote")}
+          </Button>
+        ) : null}
+      </>
+    ) : null;
+  const pdf = (
+    <div className="flex flex-wrap gap-2">
+      <Button variant="secondary" iconStart="eye" disabled={!doc.pdfReady} onClick={() => void openPdf(false)}>
+        {t("preview")}
+      </Button>
+      <Button variant="secondary" iconStart="download" disabled={!doc.pdfReady} onClick={() => void openPdf(true)}>
+        {t("download")}
+      </Button>
+      {doc.cancelledPdfReady ? (
+        <Button variant="ghost" iconStart="ban" onClick={() => void openPdf(false, true)}>
+          {t("cancelledCopy")}
+        </Button>
+      ) : null}
+    </div>
+  );
+  const offered = doc.nextActions.length > 0;
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: tDocs("title"), href: "/finance/documents" }, { label: doc.docNumber }]}
-          />
-        }
+        back={{ href: "/finance/documents", label: tDocs("title") }}
         title={`${tDocs(`types.${doc.docType}`)} ${doc.docNumber}`}
         meta={
           <>
@@ -230,191 +260,169 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
             {doc.isFullForm ? <span className="text-muted text-sm">{t("fullForm")}</span> : null}
           </>
         }
-        description={t("issuedAt", { at: format.dateTime(doc.issuedAt) })}
-        actions={
-          <>
-            <Button variant="secondary" iconStart="eye" disabled={!doc.pdfReady} onClick={() => void openPdf(false)}>
-              {t("preview")}
-            </Button>
-            <Button
-              variant="secondary"
-              iconStart="download"
-              disabled={!doc.pdfReady}
-              onClick={() => void openPdf(true)}
-            >
-              {t("download")}
-            </Button>
-            {doc.cancelledPdfReady ? (
-              <Button variant="secondary" iconStart="ban" onClick={() => void openPdf(false, true)}>
-                {t("cancelledCopy")}
-              </Button>
-            ) : null}
-            {isTaxInvoice && (canCredit || canDebit) ? (
-              <DropdownMenu
-                label={t("more")}
-                trigger={
-                  <Button variant="ghost" iconStart="more">
-                    {t("more")}
-                  </Button>
-                }
-                items={[
-                  ...(canCredit
-                    ? [
-                        {
-                          id: "credit",
-                          label: t("creditNote"),
-                          icon: "file-check" as const,
-                          onSelect: () => router.push(`/finance/credit-notes/new?orderId=${doc.orderId}`),
-                        },
-                      ]
-                    : []),
-                  ...(canDebit
-                    ? [
-                        {
-                          id: "debit",
-                          label: t("debitNote"),
-                          icon: "plus" as const,
-                          onSelect: () => setAction("debit"),
-                        },
-                      ]
-                    : []),
-                ]}
-              />
-            ) : null}
-            {/* Resend and void are what the API offers on this document, for this person (`nextActions`). */}
-            <NextActionBar
-              actions={doc.nextActions}
-              supported={DOCUMENT_VERBS}
-              labelOf={(verb) =>
-                verb === "resend"
-                  ? t("resend")
-                  : verb === "void"
-                    ? t("void")
-                    : verb === "replace"
-                      ? t("replace")
-                      : verb === "resend_etax"
-                        ? t("resendETax")
-                        : undefined
-              }
-              onAction={(verb) => setAction(verb as Action)}
-            />
-          </>
-        }
       />
 
-      {doc.status === "void" ? (
-        <Callout tone="neutral" title={t("voided")}>
-          {doc.voidReason}
-        </Callout>
-      ) : null}
-      <ReplacementNotice doc={doc} />
+      <DetailLayout
+        aside={
+          <ActionPanel id="document-panel" tone={offered ? "primary" : "neutral"} title={t("amountDue")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(doc.amountDue)}</p>
+            <SummaryRows
+              rows={[
+                {
+                  key: "gross",
+                  label: t("gross"),
+                  value: <span className="tabular-nums">{format.thb(doc.grossAmount)}</span>,
+                },
+                { key: "issued", label: tDocs("columns.date"), value: format.date(doc.issuedAt) },
+                { key: "due", label: t("dueDate"), value: doc.dueDate ? format.date(doc.dueDate) : null },
+              ]}
+            />
+            {offered || notes ? (
+              <NextActionBar
+                layout="panel"
+                actions={doc.nextActions}
+                supported={DOCUMENT_VERBS}
+                secondary={notes}
+                labelOf={(verb) =>
+                  verb === "resend"
+                    ? t("resend")
+                    : verb === "void"
+                      ? t("void")
+                      : verb === "replace"
+                        ? t("replace")
+                        : verb === "resend_etax"
+                          ? t("resendETax")
+                          : undefined
+                }
+                onAction={(verb) => setAction(verb as Action)}
+              />
+            ) : null}
+            {!offered && notes ? <ActionStack>{notes}</ActionStack> : null}
+            {pdf}
+          </ActionPanel>
+        }
+      >
+        {doc.status === "void" ? (
+          <Callout tone="neutral" title={t("voided")}>
+            {doc.voidReason}
+          </Callout>
+        ) : null}
+        <ReplacementNotice doc={doc} />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Section title={t("seller")}>
-          <Party party={doc.seller} />
-        </Section>
-        <Section title={t("buyer")}>
-          <Party party={doc.buyer} />
-        </Section>
-      </div>
-
-      <Section title={t("lines")}>
-        <DataTable
-          caption={t("lines")}
-          density="compact"
-          rows={doc.lines}
-          getRowId={(row) => String(row.lineNo)}
-          columns={[
-            { id: "lineNo", header: "#", numeric: true, cell: (row) => row.lineNo },
-            { id: "description", header: t("description"), cell: (row) => row.description },
-            { id: "quantity", header: t("quantity"), numeric: true, cell: (row) => row.quantity },
-            {
-              id: "discount",
-              header: t("discount"),
-              numeric: true,
-              cell: (row) => (isZeroMoney(row.discountAmount) ? "" : format.thb(row.discountAmount)),
-            },
-            { id: "net", header: t("net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
-            { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
-            { id: "gross", header: t("gross"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
+        <DocumentSheet
+          kind={tDocs(`types.${doc.docType}`)}
+          number={doc.docNumber}
+          facts={[
+            { key: "issued", label: tDocs("columns.date"), value: format.dateTime(doc.issuedAt) },
+            { key: "due", label: t("dueDate"), value: doc.dueDate ? format.date(doc.dueDate) : null },
           ]}
-        />
-        <dl className="ms-auto mt-4 grid max-w-sm grid-cols-2 gap-x-6 gap-y-1 text-sm">
-          <Total label={t("net")} amount={doc.netAmount} />
-          <Total label={t("vatAt", { rate: format.percent(doc.vatRatePct) })} amount={doc.vatAmount} />
-          <Total label={t("gross")} amount={doc.grossAmount} strong />
-          {isZeroMoney(doc.deductedPriorAmount) ? null : (
-            <Total label={t("deductedPrior")} amount={doc.deductedPriorAmount} />
-          )}
-          {isZeroMoney(doc.whtAmount) ? null : <Total label={t("wht")} amount={doc.whtAmount} />}
-          {doc.docType === "tr" || doc.docType === "rc" ? <Total label={t("cash")} amount={doc.cashAmount} /> : null}
-          <Total label={t("amountDue")} amount={doc.amountDue} strong />
-        </dl>
-      </Section>
-
-      <Section title={t("links")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            {
-              term: t("order"),
-              description: doc.orderId ? (
-                <Link href={`/orders/${doc.orderId}`} className="text-primary tabular-nums hover:underline">
-                  {doc.orderCode}
-                </Link>
-              ) : (
-                (doc.orderCode ?? "—")
-              ),
-            },
-            { term: t("group"), description: doc.groupCode ?? "—" },
-            {
-              term: t("payment"),
-              description: doc.paymentId ? (
-                <Link href={`/finance/payments/${doc.paymentId}`} className="text-primary hover:underline">
-                  {t("openPayment")}
-                </Link>
-              ) : (
-                "—"
-              ),
-            },
-            { term: t("original"), description: <DocumentLink document={doc.originalDocument} /> },
-            {
-              term: t("receivable"),
-              description: doc.receivable ? (
-                <span className="flex flex-wrap items-center gap-2">
-                  <StatusChip map={RECEIVABLE_STATUS} value={doc.receivable.status} />
-                  <span className="tabular-nums">{format.thb(doc.receivable.openAmount)}</span>
-                </span>
-              ) : (
-                "—"
-              ),
-            },
-            { term: t("dueDate"), description: doc.dueDate ? format.date(doc.dueDate) : "—" },
-            { term: t("taxNature"), description: doc.taxNature ? t(`natures.${doc.taxNature}`) : "—" },
-            { term: t("receiptVia"), description: doc.receiptVia ? t(`via.${doc.receiptVia}`) : "—" },
-            {
-              term: t("reason"),
-              description: doc.reason ? (
-                <ReasonName code={doc.reason} />
-              ) : doc.cnKind ? (
-                tDocs(`cnKinds.${doc.cnKind}`)
-              ) : (
-                "—"
-              ),
-            },
+          parties={[
+            { key: "seller", label: t("seller"), body: <Party party={doc.seller} /> },
+            { key: "buyer", label: t("buyer"), body: <Party party={doc.buyer} /> },
           ]}
-        />
-      </Section>
+          totals={[
+            { key: "net", label: t("net"), amount: format.thb(doc.netAmount) },
+            {
+              key: "vat",
+              label: t("vatAt", { rate: format.percent(doc.vatRatePct) }),
+              amount: format.thb(doc.vatAmount),
+            },
+            { key: "gross", label: t("gross"), amount: format.thb(doc.grossAmount), strong: true },
+            ...(isZeroMoney(doc.deductedPriorAmount)
+              ? []
+              : [{ key: "prior", label: t("deductedPrior"), amount: format.thb(doc.deductedPriorAmount) }]),
+            ...(isZeroMoney(doc.whtAmount) ? [] : [{ key: "wht", label: t("wht"), amount: format.thb(doc.whtAmount) }]),
+            ...(doc.docType === "tr" || doc.docType === "rc"
+              ? [{ key: "cash", label: t("cash"), amount: format.thb(doc.cashAmount) }]
+              : []),
+            { key: "due", label: t("amountDue"), amount: format.thb(doc.amountDue), result: true },
+          ]}
+        >
+          <DataTable
+            caption={t("lines")}
+            density="compact"
+            rows={doc.lines}
+            getRowId={(row) => String(row.lineNo)}
+            columns={[
+              { id: "lineNo", header: "#", numeric: true, cell: (row) => row.lineNo },
+              { id: "description", header: t("description"), cell: (row) => row.description },
+              { id: "quantity", header: t("quantity"), numeric: true, cell: (row) => row.quantity },
+              {
+                id: "discount",
+                header: t("discount"),
+                numeric: true,
+                cell: (row) => (isZeroMoney(row.discountAmount) ? "" : format.thb(row.discountAmount)),
+              },
+              { id: "net", header: t("net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
+              { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
+              { id: "gross", header: t("gross"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
+            ]}
+          />
+        </DocumentSheet>
 
-      <Section title={t("journals")} description={t("journalsNote")}>
-        <SourceJournals sourceType="customer_document" sourceId={doc.id} />
-      </Section>
+        <Section title={t("links")}>
+          <DescriptionList
+            columns={3}
+            items={[
+              {
+                term: t("order"),
+                description: doc.orderId ? (
+                  <Link href={`/orders/${doc.orderId}`} className="text-primary tabular-nums hover:underline">
+                    {doc.orderCode}
+                  </Link>
+                ) : (
+                  (doc.orderCode ?? "—")
+                ),
+              },
+              { term: t("group"), description: doc.groupCode ?? "—" },
+              {
+                term: t("payment"),
+                description: doc.paymentId ? (
+                  <Link href={`/finance/payments/${doc.paymentId}`} className="text-primary hover:underline">
+                    {t("openPayment")}
+                  </Link>
+                ) : (
+                  "—"
+                ),
+              },
+              { term: t("original"), description: <DocumentLink document={doc.originalDocument} /> },
+              {
+                term: t("receivable"),
+                description: doc.receivable ? (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <StatusChip map={RECEIVABLE_STATUS} value={doc.receivable.status} />
+                    <span className="tabular-nums">{format.thb(doc.receivable.openAmount)}</span>
+                  </span>
+                ) : (
+                  "—"
+                ),
+              },
+              { term: t("taxNature"), description: doc.taxNature ? t(`natures.${doc.taxNature}`) : "—" },
+              { term: t("receiptVia"), description: doc.receiptVia ? t(`via.${doc.receiptVia}`) : "—" },
+              {
+                term: t("reason"),
+                description: doc.reason ? (
+                  <ReasonName code={doc.reason} />
+                ) : doc.cnKind ? (
+                  tDocs(`cnKinds.${doc.cnKind}`)
+                ) : (
+                  "—"
+                ),
+              },
+            ]}
+          />
+        </Section>
 
-      <ETaxPanel doc={doc} />
+        <Section title={t("journals")} description={t("journalsNote")}>
+          <SourceJournals sourceType="customer_document" sourceId={doc.id} />
+        </Section>
 
-      <Section title={t("deliveries")}>
-        <Deliveries documentId={doc.id} />
-      </Section>
+        <ETaxPanel doc={doc} />
+
+        <Section title={t("deliveries")}>
+          <Deliveries documentId={doc.id} />
+        </Section>
+      </DetailLayout>
 
       {action === "void" ? (
         <ConfirmAction
@@ -478,16 +486,6 @@ function Party({ party }: { party: Schemas["DocumentPartyDto"] }) {
   );
 }
 
-function Total({ label, amount, strong }: { label: string; amount: string; strong?: boolean }) {
-  const format = useFormat();
-  return (
-    <>
-      <dt className={strong ? "font-medium" : "text-muted"}>{label}</dt>
-      <dd className={strong ? "text-end font-semibold tabular-nums" : "text-end tabular-nums"}>{format.thb(amount)}</dd>
-    </>
-  );
-}
-
 /**
  * The statutory reason list (`admin.customerDocuments.listCreditNoteReasons`, the §2 controlled
  * list), with each reason's `direction`: credit notes take `credit`, debit notes `debit`. Cached
@@ -527,7 +525,13 @@ function Deliveries({ documentId }: { documentId: string }) {
       rows={query.data ?? []}
       loading={query.isPending}
       getRowId={(row) => `${row.kind}:${row.channel}:${row.requestedAt}`}
-      empty={<EmptyState icon="send" title={t("noDeliveries")} />}
+      empty={
+        <EmptyState
+          icon="send"
+          title={t("noDeliveries")}
+          action={<EmptyLink href="/finance/documents" label="nav.items.documents" />}
+        />
+      }
       columns={[
         { id: "requestedAt", header: t("requestedAt"), cell: (row) => <When at={row.requestedAt} /> },
         { id: "kind", header: t("deliveryKind"), cell: (row) => t(`deliveryKinds.${row.kind}`) },

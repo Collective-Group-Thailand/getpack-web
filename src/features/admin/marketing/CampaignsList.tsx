@@ -155,15 +155,22 @@ export function CampaignsList({ initial }: { initial: InitialPage<Campaign> | nu
 
   return (
     <div className="flex flex-col gap-4">
-      <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
-        tabs={[
-          { value: null, label: t("all"), countKey: "marketing.budget_alerts" },
-          ...CAMPAIGN_STATUSES.map((status) => ({ value: status, label: tStatus(CAMPAIGN_STATUS[status].labelKey) })),
-        ]}
-      />
       <CrudList
+        views={
+          <QueueTabs
+            countFrom={campaignsList}
+            hideEmpty
+            label={t("statusesLabel")}
+            param="status"
+            tabs={[
+              { value: null, label: t("all") },
+              ...CAMPAIGN_STATUSES.map((status) => ({
+                value: status,
+                label: tStatus(CAMPAIGN_STATUS[status].labelKey),
+              })),
+            ]}
+          />
+        }
         config={config}
         columns={columns}
         caption={t("title")}

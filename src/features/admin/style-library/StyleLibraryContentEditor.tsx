@@ -5,11 +5,13 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { today } from "@/features/admin/console/dates";
-import { When } from "@/features/shared/format";
+import { useFormat, When } from "@/features/shared/format";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { DateField } from "@/ui/components/DateField";
 import { Field } from "@/ui/components/Field";
+import { EDGE_BAR, StickySave } from "@/ui/components/FormLayout";
 import { Input, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
@@ -56,6 +58,8 @@ type Loaded = Awaited<ReturnType<typeof read>>;
 
 function Editor({ loaded }: { loaded: Loaded }) {
   const t = useTranslations("styleLibrary.content");
+  const tFilters = useTranslations("console.filters");
+  const format = useFormat();
   const canCurate = useCan("styles.curate");
   const queryClient = useQueryClient();
   const [content, setContent] = useState<LibraryContent>(loaded.content);
@@ -204,9 +208,9 @@ function Editor({ loaded }: { loaded: Loaded }) {
                 hint={t("expiresOnHint")}
                 error={errorAt(`trust.certifications.${i}.expiresOn`)}
               >
-                <Input
-                  type="date"
+                <DateField
                   value={c.expiresOn ?? ""}
+                  display={c.expiresOn ? format.date(c.expiresOn) : tFilters("pickDate")}
                   disabled={disabled}
                   onChange={(e) => update("certifications", i, { expiresOn: e.target.value || null })}
                 />
@@ -359,16 +363,19 @@ function Editor({ loaded }: { loaded: Loaded }) {
       </Section>
 
       {canCurate ? (
-        <Section title={t("saveTitle")}>
-          <div className="flex flex-col gap-3 md:flex-row md:items-end">
-            <Field label={t("reason")} hint={t("reasonHint")} required error={errorAt("reason")} className="flex-1">
+        <>
+          <Section title={t("saveTitle")}>
+            <Field label={t("reason")} hint={t("reasonHint")} required error={errorAt("reason")}>
               <Input value={reason} onChange={(e) => setReason(e.target.value)} />
             </Field>
+          </Section>
+          {/* The save stays in view while the long form scrolls (a desk bar, the phone's bottom bar). */}
+          <StickySave note={reason.trim() ? reason : t("reasonHint")} barClassName={EDGE_BAR}>
             <Button type="submit" loading={save.isPending}>
               {t("save")}
             </Button>
-          </div>
-        </Section>
+          </StickySave>
+        </>
       ) : null}
     </form>
   );

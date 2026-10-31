@@ -114,17 +114,9 @@ export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | 
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <QueueTabs
-          label={t("kindsLabel")}
-          param="kind"
-          tabs={[
-            { value: null, label: t("all") },
-            ...PROMOTION_KINDS.map((kind) => ({ value: kind, label: t(`kinds.${kind}`) })),
-          ]}
-        />
-        <div className="flex gap-2 pb-1">
-          {canManage ? (
+      <ResourceList
+        toolbarEnd={
+          canManage ? (
             <>
               <Button variant="secondary" iconStart="sort-asc" onClick={() => setOrdering(true)}>
                 {t("reorder")}
@@ -133,10 +125,20 @@ export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | 
                 <Link href="/marketing/promotions/new">{t("create")}</Link>
               </Button>
             </>
-          ) : null}
-        </div>
-      </div>
-      <ResourceList
+          ) : undefined
+        }
+        views={
+          <QueueTabs
+            countFrom={promotionsList}
+            hideEmpty
+            label={t("kindsLabel")}
+            param="kind"
+            tabs={[
+              { value: null, label: t("all") },
+              ...PROMOTION_KINDS.map((kind) => ({ value: kind, label: t(`kinds.${kind}`) })),
+            ]}
+          />
+        }
         resource={promotionsList}
         columns={columns}
         caption={t("title")}

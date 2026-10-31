@@ -16,16 +16,17 @@ import {
   VENDOR_BILL_STATUS,
 } from "@/domain/status";
 import { uploadFile } from "@/features/shared/files/upload";
+import { ActionStack } from "@/features/shared/actions/ActionStack";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SummaryRows } from "@/ui/components/FormLayout";
 import { Dialog } from "@/ui/components/Dialog";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
@@ -62,6 +63,7 @@ import {
   type Vendor,
   type VendorInvoice,
 } from "./resources";
+import { DocumentSheet, StatusViews, FinanceDateField, EmptyLink } from "./frame";
 import { AccountNo, fieldErrorsOf, SourceJournals } from "./shared";
 import { invalidateMoney } from "./slips";
 
@@ -93,8 +95,11 @@ export function useVendors() {
 }
 
 function VendorLink({ id, name }: { id: string; name?: string }) {
+  const t = useTranslations("finance.payables.vendors");
   const vendors = useVendors();
-  const label = name ?? vendors.data?.find((vendor) => vendor.id === id)?.legalName ?? id.slice(0, 8);
+  // A cut id is not a name: a factory missing from the vendor register says so (the PO carries no factory name).
+  const label =
+    name ?? vendors.data?.find((vendor) => vendor.id === id)?.legalName ?? (vendors.data ? t("unnamed") : "…");
   return (
     <Link href={`/finance/payables/vendors/${id}`} className="text-primary hover:underline">
       {label}
@@ -157,19 +162,21 @@ export function PayablesList({ initial }: { initial: InitialPage<PayableItem> | 
   return (
     <ResourceList
       resource={payablesList}
+      views={
+        <StatusViews
+          resource={payablesList}
+          label={t("columns.status")}
+          statuses={PAYABLE_STATUSES.map((value) => ({ value, label: tStatus(PAYABLE_STATUS[value].labelKey) }))}
+        />
+      }
       columns={columns}
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      filters={[
-        {
-          id: "status",
-          label: t("columns.status"),
-          kind: "select",
-          options: PAYABLE_STATUSES.map((value) => ({ value, label: tStatus(PAYABLE_STATUS[value].labelKey) })),
-        },
-      ]}
-      empty={{ title: t("empty") }}
+      empty={{
+        title: t("empty"),
+        action: <EmptyLink href="/finance/payables/purchase-orders" label="payables.nav.purchaseOrders" />,
+      }}
     />
   );
 }
@@ -213,19 +220,19 @@ export function PurchaseOrdersList({ initial }: { initial: InitialPage<PurchaseO
   return (
     <ResourceList
       resource={purchaseOrdersList}
+      rowHref={(row) => `/finance/payables/purchase-orders/${row.id}`}
+      views={
+        <StatusViews
+          resource={purchaseOrdersList}
+          label={t("columns.status")}
+          statuses={PO_STATUSES.map((value) => ({ value, label: tStatus(PURCHASE_ORDER_STATUS[value].labelKey) }))}
+        />
+      }
       columns={columns}
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      filters={[
-        {
-          id: "status",
-          label: t("columns.status"),
-          kind: "select",
-          options: PO_STATUSES.map((value) => ({ value, label: tStatus(PURCHASE_ORDER_STATUS[value].labelKey) })),
-        },
-      ]}
-      empty={{ title: t("empty") }}
+      empty={{ title: t("empty"), action: <EmptyLink href="/finance/payables" label="payables.nav.open" /> }}
     />
   );
 }
@@ -274,55 +281,70 @@ export function PurchaseOrderDetail({ poId }: { poId: string }) {
   const data = po.data;
   if (!data) return null;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/finance/payables/purchase-orders" }, { label: data.poNumber }]}
-          />
-        }
+        back={{ href: "/finance/payables/purchase-orders", label: t("title") }}
         title={t("detailTitle", { number: data.poNumber })}
         meta={<StatusChip map={PURCHASE_ORDER_STATUS} value={data.status} size="md" />}
         description={t("detailDescription", { job: data.jobNo, order: data.orderCode })}
       />
-      <Section title={t("summary")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("columns.factory"), description: <VendorLink id={data.factoryId} /> },
-            { term: t("columns.issuedAt"), description: <When at={data.issuedAt} absoluteOnly /> },
-            { term: t("kind"), description: t(`kinds.${data.poKind}`) },
-            { term: t("columns.net"), description: format.thb(data.netAmount) },
-            { term: t("vat"), description: format.thb(data.vatAmount) },
-            { term: t("columns.gross"), description: format.thb(data.grossAmount) },
+      <DetailLayout
+        aside={
+          <ActionPanel id="po-panel" tone="neutral" title={t("columns.gross")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(data.grossAmount)}</p>
+            <SummaryRows
+              rows={[
+                { key: "factory", label: t("columns.factory"), value: <VendorLink id={data.factoryId} /> },
+                { key: "kind", label: t("kind"), value: t(`kinds.${data.poKind}`) },
+                { key: "issued", label: t("columns.issuedAt"), value: <When at={data.issuedAt} absoluteOnly /> },
+              ]}
+            />
+          </ActionPanel>
+        }
+      >
+        <DocumentSheet
+          kind={t("title")}
+          number={data.poNumber}
+          facts={[
+            { key: "issued", label: t("columns.issuedAt"), value: <When at={data.issuedAt} absoluteOnly /> },
+            { key: "order", label: t("columns.order"), value: data.orderCode },
           ]}
-        />
-      </Section>
-      <Section title={t("lines")}>
-        <ApLines lines={data.lines} />
-      </Section>
-      <Section title={t("receipts")}>
-        <DataTable
-          caption={t("receipts")}
-          density="compact"
-          rows={receipts.data?.data ?? []}
-          loading={receipts.isPending}
-          getRowId={(row) => row.id}
-          empty={<EmptyState icon="package" title={t("noReceipts")} />}
-          columns={[
-            { id: "gr", header: t("grNumber"), cell: (row) => <span className="tabular-nums">{row.grNumber}</span> },
-            { id: "on", header: t("receivedOn"), cell: (row) => format.date(row.receivedOn) },
-            {
-              id: "qty",
-              header: t("payableQuantity"),
-              numeric: true,
-              cell: (row) => format.number(row.payableQuantity),
-            },
-            { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
+          totals={[
+            { key: "net", label: t("columns.net"), amount: format.thb(data.netAmount) },
+            { key: "vat", label: t("vat"), amount: format.thb(data.vatAmount) },
+            { key: "gross", label: t("columns.gross"), amount: format.thb(data.grossAmount), result: true },
           ]}
-        />
-      </Section>
+        >
+          <ApLines lines={data.lines} />
+        </DocumentSheet>
+        <Section title={t("receipts")}>
+          <DataTable
+            caption={t("receipts")}
+            density="compact"
+            rows={receipts.data?.data ?? []}
+            loading={receipts.isPending}
+            getRowId={(row) => row.id}
+            empty={
+              <EmptyState
+                icon="package"
+                title={t("noReceipts")}
+                action={<EmptyLink href="/finance/payables/goods-receipts" label="payables.nav.goodsReceipts" />}
+              />
+            }
+            columns={[
+              { id: "gr", header: t("grNumber"), cell: (row) => <span className="tabular-nums">{row.grNumber}</span> },
+              { id: "on", header: t("receivedOn"), cell: (row) => format.date(row.receivedOn) },
+              {
+                id: "qty",
+                header: t("payableQuantity"),
+                numeric: true,
+                cell: (row) => format.number(row.payableQuantity),
+              },
+              { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
+            ]}
+          />
+        </Section>
+      </DetailLayout>
     </div>
   );
 }
@@ -370,7 +392,10 @@ export function GoodsReceiptsList({ initial }: { initial: InitialPage<GoodsRecei
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      empty={{ title: t("empty") }}
+      empty={{
+        title: t("empty"),
+        action: <EmptyLink href="/finance/payables/purchase-orders" label="payables.nav.purchaseOrders" />,
+      }}
     />
   );
 }
@@ -420,22 +445,25 @@ export function BillingStatementsList({ initial }: { initial: InitialPage<Billin
   return (
     <ResourceList
       resource={billingStatementsList}
+      rowHref={(row) => `/finance/payables/statements/${row.id}`}
+      views={
+        <StatusViews
+          resource={billingStatementsList}
+          label={t("columns.status")}
+          statuses={(["generated", "sent", "confirmed", "disputed", "superseded"] as const).map((value) => ({
+            value,
+            label: tStatus(BILLING_STATEMENT_STATUS[value].labelKey),
+          }))}
+        />
+      }
       columns={columns}
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      filters={[
-        {
-          id: "status",
-          label: t("columns.status"),
-          kind: "select",
-          options: (["generated", "sent", "confirmed", "disputed", "superseded"] as const).map((value) => ({
-            value,
-            label: tStatus(BILLING_STATEMENT_STATUS[value].labelKey),
-          })),
-        },
-      ]}
-      empty={{ title: t("empty") }}
+      empty={{
+        title: t("empty"),
+        action: <EmptyLink href="/finance/payables/purchase-orders" label="payables.nav.purchaseOrders" />,
+      }}
     />
   );
 }
@@ -468,116 +496,136 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
   if (!data) return null;
   const recorded = data.taxInvoices.find((invoice) => invoice.status === "recorded");
   const disputed = new Set(data.disputedLineNos);
+  const offered = data.nextActions.length > 0;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/finance/payables/statements" }, { label: data.bsNumber }]}
-          />
-        }
+        back={{ href: "/finance/payables/statements", label: t("title") }}
         title={t("detailTitle", { number: data.bsNumber })}
         meta={<StatusChip map={BILLING_STATEMENT_STATUS} value={data.status} size="md" />}
         description={t("period", { from: format.date(data.periodFrom), to: format.date(data.periodTo) })}
-        actions={
-          <NextActionBar
-            actions={data.nextActions}
-            supported={STATEMENT_VERBS}
-            labelOf={(verb) =>
-              verb === "capture_tax_invoice"
-                ? t("capture")
-                : verb === "validate_tax_invoice"
-                  ? t("validate")
-                  : undefined
-            }
-            onAction={(verb) => {
-              if (verb === "capture_tax_invoice") setCapturing(true);
-              else if (recorded) router.push(`/finance/payables/invoices/${recorded.id}`);
-            }}
-          />
-        }
       />
-      {data.status === "disputed" && data.disputeNote ? (
-        <Callout tone="danger" title={t("disputed")}>
-          {data.disputeNote}
-        </Callout>
-      ) : null}
-      {data.status === "confirmed" && data.taxInvoiceStatus !== "validated" ? (
-        <Callout tone="warning" title={t("missingInvoice")}>
-          {t("missingInvoiceBody")}
-        </Callout>
-      ) : null}
-      <Section title={t("summary")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("columns.factory"), description: <VendorLink id={data.factoryId} /> },
+      <DetailLayout
+        aside={
+          <ActionPanel id="statement-panel" tone={offered ? "primary" : "neutral"} title={t("totals.remaining")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(data.totals.remaining)}</p>
+            <SummaryRows
+              rows={[
+                { key: "factory", label: t("columns.factory"), value: <VendorLink id={data.factoryId} /> },
+                { key: "generated", label: t("generatedAt"), value: <When at={data.generatedAt} absoluteOnly /> },
+                {
+                  key: "confirmed",
+                  label: t("columns.confirmedAt"),
+                  value: data.confirmedAt ? (
+                    <>
+                      <When at={data.confirmedAt} absoluteOnly />
+                      {data.confirmedBy ? (
+                        <span className="text-muted block">{data.confirmedBy.displayName}</span>
+                      ) : null}
+                    </>
+                  ) : null,
+                },
+              ]}
+            />
+            <NextActionBar
+              layout="panel"
+              actions={data.nextActions}
+              supported={STATEMENT_VERBS}
+              labelOf={(verb) =>
+                verb === "capture_tax_invoice"
+                  ? t("capture")
+                  : verb === "validate_tax_invoice"
+                    ? t("validate")
+                    : undefined
+              }
+              onAction={(verb) => {
+                if (verb === "capture_tax_invoice") setCapturing(true);
+                else if (recorded) router.push(`/finance/payables/invoices/${recorded.id}`);
+              }}
+            />
+          </ActionPanel>
+        }
+      >
+        {data.status === "disputed" && data.disputeNote ? (
+          <Callout tone="danger" title={t("disputed")}>
+            {data.disputeNote}
+          </Callout>
+        ) : null}
+        {data.status === "confirmed" && data.taxInvoiceStatus !== "validated" ? (
+          <Callout tone="warning" title={t("missingInvoice")}>
+            {t("missingInvoiceBody")}
+          </Callout>
+        ) : null}
+        <DocumentSheet
+          kind={t("title")}
+          number={data.bsNumber}
+          facts={[
             {
-              term: t("columns.confirmedAt"),
-              description: data.confirmedAt ? (
-                <>
-                  <When at={data.confirmedAt} absoluteOnly />
-                  {data.confirmedBy ? <span className="text-muted"> · {data.confirmedBy.displayName}</span> : null}
-                </>
-              ) : (
-                "—"
-              ),
+              key: "period",
+              label: t("columns.period"),
+              value: t("period", { from: format.date(data.periodFrom), to: format.date(data.periodTo) }),
             },
-            { term: t("generatedAt"), description: <When at={data.generatedAt} absoluteOnly /> },
-            { term: t("totals.production"), description: format.thb(data.totals.production) },
-            { term: t("totals.shipping"), description: format.thb(data.totals.shipping) },
-            { term: t("totals.other"), description: format.thb(data.totals.other) },
-            { term: t("totals.deductions"), description: format.thb(data.totals.deductions) },
-            { term: t("totals.advanceOffset"), description: format.thb(data.totals.advanceOffset) },
-            { term: t("columns.net"), description: format.thb(data.totals.net) },
-            { term: t("vat"), description: format.thb(data.totals.vat) },
-            { term: t("columns.gross"), description: format.thb(data.totals.gross) },
-            { term: t("totals.alreadyPaid"), description: format.thb(data.totals.alreadyPaid) },
-            { term: t("totals.remaining"), description: format.thb(data.totals.remaining) },
+            { key: "generated", label: t("generatedAt"), value: format.date(data.generatedAt) },
           ]}
-        />
-      </Section>
-      <Section title={t("lines")}>
-        <DataTable
-          caption={t("lines")}
-          density="compact"
-          rows={data.lines}
-          getRowId={(row) => String(row.lineNo)}
-          rowTone={(row) => (disputed.has(row.lineNo) ? "danger" : undefined)}
-          empty={<EmptyState icon="document" title={t("noLines")} />}
-          columns={[
-            { id: "kind", header: t("lineKind"), cell: (row) => t(`lineKinds.${row.kind}`) },
-            {
-              id: "description",
-              header: t("lineDescription"),
-              cell: (row) => (
-                <>
-                  {row.description}
-                  {row.reference ? (
-                    <span className="text-muted block text-xs tabular-nums">{row.reference}</span>
-                  ) : null}
-                  {disputed.has(row.lineNo) ? (
-                    <span className="text-danger block text-xs">{t("lineDisputed")}</span>
-                  ) : null}
-                </>
-              ),
-            },
-            {
-              id: "quantity",
-              header: t("quantity"),
-              numeric: true,
-              cell: (row) => (row.quantity === null ? "—" : format.number(row.quantity)),
-            },
-            { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
-            { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
-            { id: "gross", header: t("columns.gross"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
+          totals={[
+            { key: "production", label: t("totals.production"), amount: format.thb(data.totals.production) },
+            { key: "shipping", label: t("totals.shipping"), amount: format.thb(data.totals.shipping) },
+            { key: "other", label: t("totals.other"), amount: format.thb(data.totals.other) },
+            { key: "deductions", label: t("totals.deductions"), amount: format.thb(data.totals.deductions) },
+            { key: "advance", label: t("totals.advanceOffset"), amount: format.thb(data.totals.advanceOffset) },
+            { key: "net", label: t("columns.net"), amount: format.thb(data.totals.net), strong: true },
+            { key: "vat", label: t("vat"), amount: format.thb(data.totals.vat) },
+            { key: "gross", label: t("columns.gross"), amount: format.thb(data.totals.gross), strong: true },
+            { key: "paid", label: t("totals.alreadyPaid"), amount: format.thb(data.totals.alreadyPaid) },
+            { key: "remaining", label: t("totals.remaining"), amount: format.thb(data.totals.remaining), result: true },
           ]}
-        />
-      </Section>
-      <Section title={t("taxInvoices")}>
-        <InvoiceRows rows={data.taxInvoices} />
-      </Section>
+        >
+          <DataTable
+            caption={t("lines")}
+            density="compact"
+            rows={data.lines}
+            getRowId={(row) => String(row.lineNo)}
+            rowTone={(row) => (disputed.has(row.lineNo) ? "danger" : undefined)}
+            empty={
+              <EmptyState
+                icon="document"
+                title={t("noLines")}
+                action={<EmptyLink href="/finance/payables/statements" label="payables.nav.statements" />}
+              />
+            }
+            columns={[
+              { id: "kind", header: t("lineKind"), cell: (row) => t(`lineKinds.${row.kind}`) },
+              {
+                id: "description",
+                header: t("lineDescription"),
+                cell: (row) => (
+                  <>
+                    {row.description}
+                    {row.reference ? (
+                      <span className="text-muted block text-xs tabular-nums">{row.reference}</span>
+                    ) : null}
+                    {disputed.has(row.lineNo) ? (
+                      <span className="text-danger block text-xs">{t("lineDisputed")}</span>
+                    ) : null}
+                  </>
+                ),
+              },
+              {
+                id: "quantity",
+                header: t("quantity"),
+                numeric: true,
+                cell: (row) => (row.quantity === null ? "—" : format.number(row.quantity)),
+              },
+              { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
+              { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
+              { id: "gross", header: t("columns.gross"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
+            ]}
+          />
+        </DocumentSheet>
+        <Section title={t("taxInvoices")}>
+          <InvoiceRows rows={data.taxInvoices} />
+        </Section>
+      </DetailLayout>
       {capturing ? <CaptureInvoice statement={data} onClose={() => setCapturing(false)} /> : null}
     </div>
   );
@@ -593,7 +641,13 @@ function InvoiceRows({ rows, loading }: { rows: VendorInvoice[]; loading?: boole
       rows={rows}
       loading={loading}
       getRowId={(row) => row.id}
-      empty={<EmptyState icon="document" title={t("none")} />}
+      empty={
+        <EmptyState
+          icon="document"
+          title={t("none")}
+          action={<EmptyLink href="/finance/payables/invoices" label="payables.nav.invoices" />}
+        />
+      }
       columns={[
         {
           id: "number",
@@ -687,7 +741,7 @@ function CaptureInvoice({ statement, onClose }: { statement: BillingStatement; o
           <Input value={form.vendorInvoiceNo} onChange={set("vendorInvoiceNo")} autoComplete="off" />
         </Field>
         <Field label={t("date")} required requiredLabel={tCommon("state.required")} error={errors.invoiceDate}>
-          <Input type="date" value={form.invoiceDate} onChange={set("invoiceDate")} />
+          <FinanceDateField value={form.invoiceDate} onChange={set("invoiceDate")} />
         </Field>
         <Field label={t("taxId")} required requiredLabel={tCommon("state.required")} error={errors.sellerTaxId}>
           <Input inputMode="numeric" value={form.sellerTaxId} onChange={set("sellerTaxId")} />
@@ -774,19 +828,25 @@ export function VendorInvoicesList({ initial }: { initial: InitialPage<VendorInv
   return (
     <ResourceList
       resource={vendorInvoicesList}
+      rowHref={(row) => `/finance/payables/invoices/${row.id}`}
+      views={
+        <StatusViews
+          resource={vendorInvoicesList}
+          label={t("columns.status")}
+          statuses={VENDOR_BILL_STATUSES.map((value) => ({
+            value,
+            label: tStatus(VENDOR_BILL_STATUS[value].labelKey),
+          }))}
+        />
+      }
       columns={columns}
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      filters={[
-        {
-          id: "status",
-          label: t("columns.status"),
-          kind: "select",
-          options: VENDOR_BILL_STATUSES.map((value) => ({ value, label: tStatus(VENDOR_BILL_STATUS[value].labelKey) })),
-        },
-      ]}
-      empty={{ title: t("empty") }}
+      empty={{
+        title: t("empty"),
+        action: <EmptyLink href="/finance/payables/statements" label="payables.nav.statements" />,
+      }}
     />
   );
 }
@@ -878,15 +938,11 @@ export function VendorInvoiceDetail({ invoiceId }: { invoiceId: string }) {
     }
   }
 
+  const deciding = canManage && data.status === "recorded" && Boolean(data.bsNumber);
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/finance/payables/invoices" }, { label: data.vendorInvoiceNo }]}
-          />
-        }
+        back={{ href: "/finance/payables/invoices", label: t("title") }}
         title={t("detailTitle", { number: data.vendorInvoiceNo })}
         meta={
           <>
@@ -895,81 +951,109 @@ export function VendorInvoiceDetail({ invoiceId }: { invoiceId: string }) {
           </>
         }
         description={data.vendorName}
-        actions={
-          canManage && data.status === "recorded" && data.bsNumber ? (
-            <>
-              <Button variant="ghost" onClick={() => setAction("reject")}>
-                {t("reject")}
-              </Button>
-              <Button onClick={() => setAction("validate")}>{t("validate")}</Button>
-            </>
-          ) : null
-        }
       />
-      {data.status === "rejected" && data.rejectionReason ? (
-        <Callout tone="danger" title={t("rejectedTitle")}>
-          {data.rejectionReason}
-        </Callout>
-      ) : null}
-      {data.bsNumber ? (
-        <Section title={t("checks")} description={t("checksNote")}>
-          <ul className="flex flex-col gap-2">
-            {checks.map((check) => (
-              <li key={check.key} className="flex flex-wrap items-center gap-2 text-sm">
-                <Icon
-                  name={check.ok === null ? "help" : check.ok ? "success" : "danger"}
-                  className={check.ok === false ? "text-danger" : check.ok ? "text-success" : "text-muted"}
-                />
-                <span className="font-medium">{t(`checkNames.${check.key}`)}</span>
-                <span className="tabular-nums">{check.shown}</span>
-                {check.ok === false ? (
-                  <span className="text-danger">{t("expected", { value: check.expected ?? "—" })}</span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-      <Section title={t("summary")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("columns.vendor"), description: <VendorLink id={data.vendorId} name={data.vendorName} /> },
-            { term: t("columns.date"), description: format.date(data.invoiceDate) },
-            { term: t("statement"), description: data.bsNumber ?? "—" },
-            { term: t("sellerTaxId"), description: <span className="tabular-nums">{data.sellerTaxId}</span> },
-            { term: t("sellerBranch"), description: <span className="tabular-nums">{data.sellerBranchCode}</span> },
-            { term: t("source"), description: t(`sources.${data.source}`) },
-            { term: t("columns.net"), description: format.thb(data.netAmount) },
-            { term: t("vat"), description: format.thb(data.vatAmount) },
-            { term: t("columns.gross"), description: format.thb(data.grossAmount) },
+      <DetailLayout
+        aside={
+          <ActionPanel id="invoice-panel" tone={deciding ? "primary" : "neutral"} title={t("columns.gross")}>
+            <p className="text-2xl font-semibold tabular-nums">{format.thb(data.grossAmount)}</p>
+            <SummaryRows
+              rows={[
+                {
+                  key: "vendor",
+                  label: t("columns.vendor"),
+                  value: <VendorLink id={data.vendorId} name={data.vendorName} />,
+                },
+                { key: "date", label: t("columns.date"), value: format.date(data.invoiceDate) },
+                { key: "statement", label: t("statement"), value: data.bsNumber },
+                { key: "source", label: t("source"), value: t(`sources.${data.source}`) },
+              ]}
+            />
+            {deciding ? (
+              <ActionStack>
+                <Button onClick={() => setAction("validate")}>{t("validate")}</Button>
+                <Button variant="ghost" className="text-danger" onClick={() => setAction("reject")}>
+                  {t("reject")}
+                </Button>
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
+        }
+      >
+        {data.status === "rejected" && data.rejectionReason ? (
+          <Callout tone="danger" title={t("rejectedTitle")}>
+            {data.rejectionReason}
+          </Callout>
+        ) : null}
+        {data.bsNumber ? (
+          <Section title={t("checks")} description={t("checksNote")}>
+            <ul className="flex flex-col gap-2">
+              {checks.map((check) => (
+                <li key={check.key} className="flex flex-wrap items-center gap-2 text-sm">
+                  <Icon
+                    name={check.ok === null ? "help" : check.ok ? "success" : "danger"}
+                    className={check.ok === false ? "text-danger" : check.ok ? "text-success" : "text-muted"}
+                  />
+                  <span className="font-medium">{t(`checkNames.${check.key}`)}</span>
+                  <span className="tabular-nums">{check.shown}</span>
+                  {check.ok === false ? (
+                    <span className="text-danger">{t("expected", { value: check.expected ?? "—" })}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </Section>
+        ) : null}
+        <DocumentSheet
+          kind={t("title")}
+          number={data.vendorInvoiceNo}
+          facts={[
+            { key: "date", label: t("columns.date"), value: format.date(data.invoiceDate) },
+            { key: "statement", label: t("statement"), value: data.bsNumber },
           ]}
-        />
-      </Section>
-      <Section title={t("lines")}>
-        <DataTable
-          caption={t("lines")}
-          density="compact"
-          rows={data.lines}
-          getRowId={(row) => `${row.description}:${row.netAmount}`}
-          columns={[
-            { id: "description", header: t("lineDescription"), cell: (row) => row.description },
+          parties={[
             {
-              id: "account",
-              header: t("account"),
-              cell: (row) => <span className="tabular-nums">{row.accountCode ?? "–"}</span>,
+              key: "seller",
+              label: t("columns.vendor"),
+              body: (
+                <>
+                  <p className="font-medium">{data.vendorName}</p>
+                  <p className="text-muted tabular-nums">
+                    {t("sellerTaxId")} {data.sellerTaxId} · {t("sellerBranch")} {data.sellerBranchCode}
+                  </p>
+                </>
+              ),
             },
-            { id: "wht", header: t("wht"), cell: (row) => t(`whtCategories.${row.whtCategory}`) },
-            { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
-            { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
           ]}
-        />
-      </Section>
-      {data.bsNumber ? null : (
-        <Section title={t("journals")}>
-          <SourceJournals sourceType="vendor_invoice" sourceId={data.id} />
-        </Section>
-      )}
+          totals={[
+            { key: "net", label: t("columns.net"), amount: format.thb(data.netAmount) },
+            { key: "vat", label: t("vat"), amount: format.thb(data.vatAmount) },
+            { key: "gross", label: t("columns.gross"), amount: format.thb(data.grossAmount), result: true },
+          ]}
+        >
+          <DataTable
+            caption={t("lines")}
+            density="compact"
+            rows={data.lines}
+            getRowId={(row) => `${row.description}:${row.netAmount}`}
+            columns={[
+              { id: "description", header: t("lineDescription"), cell: (row) => row.description },
+              {
+                id: "account",
+                header: t("account"),
+                cell: (row) => <span className="tabular-nums">{row.accountCode ?? "–"}</span>,
+              },
+              { id: "wht", header: t("wht"), cell: (row) => t(`whtCategories.${row.whtCategory}`) },
+              { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
+              { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
+            ]}
+          />
+        </DocumentSheet>
+        {data.bsNumber ? null : (
+          <Section title={t("journals")}>
+            <SourceJournals sourceType="vendor_invoice" sourceId={data.id} />
+          </Section>
+        )}
+      </DetailLayout>
       <ConfirmAction
         open={action !== null}
         onOpenChange={(open) => (open ? undefined : setAction(null))}
@@ -1059,7 +1143,13 @@ export function VendorsList() {
         loading={vendors.isPending}
         getRowId={(row) => row.id}
         density="compact"
-        empty={<EmptyState icon="building" title={t("empty")} />}
+        empty={
+          <EmptyState
+            icon="building"
+            title={t("empty")}
+            action={<EmptyLink href="/finance/payables/purchase-orders" label="payables.nav.purchaseOrders" />}
+          />
+        }
       />
       {creating ? <CreateVendor onClose={() => setCreating(false)} /> : null}
     </Section>
@@ -1281,67 +1371,72 @@ export function VendorDetail({ vendorId }: { vendorId: string }) {
     },
   ];
 
+  const record = canRecord && !factory;
+  const propose = canPropose && !factory;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/finance/payables/vendors" }, { label: vendor.legalName }]}
-          />
-        }
+        back={{ href: "/finance/payables/vendors", label: t("title") }}
         title={vendor.legalName}
         meta={<Badge tone="neutral">{t(`kinds.${vendor.kind}`)}</Badge>}
         description={`${vendor.taxId} · ${t("branch", { code: vendor.branchCode })}`}
-        actions={
-          canRecord && !factory ? (
-            <Button iconStart="plus" onClick={() => setBilling(true)}>
-              {t("recordBill")}
-            </Button>
-          ) : null
-        }
       />
-      <Section title={t("record")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("columns.vat"), description: vendor.isVatRegistered ? t("vatYes") : t("vatNo") },
-            {
-              term: t("columns.wht"),
-              description: `${t(`whtCategories.${vendor.defaultWhtCategory}`)} · ${vendor.juristicType === "individual" ? "ภ.ง.ด.3" : "ภ.ง.ด.53"}`,
-            },
-            { term: t("columns.terms"), description: t("days", { days: vendor.paymentTermsDays }) },
-          ]}
-        />
-      </Section>
-      <Section
-        title={t("banks.title")}
-        description={factory ? t("banks.factoryNote") : t("banks.note")}
-        actions={
-          canPropose && !factory ? (
-            <Button size="sm" variant="secondary" iconStart="plus" onClick={() => setProposing(true)}>
-              {t("banks.propose")}
-            </Button>
-          ) : null
+      <DetailLayout
+        aside={
+          <ActionPanel id="vendor-panel" tone={record ? "primary" : "neutral"} title={t("record")}>
+            <SummaryRows
+              rows={[
+                { key: "vat", label: t("columns.vat"), value: vendor.isVatRegistered ? t("vatYes") : t("vatNo") },
+                {
+                  key: "wht",
+                  label: t("columns.wht"),
+                  value: `${t(`whtCategories.${vendor.defaultWhtCategory}`)} · ${vendor.juristicType === "individual" ? "ภ.ง.ด.3" : "ภ.ง.ด.53"}`,
+                },
+                { key: "terms", label: t("columns.terms"), value: t("days", { days: vendor.paymentTermsDays }) },
+              ]}
+            />
+            {record || propose ? (
+              <ActionStack>
+                {record ? (
+                  <Button iconStart="plus" onClick={() => setBilling(true)}>
+                    {t("recordBill")}
+                  </Button>
+                ) : null}
+                {propose ? (
+                  <Button variant="secondary" iconStart="plus" onClick={() => setProposing(true)}>
+                    {t("banks.propose")}
+                  </Button>
+                ) : null}
+              </ActionStack>
+            ) : null}
+          </ActionPanel>
         }
       >
-        {banks.isError ? (
-          <QueryError error={banks.error} onRetry={() => void banks.refetch()} />
-        ) : (
-          <DataTable
-            caption={t("banks.title")}
-            columns={bankColumns}
-            rows={banks.data ?? []}
-            loading={banks.isPending}
-            getRowId={(row) => row.id}
-            density="compact"
-            empty={<EmptyState icon="building" title={t("banks.none")} />}
-          />
-        )}
-      </Section>
-      <Section title={t("bills")}>
-        <InvoiceRows rows={bills.data?.data ?? []} loading={bills.isPending} />
-      </Section>
+        <Section title={t("banks.title")} description={factory ? t("banks.factoryNote") : t("banks.note")}>
+          {banks.isError ? (
+            <QueryError error={banks.error} onRetry={() => void banks.refetch()} />
+          ) : (
+            <DataTable
+              caption={t("banks.title")}
+              columns={bankColumns}
+              rows={banks.data ?? []}
+              loading={banks.isPending}
+              getRowId={(row) => row.id}
+              density="compact"
+              empty={
+                <EmptyState
+                  icon="building"
+                  title={t("banks.none")}
+                  action={<EmptyLink href="/finance/payables/vendors" label="payables.nav.vendors" />}
+                />
+              }
+            />
+          )}
+        </Section>
+        <Section title={t("bills")}>
+          <InvoiceRows rows={bills.data?.data ?? []} loading={bills.isPending} />
+        </Section>
+      </DetailLayout>
       {proposing ? <ProposeBankAccount vendor={vendor} onClose={() => setProposing(false)} /> : null}
       {verifying ? <RecordCall account={verifying} vendorId={vendor.id} onClose={() => setVerifying(null)} /> : null}
       {billing ? <RecordBill vendor={vendor} onClose={() => setBilling(false)} /> : null}
@@ -1594,8 +1689,7 @@ function RecordBill({ vendor, onClose }: { vendor: Vendor; onClose: () => void }
             />
           </Field>
           <Field label={t("date")} required requiredLabel={tCommon("state.required")}>
-            <Input
-              type="date"
+            <FinanceDateField
               value={header.invoiceDate}
               onChange={(event) => setHeader({ ...header, invoiceDate: event.target.value })}
             />

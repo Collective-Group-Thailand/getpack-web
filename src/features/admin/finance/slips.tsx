@@ -28,6 +28,7 @@ import { problemMessage } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
 import { useSlaFormat } from "../console/useSlaFormat";
+import { EmptyLink } from "./frame";
 import { slipsList, type SlipItem } from "./resources";
 import { fieldErrorsOf } from "./shared";
 
@@ -121,7 +122,11 @@ export function SlipsQueue({ initial }: { initial: InitialPage<SlipItem> | null 
         initial={initial}
         searchLabel={t("search")}
         rowTone={(row) => (row.overdue ? "danger" : undefined)}
-        empty={{ title: t("empty"), description: t("emptyBody") }}
+        empty={{
+          title: t("empty"),
+          description: t("emptyBody"),
+          action: <EmptyLink href="/finance/payments" label="nav.items.payments" />,
+        }}
       />
       {open ? <SlipReview slip={open} onClose={() => setOpen(null)} /> : null}
     </>
