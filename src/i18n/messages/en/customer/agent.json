@@ -456,7 +456,8 @@
       "examples": "Examples at the standard rate",
       "exampleRow": "Order of {value}",
       "when": "Paid once the order is complete, past the claim window and fully paid",
-      "noTerms": "Rates show once applications open"
+      "noTerms": "Rates show once applications open",
+      "colOrder": "Order value before VAT"
     },
     "benefits": {
       "title": "What you get",

@@ -176,16 +176,19 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
                 </div>
                 {programme.examples.length ? (
                   <div className={cn(CARD, "overflow-hidden")}>
-                    <p className="text-muted border-border border-b px-5 py-3 text-xs font-semibold">
-                      {t("commission.examples")}
-                    </p>
-                    <table className="w-full text-sm">
-                      <caption className="sr-only">{t("commission.examples")}</caption>
-                      <thead className="sr-only">
+                    <p className="border-border border-b px-5 py-3 text-sm font-semibold">{t("commission.examples")}</p>
+                    <table className="w-full text-sm" aria-label={t("commission.examples")}>
+                      <thead className="text-muted border-border border-b text-xs">
                         <tr>
-                          <th scope="col">{t("story.paid.order")}</th>
-                          <th scope="col">{t("commission.first")}</th>
-                          <th scope="col">{t("commission.repeat")}</th>
+                          <th scope="col" className="px-5 py-2 text-left font-medium">
+                            {t("commission.colOrder")}
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-right font-medium">
+                            {t("commission.first")}
+                          </th>
+                          <th scope="col" className="px-5 py-2 text-right font-medium">
+                            {t("commission.repeat")}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -217,9 +220,17 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
 
         <section aria-labelledby="agent-benefits" className={SECTION}>
           <SectionHead id="agent-benefits" title={t("benefits.title")} />
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {BENEFITS.map((item) => (
-              <li key={item.key} className={cn(CARD, "flex flex-col gap-1.5 p-5")}>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+            {BENEFITS.map((item, index) => (
+              <li
+                key={item.key}
+                className={cn(
+                  CARD,
+                  "flex flex-col gap-1.5 p-5",
+                  index < 3 ? "lg:col-span-2" : "lg:col-span-3",
+                  index === 4 && "sm:col-span-2 lg:col-span-3",
+                )}
+              >
                 <span className="bg-primary-subtle text-primary rounded-control grid size-9.5 place-items-center">
                   <Icon name={item.icon} size={20} aria-hidden="true" />
                 </span>
