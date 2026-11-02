@@ -10,7 +10,8 @@
     "factories": "Referred factories",
     "plans": "Commission plans",
     "toAgents": "Go to agents",
-    "taxDeclarations": "ล.ย.01"
+    "taxDeclarations": "ล.ย.01",
+    "payoutProfiles": "Payout profiles"
   },
   "kinds": {
     "freelance": "Freelance",
@@ -185,7 +186,10 @@
     "rejected": "Rejection recorded",
     "failed": "That didn't work",
     "accountMasked": "•••• {last4}",
-    "decidePanel": "Decide this application"
+    "decidePanel": "Decide this application",
+    "lineId": "LINE ID",
+    "salesChannels": "Sales channels",
+    "paymentLater": "Two-step application: tax and bank details come after approval, in the payout profile (D-466)."
   },
   "agent": {
     "pageTitle": "Sales agent",
@@ -724,5 +728,44 @@
       "donations": "Donations",
       "educationDonations": "Education donations"
     }
+  },
+  "channels": {
+    "line_groups": "LINE groups",
+    "facebook": "Facebook",
+    "own_network": "Own customer network",
+    "agency": "Agency",
+    "print_shop": "Print or sign shop",
+    "design_studio": "Design studio",
+    "other": "Other"
+  },
+  "payoutProfiles": {
+    "title": "Agent payout profiles",
+    "description": "Tax id, address and bank account sent by agents — checked before the first commission transfer (D-466).",
+    "search": "Search agent name or code",
+    "statusesLabel": "Payout profile status",
+    "all": "All",
+    "empty": "No payout profiles in this status",
+    "columns": {
+      "agent": "Agent",
+      "bank": "Account",
+      "status": "Status",
+      "submitted": "Submitted"
+    },
+    "accountMasked": "ending {last4}",
+    "decidePanel": "Check payout profile",
+    "decision": "Decision",
+    "decideHint": "Check that the account name matches the legal name and the identity document.",
+    "details": "Payout details",
+    "detailsNote": "Verifying creates or updates the agent's payee and proposes the bank account for the usual dual approval.",
+    "verify": "Verify",
+    "reject": "Send back",
+    "verifyTitle": "Verify payout profile?",
+    "verifyBody": "Verify {name}'s payout details. The bank account goes to dual approval before it is used.",
+    "rejectTitle": "Send back for a fix?",
+    "rejectBody": "{name} will see this reason and fix it before sending again.",
+    "reason": "Reason",
+    "verified": "Payout profile verified",
+    "rejected": "Sent back to the agent",
+    "failed": "That didn't work"
   }
 }

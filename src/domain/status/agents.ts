@@ -5,6 +5,7 @@ import type {
   AgentFactoryLinkStatus,
   AgentLeadStatus,
   AgentLinkStatus,
+  AgentPayoutProfileStatus,
   AgentPlanVersionStatus,
   AgentStatementStatus,
   AgentStatus,
@@ -77,6 +78,14 @@ export const AGENT_FACTORY_LINK_STATUS = defineStatusMap<AgentFactoryLinkStatus>
 });
 
 /** An agent's ล.ย.01 allowance declaration, checked by Finance (D-465). */
+/** D-466: an agent's payout profile — drafted by the agent, checked by Finance. */
+export const AGENT_PAYOUT_PROFILE_STATUS = defineStatusMap<AgentPayoutProfileStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "agentPayoutProfile.draft" },
+  submitted: { tone: "warning", icon: "clock", labelKey: "agentPayoutProfile.submitted" },
+  verified: { tone: "success", icon: "check", labelKey: "agentPayoutProfile.verified" },
+  rejected: { tone: "danger", icon: "ban", labelKey: "agentPayoutProfile.rejected" },
+});
+
 export const AGENT_TAX_DECLARATION_STATUS = defineStatusMap<AgentTaxDeclarationStatus>({
   submitted: { tone: "warning", icon: "clock", labelKey: "agentTaxDeclaration.submitted" },
   accepted: { tone: "success", icon: "check", labelKey: "agentTaxDeclaration.accepted" },

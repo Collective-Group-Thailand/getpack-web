@@ -122,7 +122,7 @@ export function ApplicationsQueue({ initial }: { initial: InitialPage<AgentAppli
 }
 
 /** Opens a stored file (identity card, bank book) through a short-lived link. */
-function FileButton({ fileId, name }: { fileId: string; name: string }) {
+export function FileButton({ fileId, name }: { fileId: string; name: string }) {
   const t = useTranslations("agents.application");
   const [busy, setBusy] = useState(false);
   return (
@@ -159,6 +159,7 @@ function FileButton({ fileId, name }: { fileId: string; name: string }) {
 export function ApplicationReview({ applicationId }: { applicationId: string }) {
   const t = useTranslations("agents.application");
   const tJuristic = useTranslations("agents.juristic");
+  const tChannel = useTranslations("agents.channels");
   const format = useFormat();
   const router = useRouter();
   const refresh = useRefreshAgents();
@@ -192,24 +193,26 @@ export function ApplicationReview({ applicationId }: { applicationId: string }) 
     [
       t("taxId"),
       <span key="taxId" className="tabular-nums">
-        {app.taxId}
+        {app.taxId ?? "–"}
       </span>,
     ],
     [t("branch"), app.branchCode],
     [t("vat"), app.isVatRegistered ? t("yes") : t("no")],
-    [t("address"), `${app.address} ${app.postcode}`],
+    [t("address"), app.address ? `${app.address} ${app.postcode ?? ""}` : "–"],
+    [t("lineId"), app.lineId ?? "–"],
+    [t("salesChannels"), app.salesChannels.length ? app.salesChannels.map((c) => tChannel(c)).join(", ") : "–"],
     [t("phone"), app.phone ?? "–"],
     [t("email"), app.email ?? "–"],
     [t("account"), app.user.displayName],
   ];
   const bank: [string, React.ReactNode][] = [
-    [t("bank"), app.bankCode],
+    [t("bank"), app.bankCode ?? "–"],
     [t("bankBranch"), app.bankBranchName ?? "–"],
-    [t("bankAccountName"), app.bankAccountName],
+    [t("bankAccountName"), app.bankAccountName ?? "–"],
     [
       t("bankAccountNo"),
       <span key="accountNo" className="tabular-nums">
-        {t("accountMasked", { last4: app.bankAccountNoLast4 })}
+        {app.bankAccountNoLast4 ? t("accountMasked", { last4: app.bankAccountNoLast4 }) : "–"}
       </span>,
     ],
   ];
@@ -286,12 +289,18 @@ export function ApplicationReview({ applicationId }: { applicationId: string }) 
         ) : null}
 
         <Section title={t("who")}>{list(rows)}</Section>
-        <Section title={t("payment")} description={t("paymentNote")}>
-          {list(bank)}
-        </Section>
+        {app.bankCode ? (
+          <Section title={t("payment")} description={t("paymentNote")}>
+            {list(bank)}
+          </Section>
+        ) : (
+          <Section title={t("payment")}>
+            <p className="text-muted text-sm">{t("paymentLater")}</p>
+          </Section>
+        )}
         <Section title={t("documents")}>
           <div className="flex flex-wrap gap-2">
-            <FileButton fileId={app.idDocument.id} name={t("idDocument")} />
+            {app.idDocument ? <FileButton fileId={app.idDocument.id} name={t("idDocument")} /> : null}
             {app.bankBook ? <FileButton fileId={app.bankBook.id} name={t("bankBook")} /> : null}
           </div>
           <p className="text-muted mt-2 text-sm">

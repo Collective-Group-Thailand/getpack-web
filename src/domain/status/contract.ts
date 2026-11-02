@@ -366,6 +366,8 @@ export type AgentCommissionStatus = Schemas["AgentCommissionStatus"];
 /** A monthly agent statement (D-420). **Source: contract** (v0.65.0). */
 export type AgentStatementStatus = Schemas["AgentStatementStatus"];
 export type AgentTaxDeclarationStatus = Schemas["AgentTaxDeclarationStatus"];
+/** An agent's payout profile (D-466). **Source: contract**. */
+export type AgentPayoutProfileStatus = Schemas["AgentPayoutProfileStatus"];
 
 /** A commission plan version (D-418). **Source: contract** (v0.65.0). */
 export type AgentPlanVersionStatus = Schemas["AgentPlanVersionStatus"];

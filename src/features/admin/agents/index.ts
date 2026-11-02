@@ -4,6 +4,7 @@ export { AgentsNav } from "./AgentsNav";
 export { ApplicationReview, ApplicationsQueue } from "./Applications";
 export { FactoryLinksList, LeadsList, LinksList } from "./Attribution";
 export { CommissionsList } from "./Commissions";
+export { PayoutProfileReview, PayoutProfilesQueue } from "./PayoutProfiles";
 export { PlanDetail, PlansList } from "./Plans";
 export { StatementDetail, StatementsList } from "./Statements";
 export { TaxDeclarationReview, TaxDeclarationsQueue } from "./TaxDeclarations";
