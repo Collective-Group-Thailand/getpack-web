@@ -4,17 +4,15 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { TabBar } from "@/features/customer/account/AccountTabs";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
-import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 const TABS = [
@@ -23,6 +21,8 @@ const TABS = [
   { key: "leads", href: "/account/agent/leads" },
   { key: "commissions", href: "/account/agent/commissions" },
   { key: "statements", href: "/account/agent/statements" },
+  // D-465: ล.ย.01 lives here until the agent zone (Phase 2) takes the agent pages.
+  { key: "tax", href: "/account/agent/tax" },
 ] as const;
 
 /** The agent pages' sections, as tabs under the account frame. */
@@ -69,18 +69,15 @@ export function WithdrawApplication() {
   );
 }
 
-type LeadKind = Schemas["AgentLeadKind"];
-
 /**
- * Registering a prospect (D-417, D-419): a customer or a factory with a phone, e-mail or tax id, who
- * agreed to be contacted. Refusals say why — already a customer, already another agent's.
+ * Registering a prospect (D-417, D-464): a customer with a phone, e-mail or tax id, who agreed to be
+ * contacted. Agents register customers only (P-03) — a short note sends manufacturers to /partner-with-us.
  */
 export function RegisterLead({ protectionDays }: { protectionDays: number }) {
   const t = useTranslations("agent.leads");
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<LeadKind>("customer");
   const [form, setForm] = useState({
     contactName: "",
     organisationName: "",
@@ -109,7 +106,7 @@ export function RegisterLead({ protectionDays }: { protectionDays: number }) {
     try {
       await browserApi().POST("/v1/store/agent/leads", {
         body: {
-          kind,
+          kind: "customer",
           contactName: form.contactName.trim(),
           organisationName: form.organisationName.trim() || null,
           phone: e164,
@@ -149,16 +146,10 @@ export function RegisterLead({ protectionDays }: { protectionDays: number }) {
         }
       >
         <div className="flex flex-col gap-3">
-          <SegmentedControl
-            label={t("kind")}
-            value={kind}
-            onValueChange={(value) => setKind(value as LeadKind)}
-            options={(["customer", "factory"] as const).map((value) => ({ value, label: t(`kinds.${value}`) }))}
-          />
           <Field label={t("contactName")} required>
             <Input value={form.contactName} onChange={set("contactName")} placeholder={t("contactNameExample")} />
           </Field>
-          <Field label={kind === "factory" ? t("factoryName") : t("organisation")}>
+          <Field label={t("organisation")}>
             <Input value={form.organisationName} onChange={set("organisationName")} />
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -177,6 +168,12 @@ export function RegisterLead({ protectionDays }: { protectionDays: number }) {
           </Field>
           <Checkbox label={t("consent")} checked={consent} onCheckedChange={(on) => setConsent(on === true)} />
           {problem ? <Callout tone="danger" title={problem} /> : null}
+          <p className="text-muted text-xs">
+            {t("partnerNote")}{" "}
+            <Link href="/partner-with-us" className="text-link underline-offset-2 hover:underline">
+              {t("partnerLink")}
+            </Link>
+          </p>
         </div>
       </Dialog>
     </>
