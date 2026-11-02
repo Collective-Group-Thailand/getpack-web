@@ -23,6 +23,8 @@ const TABS = [
   { key: "statements", href: "/account/agent/statements" },
   // D-465: ล.ย.01 lives here until the agent zone (Phase 2) takes the agent pages.
   { key: "tax", href: "/account/agent/tax" },
+  // D-466 step 2: tax id, address and bank — before the first payout.
+  { key: "payout", href: "/account/agent/payout" },
 ] as const;
 
 /** The agent pages' sections, as tabs under the account frame. */
