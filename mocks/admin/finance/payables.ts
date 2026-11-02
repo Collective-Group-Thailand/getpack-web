@@ -26,10 +26,10 @@ import { post, satangOf, today } from "./books";
 import { finance, invalid, isMoney, notFound } from "./support";
 
 type Vendor = Schemas["VendorDto"];
-type Po = Schemas["PurchaseOrderDto"];
+type Po = Schemas["AdminPurchaseOrderDto"];
 type Gr = Schemas["GoodsReceiptDto"];
 type Line = Schemas["ApLineDto"];
-type Statement = Schemas["BillingStatementDto"];
+type Statement = Schemas["AdminBillingStatementDto"];
 type Invoice = Schemas["VendorInvoiceDto"];
 type Payable = Schemas["PayableDto"];
 type BankAccount = Schemas["BankAccountDto"];
@@ -204,6 +204,8 @@ export function purchaseOrders(): PoRow[] {
           jobNo: job.jobNo,
           orderCode: order.orderCode,
           factoryId: store.factory.id,
+          factoryCode: store.factory.code,
+          factoryName: store.factory.tradeName ?? store.factory.legalName,
           poKind: "production",
           status: PO_STATUS[job.status] ?? "issued",
           issuedAt: extraOf(job).releasedAt,
@@ -552,6 +554,8 @@ function statementOf({ store, statement }: ReturnType<typeof statementsAll>[numb
     id: statement.id,
     bsNumber: statement.bsNumber,
     factoryId: store.factory.id,
+    factoryCode: store.factory.code,
+    factoryName: store.factory.tradeName ?? store.factory.legalName,
     periodFrom: statement.periodFrom,
     periodTo: statement.periodTo,
     status: STATEMENT_STATUS[statement.status] ?? "sent",

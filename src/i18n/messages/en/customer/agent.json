@@ -5,7 +5,8 @@
     "customers": "My customers",
     "leads": "Leads",
     "commissions": "Commission",
-    "statements": "Statements"
+    "statements": "Statements",
+    "tax": "Tax allowances"
   },
   "home": {
     "title": "getpack sales agent",
@@ -38,7 +39,7 @@
     "how3": "Customers order and pay in getpack themselves; prices and terms are what getpack shows",
     "how4": "Each month's commission is summed up early the next month and paid within {days} days of approval",
     "joinTitle": "Become a getpack sales agent",
-    "joinIntro": "Introduce customers and production partners to getpack and earn on every order of the customers you bring.",
+    "joinIntro": "Introduce customers to getpack and earn commission on every paid order of the customers you bring.",
     "offer": "Standard commission",
     "applied": "Application sent on {date}",
     "appliedBody": "Sales will check your documents and get back to you. Once approved, your agent code appears here.",
@@ -125,10 +126,9 @@
   "terms": {
     "first": "A new customer's first order: {pct}% of the goods before VAT, shipping excluded",
     "repeat": "Later orders: {pct}% for {months} months from the day the customer was linked to you",
-    "cap": "Never more than {pct}% of that order's margin",
     "minBase": "Orders below {amount} earn nothing",
-    "bounty": "Refer a production partner: {amount} once it is active and has completed {jobs} jobs within {days} days",
-    "when": "Earned once the order is complete, past the claim window and fully paid; refunds take back their share"
+    "when": "Earned once the order is complete, past the claim window and fully paid; refunds take back their share",
+    "uncapped": "No earnings cap — the more you sell, the more you earn"
   },
   "pagination": {
     "nav": "Pages",
@@ -159,12 +159,11 @@
   },
   "leads": {
     "title": "Leads",
-    "intro": "Register the customers or production partners you are talking to; protected for {days} days, no other agent can register them",
+    "intro": "Register the customers you are talking to. They are protected for {days} days; no other agent can register them.",
     "empty": "No leads yet",
     "emptyHint": "Register before you meet; when they sign up with the same phone, e-mail or tax id they are linked to you",
     "kinds": {
-      "customer": "Customer",
-      "factory": "Production partner"
+      "customer": "Customer"
     },
     "protectedUntil": "Protected until {date}",
     "convertedAt": "Signed up on {date}",
@@ -176,12 +175,11 @@
     "kind": "Kind",
     "contactName": "Contact name",
     "contactNameExample": "e.g. Manee Jaidee",
-    "factoryName": "Production partner name",
     "organisation": "Shop or company",
     "phone": "Phone",
     "email": "E-mail",
-    "taxId": "Tax id (company / production partner)",
-    "taxIdHint": "13 digits; links them when they apply as a company or production partner",
+    "taxId": "Tax ID (company)",
+    "taxIdHint": "13 digits — links the lead when the customer joins as a company",
     "note": "Note",
     "noteExample": "e.g. interested in 1,000 bakery boxes a month",
     "consent": "The lead agreed to be contacted by getpack",
@@ -194,7 +192,9 @@
       "consent": "The lead must agree first"
     },
     "phoneExample": "0812345678",
-    "emptyAction": "Back to the agent page"
+    "emptyAction": "Back to the agent page",
+    "partnerNote": "Know a manufacturer who wants to work with getpack? Send them the partner page.",
+    "partnerLink": "Partner page"
   },
   "commissions": {
     "title": "Commission",
@@ -203,12 +203,11 @@
     "emptyHint": "Orders of customers linked to you show here once they complete",
     "kinds": {
       "order": "Order",
-      "factory_bounty": "Production partner referral",
+      "factory_bounty": "Referral (previous programme)",
       "adjustment": "Adjustment",
       "reversal": "Taken back (refund)"
     },
     "detail": "Base {base} × {rate}%{first, select, yes { · first order} other {}}",
-    "cap": "capped at {amount}",
     "availableAt": "Counts from {date}",
     "onStatement": "On statement {no}",
     "emptyAction": "Share your link"
@@ -227,7 +226,13 @@
     "paidAt": "Paid on",
     "certificate": "Withholding certificate (50 ทวิ)",
     "failed": "Could not open the document",
-    "emptyAction": "See your commission"
+    "emptyAction": "See your commission",
+    "whtMethod": {
+      "progressive_40_2": "Individual: progressive rates",
+      "juristic_service": "Company: 3%",
+      "payroll": "Through payroll"
+    },
+    "whtPending": "Worked out on approval"
   },
   "table": {
     "customer": "Customer",
@@ -246,5 +251,54 @@
     "amount": "Amount",
     "period": "Month",
     "number": "Number"
+  },
+  "tax": {
+    "title": "Tax allowances (ล.ย.01)",
+    "intro": "Used to work out the withholding on your commission at progressive rates. Finance checks it before it applies.",
+    "helper": "Without it, only the personal allowance applies ({amount}).",
+    "notApplicable": "Your agent account does not need a ล.ย.01 (individual agents only).",
+    "year": "Tax year",
+    "status": {
+      "none": "Not sent",
+      "submitted": "Waiting for Finance",
+      "accepted": "In use",
+      "rejected": "Not accepted"
+    },
+    "rejectedReason": "Reason: {reason}",
+    "groups": {
+      "family": "Family",
+      "savings": "Insurance and savings",
+      "housing": "Housing",
+      "donations": "Donations"
+    },
+    "fields": {
+      "spouse": "Spouse with no income",
+      "children": "Children",
+      "parents": "Parents",
+      "disabledDependants": "Disabled dependants",
+      "lifeInsurance": "Life insurance",
+      "healthInsurance": "Health insurance",
+      "parentsHealthInsurance": "Parents’ health insurance",
+      "pensionInsurance": "Pension insurance",
+      "providentFund": "Provident fund",
+      "rmf": "RMF",
+      "ssf": "SSF",
+      "thaiEsg": "Thai ESG",
+      "socialSecurity": "Social security",
+      "homeLoanInterest": "Home loan interest",
+      "donations": "Donations",
+      "educationDonations": "Education donations"
+    },
+    "amountHint": "baht a year",
+    "evidence": "Evidence",
+    "evidenceHint": "Receipts, certificates or copies — PDF, JPG, PNG",
+    "total": "Allowances requested",
+    "submit": "Send to Finance",
+    "sent": "Sent. Finance will check it and let you know.",
+    "failed": "Could not send. Try again.",
+    "invalidAmount": "Enter an amount, e.g. 25000 or 25000.50",
+    "nothing": "Enter at least one allowance",
+    "waiting": "You can send again once Finance has checked the waiting one.",
+    "sentOn": "Sent"
   }
 }

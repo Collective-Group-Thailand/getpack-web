@@ -8,6 +8,7 @@ import type {
   AgentPlanVersionStatus,
   AgentStatementStatus,
   AgentStatus,
+  AgentTaxDeclarationStatus,
 } from "./contract";
 
 /** A sales agent — freelance or employee (D-416). Suspended agents keep their links but earn nothing new. */
@@ -73,4 +74,11 @@ export const AGENT_FACTORY_LINK_STATUS = defineStatusMap<AgentFactoryLinkStatus>
   qualified: { tone: "success", icon: "check", labelKey: "agentFactoryLink.qualified" },
   expired: { tone: "neutral", icon: "clock", labelKey: "agentFactoryLink.expired" },
   ended: { tone: "neutral", icon: "archive", labelKey: "agentFactoryLink.ended" },
+});
+
+/** An agent's ล.ย.01 allowance declaration, checked by Finance (D-465). */
+export const AGENT_TAX_DECLARATION_STATUS = defineStatusMap<AgentTaxDeclarationStatus>({
+  submitted: { tone: "warning", icon: "clock", labelKey: "agentTaxDeclaration.submitted" },
+  accepted: { tone: "success", icon: "check", labelKey: "agentTaxDeclaration.accepted" },
+  rejected: { tone: "danger", icon: "ban", labelKey: "agentTaxDeclaration.rejected" },
 });

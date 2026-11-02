@@ -260,18 +260,20 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List factories brought by agents
-         * @description With the factory’s status and qualifying jobs so far (D-419).
+         * List factories brought by agents (history)
+         * @deprecated
+         * @description History of the retired factory referral (D-419, retired by P-03 / D-464): links with the factory’s status and qualifying jobs. Read-only; no new links are made.
          *
-         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423.
+         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423, D-464.
          */
         get: operations["admin.agents.listFactoryLinks"];
         put?: never;
         /**
          * Link a factory to the agent who brought it
-         * @description Partner management records which agent brought a factory when no lead matched it automatically; one agent per factory (D-419).
+         * @deprecated
+         * @description Retired (P-03 / D-464): factory referral is no longer part of the agent programme; always `agents.factory_links_retired` (410). The list stays readable for history.
          *
-         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423.
+         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423, D-464.
          */
         post: operations["admin.agents.linkFactory"];
         delete?: never;
@@ -291,9 +293,10 @@ export interface paths {
         put?: never;
         /**
          * End a pending factory link
-         * @description No bounty will be earned for it (D-419).
+         * @deprecated
+         * @description No bounty will be earned for it (D-419). History tool only since P-03 / D-464: pending links were ended by the data job `agents:retire-bounty`.
          *
-         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423.
+         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423, D-464.
          */
         post: operations["admin.agents.endFactoryLink"];
         delete?: never;
@@ -589,11 +592,35 @@ export interface paths {
         put?: never;
         /**
          * Approve an agent statement
-         * @description Freelance: records the agent vendor’s bill (account 6160; withholding: commission ภ.ง.ด.1 for an individual, service ภ.ง.ด.53 for a juristic person; VAT when VAT registered) for payout runs to pay. Employee: accrued for payroll. Guarded by `If-Match`; requires `Idempotency-Key` (D-420, D-421).
+         * @description Freelance: records the agent vendor’s bill (account 6160) for payout runs to pay. Withholding (D-465): an individual — progressive s.50(1), cumulative over the calendar year with the personal allowance or the accepted ล.ย.01 (ภ.ง.ด.1), decided here and withheld as is by the payout run; a juristic person — service 3 % from ฿1,000 (ภ.ง.ด.53), VAT on top when VAT registered, and then its tax invoice must be attached first (`agent_statements.tax_invoice_required`). Employee: accrued for payroll. Guarded by `If-Match`; requires `Idempotency-Key` (D-420, D-465).
          *
-         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423, D-421.
+         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423, D-421, D-465.
          */
         post: operations["admin.agents.approveStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/agent-statements/{statementId}/actions/attach-tax-invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Attach a juristic agent’s tax invoice to a draft statement
+         * @description A VAT-registered juristic agent bills with its own tax invoice (number + uploaded file) before Finance approves; the bill then claims input VAT. Guarded by `If-Match` (D-465).
+         *
+         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423, D-465.
+         *
+         *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["admin.agents.attachStatementTaxInvoice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -682,6 +709,72 @@ export interface paths {
          *     Implements: D-416, D-417, D-418, D-419, D-420, D-423.
          */
         post: operations["admin.agents.generateStatements"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/agent-tax-declarations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List agents’ ล.ย.01 declarations
+         * @description Newest first; filter by status and tax year (D-465).
+         *
+         *     Implements: D-465.
+         */
+        get: operations["admin.agentTaxDeclarations.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/agent-tax-declarations/{declarationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a ล.ย.01 with its evidence
+         * @description Short-lived links to the evidence the agent uploaded (D-465).
+         *
+         *     Implements: D-465.
+         */
+        get: operations["admin.agentTaxDeclarations.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/agent-tax-declarations/{declarationId}/actions/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept or reject a ล.ย.01
+         * @description Accepted allowances are used by the next statement’s progressive withholding of that tax year; a rejection needs a reason the agent sees (D-465).
+         *
+         *     Implements: D-465.
+         */
+        post: operations["admin.agentTaxDeclarations.decide"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1999,7 +2092,7 @@ export interface paths {
         };
         /**
          * List factory billing statements
-         * @description Generated by getpack for the factory to confirm (ใบวางบิล, D-090); the factory then issues its own tax invoice against it.
+         * @description Generated by getpack for the factory to confirm (ใบวางบิล, D-090); the factory then issues its own tax invoice against it. Each names its factory (`factoryName`, `factoryCode`; admin only).
          *
          *     Implements: D-090, D-022, D-165.
          */
@@ -2021,7 +2114,7 @@ export interface paths {
         };
         /**
          * Get a billing statement
-         * @description With its GR and deduction lines (D-090).
+         * @description With its GR and deduction lines and its factory’s name and code (D-090).
          *
          *     Implements: D-090, D-022, D-165.
          */
@@ -4781,7 +4874,7 @@ export interface paths {
         };
         /**
          * List claims
-         * @description Newest first; `type`, `origin` (customer, automatic from the tolerance, staff), `customerId` and `factoryId` narrow it. Each row names the customer.
+         * @description Newest first; `type`, `origin` (customer, automatic from the tolerance, staff), `customerId`, `factoryId` and `queue` (`open`: the dashboard card) narrow it. Each row names the customer.
          *
          *     Implements: D-082.
          */
@@ -12472,7 +12565,7 @@ export interface paths {
         };
         /**
          * List payout runs
-         * @description Newest first, with their items and approval (D-166).
+         * @description Newest first, with their items and approval (D-166); `status=proposed` = awaiting approval.
          *
          *     Implements: D-022, D-093, D-164, D-166.
          */
@@ -13576,7 +13669,7 @@ export interface paths {
         };
         /**
          * List factory purchase orders
-         * @description One PO per released production job at the price and payout policy frozen at release (§6, D-022); newest first.
+         * @description One PO per released production job at the price and payout policy frozen at release (§6, D-022); newest first. Each names its factory (`factoryName`, `factoryCode`; admin only — D-050 / D-435 keep factories from customers).
          *
          *     Implements: D-090, D-022, D-165.
          */
@@ -13598,7 +13691,7 @@ export interface paths {
         };
         /**
          * Get a purchase order
-         * @description With its lines (§6, D-022).
+         * @description With its lines and its factory’s name and code (§6, D-022).
          *
          *     Implements: D-090, D-022, D-165.
          */
@@ -13846,7 +13939,7 @@ export interface paths {
         };
         /**
          * List receivables
-         * @description AR open items by due date: invoices and final tax invoices with a remainder, debit notes (§6).
+         * @description AR open items by due date: invoices and final tax invoices with a remainder, debit notes (§6); `overdue=true&b2b=true` is the dashboard’s overdue B2B card.
          *
          *     Implements: D-033, D-121.
          */
@@ -14534,7 +14627,7 @@ export interface paths {
         };
         /**
          * List requests for quote
-         * @description `q` matches the RFQ code; filter by status, assignee, overdue first response, product type, channel, submission dates (Bangkok) or an open factory consultation (`awaitingFactory`) (D-100).
+         * @description `q` matches the RFQ code; filter by status, assignee, overdue first response, product type, channel, submission dates (Bangkok) or an open factory consultation (`awaitingFactory`) (D-100); `queue=awaiting_first_response` is the dashboard card (open, not answered yet).
          *
          *     Implements: D-100, D-043, D-102.
          */
@@ -15237,6 +15330,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/shipments/{shipmentId}/actions/reissue-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-issue the factory’s carton labels and packing list
+         * @description D-463 (amendment 2026-10-31): for a trip packed before the sealed carrier label, whose stored labels / packing list still carry the recipient. Issues a new carton tracking token (the shipment’s old tracking links are revoked — the customer’s order links are not), renders both documents again with the D-463 partner document (no recipient identity, render refused if one would appear), stores them and detaches the old files from the factory (staff keep them; nothing is deleted). Packed (`ready`) trips only, and not once a driver confirmed pickup on the handover link — otherwise `shipments.invalid_status`. With a reason; audited (`data_access`, `shipment.documents_reissued`) and the factory sees an activity row without data (print the labels again). Requires `Idempotency-Key`.
+         *
+         *     Implements: D-463, D-442, D-050.
+         */
+        post: operations["admin.shipments.reissueDocuments"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/shipments/{shipmentId}/actions/resolve-exception": {
         parameters: {
             query?: never;
@@ -15336,7 +15451,7 @@ export interface paths {
         put?: never;
         /**
          * Issue or regenerate the driver handover link
-         * @description D-463 (sealed carrier label): a random, single-shipment link `<web>/l/<token>` for the carrier / driver, the only place outside getpack staff that shows the recipient’s name, phone and address. Valid until the trip is delivered, cancelled or returned and at most 7 days; issuing again revokes the previous link. The URL and token are returned once (only the hash is kept) — send them to the driver, never to the factory. Packed shipments up to delivery only. Audited (`data_access`); the factory sees only `waybillIssued`.
+         * @description D-463 (sealed carrier label): a random, single-shipment link `<web>/l/<token>` for the carrier / driver, the only place outside getpack staff that shows the recipient’s name, phone and address. Valid until the trip is delivered, cancelled or returned and at most `logistics.handover_link_ttl_days` (default 7 days, 1–30); issuing again revokes the previous link. The URL and token are returned once (only the hash is kept) — send them to the driver, never to the factory. Packed shipments up to delivery only. Audited (`data_access`); the factory sees only `waybillIssued`.
          *
          *     Implements: D-463, D-050.
          */
@@ -27270,7 +27385,7 @@ export interface paths {
          * Get my agent profile
          * @description My code and link, plan terms in force and totals by commission status (D-416, D-418).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.me"];
         put?: never;
@@ -27292,7 +27407,7 @@ export interface paths {
          * Get my latest agent application
          * @description With its status and, when rejected, the reason (D-416). The account number shows its last 4 digits.
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.getApplication"];
         put?: never;
@@ -27300,7 +27415,7 @@ export interface paths {
          * Apply to become a sales agent
          * @description Legal name, Thai tax id, address, an identity document and a bank account (uploaded files of mine), and acceptance of the agent agreement version in force — recorded with its evidence (D-416). One open application at a time; Sales decides.
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          *
          *     **Files:** upload first — `store.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
          */
@@ -27324,7 +27439,7 @@ export interface paths {
          * Withdraw my open application
          * @description Before Sales decides (D-416).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         post: operations["store.agent.withdrawApplication"];
         delete?: never;
@@ -27346,7 +27461,7 @@ export interface paths {
          * Claim an agent link after sign-in
          * @description The web calls this once a customer who arrived through `/a/{code}` is signed in (D-417). A new customer is linked to the agent; otherwise `linked` is false with the reason (already linked, not a new customer, own code, agent not active). An unknown code is `agents.code_invalid`.
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         post: operations["store.agent.claimLink"];
         delete?: never;
@@ -27364,9 +27479,9 @@ export interface paths {
         };
         /**
          * List my commission
-         * @description Every entry, newest first: completed orders (pending until the claim window and payment), bounties, adjustments and refund reversals (D-418, D-419).
+         * @description Every entry, newest first: completed orders at the full rate with no cap (pending until the claim window and payment), adjustments and refund reversals (D-418, D-464).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.commissions"];
         put?: never;
@@ -27388,7 +27503,7 @@ export interface paths {
          * List my customers
          * @description Customers and companies linked to me, newest first, with orders commissioned and commission. A person who came through my link shows by first letter only (D-422).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.customers"];
         put?: never;
@@ -27408,17 +27523,17 @@ export interface paths {
         };
         /**
          * List my leads
-         * @description Customer and factory prospects I registered, with their protection (D-417, D-419).
+         * @description Customer prospects I registered, with their protection (D-417, D-464).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.leads"];
         put?: never;
         /**
          * Register a lead
-         * @description A customer or factory prospect with a phone, e-mail or tax id, who agreed to be contacted (PDPA). Protected for `agents.rules.leadProtectionDays`; refused when it is already a customer, company or factory, or another agent’s protected lead (D-417, D-419).
+         * @description A customer prospect with a phone, e-mail or tax id, who agreed to be contacted (PDPA). Protected for `agents.rules.leadProtectionDays`; refused when it is already a customer or company, or another agent’s protected lead (D-417). Kind `customer` only — anything else is `agents.lead_kind_unsupported` (P-03, D-464): factories apply at /partner-with-us.
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         post: operations["store.agent.registerLead"];
         delete?: never;
@@ -27440,7 +27555,7 @@ export interface paths {
          * Withdraw a lead
          * @description The contact is free for anyone again (D-417).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         post: operations["store.agent.withdrawLead"];
         delete?: never;
@@ -27460,7 +27575,7 @@ export interface paths {
          * Read the agent programme
          * @description The agent agreement in force, the standard freelance plan’s terms, the programme rules and where the signed-in customer stands (none, applied, rejected, withdrawn, agent) (D-416, D-418).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.programme"];
         put?: never;
@@ -27482,7 +27597,7 @@ export interface paths {
          * List my statements
          * @description Monthly statements, newest first, with withholding and the amount transferred once paid (D-420).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.statements"];
         put?: never;
@@ -27504,7 +27619,7 @@ export interface paths {
          * Get one of my statements
          * @description With its entries (D-420).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         get: operations["store.agent.statement"];
         put?: never;
@@ -27526,11 +27641,41 @@ export interface paths {
          * Download the 50 ทวิ of a paid statement
          * @description A short-lived link to the withholding certificate issued when it was paid (D-421).
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422, D-421.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464, D-421.
          */
         get: operations["store.agent.whtCertificate"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/tax-declaration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my ล.ย.01 for this tax year
+         * @description Whether I need one (individual freelance agents), the personal allowance used without one, and my latest declaration of the current tax year with its status. Without an accepted ล.ย.01 only the personal allowance is used (D-465).
+         *
+         *     Implements: D-465.
+         */
+        get: operations["store.agentTaxDeclaration.get"];
+        put?: never;
+        /**
+         * Submit my ล.ย.01 for this tax year
+         * @description Allowance amounts by group (family, insurance and savings, housing, donations) with my uploaded evidence. One waiting declaration at a time; Finance accepts or rejects it. A later accepted one replaces an earlier one for the next statements (D-465).
+         *
+         *     Implements: D-465.
+         *
+         *     **Files:** upload first — `store.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["store.agentTaxDeclaration.submit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -30872,7 +31017,7 @@ export interface paths {
         put?: never;
         /**
          * Open a driver handover link
-         * @description D-463 (sealed carrier label): the carrier / driver opens `<web>/l/<token>` (token starting with `d`) and sees the recipient’s name, phone and address, the shipment code and its cartons — never the factory, prices or other orders (D-050). The token is sent in the body, not the URL path, so it stays out of access logs. Unknown or regenerated (revoked) links → 404; a trip that is delivered, cancelled or returned, or a link older than 7 days → 410 `handover.expired`. Every open, refused ones included, is an audit row. Rate-limited.
+         * @description D-463 (sealed carrier label): the carrier / driver opens `<web>/l/<token>` (token starting with `d`) and sees the recipient’s name, phone and address, the shipment code and its cartons — never the factory, prices or other orders (D-050). The token is sent in the body, not the URL path, so it stays out of access logs. Unknown or regenerated (revoked) links → 404; a trip that is delivered, cancelled or returned, or a link older past its lifetime (`logistics.handover_link_ttl_days`, default 7 days) → 410 `handover.expired`. Every open, refused ones included, is an audit row. Rate-limited.
          *
          *     Implements: D-463, D-050.
          */
@@ -35456,7 +35601,7 @@ export interface components {
         AdminAgentCommissionDto: {
             agent: components["schemas"]["AgentRefDto"];
             /**
-             * @description Signed
+             * @description Signed; the full rate, no cap (D-464)
              * @example 600.00
              */
             amount: string;
@@ -35471,8 +35616,8 @@ export interface components {
              */
             baseAmount: string;
             /**
-             * @description 30 % of the order’s margin
-             * @example 1080.00
+             * @description History: the margin cap applied before D-464 (null since)
+             * @example null
              */
             capAmount: string | null;
             /**
@@ -35509,6 +35654,11 @@ export interface components {
             isFirstOrder: boolean;
             /** @example order */
             kind: components["schemas"]["AgentCommissionKind"];
+            /**
+             * @description D-464: commission ÷ gross margin exceeded `agent.margin_alert_pct` (internal; amount unchanged)
+             * @example false
+             */
+            marginAlert: boolean;
             /**
              * @description The order’s margin (staff only)
              * @example 3600.00
@@ -35580,6 +35730,8 @@ export interface components {
             /** @example +66810005678 */
             phone: string | null;
             plan: components["schemas"]["AgentPlanRefDto"];
+            /** @description Staff: the full plan version in force (history fields such as the retired margin cap included) */
+            planTerms: components["schemas"]["AgentPlanTermsDto"] | null;
             /** @example 1 */
             rowVersion: number;
             /** @description The employee’s back-office account */
@@ -35593,8 +35745,8 @@ export interface components {
             statusReason: string | null;
             /** @example 0000000000127 */
             taxId: string | null;
-            /** @description The plan’s terms in force */
-            terms: components["schemas"]["AgentPlanTermsDto"] | null;
+            /** @description The plan’s terms in force (D-464: no cap) */
+            terms: components["schemas"]["StoreAgentTermsDto"] | null;
             totals: components["schemas"]["AdminAgentTotalsDto"];
             /** @description The customer account the agent signs in with */
             user: components["schemas"]["UserRefDto"];
@@ -35736,6 +35888,11 @@ export interface components {
              */
             exportedAt: string | null;
             /**
+             * @description D-465 a tax invoice file is attached
+             * @example false
+             */
+            hasTaxInvoice: boolean;
+            /**
              * @description A 50 ทวิ is available to download
              * @example false
              */
@@ -35772,6 +35929,11 @@ export interface components {
             /** @example approved */
             status: components["schemas"]["AgentStatementStatus"];
             /**
+             * @description D-465 juristic agent’s tax invoice no.
+             * @example null
+             */
+            taxInvoiceNo: string | null;
+            /**
              * @description Before withholding
              * @example 2350.00
              */
@@ -35789,10 +35951,17 @@ export interface components {
             /** @example null */
             voidReason: string | null;
             /**
-             * @description Withheld at payment (freelance)
+             * @description Withholding: what the payment withheld once paid, before that what approval decided (D-465); null for employees (payroll) and drafts
              * @example 70.50
              */
             whtAmount: string | null;
+            /**
+             * @description D-465: individual — progressive s.50(1) (ภ.ง.ด.1); juristic — 3 % service from ฿1,000 (ภ.ง.ด.53); employee — payroll. Null before approval
+             * @example progressive_40_2
+             */
+            whtMethod: components["schemas"]["AgentWhtMethod"] | null;
+            /** @description D-465 progressive working (individual agents, after approval) */
+            whtWorking: components["schemas"]["AgentWhtWorkingDto"] | null;
         };
         AdminAgentStatementDto: {
             agent: components["schemas"]["AgentRefDto"];
@@ -35810,6 +35979,11 @@ export interface components {
              */
             exportedAt: string | null;
             /**
+             * @description D-465 a tax invoice file is attached
+             * @example false
+             */
+            hasTaxInvoice: boolean;
+            /**
              * @description A 50 ทวิ is available to download
              * @example false
              */
@@ -35846,6 +36020,11 @@ export interface components {
             /** @example approved */
             status: components["schemas"]["AgentStatementStatus"];
             /**
+             * @description D-465 juristic agent’s tax invoice no.
+             * @example null
+             */
+            taxInvoiceNo: string | null;
+            /**
              * @description Before withholding
              * @example 2350.00
              */
@@ -35863,10 +36042,108 @@ export interface components {
             /** @example null */
             voidReason: string | null;
             /**
-             * @description Withheld at payment (freelance)
+             * @description Withholding: what the payment withheld once paid, before that what approval decided (D-465); null for employees (payroll) and drafts
              * @example 70.50
              */
             whtAmount: string | null;
+            /**
+             * @description D-465: individual — progressive s.50(1) (ภ.ง.ด.1); juristic — 3 % service from ฿1,000 (ภ.ง.ด.53); employee — payroll. Null before approval
+             * @example progressive_40_2
+             */
+            whtMethod: components["schemas"]["AgentWhtMethod"] | null;
+            /** @description D-465 progressive working (individual agents, after approval) */
+            whtWorking: components["schemas"]["AgentWhtWorkingDto"] | null;
+        };
+        AdminAgentTaxDeclarationDetailDto: {
+            agent: components["schemas"]["AgentRefDto"];
+            /**
+             * @example {
+             *       "lifeInsurance": "30000.00",
+             *       "socialSecurity": "9000.00",
+             *       "spouse": "60000.00"
+             *     }
+             */
+            allowances: {
+                [key: string]: string;
+            } & components["schemas"]["AgentTaxAllowancesDto"];
+            /**
+             * @description Sum of the declared allowances
+             * @example 99000.00
+             */
+            allowancesTotal: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            decidedBy: components["schemas"]["UserRefDto"] | null;
+            /**
+             * @description Why it was rejected
+             * @example null
+             */
+            decisionReason: string | null;
+            evidence: components["schemas"]["AgentEvidenceFileDto"][];
+            /** @example 1 */
+            evidenceCount: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6019
+             */
+            id: string;
+            /** @example submitted */
+            status: components["schemas"]["AgentTaxDeclarationStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-11-02T10:00:00+07:00
+             */
+            submittedAt: string;
+            /** @example 2026 */
+            taxYear: number;
+        };
+        AdminAgentTaxDeclarationDto: {
+            agent: components["schemas"]["AgentRefDto"];
+            /**
+             * @example {
+             *       "lifeInsurance": "30000.00",
+             *       "socialSecurity": "9000.00",
+             *       "spouse": "60000.00"
+             *     }
+             */
+            allowances: {
+                [key: string]: string;
+            } & components["schemas"]["AgentTaxAllowancesDto"];
+            /**
+             * @description Sum of the declared allowances
+             * @example 99000.00
+             */
+            allowancesTotal: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            decidedBy: components["schemas"]["UserRefDto"] | null;
+            /**
+             * @description Why it was rejected
+             * @example null
+             */
+            decisionReason: string | null;
+            /** @example 1 */
+            evidenceCount: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6019
+             */
+            id: string;
+            /** @example submitted */
+            status: components["schemas"]["AgentTaxDeclarationStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-11-02T10:00:00+07:00
+             */
+            submittedAt: string;
+            /** @example 2026 */
+            taxYear: number;
         };
         AdminAgentTotalsDto: {
             /**
@@ -35909,6 +36186,85 @@ export interface components {
              * @example 0.00
              */
             statemented: string;
+        };
+        AdminBillingStatementDto: {
+            /** @example DEVBS-26-00001 */
+            bsNumber: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            confirmedAt: string | null;
+            /**
+             * @description Who confirmed it
+             * @example null
+             */
+            confirmedBy: components["schemas"]["UserRefDto"] | null;
+            /** @example THB */
+            currency: string;
+            /**
+             * @description Line numbers the factory named in its latest dispute (empty when none were named)
+             * @example []
+             */
+            disputedLineNos: number[];
+            /** @example null */
+            disputeNote: string | null;
+            /**
+             * @description Staff-facing factory code
+             * @example F0001
+             */
+            factoryCode: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000000501
+             */
+            factoryId: string;
+            /**
+             * @description The factory’s trade name, else its legal name
+             * @example โรงพิมพ์ตัวอย่าง
+             */
+            factoryName: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T10:00:00+07:00
+             */
+            generatedAt: string;
+            /** @example 8517.20 */
+            grossAmount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000530003
+             */
+            id: string;
+            /**
+             * @description Input VAT status of the latest tax invoice (§2); null before one is submitted
+             * @example null
+             */
+            inputVatStatus: components["schemas"]["InputVatStatus"] | null;
+            lines: components["schemas"]["BillingStatementLineDto"][];
+            /** @example 7960.00 */
+            netAmount: string;
+            /** @description What the signed-in user may do on it now (U-B0.3) */
+            nextActions: components["schemas"]["NextActionDto"][];
+            /**
+             * Format: date
+             * @example 2026-10-05
+             */
+            periodFrom: string;
+            /**
+             * Format: date
+             * @example 2026-10-20
+             */
+            periodTo: string;
+            /** @example sent */
+            status: components["schemas"]["BillingStatementStatus"];
+            /** @description The factory tax invoices submitted for the statement, newest first (void ones left out) */
+            taxInvoices: components["schemas"]["VendorInvoiceDto"][];
+            /** @example none */
+            taxInvoiceStatus: components["schemas"]["BillingStatementTaxInvoiceStatus"];
+            totals: components["schemas"]["BillingStatementTotalsDto"];
+            /** @example 557.20 */
+            vatAmount: string;
         };
         AdminCheckoutDto: {
             /**
@@ -37364,6 +37720,55 @@ export interface components {
             /** @example completed */
             status: components["schemas"]["PrivacyRequestStatus"];
         };
+        AdminPurchaseOrderDto: {
+            /** @example THB */
+            currency: string;
+            /**
+             * @description Staff-facing factory code
+             * @example F0001
+             */
+            factoryCode: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000000501
+             */
+            factoryId: string;
+            /**
+             * @description The factory’s trade name, else its legal name
+             * @example โรงพิมพ์ตัวอย่าง
+             */
+            factoryName: string;
+            /** @example 8560.00 */
+            grossAmount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000530001
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-05T10:00:00+07:00
+             */
+            issuedAt: string;
+            /** @example JOB2610-00001 */
+            jobNo: string;
+            lines: components["schemas"]["ApLineDto"][];
+            /** @example 8000.00 */
+            netAmount: string;
+            /** @example O2610-00001 */
+            orderCode: string;
+            /**
+             * @description The kind of the released job
+             * @example production
+             */
+            poKind: components["schemas"]["JobKind"];
+            /** @example DEVPO-26-00001 */
+            poNumber: string;
+            /** @example accepted */
+            status: components["schemas"]["PoStatus"];
+            /** @example 560.00 */
+            vatAmount: string;
+        };
         AdminQuoteCalculationDto: {
             /** @example 1.0.0 */
             calculatorVersion: string;
@@ -38096,6 +38501,11 @@ export interface components {
             cancelReason: string | null;
             /** @example factory_fleet */
             carrier: components["schemas"]["CarrierCode"];
+            /**
+             * @description D-463: getpack booked a fallback carrier for the trip ("booked"). The carrier’s tracking number and tracking URL are staff-only — they open the recipient’s details on the carrier’s site
+             * @example false
+             */
+            carrierBooked: boolean;
             /** @example null */
             carrierBookingRef: string | null;
             /**
@@ -38166,6 +38576,7 @@ export interface components {
             plannedShipOn: string | null;
             /** @description Null without a proof of delivery (D-229) */
             podReview: components["schemas"]["PodReviewDto"] | null;
+            /** @description With the receiver’s name and the carrier’s POD reference (staff only, D-463) */
             proofOfDelivery: components["schemas"]["ProofOfDeliveryDto"] | null;
             /**
              * Format: date-time
@@ -38188,7 +38599,10 @@ export interface components {
              * @example เตรียมจัดส่ง
              */
             statusLabelTh: string;
-            /** @example null */
+            /**
+             * @description The fallback carrier’s tracking number (staff only, D-463)
+             * @example null
+             */
             trackingNo: string | null;
             /** @example null */
             trackingUrl: string | null;
@@ -39002,7 +39416,7 @@ export interface components {
         AgentBankAccountState: "none" | "pending_approval" | "active";
         AgentCommissionDto: {
             /**
-             * @description Signed
+             * @description Signed; the full rate, no cap (D-464)
              * @example 600.00
              */
             amount: string;
@@ -39016,11 +39430,6 @@ export interface components {
              * @example 12000.00
              */
             baseAmount: string;
-            /**
-             * @description 30 % of the order’s margin
-             * @example 1080.00
-             */
-            capAmount: string | null;
             /**
              * Format: date-time
              * @example 2026-10-31T10:00:00+07:00
@@ -39096,9 +39505,20 @@ export interface components {
              * @example null
              */
             statusReason: string | null;
-            /** @description The plan’s terms in force */
-            terms: components["schemas"]["AgentPlanTermsDto"] | null;
+            /** @description The plan’s terms in force (D-464: no cap) */
+            terms: components["schemas"]["StoreAgentTermsDto"] | null;
             totals: components["schemas"]["AgentTotalsDto"];
+        };
+        AgentEvidenceFileDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6015
+             */
+            fileId: string;
+            /** @example ใบเสร็จประกันชีวิต.pdf */
+            fileName: string;
+            /** @example https://getpack-files.s3.example.com/… */
+            url: string | null;
         };
         AgentFactoryLinkDto: {
             agent: components["schemas"]["AgentRefDto"];
@@ -39182,7 +39602,7 @@ export interface components {
              */
             id: string;
             /** @example customer */
-            kind: components["schemas"]["AgentLeadKind"];
+            kind: components["schemas"]["StoreAgentLeadKind"];
             /** @example null */
             note: string | null;
             /** @example ร้านกาแฟบ้านสวน */
@@ -39457,8 +39877,8 @@ export interface components {
              * @example 15
              */
             paymentTermsDays: number;
-            /** @description The standard freelance plan in force */
-            plan: components["schemas"]["AgentPlanTermsDto"] | null;
+            /** @description The standard freelance plan in force (D-464: no cap) */
+            plan: components["schemas"]["StoreAgentTermsDto"] | null;
             /**
              * @description Where the signed-in customer stands
              * @example none
@@ -39532,10 +39952,15 @@ export interface components {
              */
             totalAmount: string;
             /**
-             * @description Withheld at payment (freelance)
+             * @description Withholding: what the payment withheld once paid, before that what approval decided (D-465); null for employees (payroll) and drafts
              * @example 70.50
              */
             whtAmount: string | null;
+            /**
+             * @description D-465: individual — progressive s.50(1) (ภ.ง.ด.1); juristic — 3 % service from ฿1,000 (ภ.ง.ด.53); employee — payroll. Null before approval
+             * @example progressive_40_2
+             */
+            whtMethod: components["schemas"]["AgentWhtMethod"] | null;
         };
         AgentStatementDto: {
             /**
@@ -39585,10 +40010,15 @@ export interface components {
              */
             totalAmount: string;
             /**
-             * @description Withheld at payment (freelance)
+             * @description Withholding: what the payment withheld once paid, before that what approval decided (D-465); null for employees (payroll) and drafts
              * @example 70.50
              */
             whtAmount: string | null;
+            /**
+             * @description D-465: individual — progressive s.50(1) (ภ.ง.ด.1); juristic — 3 % service from ฿1,000 (ภ.ง.ด.53); employee — payroll. Null before approval
+             * @example progressive_40_2
+             */
+            whtMethod: components["schemas"]["AgentWhtMethod"] | null;
         };
         AgentStatementsGeneratedDto: {
             /**
@@ -39606,6 +40036,135 @@ export interface components {
         AgentStatementStatus: "draft" | "approved" | "exported" | "paid" | "voided";
         /** @enum {string} */
         AgentStatus: "active" | "suspended" | "ended";
+        AgentTaxAllowancesDto: {
+            /**
+             * @description บุตร
+             * @example 30000.00
+             */
+            children?: string;
+            /**
+             * @description อุปการะคนพิการหรือทุพพลภาพ
+             * @example 60000.00
+             */
+            disabledDependants?: string;
+            /**
+             * @description เงินบริจาค
+             * @example 0.00
+             */
+            donations?: string;
+            /**
+             * @description เงินบริจาคเพื่อการศึกษา
+             * @example 0.00
+             */
+            educationDonations?: string;
+            /**
+             * @description เบี้ยประกันสุขภาพตนเอง
+             * @example 25000.00
+             */
+            healthInsurance?: string;
+            /**
+             * @description ดอกเบี้ยเงินกู้ยืมเพื่อที่อยู่อาศัย
+             * @example 0.00
+             */
+            homeLoanInterest?: string;
+            /**
+             * @description เบี้ยประกันชีวิต
+             * @example 30000.00
+             */
+            lifeInsurance?: string;
+            /**
+             * @description อุปการะเลี้ยงดูบิดามารดา
+             * @example 30000.00
+             */
+            parents?: string;
+            /**
+             * @description เบี้ยประกันสุขภาพบิดามารดา
+             * @example 15000.00
+             */
+            parentsHealthInsurance?: string;
+            /**
+             * @description เบี้ยประกันชีวิตแบบบำนาญ
+             * @example 0.00
+             */
+            pensionInsurance?: string;
+            /**
+             * @description กองทุนสำรองเลี้ยงชีพ
+             * @example 0.00
+             */
+            providentFund?: string;
+            /**
+             * @description RMF
+             * @example 0.00
+             */
+            rmf?: string;
+            /**
+             * @description เงินสมทบประกันสังคม
+             * @example 9000.00
+             */
+            socialSecurity?: string;
+            /**
+             * @description คู่สมรสไม่มีเงินได้
+             * @example 60000.00
+             */
+            spouse?: string;
+            /**
+             * @description SSF
+             * @example 0.00
+             */
+            ssf?: string;
+            /**
+             * @description Thai ESG
+             * @example 0.00
+             */
+            thaiEsg?: string;
+        };
+        /** @enum {string} */
+        AgentTaxDeclarationDecision: "accepted" | "rejected";
+        AgentTaxDeclarationDto: {
+            /**
+             * @example {
+             *       "lifeInsurance": "30000.00",
+             *       "socialSecurity": "9000.00",
+             *       "spouse": "60000.00"
+             *     }
+             */
+            allowances: {
+                [key: string]: string;
+            } & components["schemas"]["AgentTaxAllowancesDto"];
+            /**
+             * @description Sum of the declared allowances
+             * @example 99000.00
+             */
+            allowancesTotal: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /**
+             * @description Why it was rejected
+             * @example null
+             */
+            decisionReason: string | null;
+            /** @example 1 */
+            evidenceCount: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6019
+             */
+            id: string;
+            /** @example submitted */
+            status: components["schemas"]["AgentTaxDeclarationStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-11-02T10:00:00+07:00
+             */
+            submittedAt: string;
+            /** @example 2026 */
+            taxYear: number;
+        };
+        /** @enum {string} */
+        AgentTaxDeclarationStatus: "submitted" | "accepted" | "rejected";
         AgentTotalsDto: {
             /**
              * @description Customers and companies linked now
@@ -39642,6 +40201,33 @@ export interface components {
              * @example 0.00
              */
             statemented: string;
+        };
+        /**
+         * @description D-465: individual — progressive s.50(1) (ภ.ง.ด.1); juristic — 3 % service from ฿1,000 (ภ.ง.ด.53); employee — payroll. Null before approval
+         * @enum {string}
+         */
+        AgentWhtMethod: "progressive_40_2" | "juristic_service" | "payroll";
+        AgentWhtWorkingDto: {
+            /**
+             * @description Personal allowance + accepted ล.ย.01 allowances
+             * @example 60000.00
+             */
+            allowances: string;
+            /**
+             * @description Annual tax on the projected net income
+             * @example 7000.00
+             */
+            annualTax: string;
+            /**
+             * @description YTD + this statement × months left in the year
+             * @example 460000.00
+             */
+            projected: string;
+            /**
+             * @description Commission approved this year incl. this statement
+             * @example 100000.00
+             */
+            ytdPaid: string;
         };
         AgingBucketsDto: {
             /**
@@ -40858,6 +41444,15 @@ export interface components {
          * @enum {string}
          */
         AssistantTurnOutcome: "answered" | "blocked_unsupported_fact" | "refused" | "handed_off" | "failed";
+        AttachAgentTaxInvoiceDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6015
+             */
+            fileId: string;
+            /** @example INV-2611-0012 */
+            taxInvoiceNo: string;
+        };
         AttachedFileDto: {
             /**
              * Format: uuid
@@ -41463,6 +42058,8 @@ export interface components {
         };
         /** @enum {string} */
         BillingStatementLineKind: "production" | "shipping" | "mockup" | "design" | "reproduction" | "deduction";
+        /** @enum {string} */
+        BillingStatementQueue: "missing_tax_invoice";
         /** @enum {string} */
         BillingStatementStatus: "generated" | "sent" | "confirmed" | "disputed" | "superseded";
         /** @enum {string} */
@@ -43796,6 +44393,8 @@ export interface components {
              */
             product: string[];
         };
+        /** @enum {string} */
+        ClaimQueue: "open";
         ClaimQuoteDto: {
             /**
              * Format: uuid
@@ -49236,6 +49835,15 @@ export interface components {
              * @example 17:00
              */
             to: string;
+        };
+        DecideAgentTaxDeclarationDto: {
+            /** @example accepted */
+            decision: components["schemas"]["AgentTaxDeclarationDecision"];
+            /**
+             * @description Required to reject
+             * @example null
+             */
+            reason?: string | null;
         };
         DecideClaimDto: {
             /** @example approved */
@@ -65405,6 +66013,25 @@ export interface components {
              */
             signs: components["schemas"]["DocumentSigningKind"][];
         };
+        MyTaxDeclarationDto: {
+            /**
+             * @description Individual freelance agents declare; others do not need to
+             * @example true
+             */
+            applicable: boolean;
+            /** @description My latest declaration this year */
+            declaration: components["schemas"]["AgentTaxDeclarationDto"] | null;
+            /**
+             * @description Used when no declaration is accepted
+             * @example 60000.00
+             */
+            personalAllowance: string;
+            /**
+             * @description The current tax year (Asia/Bangkok)
+             * @example 2026
+             */
+            taxYear: number;
+        };
         /** @enum {string} */
         NationalDayKind: "holiday" | "extra_working_day";
         NextActionDto: {
@@ -67022,6 +67649,32 @@ export interface components {
          * @enum {string}
          */
         PartnerPayoutStatus: "included" | "paid" | "failed";
+        PartnerProofOfDeliveryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-21T14:05:00+07:00
+             */
+            capturedAt: string;
+            /** @example 590 */
+            deliveredQuantity: number;
+            kind: components["schemas"]["PodKind"];
+            /**
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
+             *     ]
+             */
+            photoFileIds: string[];
+            /**
+             * @description D-463: a receiver name is on the POD. The name itself is staff-only, also when the factory recorded it
+             * @example true
+             */
+            receiverRecorded: boolean;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2006
+             */
+            signatureFileId: string | null;
+        };
         PartnerSampleDto: {
             /**
              * @example {
@@ -67071,6 +67724,11 @@ export interface components {
             blockedByPayment: boolean;
             /** @example factory_fleet */
             carrier: components["schemas"]["CarrierCode"];
+            /**
+             * @description D-463: getpack booked a fallback carrier for the trip ("booked"). The carrier’s tracking number and tracking URL are staff-only — they open the recipient’s details on the carrier’s site
+             * @example false
+             */
+            carrierBooked: boolean;
             /** @description The factory asked getpack for a fallback carrier (D-013, D-114) */
             carrierRequest: components["schemas"]["CarrierRequestDto"] | null;
             /** @description One per carton once packed (label code on the carton) */
@@ -67115,7 +67773,8 @@ export interface components {
              * @example 2026-10-20
              */
             plannedShipOn: string | null;
-            proofOfDelivery: components["schemas"]["ProofOfDeliveryDto"] | null;
+            /** @description D-463: `receiverRecorded` instead of the receiver’s name */
+            proofOfDelivery: components["schemas"]["PartnerProofOfDeliveryDto"] | null;
             /**
              * Format: date-time
              * @example 2026-10-19T16:00:00+07:00
@@ -67135,8 +67794,6 @@ export interface components {
              * @example เตรียมจัดส่ง
              */
             statusLabelTh: string;
-            /** @example null */
-            trackingNo: string | null;
             /** @example 120000 */
             volumeCm3: number | null;
             /**
@@ -70457,7 +71114,10 @@ export interface components {
              * @example 2026-10-21T14:05:00+07:00
              */
             capturedAt: string;
-            /** @example null */
+            /**
+             * @description The carrier’s POD reference (staff only, D-463)
+             * @example null
+             */
             carrierPodRef: string | null;
             /** @example 590 */
             deliveredQuantity: number;
@@ -70469,10 +71129,15 @@ export interface components {
              */
             photoFileIds: string[];
             /**
-             * @description Who received it. On the partner surface null for a carrier POD (the carrier copies the recipient, P4-D1); a factory POD shows the name the factory recorded
+             * @description Who received it (staff only, D-463): typed by the factory, or the recipient on a carrier POD
              * @example สมหญิง ใจดี
              */
-            receiverName: string | null;
+            receiverName: string;
+            /**
+             * @description D-463: a receiver name is on the POD. The name itself is staff-only, also when the factory recorded it
+             * @example true
+             */
+            receiverRecorded: boolean;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f2006
@@ -72721,8 +73386,11 @@ export interface components {
              * @example manee@example.invalid
              */
             email?: string | null;
-            /** @example customer */
-            kind: components["schemas"]["AgentLeadKind"];
+            /**
+             * @description Customers only (P-03 / D-464); any other value is `agents.lead_kind_unsupported`
+             * @example customer
+             */
+            kind: components["schemas"]["StoreAgentLeadKind"];
             /** @example สนใจกล่องเบเกอรี่ 1,000 ใบ/เดือน */
             note?: string | null;
             /** @example ร้านกาแฟบ้านสวน */
@@ -74406,6 +75074,8 @@ export interface components {
             /** @example กล่องไปรษณีย์ ฝาชน (ลอน B) */
             nameTh: string;
         };
+        /** @enum {string} */
+        RfqQueue: "awaiting_first_response";
         RfqQuotationDto: {
             /**
              * Format: uuid
@@ -76975,7 +77645,7 @@ export interface components {
             quantity: number;
         };
         /** @enum {string} */
-        ShipmentQueue: "awaiting_pickup" | "in_transit" | "exceptions" | "pod_review";
+        ShipmentQueue: "awaiting_pickup" | "in_transit" | "exceptions" | "pod_review" | "without_goods_receipt";
         ShipmentRefDto: {
             /**
              * Format: uuid
@@ -78837,6 +79507,35 @@ export interface components {
             variant: {
                 [key: string]: unknown;
             } | null;
+        };
+        /** @enum {string} */
+        StoreAgentLeadKind: "customer";
+        StoreAgentTermsDto: {
+            /**
+             * @description Months a customer stays linked to the agent
+             * @example 12
+             */
+            attributionMonths: number;
+            /**
+             * @description Commission on a customer’s first order, % of the base
+             * @example 5
+             */
+            firstOrderPct: string;
+            /**
+             * @description Orders with a smaller base earn nothing
+             * @example 0.00
+             */
+            minBaseAmount: string;
+            /**
+             * @description Commission on later orders, % of the base
+             * @example 3
+             */
+            repeatOrderPct: string;
+            /**
+             * @description Always true (D-464): the full rate at every order size, no commission cap
+             * @example true
+             */
+            uncapped: boolean;
         };
         StoreArticleCardDto: {
             /**
@@ -82372,6 +83071,25 @@ export interface components {
              * @example 0000000000127
              */
             taxId: string;
+        };
+        SubmitAgentTaxDeclarationDto: {
+            /**
+             * @example {
+             *       "lifeInsurance": "30000.00",
+             *       "socialSecurity": "9000.00",
+             *       "spouse": "60000.00"
+             *     }
+             */
+            allowances: {
+                [key: string]: string;
+            } & components["schemas"]["AgentTaxAllowancesDto"];
+            /**
+             * @description My uploaded evidence
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-0000000a6015"
+             *     ]
+             */
+            evidenceFileIds: string[];
         };
         SubmitArtworkDto: {
             /** @description Uploaded files (presign → PUT → complete first) */
@@ -87652,6 +88370,16 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *         "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *       },
+                     *       "planTerms": {
+                     *         "attributionMonths": 12,
+                     *         "factoryBountyAmount": "0.00",
+                     *         "factoryQualifyDays": 0,
+                     *         "factoryQualifyJobs": 0,
+                     *         "firstOrderPct": "5",
+                     *         "marginCapPct": "30",
+                     *         "minBaseAmount": "0.00",
+                     *         "repeatOrderPct": "3"
+                     *       },
                      *       "rowVersion": 1,
                      *       "staffUser": null,
                      *       "status": "active",
@@ -87659,13 +88387,10 @@ export interface operations {
                      *       "taxId": "0000000000127",
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -87967,7 +88692,7 @@ export interface operations {
                      *           "amount": "600.00",
                      *           "availableAt": "2026-11-08T00:00:00+07:00",
                      *           "baseAmount": "12000.00",
-                     *           "capAmount": "1080.00",
+                     *           "capAmount": null,
                      *           "createdAt": "2026-10-31T10:00:00+07:00",
                      *           "customerName": "สมหญิง ทดสอบ",
                      *           "earnedAt": null,
@@ -87976,6 +88701,7 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6008",
                      *           "isFirstOrder": true,
                      *           "kind": "order",
+                     *           "marginAlert": false,
                      *           "marginAmount": "3600.00",
                      *           "note": null,
                      *           "orderCode": "PK-2610-00042",
@@ -88091,7 +88817,7 @@ export interface operations {
                      *       "amount": "-150.00",
                      *       "availableAt": "2026-11-08T00:00:00+07:00",
                      *       "baseAmount": "12000.00",
-                     *       "capAmount": "1080.00",
+                     *       "capAmount": null,
                      *       "createdAt": "2026-10-31T10:00:00+07:00",
                      *       "customerName": "สมหญิง ทดสอบ",
                      *       "earnedAt": null,
@@ -88100,6 +88826,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6008",
                      *       "isFirstOrder": true,
                      *       "kind": "adjustment",
+                     *       "marginAlert": false,
                      *       "marginAmount": "3600.00",
                      *       "note": null,
                      *       "orderCode": "PK-2610-00042",
@@ -88234,7 +88961,7 @@ export interface operations {
                      *       "amount": "600.00",
                      *       "availableAt": "2026-11-08T00:00:00+07:00",
                      *       "baseAmount": "12000.00",
-                     *       "capAmount": "1080.00",
+                     *       "capAmount": null,
                      *       "createdAt": "2026-10-31T10:00:00+07:00",
                      *       "customerName": "สมหญิง ทดสอบ",
                      *       "earnedAt": null,
@@ -88243,6 +88970,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6008",
                      *       "isFirstOrder": true,
                      *       "kind": "order",
+                     *       "marginAlert": false,
                      *       "marginAmount": "3600.00",
                      *       "note": null,
                      *       "orderCode": "PK-2610-00042",
@@ -88363,6 +89091,7 @@ export interface operations {
             /** @description One page of results */
             200: {
                 headers: {
+                    Deprecation: components["headers"]["Deprecation"];
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
                     "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
                     "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
@@ -88477,6 +89206,7 @@ export interface operations {
             /** @description Factory link */
             201: {
                 headers: {
+                    Deprecation: components["headers"]["Deprecation"];
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
                     "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
                     "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
@@ -88547,8 +89277,8 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.agent_inactive`, `agents.factory_linked` */
-            409: {
+            /** @description Problem: `agents.factory_links_retired` */
+            410: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -88611,6 +89341,7 @@ export interface operations {
             /** @description Factory link */
             200: {
                 headers: {
+                    Deprecation: components["headers"]["Deprecation"];
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
                     "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
                     "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
@@ -90476,6 +91207,7 @@ export interface operations {
                      *           },
                      *           "entryCount": 3,
                      *           "exportedAt": null,
+                     *           "hasTaxInvoice": false,
                      *           "hasWhtCertificate": false,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6009",
                      *           "paidAmount": null,
@@ -90485,11 +91217,19 @@ export interface operations {
                      *           "rowVersion": 2,
                      *           "statementNo": "AG2610-K7QX2MAP",
                      *           "status": "approved",
+                     *           "taxInvoiceNo": null,
                      *           "totalAmount": "2350.00",
                      *           "vendorInvoiceId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6017",
                      *           "voidReason": null,
                      *           "voidedAt": null,
-                     *           "whtAmount": null
+                     *           "whtAmount": "0.00",
+                     *           "whtMethod": "progressive_40_2",
+                     *           "whtWorking": {
+                     *             "allowances": "60000.00",
+                     *             "annualTax": "0.00",
+                     *             "projected": "4700.00",
+                     *             "ytdPaid": "2350.00"
+                     *           }
                      *         }
                      *       ],
                      *       "meta": {
@@ -90607,7 +91347,7 @@ export interface operations {
                      *           "amount": "600.00",
                      *           "availableAt": "2026-11-08T00:00:00+07:00",
                      *           "baseAmount": "12000.00",
-                     *           "capAmount": "1080.00",
+                     *           "capAmount": null,
                      *           "createdAt": "2026-10-31T10:00:00+07:00",
                      *           "customerName": "สมหญิง ทดสอบ",
                      *           "earnedAt": null,
@@ -90616,6 +91356,7 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6008",
                      *           "isFirstOrder": true,
                      *           "kind": "order",
+                     *           "marginAlert": false,
                      *           "marginAmount": "3600.00",
                      *           "note": null,
                      *           "orderCode": "PK-2610-00042",
@@ -90627,6 +91368,7 @@ export interface operations {
                      *       ],
                      *       "entryCount": 3,
                      *       "exportedAt": null,
+                     *       "hasTaxInvoice": false,
                      *       "hasWhtCertificate": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6009",
                      *       "paidAmount": null,
@@ -90636,11 +91378,19 @@ export interface operations {
                      *       "rowVersion": 2,
                      *       "statementNo": "AG2610-K7QX2MAP",
                      *       "status": "approved",
+                     *       "taxInvoiceNo": null,
                      *       "totalAmount": "2350.00",
                      *       "vendorInvoiceId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6017",
                      *       "voidReason": null,
                      *       "voidedAt": null,
-                     *       "whtAmount": null
+                     *       "whtAmount": "0.00",
+                     *       "whtMethod": "progressive_40_2",
+                     *       "whtWorking": {
+                     *         "allowances": "60000.00",
+                     *         "annualTax": "0.00",
+                     *         "projected": "4700.00",
+                     *         "ytdPaid": "2350.00"
+                     *       }
                      *     }
                      */
                     "application/json": components["schemas"]["AdminAgentStatementDetailDto"];
@@ -90754,6 +91504,7 @@ export interface operations {
                      *       },
                      *       "entryCount": 3,
                      *       "exportedAt": null,
+                     *       "hasTaxInvoice": false,
                      *       "hasWhtCertificate": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6009",
                      *       "paidAmount": null,
@@ -90763,11 +91514,19 @@ export interface operations {
                      *       "rowVersion": 2,
                      *       "statementNo": "AG2610-K7QX2MAP",
                      *       "status": "approved",
+                     *       "taxInvoiceNo": null,
                      *       "totalAmount": "2350.00",
                      *       "vendorInvoiceId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6017",
                      *       "voidReason": null,
                      *       "voidedAt": null,
-                     *       "whtAmount": null
+                     *       "whtAmount": "0.00",
+                     *       "whtMethod": "progressive_40_2",
+                     *       "whtWorking": {
+                     *         "allowances": "60000.00",
+                     *         "annualTax": "0.00",
+                     *         "projected": "4700.00",
+                     *         "ytdPaid": "2350.00"
+                     *       }
                      *     }
                      */
                     "application/json": components["schemas"]["AdminAgentStatementDto"];
@@ -90813,7 +91572,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.statement_invalid_status`, `idempotency.in_progress`, `payables.invoice_duplicate` */
+            /** @description Problem: `agent_statements.tax_invoice_required`, `agents.statement_invalid_status`, `idempotency.in_progress`, `payables.invoice_duplicate` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -90834,6 +91593,183 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.agents.attachStatementTaxInvoice": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttachAgentTaxInvoiceDto"];
+            };
+        };
+        responses: {
+            /** @description Statement */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "agent": {
+                     *         "code": "K7QX2MAP",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6001",
+                     *         "kind": "freelance",
+                     *         "legalName": "สมชาย ขายเก่ง"
+                     *       },
+                     *       "approvedAt": "2026-11-01T09:00:00+07:00",
+                     *       "approvedBy": {
+                     *         "displayName": "Dev Finance Manager",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6010"
+                     *       },
+                     *       "entryCount": 3,
+                     *       "exportedAt": null,
+                     *       "hasTaxInvoice": true,
+                     *       "hasWhtCertificate": false,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6009",
+                     *       "paidAmount": null,
+                     *       "paidAt": null,
+                     *       "periodEnd": "2026-10-31",
+                     *       "periodStart": "2026-10-01",
+                     *       "rowVersion": 2,
+                     *       "statementNo": "AG2610-K7QX2MAP",
+                     *       "status": "draft",
+                     *       "taxInvoiceNo": "INV-2611-0012",
+                     *       "totalAmount": "2350.00",
+                     *       "vendorInvoiceId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6017",
+                     *       "voidReason": null,
+                     *       "voidedAt": null,
+                     *       "whtAmount": "0.00",
+                     *       "whtMethod": "progressive_40_2",
+                     *       "whtWorking": {
+                     *         "allowances": "60000.00",
+                     *         "annualTax": "0.00",
+                     *         "projected": "4700.00",
+                     *         "ytdPaid": "2350.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminAgentStatementDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.statement_invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -90919,6 +91855,7 @@ export interface operations {
                      *       },
                      *       "entryCount": 3,
                      *       "exportedAt": null,
+                     *       "hasTaxInvoice": false,
                      *       "hasWhtCertificate": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6009",
                      *       "paidAmount": null,
@@ -90928,11 +91865,19 @@ export interface operations {
                      *       "rowVersion": 2,
                      *       "statementNo": "AG2610-K7QX2MAP",
                      *       "status": "paid",
+                     *       "taxInvoiceNo": null,
                      *       "totalAmount": "2350.00",
                      *       "vendorInvoiceId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6017",
                      *       "voidReason": null,
                      *       "voidedAt": null,
-                     *       "whtAmount": null
+                     *       "whtAmount": "0.00",
+                     *       "whtMethod": "progressive_40_2",
+                     *       "whtWorking": {
+                     *         "allowances": "60000.00",
+                     *         "annualTax": "0.00",
+                     *         "projected": "4700.00",
+                     *         "ytdPaid": "2350.00"
+                     *       }
                      *     }
                      */
                     "application/json": components["schemas"]["AdminAgentStatementDto"];
@@ -91064,6 +92009,7 @@ export interface operations {
                      *       },
                      *       "entryCount": 3,
                      *       "exportedAt": null,
+                     *       "hasTaxInvoice": false,
                      *       "hasWhtCertificate": false,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6009",
                      *       "paidAmount": null,
@@ -91073,11 +92019,19 @@ export interface operations {
                      *       "rowVersion": 2,
                      *       "statementNo": "AG2610-K7QX2MAP",
                      *       "status": "voided",
+                     *       "taxInvoiceNo": null,
                      *       "totalAmount": "2350.00",
                      *       "vendorInvoiceId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6017",
                      *       "voidReason": null,
                      *       "voidedAt": null,
-                     *       "whtAmount": null
+                     *       "whtAmount": "0.00",
+                     *       "whtMethod": "progressive_40_2",
+                     *       "whtWorking": {
+                     *         "allowances": "60000.00",
+                     *         "annualTax": "0.00",
+                     *         "projected": "4700.00",
+                     *         "ytdPaid": "2350.00"
+                     *       }
                      *     }
                      */
                     "application/json": components["schemas"]["AdminAgentStatementDto"];
@@ -91384,6 +92338,389 @@ export interface operations {
             };
         };
     };
+    "admin.agentTaxDeclarations.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["AgentTaxDeclarationStatus"];
+                taxYear?: number;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "agent": {
+                     *             "code": "K7QX2MAP",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6001",
+                     *             "kind": "freelance",
+                     *             "legalName": "สมชาย ขายเก่ง"
+                     *           },
+                     *           "allowances": {
+                     *             "lifeInsurance": "30000.00",
+                     *             "socialSecurity": "9000.00",
+                     *             "spouse": "60000.00"
+                     *           },
+                     *           "allowancesTotal": "99000.00",
+                     *           "decidedAt": null,
+                     *           "decidedBy": null,
+                     *           "decisionReason": null,
+                     *           "evidenceCount": 1,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6019",
+                     *           "status": "submitted",
+                     *           "submittedAt": "2026-11-02T10:00:00+07:00",
+                     *           "taxYear": 2026
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AdminAgentTaxDeclarationDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.agentTaxDeclarations.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                declarationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Declaration */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "agent": {
+                     *         "code": "K7QX2MAP",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6001",
+                     *         "kind": "freelance",
+                     *         "legalName": "สมชาย ขายเก่ง"
+                     *       },
+                     *       "allowances": {
+                     *         "lifeInsurance": "30000.00",
+                     *         "socialSecurity": "9000.00",
+                     *         "spouse": "60000.00"
+                     *       },
+                     *       "allowancesTotal": "99000.00",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionReason": null,
+                     *       "evidence": [
+                     *         {
+                     *           "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6015",
+                     *           "fileName": "ใบเสร็จประกันชีวิต.pdf",
+                     *           "url": null
+                     *         }
+                     *       ],
+                     *       "evidenceCount": 1,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6019",
+                     *       "status": "submitted",
+                     *       "submittedAt": "2026-11-02T10:00:00+07:00",
+                     *       "taxYear": 2026
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminAgentTaxDeclarationDetailDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.agentTaxDeclarations.decide": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                declarationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideAgentTaxDeclarationDto"];
+            };
+        };
+        responses: {
+            /** @description Declaration */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "agent": {
+                     *         "code": "K7QX2MAP",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6001",
+                     *         "kind": "freelance",
+                     *         "legalName": "สมชาย ขายเก่ง"
+                     *       },
+                     *       "allowances": {
+                     *         "lifeInsurance": "30000.00",
+                     *         "socialSecurity": "9000.00",
+                     *         "spouse": "60000.00"
+                     *       },
+                     *       "allowancesTotal": "99000.00",
+                     *       "decidedAt": null,
+                     *       "decidedBy": null,
+                     *       "decisionReason": null,
+                     *       "evidenceCount": 1,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6019",
+                     *       "status": "accepted",
+                     *       "submittedAt": "2026-11-02T10:00:00+07:00",
+                     *       "taxYear": 2026
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminAgentTaxDeclarationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.tax_declaration_decided` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.agents.list": {
         parameters: {
             query?: {
@@ -91437,6 +92774,16 @@ export interface operations {
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *             "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *           },
+                     *           "planTerms": {
+                     *             "attributionMonths": 12,
+                     *             "factoryBountyAmount": "0.00",
+                     *             "factoryQualifyDays": 0,
+                     *             "factoryQualifyJobs": 0,
+                     *             "firstOrderPct": "5",
+                     *             "marginCapPct": "30",
+                     *             "minBaseAmount": "0.00",
+                     *             "repeatOrderPct": "3"
+                     *           },
                      *           "rowVersion": 1,
                      *           "staffUser": null,
                      *           "status": "active",
@@ -91444,13 +92791,10 @@ export interface operations {
                      *           "taxId": "0000000000127",
                      *           "terms": {
                      *             "attributionMonths": 12,
-                     *             "factoryBountyAmount": "3000.00",
-                     *             "factoryQualifyDays": 120,
-                     *             "factoryQualifyJobs": 3,
                      *             "firstOrderPct": "5",
-                     *             "marginCapPct": "30",
                      *             "minBaseAmount": "0.00",
-                     *             "repeatOrderPct": "3"
+                     *             "repeatOrderPct": "3",
+                     *             "uncapped": true
                      *           },
                      *           "totals": {
                      *             "activeLinks": 6,
@@ -91580,6 +92924,16 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *         "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *       },
+                     *       "planTerms": {
+                     *         "attributionMonths": 12,
+                     *         "factoryBountyAmount": "0.00",
+                     *         "factoryQualifyDays": 0,
+                     *         "factoryQualifyJobs": 0,
+                     *         "firstOrderPct": "5",
+                     *         "marginCapPct": "30",
+                     *         "minBaseAmount": "0.00",
+                     *         "repeatOrderPct": "3"
+                     *       },
                      *       "rowVersion": 1,
                      *       "staffUser": null,
                      *       "status": "active",
@@ -91587,13 +92941,10 @@ export interface operations {
                      *       "taxId": "0000000000127",
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -91742,6 +93093,16 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *         "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *       },
+                     *       "planTerms": {
+                     *         "attributionMonths": 12,
+                     *         "factoryBountyAmount": "0.00",
+                     *         "factoryQualifyDays": 0,
+                     *         "factoryQualifyJobs": 0,
+                     *         "firstOrderPct": "5",
+                     *         "marginCapPct": "30",
+                     *         "minBaseAmount": "0.00",
+                     *         "repeatOrderPct": "3"
+                     *       },
                      *       "rowVersion": 1,
                      *       "staffUser": null,
                      *       "status": "active",
@@ -91749,13 +93110,10 @@ export interface operations {
                      *       "taxId": "0000000000127",
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -91890,6 +93248,16 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *         "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *       },
+                     *       "planTerms": {
+                     *         "attributionMonths": 12,
+                     *         "factoryBountyAmount": "0.00",
+                     *         "factoryQualifyDays": 0,
+                     *         "factoryQualifyJobs": 0,
+                     *         "firstOrderPct": "5",
+                     *         "marginCapPct": "30",
+                     *         "minBaseAmount": "0.00",
+                     *         "repeatOrderPct": "3"
+                     *       },
                      *       "rowVersion": 1,
                      *       "staffUser": null,
                      *       "status": "active",
@@ -91897,13 +93265,10 @@ export interface operations {
                      *       "taxId": "0000000000127",
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -92065,6 +93430,16 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *         "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *       },
+                     *       "planTerms": {
+                     *         "attributionMonths": 12,
+                     *         "factoryBountyAmount": "0.00",
+                     *         "factoryQualifyDays": 0,
+                     *         "factoryQualifyJobs": 0,
+                     *         "firstOrderPct": "5",
+                     *         "marginCapPct": "30",
+                     *         "minBaseAmount": "0.00",
+                     *         "repeatOrderPct": "3"
+                     *       },
                      *       "rowVersion": 1,
                      *       "staffUser": null,
                      *       "status": "ended",
@@ -92072,13 +93447,10 @@ export interface operations {
                      *       "taxId": "0000000000127",
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -92230,6 +93602,16 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *         "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *       },
+                     *       "planTerms": {
+                     *         "attributionMonths": 12,
+                     *         "factoryBountyAmount": "0.00",
+                     *         "factoryQualifyDays": 0,
+                     *         "factoryQualifyJobs": 0,
+                     *         "firstOrderPct": "5",
+                     *         "marginCapPct": "30",
+                     *         "minBaseAmount": "0.00",
+                     *         "repeatOrderPct": "3"
+                     *       },
                      *       "rowVersion": 1,
                      *       "staffUser": null,
                      *       "status": "active",
@@ -92237,13 +93619,10 @@ export interface operations {
                      *       "taxId": "0000000000127",
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -92395,6 +93774,16 @@ export interface operations {
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6003",
                      *         "nameTh": "ตัวแทนอิสระ — มาตรฐาน"
                      *       },
+                     *       "planTerms": {
+                     *         "attributionMonths": 12,
+                     *         "factoryBountyAmount": "0.00",
+                     *         "factoryQualifyDays": 0,
+                     *         "factoryQualifyJobs": 0,
+                     *         "firstOrderPct": "5",
+                     *         "marginCapPct": "30",
+                     *         "minBaseAmount": "0.00",
+                     *         "repeatOrderPct": "3"
+                     *       },
                      *       "rowVersion": 1,
                      *       "staffUser": null,
                      *       "status": "suspended",
@@ -92402,13 +93791,10 @@ export interface operations {
                      *       "taxId": "0000000000127",
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -99914,6 +101300,8 @@ export interface operations {
                 perPage?: number;
                 /** @description Free-text search */
                 q?: string;
+                /** @description A work queue: `missing_tax_invoice` = confirmed with no recorded or validated factory tax invoice (the dashboard card, D-090) */
+                queue?: components["schemas"]["BillingStatementQueue"];
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
                 status?: components["schemas"]["BillingStatementStatus"];
@@ -99947,7 +101335,9 @@ export interface operations {
                      *           "currency": "THB",
                      *           "disputeNote": null,
                      *           "disputedLineNos": [],
+                     *           "factoryCode": "F0001",
                      *           "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                     *           "factoryName": "โรงพิมพ์ตัวอย่าง",
                      *           "generatedAt": "2026-10-20T10:00:00+07:00",
                      *           "grossAmount": "8517.20",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000530003",
@@ -100005,7 +101395,7 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        data: components["schemas"]["BillingStatementDto"][];
+                        data: components["schemas"]["AdminBillingStatementDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
                 };
@@ -100095,7 +101485,9 @@ export interface operations {
                      *       "currency": "THB",
                      *       "disputeNote": null,
                      *       "disputedLineNos": [],
+                     *       "factoryCode": "F0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                     *       "factoryName": "โรงพิมพ์ตัวอย่าง",
                      *       "generatedAt": "2026-10-20T10:00:00+07:00",
                      *       "grossAmount": "8517.20",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530003",
@@ -100145,7 +101537,7 @@ export interface operations {
                      *       "vatAmount": "557.20"
                      *     }
                      */
-                    "application/json": components["schemas"]["BillingStatementDto"];
+                    "application/json": components["schemas"]["AdminBillingStatementDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -122632,6 +124024,8 @@ export interface operations {
                 perPage?: number;
                 /** @description Free-text search */
                 q?: string;
+                /** @description A work queue: `open` = submitted, under review, need info or factory review (the dashboard card) */
+                queue?: components["schemas"]["ClaimQueue"];
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
                 status?: components["schemas"]["ClaimStatus"];
@@ -178732,6 +180126,7 @@ export interface operations {
                 q?: string;
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
+                status?: components["schemas"]["PayoutRunStatus"];
             };
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
@@ -186462,7 +187857,9 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "currency": "THB",
+                     *           "factoryCode": "F0001",
                      *           "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                     *           "factoryName": "โรงพิมพ์ตัวอย่าง",
                      *           "grossAmount": "8560.00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000530001",
                      *           "issuedAt": "2026-10-05T10:00:00+07:00",
@@ -186496,7 +187893,7 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        data: components["schemas"]["PurchaseOrderDto"][];
+                        data: components["schemas"]["AdminPurchaseOrderDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
                 };
@@ -186581,7 +187978,9 @@ export interface operations {
                     /**
                      * @example {
                      *       "currency": "THB",
+                     *       "factoryCode": "F0001",
                      *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                     *       "factoryName": "โรงพิมพ์ตัวอย่าง",
                      *       "grossAmount": "8560.00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530001",
                      *       "issuedAt": "2026-10-05T10:00:00+07:00",
@@ -186607,7 +188006,7 @@ export interface operations {
                      *       "vatAmount": "560.00"
                      *     }
                      */
-                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                    "application/json": components["schemas"]["AdminPurchaseOrderDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -188878,6 +190277,8 @@ export interface operations {
     "admin.receivables.list": {
         parameters: {
             query?: {
+                /** @description Only company (B2B) receivables — with `overdue=true` the dashboard card */
+                b2b?: boolean;
                 companyId?: string;
                 /** @description Customer (user id) */
                 customerId?: string;
@@ -193310,6 +194711,8 @@ export interface operations {
                 productTypeCode?: string;
                 /** @description Free-text search */
                 q?: string;
+                /** @description A work queue: `awaiting_first_response` = open and not answered yet (the dashboard card, D-175) */
+                queue?: components["schemas"]["RfqQueue"];
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
                 status?: components["schemas"]["RfqStatus"];
@@ -198523,7 +199926,7 @@ export interface operations {
                 perPage?: number;
                 /** @description Free-text search */
                 q?: string;
-                /** @description awaiting_pickup = packed; in_transit = picked up, in transit or out for delivery; exceptions = failed, or returned and not closed (D-230); pod_review = delivered with a POD not reviewed yet (D-229) */
+                /** @description awaiting_pickup = packed; in_transit = picked up, in transit or out for delivery; exceptions = failed, or returned and not closed (D-230); pod_review = delivered with a POD not reviewed yet (D-229); without_goods_receipt = delivered with no goods receipt yet (the finance card, D-165) */
                 queue?: components["schemas"]["ShipmentQueue"];
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
@@ -198556,6 +199959,7 @@ export interface operations {
                      *           "cancelReason": null,
                      *           "cancelledAt": null,
                      *           "carrier": "factory_fleet",
+                     *           "carrierBooked": false,
                      *           "carrierBookingRef": null,
                      *           "carrierCostAmount": null,
                      *           "carrierRequest": null,
@@ -198739,6 +200143,7 @@ export interface operations {
                      *       "cancelReason": null,
                      *       "cancelledAt": null,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierBookingRef": null,
                      *       "carrierCostAmount": null,
                      *       "carrierRequest": null,
@@ -198931,6 +200336,7 @@ export interface operations {
                      *       "cancelReason": null,
                      *       "cancelledAt": null,
                      *       "carrier": "flash_express",
+                     *       "carrierBooked": true,
                      *       "carrierBookingRef": "FLASH-1",
                      *       "carrierCostAmount": null,
                      *       "carrierRequest": null,
@@ -199160,6 +200566,7 @@ export interface operations {
                      *       "cancelReason": null,
                      *       "cancelledAt": null,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierBookingRef": null,
                      *       "carrierCostAmount": null,
                      *       "carrierRequest": null,
@@ -199342,6 +200749,229 @@ export interface operations {
             };
         };
     };
+    "admin.shipments.reissueDocuments": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description ETag from the last read of this resource. When sent and it does not match → 412 `concurrency.stale`. */
+                "If-Match"?: components["parameters"]["IfMatchOptional"];
+            };
+            path: {
+                shipmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelShipmentDto"];
+            };
+        };
+        responses: {
+            /** @description Re-issued: the shipment with its new label and packing-list files */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "blockedByPayment": false,
+                     *       "cancelReason": null,
+                     *       "cancelledAt": null,
+                     *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
+                     *       "carrierBookingRef": null,
+                     *       "carrierCostAmount": null,
+                     *       "carrierRequest": null,
+                     *       "cartons": [
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-01",
+                     *           "seq": 1,
+                     *           "weightG": null
+                     *         },
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-02",
+                     *           "seq": 2,
+                     *           "weightG": null
+                     *         },
+                     *         {
+                     *           "labelCode": "9F3A0C1B2D4E-03",
+                     *           "seq": 3,
+                     *           "weightG": null
+                     *         }
+                     *       ],
+                     *       "cartonsCount": 3,
+                     *       "deliveredAt": null,
+                     *       "destination": {
+                     *         "code": "D1",
+                     *         "line1": "99/9 ถนนสุขุมวิท",
+                     *         "line2": "แขวงคลองตัน เขตคลองเตย",
+                     *         "phone": "+66810001234",
+                     *         "postcode": "10110",
+                     *         "postcodePrefix": "101",
+                     *         "province": {
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
+                     *           "nameEn": "Bangkok",
+                     *           "nameTh": "กรุงเทพมหานคร"
+                     *         },
+                     *         "recipientName": "สมหญิง ใจดี"
+                     *       },
+                     *       "events": [
+                     *         {
+                     *           "location": null,
+                     *           "note": null,
+                     *           "occurredAt": "2026-10-19T16:00:00+07:00",
+                     *           "source": "factory",
+                     *           "status": "ready",
+                     *           "statusLabelAdminTh": "พร้อมส่ง",
+                     *           "statusLabelTh": "พร้อมส่ง"
+                     *         }
+                     *       ],
+                     *       "exception": null,
+                     *       "factoryCode": "F-0001",
+                     *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                     *       "handover": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
+                     *       "items": [
+                     *         {
+                     *           "deliveredQuantity": null,
+                     *           "destinationCode": "D1",
+                     *           "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
+                     *           "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
+                     *           "jobNo": "JOB-2610-0001",
+                     *           "orderCode": "PK-2610-0001-01",
+                     *           "quantity": 600,
+                     *           "toleranceOutcome": null
+                     *         }
+                     *       ],
+                     *       "labelFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2010",
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "packingListFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2011",
+                     *       "payoutAmount": "120.00",
+                     *       "pickedUpAt": null,
+                     *       "plannedShipOn": "2026-10-20",
+                     *       "podReview": null,
+                     *       "proofOfDelivery": null,
+                     *       "readyAt": "2026-10-19T16:00:00+07:00",
+                     *       "shipmentNo": "SH-2610-0001",
+                     *       "splitFrom": null,
+                     *       "status": "ready",
+                     *       "statusLabelAdminTh": "พร้อมส่ง",
+                     *       "statusLabelTh": "พร้อมส่ง",
+                     *       "trackingNo": null,
+                     *       "trackingUrl": null,
+                     *       "volumeCm3": 120000,
+                     *       "waybillIssued": false,
+                     *       "weightG": 18000
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminShipmentDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `shipments.invalid_status` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.shipments.resolveException": {
         parameters: {
             query?: never;
@@ -199382,6 +201012,7 @@ export interface operations {
                      *       "cancelReason": null,
                      *       "cancelledAt": null,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierBookingRef": null,
                      *       "carrierCostAmount": null,
                      *       "carrierRequest": null,
@@ -199605,6 +201236,7 @@ export interface operations {
                      *         "cancelReason": null,
                      *         "cancelledAt": null,
                      *         "carrier": "factory_fleet",
+                     *         "carrierBooked": false,
                      *         "carrierBookingRef": null,
                      *         "carrierCostAmount": null,
                      *         "carrierRequest": null,
@@ -199682,6 +201314,7 @@ export interface operations {
                      *         "cancelReason": null,
                      *         "cancelledAt": null,
                      *         "carrier": "factory_fleet",
+                     *         "carrierBooked": false,
                      *         "carrierBookingRef": null,
                      *         "carrierCostAmount": null,
                      *         "carrierRequest": null,
@@ -200006,6 +201639,7 @@ export interface operations {
                      *       "cancelReason": null,
                      *       "cancelledAt": null,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierBookingRef": null,
                      *       "carrierCostAmount": null,
                      *       "carrierRequest": null,
@@ -200323,6 +201957,7 @@ export interface operations {
                      *       "cancelReason": null,
                      *       "cancelledAt": null,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierBookingRef": null,
                      *       "carrierCostAmount": null,
                      *       "carrierRequest": null,
@@ -200412,6 +202047,7 @@ export interface operations {
                      *           "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
                      *         ],
                      *         "receiverName": "สมหญิง ใจดี",
+                     *         "receiverRecorded": true,
                      *         "signatureFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006"
                      *       },
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
@@ -200560,6 +202196,7 @@ export interface operations {
                      *       "cancelReason": null,
                      *       "cancelledAt": null,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierBookingRef": null,
                      *       "carrierCostAmount": null,
                      *       "carrierRequest": null,
@@ -200641,6 +202278,7 @@ export interface operations {
                      *           "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
                      *         ],
                      *         "receiverName": "สมหญิง ใจดี",
+                     *         "receiverRecorded": true,
                      *         "signatureFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006"
                      *       },
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
@@ -218183,6 +219821,8 @@ export interface operations {
                 perPage?: number;
                 /** @description Free-text search */
                 q?: string;
+                /** @description A work queue: `missing_tax_invoice` = confirmed with no recorded or validated factory tax invoice (the dashboard card, D-090) */
+                queue?: components["schemas"]["BillingStatementQueue"];
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
                 sort?: string;
                 status?: components["schemas"]["BillingStatementStatus"];
@@ -286195,6 +287835,7 @@ export interface operations {
                      *         {
                      *           "blockedByPayment": false,
                      *           "carrier": "factory_fleet",
+                     *           "carrierBooked": false,
                      *           "carrierRequest": null,
                      *           "cartons": [
                      *             {
@@ -286260,7 +287901,6 @@ export interface operations {
                      *           "status": "ready",
                      *           "statusLabelAdminTh": "พร้อมส่ง",
                      *           "statusLabelTh": "พร้อมส่ง",
-                     *           "trackingNo": null,
                      *           "volumeCm3": 120000,
                      *           "waybillIssued": false,
                      *           "weightG": 18000
@@ -286365,6 +288005,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": null,
                      *       "cartons": [
                      *         {
@@ -286430,7 +288071,6 @@ export interface operations {
                      *       "status": "draft",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -286550,6 +288190,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": null,
                      *       "cartons": [
                      *         {
@@ -286615,7 +288256,6 @@ export interface operations {
                      *       "status": "ready",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -286722,6 +288362,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": null,
                      *       "cartons": [
                      *         {
@@ -286787,7 +288428,6 @@ export interface operations {
                      *       "status": "cancelled",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -286910,6 +288550,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": null,
                      *       "cartons": [
                      *         {
@@ -286975,7 +288616,6 @@ export interface operations {
                      *       "status": "picked_up",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -287098,6 +288738,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": null,
                      *       "cartons": [
                      *         {
@@ -287163,7 +288804,6 @@ export interface operations {
                      *       "status": "ready",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -287300,6 +288940,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": {
                      *         "reason": "รถโรงงานไม่วิ่งเชียงราย",
                      *         "requestedAt": "2026-10-19T17:00:00+07:00"
@@ -287368,7 +289009,6 @@ export interface operations {
                      *       "status": "ready",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -287495,6 +289135,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": null,
                      *       "cartons": [
                      *         {
@@ -287560,7 +289201,6 @@ export interface operations {
                      *       "status": "out_for_delivery",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -287687,6 +289327,7 @@ export interface operations {
                      * @example {
                      *       "blockedByPayment": false,
                      *       "carrier": "factory_fleet",
+                     *       "carrierBooked": false,
                      *       "carrierRequest": null,
                      *       "cartons": [
                      *         {
@@ -287748,13 +289389,12 @@ export interface operations {
                      *       "plannedShipOn": "2026-10-20",
                      *       "proofOfDelivery": {
                      *         "capturedAt": "2026-10-21T14:05:00+07:00",
-                     *         "carrierPodRef": null,
                      *         "deliveredQuantity": 590,
                      *         "kind": "factory_photo_signature",
                      *         "photoFileIds": [
                      *           "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
                      *         ],
-                     *         "receiverName": "สมหญิง ใจดี",
+                     *         "receiverRecorded": true,
                      *         "signatureFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006"
                      *       },
                      *       "readyAt": "2026-10-19T16:00:00+07:00",
@@ -287762,7 +289402,6 @@ export interface operations {
                      *       "status": "delivered",
                      *       "statusLabelAdminTh": "พร้อมส่ง",
                      *       "statusLabelTh": "พร้อมส่ง",
-                     *       "trackingNo": null,
                      *       "volumeCm3": 120000,
                      *       "waybillIssued": false,
                      *       "weightG": 18000
@@ -289630,13 +291269,10 @@ export interface operations {
                      *       "statusReason": null,
                      *       "terms": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "totals": {
                      *         "activeLinks": 6,
@@ -290203,7 +291839,6 @@ export interface operations {
                      *           "amount": "600.00",
                      *           "availableAt": "2026-11-08T00:00:00+07:00",
                      *           "baseAmount": "12000.00",
-                     *           "capAmount": "1080.00",
                      *           "createdAt": "2026-10-31T10:00:00+07:00",
                      *           "customerName": "ส•••",
                      *           "earnedAt": null,
@@ -290598,7 +292233,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.too_many_leads`, `validation.failed` */
+            /** @description Problem: `agents.lead_kind_unsupported`, `agents.too_many_leads`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -290784,13 +292419,10 @@ export interface operations {
                      *       "paymentTermsDays": 15,
                      *       "plan": {
                      *         "attributionMonths": 12,
-                     *         "factoryBountyAmount": "3000.00",
-                     *         "factoryQualifyDays": 120,
-                     *         "factoryQualifyJobs": 3,
                      *         "firstOrderPct": "5",
-                     *         "marginCapPct": "30",
                      *         "minBaseAmount": "0.00",
-                     *         "repeatOrderPct": "3"
+                     *         "repeatOrderPct": "3",
+                     *         "uncapped": true
                      *       },
                      *       "state": "none"
                      *     }
@@ -290896,7 +292528,8 @@ export interface operations {
                      *           "statementNo": "AG2610-K7QX2MAP",
                      *           "status": "approved",
                      *           "totalAmount": "2350.00",
-                     *           "whtAmount": null
+                     *           "whtAmount": "0.00",
+                     *           "whtMethod": "progressive_40_2"
                      *         }
                      *       ],
                      *       "meta": {
@@ -290997,7 +292630,6 @@ export interface operations {
                      *           "amount": "600.00",
                      *           "availableAt": "2026-11-08T00:00:00+07:00",
                      *           "baseAmount": "12000.00",
-                     *           "capAmount": "1080.00",
                      *           "createdAt": "2026-10-31T10:00:00+07:00",
                      *           "customerName": "ส•••",
                      *           "earnedAt": null,
@@ -291021,7 +292653,8 @@ export interface operations {
                      *       "statementNo": "AG2610-K7QX2MAP",
                      *       "status": "approved",
                      *       "totalAmount": "2350.00",
-                     *       "whtAmount": null
+                     *       "whtAmount": "0.00",
+                     *       "whtMethod": "progressive_40_2"
                      *     }
                      */
                     "application/json": components["schemas"]["AgentStatementDetailDto"];
@@ -291154,6 +292787,225 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentTaxDeclaration.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Declaration */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "applicable": true,
+                     *       "declaration": {
+                     *         "allowances": {
+                     *           "lifeInsurance": "30000.00",
+                     *           "socialSecurity": "9000.00",
+                     *           "spouse": "60000.00"
+                     *         },
+                     *         "allowancesTotal": "99000.00",
+                     *         "decidedAt": null,
+                     *         "decisionReason": null,
+                     *         "evidenceCount": 1,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6019",
+                     *         "status": "submitted",
+                     *         "submittedAt": "2026-11-02T10:00:00+07:00",
+                     *         "taxYear": 2026
+                     *       },
+                     *       "personalAllowance": "60000.00",
+                     *       "taxYear": 2026
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MyTaxDeclarationDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentTaxDeclaration.submit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitAgentTaxDeclarationDto"];
+            };
+        };
+        responses: {
+            /** @description Declaration */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allowances": {
+                     *         "lifeInsurance": "30000.00",
+                     *         "socialSecurity": "9000.00",
+                     *         "spouse": "60000.00"
+                     *       },
+                     *       "allowancesTotal": "99000.00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "evidenceCount": 1,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6019",
+                     *       "status": "submitted",
+                     *       "submittedAt": "2026-11-02T10:00:00+07:00",
+                     *       "taxYear": 2026
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentTaxDeclarationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.tax_declaration_open` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.tax_declaration_not_applicable`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

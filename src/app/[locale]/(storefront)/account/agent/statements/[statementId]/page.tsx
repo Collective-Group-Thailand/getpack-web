@@ -47,7 +47,12 @@ export default async function Page({ params }: { params: Promise<{ statementId: 
         items={[
           { key: "paid", label: t("paid"), value: format.thb(s.paidAmount), icon: "wallet", highlight: true },
           { key: "total", label: t("total"), value: format.thb(s.totalAmount), icon: "coins" },
-          { key: "wht", label: t("wht"), value: format.thb(s.whtAmount), icon: "receipt" },
+          {
+            key: "wht",
+            label: t("wht"),
+            value: s.whtAmount === null ? t("whtPending") : format.thb(s.whtAmount),
+            icon: "receipt",
+          },
         ]}
       />
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -81,6 +86,8 @@ export default async function Page({ params }: { params: Promise<{ statementId: 
         <div className="border-border bg-surface rounded-card border p-4">
           <DescriptionList
             items={[
+              // D-465: how the withholding was worked out (individual: progressive; company: 3 %).
+              { term: t("wht"), description: s.whtMethod ? t(`whtMethod.${s.whtMethod}`) : t("whtPending") },
               { term: t("approvedAt"), description: format.date(s.approvedAt) },
               { term: t("paidAt"), description: format.date(s.paidAt) },
             ]}

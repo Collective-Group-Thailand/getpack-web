@@ -6,3 +6,4 @@ export { FactoryLinksList, LeadsList, LinksList } from "./Attribution";
 export { CommissionsList } from "./Commissions";
 export { PlanDetail, PlansList } from "./Plans";
 export { StatementDetail, StatementsList } from "./Statements";
+export { TaxDeclarationReview, TaxDeclarationsQueue } from "./TaxDeclarations";

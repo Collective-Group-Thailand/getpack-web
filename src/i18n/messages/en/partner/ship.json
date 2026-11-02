@@ -140,7 +140,8 @@
       "labelBody": "One label per carton; the packing list travels with the goods",
       "send": "2. Send",
       "sendBody": "Send with your own truck, or ask getpack to book a carrier"
-    }
+    },
+    "receiverRecorded": "Recorded"
   },
   "tolerance": {
     "exact": "Delivered in full",

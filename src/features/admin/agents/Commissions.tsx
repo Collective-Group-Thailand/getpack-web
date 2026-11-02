@@ -63,6 +63,13 @@ export function CommissionWhat({ row }: { row: AgentCommission }) {
           {row.capAmount ? ` · ${t("capped", { cap: format.thb(row.capAmount) })}` : ""}
         </span>
       ) : null}
+      {row.marginAlert ? (
+        <span>
+          <Badge size="sm" tone="warning">
+            {t("marginAlert")}
+          </Badge>
+        </span>
+      ) : null}
       {row.note ? <span className="text-muted text-xs">{row.note}</span> : null}
     </div>
   );

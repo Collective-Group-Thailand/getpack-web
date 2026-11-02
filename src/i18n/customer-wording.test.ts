@@ -46,3 +46,30 @@ describe("customer-facing messages", () => {
     }
   });
 });
+
+/**
+ * D-464 (owner 2026-11-01): the agent programme's copy never speaks of profit or margin, never caps earnings,
+ * never shows "฿0" for the free offer and never says "coming soon". The agent pages (account area until Phase 2)
+ * and any later agent namespace are scanned in both locales.
+ */
+const AGENT_DENY = /กำไร|margin|profit|฿\s?0(?![\d.,])|กำลังพัฒนา|coming soon|เพดาน/i;
+
+describe("agent-facing messages (D-464)", () => {
+  for (const locale of ["th", "en"]) {
+    const dir = path.join(ROOT, locale, "customer");
+    for (const file of fs.readdirSync(dir).filter((name) => /^agent/.test(name) && name.endsWith(".json"))) {
+      it(`${locale}/customer/${file} has no profit, margin or cap wording`, () => {
+        const messages: unknown = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
+        const hits = [...strings(messages)].filter(([, text]) => AGENT_DENY.test(text)).map(([k, v]) => `${k}: ${v}`);
+        expect(hits).toEqual([]);
+      });
+    }
+  }
+
+  it("says the programme is uncapped", () => {
+    const th = JSON.parse(fs.readFileSync(path.join(ROOT, "th/customer/agent.json"), "utf8")) as {
+      terms: { uncapped: string };
+    };
+    expect(th.terms.uncapped).toBe("ไม่จำกัดรายได้ ยิ่งขายมาก ยิ่งได้มาก");
+  });
+});

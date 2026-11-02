@@ -9,6 +9,9 @@
     "option_unknown": "บอร์ดนี้ไม่อยู่ในคำแนะนำ",
     "material_not_board": "บันทึกค่าความแข็งแรงได้เฉพาะกระดาษลูกฟูก"
   },
+  "agent_statements": {
+    "tax_invoice_required": "ต้องแนบใบกำกับภาษีของตัวแทนก่อน"
+  },
   "agents": {
     "agent_inactive": "ตัวแทนไม่ได้ใช้งาน",
     "agreement_missing": "ยังไม่มีข้อตกลงตัวแทน",
@@ -20,11 +23,12 @@
     "backdated": "ย้อนหลังไม่ได้",
     "code_invalid": "รหัสตัวแทนไม่ถูกต้อง",
     "commission_not_held": "ไม่ได้ระงับไว้",
-    "factory_linked": "โรงงานมีตัวแทนแล้ว",
+    "factory_links_retired": "ยกเลิกการผูกโรงงานกับตัวแทนแล้ว",
     "invalid_status": "สถานะไม่อนุญาต",
     "lead_closed": "ผู้มุ่งหวังปิดแล้ว",
     "lead_duplicate": "ลงทะเบียนซ้ำ",
     "lead_existing_customer": "เป็นลูกค้าอยู่แล้ว",
+    "lead_kind_unsupported": "ลงทะเบียนได้เฉพาะลูกค้า",
     "lead_taken": "มีตัวแทนลงทะเบียนแล้ว",
     "lead_unavailable": "ลงทะเบียนผู้มุ่งหวังรายนี้ไม่ได้",
     "link_ended": "สิ้นสุดแล้ว",
@@ -40,6 +44,9 @@
     "self_link": "ผูกกับตัวเองไม่ได้",
     "statement_invalid_status": "สถานะไม่อนุญาต",
     "statement_paid_by_payout": "จ่ายผ่านรอบจ่ายเงิน",
+    "tax_declaration_decided": "แบบ ล.ย.01 นี้ตรวจแล้ว",
+    "tax_declaration_not_applicable": "ไม่ต้องส่ง ล.ย.01",
+    "tax_declaration_open": "มีแบบ ล.ย.01 รอตรวจอยู่แล้ว",
     "too_many_leads": "ผู้มุ่งหวังเต็มแล้ว"
   },
   "approval": {

@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Prospects the agent registered (D-417, D-419): protected from other agents until their date, linked
- * when they sign up, apply as a company or join as a factory.
+ * when they sign up or apply as a company (customer leads only, D-464).
  */
 export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireCustomer();
