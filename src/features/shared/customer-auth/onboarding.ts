@@ -25,17 +25,20 @@ export interface Onboarding {
   profile: Schemas["CustomerProfileDto"] | null;
 }
 
-export async function loadOnboarding(): Promise<Onboarding> {
+export async function loadOnboarding({ withProfile = true }: { withProfile?: boolean } = {}): Promise<Onboarding> {
   const api = browserApi();
   const [consents, profile] = await Promise.all([
     api
       .GET("/v1/store/me/consents")
       .then((response) => response.data ?? [])
       .catch(() => []),
-    api
-      .GET("/v1/store/customer-profile")
-      .then((response) => response.data ?? null)
-      .catch(() => null),
+    // getpack Agent does not ask for the shop profile, and its BFF does not reach it (D-467).
+    withProfile
+      ? api
+          .GET("/v1/store/customer-profile")
+          .then((response) => response.data ?? null)
+          .catch(() => null)
+      : Promise.resolve(null),
   ]);
   return { consents, profile };
 }

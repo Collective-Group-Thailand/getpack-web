@@ -22,7 +22,7 @@ async function signInByOtp(phone: string) {
   const api = anonymous();
   const { data: challenge } = await api.POST("/v1/auth/customer/otp/request", { body: { phone, purpose: "login" } });
   const { data: session } = await api.POST("/v1/auth/customer/otp/verify", {
-    body: { challengeId: challenge!.challengeId, code: MOCK_OTP.code },
+    body: { challengeId: challenge!.challengeId, code: MOCK_OTP.code, client: "storefront" },
   });
   return as(session!.accessToken);
 }
@@ -92,12 +92,12 @@ describe("the storefront's customers", () => {
   });
 
   it("accepts its own Firebase and LINE tokens and refuses anything else", async () => {
-    const ok = await anonymous().POST("/v1/auth/customer/firebase", { body: { idToken: MOCK_ID_TOKENS.google } });
+    const ok = await anonymous().POST("/v1/auth/customer/firebase", { body: { idToken: MOCK_ID_TOKENS.google, client: "storefront" } });
     expect(ok.data?.subject.type).toBe("customer");
-    const line = await anonymous().POST("/v1/auth/customer/line", { body: { idToken: MOCK_ID_TOKENS.line } });
+    const line = await anonymous().POST("/v1/auth/customer/line", { body: { idToken: MOCK_ID_TOKENS.line, client: "storefront" } });
     expect(line.data?.subject.type).toBe("customer");
     await expect(
-      anonymous().POST("/v1/auth/customer/firebase", { body: { idToken: "real-looking" } }),
+      anonymous().POST("/v1/auth/customer/firebase", { body: { idToken: "real-looking", client: "storefront" } }),
     ).rejects.toMatchObject({ status: 401 });
   });
 });

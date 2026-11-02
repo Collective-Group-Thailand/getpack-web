@@ -2,7 +2,7 @@
 
 import { useRouter } from "@/i18n/navigation";
 
-import { SignInFlow } from "./SignInFlow";
+import { SignInFlow } from "@/features/shared/customer-auth/SignInFlow";
 
 /**
  * The sign-in flow as the `/sign-in` page's form — for the cases that need a URL: a guard

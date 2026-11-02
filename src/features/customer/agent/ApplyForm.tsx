@@ -3,8 +3,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { OTP_CODE_LENGTH } from "@/features/customer/auth/otp";
-import { useResendTimer } from "@/features/customer/auth/useResendTimer";
+import { OTP_CODE_LENGTH } from "@/features/shared/customer-auth/otp";
+import { useResendTimer } from "@/features/shared/customer-auth/useResendTimer";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";

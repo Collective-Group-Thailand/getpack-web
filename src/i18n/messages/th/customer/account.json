@@ -154,7 +154,10 @@
     "businessAction": "ดูบัญชีบริษัท",
     "agentTitle": "ร่วมเป็นตัวแทนขาย getpack",
     "agentBody": "แนะนำลูกค้าใหม่ให้ getpack แล้วรับค่าคอมมิชชันเมื่อเขาสั่งซื้อ สมัครฟรี",
-    "agentAction": "ดูรายละเอียด"
+    "agentAction": "ดูรายละเอียด",
+    "agentAppTitle": "getpack Agent",
+    "agentAppBody": "ลิงก์ของคุณ ลูกค้ามุ่งหวัง ค่าคอม และรายงานภาษี อยู่ในแอปตัวแทนของคุณแล้ว",
+    "agentAppAction": "เปิด getpack Agent"
   },
   "quotes": {
     "title": "ใบเสนอราคาที่บันทึกไว้",

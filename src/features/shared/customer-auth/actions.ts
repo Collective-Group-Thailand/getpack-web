@@ -5,7 +5,16 @@ import { isApiError } from "@/lib/api/problem";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 import { serverCallContext } from "@/lib/api/call-context.server";
 import { startSession } from "@/features/shared/auth/session-actions";
+import type { Schemas } from "@/lib/api/types";
+
 import type { OtpChallenge } from "./otp";
+
+/**
+ * Which surface the person is signing in to (D-467): the storefront, or getpack Agent, whose session is its own
+ * family that can be listed and ended apart. Checked here, because a Server Action's arguments come from the browser.
+ */
+export type SignInClient = Schemas["AuthClient"];
+const clientOf = (value: unknown): SignInClient => (value === "agent" ? "agent" : "storefront");
 
 export interface OtpRequestResult {
   challenge?: OtpChallenge;
@@ -49,10 +58,16 @@ export async function requestOtp(phone: string): Promise<OtpRequestResult> {
  * The challenge id is what identifies the attempt — the phone number is not sent again, so a
  * code issued for one number cannot be replayed against another.
  */
-export async function verifyOtp(challengeId: string, code: string): Promise<OtpVerifyResult> {
+export async function verifyOtp(
+  challengeId: string,
+  code: string,
+  client: SignInClient = "storefront",
+): Promise<OtpVerifyResult> {
   try {
     const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
-    const { data } = await api.POST("/v1/auth/customer/otp/verify", { body: { challengeId, code } });
+    const { data } = await api.POST("/v1/auth/customer/otp/verify", {
+      body: { challengeId, code, client: clientOf(client) },
+    });
     if (!data) return { errorKey: "errors.unavailable" };
 
     await startSession(data);
@@ -72,10 +87,13 @@ export interface ProviderSignInResult {
  * Exchange a Firebase ID token (Google, Apple) for a customer session. The API verifies the
  * token and finds or creates the customer; it never links accounts by e-mail alone (B1.3).
  */
-export async function signInWithFirebase(idToken: string): Promise<ProviderSignInResult> {
+export async function signInWithFirebase(
+  idToken: string,
+  client: SignInClient = "storefront",
+): Promise<ProviderSignInResult> {
   try {
     const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
-    const { data } = await api.POST("/v1/auth/customer/firebase", { body: { idToken } });
+    const { data } = await api.POST("/v1/auth/customer/firebase", { body: { idToken, client: clientOf(client) } });
     if (!data) return { errorKey: "errors.unavailable" };
     await startSession(data);
     return { ok: true };
@@ -85,14 +103,17 @@ export async function signInWithFirebase(idToken: string): Promise<ProviderSignI
 }
 
 /** Exchange a LINE ID token, or a LIFF access token inside the LINE app, for a customer session. */
-export async function signInWithLine(identity: {
-  idToken?: string;
-  liffAccessToken?: string;
-}): Promise<ProviderSignInResult> {
+export async function signInWithLine(
+  identity: {
+    idToken?: string;
+    liffAccessToken?: string;
+  },
+  client: SignInClient = "storefront",
+): Promise<ProviderSignInResult> {
   try {
     const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
     const { data } = await api.POST("/v1/auth/customer/line", {
-      body: { idToken: identity.idToken, liffAccessToken: identity.liffAccessToken },
+      body: { idToken: identity.idToken, liffAccessToken: identity.liffAccessToken, client: clientOf(client) },
     });
     if (!data) return { errorKey: "errors.unavailable" };
     await startSession(data);
@@ -142,7 +163,7 @@ export async function linkLine(identity: {
     const { serverApi } = await import("@/lib/api/server");
     const api = await serverApi("customer");
     const { data } = await api.POST("/v1/auth/customer/line", {
-      body: { idToken: identity.idToken, liffAccessToken: identity.liffAccessToken },
+      body: { idToken: identity.idToken, liffAccessToken: identity.liffAccessToken, client: "storefront" },
     });
     if (!data) return { errorKey: "errors.unavailable" };
     await startSession(data);

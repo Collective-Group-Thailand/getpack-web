@@ -40,6 +40,7 @@ const CHALLENGES: Record<CustomerPersona, string> = {
   creditadmin: "00000000-0000-4000-8000-0000000000cb",
   creditbuyer: "00000000-0000-4000-8000-0000000000cc",
   agent: "00000000-0000-4000-8000-0000000000cd",
+  agentended: "00000000-0000-4000-8000-0000000000ce",
   // The scorecard round's participants (`./uat.ts`, only with MOCK_DATASET=uat).
   ...Object.fromEntries(
     uatParticipants().map((participant, n) => [
@@ -48,6 +49,9 @@ const CHALLENGES: Record<CustomerPersona, string> = {
     ]),
   ),
 };
+/** Hand-off codes waiting to be redeemed (single use, 60 s). */
+const handoffCodes = new Map<string, { persona?: string; fingerprint: string; expiresAt: number }>();
+
 /** Firebase and LINE tokens the mock accepts (the SDKs never run against the mock). */
 export const MOCK_ID_TOKENS = { google: "mock.firebase.google", apple: "mock.firebase.apple", line: "mock.line" };
 
@@ -180,6 +184,33 @@ export const authHandlers = [
     return session("customer");
   }),
 
+  /*
+   * Storefront → getpack Agent hand-off (D-467): a one-time code for the signed-in customer, bound to the
+   * fingerprint the web server derived, redeemed once by the agent zone's server for a new session. Any failure is
+   * the one neutral `auth.handoff_invalid`, and a wrong fingerprint burns the code — as getpack-api does.
+   */
+  http.post("*/v1/auth/customer/handoff", async ({ request }) => {
+    const principal = principalOf(request);
+    if (principal?.audience !== "customer") return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
+    const body = (await request.json()) as { target?: string; fingerprint?: string };
+    if (body.target !== "agent" || !body.fingerprint || body.fingerprint.length < 16 || body.fingerprint.length > 512) {
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง");
+    }
+    const code = `hc_mock_${crypto.randomUUID().replaceAll("-", "")}`;
+    const expiresAt = new Date(Date.now() + 60_000);
+    handoffCodes.set(code, { persona: principal.persona, fingerprint: body.fingerprint, expiresAt: expiresAt.getTime() });
+    return HttpResponse.json({ code, expiresAt: expiresAt.toISOString(), target: "agent" }, { status: 201 });
+  }),
+  http.post("*/v1/auth/customer/handoff/actions/redeem", async ({ request }) => {
+    const body = (await request.json()) as { code?: string; fingerprint?: string };
+    const entry = body.code ? handoffCodes.get(body.code) : undefined;
+    if (body.code) handoffCodes.delete(body.code);
+    if (!entry || entry.expiresAt < Date.now() || entry.fingerprint !== body.fingerprint) {
+      return problem(401, "auth.handoff_invalid", "ลิงก์เปิด getpack Agent นี้ใช้ไม่ได้แล้ว");
+    }
+    return session("customer", undefined, entry.persona as CustomerPersona | undefined);
+  }),
+
   http.post("*/v1/auth/refresh", async ({ request }) => {
     const body = (await request.json()) as { refreshToken?: string };
     const principal = principalOfRefresh(body.refreshToken);
@@ -187,9 +218,8 @@ export const authHandlers = [
     return session(
       principal.audience,
       principal.audience === "staff" ? personaByKey(principal.persona) : undefined,
-      principal.audience === "customer" && (principal.persona === "newcomer" || principal.persona === "buyer")
-        ? principal.persona
-        : undefined,
+      // Every customer persona survives a refresh (getpack Agent keeps its agent signed in, D-467).
+      principal.audience === "customer" ? (principal.persona as CustomerPersona | undefined) : undefined,
       principal.audience === "partner" ? partnerPersonaByKey(principal.persona) : undefined,
     );
   }),
