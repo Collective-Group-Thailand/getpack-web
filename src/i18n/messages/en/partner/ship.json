@@ -94,6 +94,7 @@
     "photos": "Delivery photos",
     "photosHint": "Photograph the goods where they were left",
     "receiver": "Received by",
+    "receiverRecorded": "Recorded",
     "delivered": "Delivered quantity",
     "deliveredHint": "This shipment: {quantity}",
     "signature": "Receiver's signature",

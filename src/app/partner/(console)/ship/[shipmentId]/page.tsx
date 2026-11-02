@@ -244,8 +244,8 @@ export default async function ShipmentPage({ params }: Props) {
               <DescriptionList
                 columns={1}
                 items={[
-                  // A carrier's POD may come without a receiver's name (the API types still say string).
-                  { term: t("receiver"), description: (pod.receiverName as string | null) || "—" },
+                  // D-463: the factory never reads the receiver's name — only that one was recorded.
+                  { term: t("receiver"), description: pod.receiverRecorded ? t("receiverRecorded") : "—" },
                   { term: t("delivered"), description: format.number(pod.deliveredQuantity) },
                   { term: t("at"), description: format.dateTime(pod.capturedAt) },
                 ]}

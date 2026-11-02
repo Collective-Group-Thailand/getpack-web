@@ -298,6 +298,8 @@ const QUEUES: Record<Schemas["ShipmentQueue"], (item: Shipment) => boolean> = {
     (item.status === "returned" && !item.resolution) ||
     (item.carrierRequest !== null && item.status === "ready"),
   pod_review: (item) => item.pod?.review === "pending",
+  // The mock keeps no goods receipts: every delivered trip waits for one (D-165 finance card).
+  without_goods_receipt: (item) => item.status === "delivered",
 };
 
 registerQueue("shipments.read", () => ({
@@ -401,6 +403,8 @@ function common(item: Shipment) {
     id: item.id,
     shipmentNo: item.shipmentNo,
     status: item.status,
+    // D-463 follow-up: a carrier booking exists (its reference stays with getpack).
+    carrierBooked: item.carrier !== "factory_fleet" && Boolean(item.trackingNo),
     ...statusLabels("status", SHIPMENT_STATUS, item.status),
     carrier: item.carrier,
     trackingNo: item.trackingNo,
@@ -435,6 +439,7 @@ function common(item: Shipment) {
       ? {
           kind: item.pod.kind,
           receiverName: item.pod.receiverName,
+          receiverRecorded: Boolean(item.pod.receiverName),
           deliveredQuantity: item.pod.deliveredQuantity,
           capturedAt: item.pod.capturedAt,
           photoFileIds: [...item.pod.photoIds],
@@ -500,11 +505,15 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
 
 /** A shipment as `partner.shipments.*` answers it: the factory's trip, never getpack's costs. */
 export function toPartnerShipmentDto(item: Shipment, permissions: readonly string[]): Schemas["PartnerShipmentDto"] {
-  const { destination, ...rest } = common(item);
+  const { destination, proofOfDelivery, ...rest } = common(item);
   // D-463: the factory's trip carries the destination code, province and postcode prefix — never the recipient.
   return {
     ...rest,
     destination: { code: destination.code, postcodePrefix: destination.postcodePrefix, province: destination.province },
+    // D-463: the factory learns that a receiver was recorded, never the name.
+    proofOfDelivery: proofOfDelivery
+      ? (({ receiverName: _receiverName, ...pod }) => pod)(proofOfDelivery)
+      : null,
     waybillIssued: false,
     nextActions: partnerShipmentActions(factsOf(item), new Set(permissions)),
   };
