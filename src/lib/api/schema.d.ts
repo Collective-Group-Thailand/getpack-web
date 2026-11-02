@@ -17879,11 +17879,55 @@ export interface paths {
         put?: never;
         /**
          * Sign in with Google or Apple (Firebase ID token)
-         * @description Exchanges a Firebase Auth ID token. A known identity signs in its customer; a new one is linked to the signed-in customer when a customer bearer token is sent, otherwise a new customer is created. Accounts are never linked by e-mail alone.
+         * @description Exchanges a Firebase Auth ID token. A known identity signs in its customer; a new one is linked to the signed-in customer when a customer bearer token is sent, otherwise a new customer is created. Accounts are never linked by e-mail alone. `client: agent` opens an agent-zone session (D-467).
          *
-         *     Implements: ADR-0004.
+         *     Implements: ADR-0004, D-467.
          */
         post: operations["auth.customer.firebase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/customer/handoff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get a one-time code to open the agent zone
+         * @description The signed-in customer (storefront session) asks for a code that opens the agent zone (agent.getpack.co) without sharing a cookie across subdomains (D-467, PLAN A-08). The code is single use, valid for the setting `auth.handoff_code_ttl_seconds` (60 s), bound to `target` and to the device `fingerprint` the web server sends; only SHA-256 hashes are stored. Audited (`auth.handoff_created`). Redeem it with `auth.customerHandoff.redeem` from the agent zone’s server.
+         *
+         *     Implements: ADR-0004, D-467.
+         */
+        post: operations["auth.customerHandoff.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/customer/handoff/actions/redeem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exchange a hand-off code for an agent-zone session
+         * @description Called by the agent zone’s server with the code and the same device fingerprint (D-467). Returns a NEW token pair whose session has client `agent` (its own session family, listed and revoked separately from the storefront). An unknown, expired, used or other-device code, or an account no longer active, answers one neutral 401 `auth.handoff_invalid`; a wrong fingerprint also uses the code up. Audited.
+         *
+         *     Implements: ADR-0004, D-467.
+         */
+        post: operations["auth.customerHandoff.redeem"];
         delete?: never;
         options?: never;
         head?: never;
@@ -17901,9 +17945,9 @@ export interface paths {
         put?: never;
         /**
          * Sign in with LINE (LINE Login or LIFF)
-         * @description Send a LINE Login `idToken` (web) or a `liffAccessToken` (inside LINE, D-151). A known LINE account signs in its customer. A new one is linked: to the signed-in customer (bearer token), else to the customer of a verified `link_phone` OTP (`otpChallengeId` + `otpCode`, account created if new), else a new customer is created.
+         * @description Send a LINE Login `idToken` (web) or a `liffAccessToken` (inside LINE, D-151). A known LINE account signs in its customer. A new one is linked: to the signed-in customer (bearer token), else to the customer of a verified `link_phone` OTP (`otpChallengeId` + `otpCode`, account created if new), else a new customer is created. `client: agent` opens an agent-zone session (D-467).
          *
-         *     Implements: ADR-0004, D-151.
+         *     Implements: ADR-0004, D-151, D-467.
          */
         post: operations["auth.customer.line"];
         delete?: never;
@@ -17945,9 +17989,9 @@ export interface paths {
         put?: never;
         /**
          * Sign in with the SMS code
-         * @description Checks the code (limited attempts per challenge; a code works once). Signs in the customer with that phone, creating the account on first use (`customer.registered` event).
+         * @description Checks the code (limited attempts per challenge; a code works once). Signs in the customer with that phone, creating the account on first use (`customer.registered` event). `client: agent` opens an agent-zone session (agent.getpack.co), separate from storefront sessions (D-467).
          *
-         *     Implements: ADR-0004.
+         *     Implements: ADR-0004, D-467.
          */
         post: operations["auth.customer.verifyOtp"];
         delete?: never;
@@ -27650,6 +27694,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/agent/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My notification choices
+         * @description Every agent event × channel (push to getpack Agent, LINE OA, e-mail) with whether it is on (default on) and whether it is locked: the e-mail of statement ready, payout paid and payout details needed cannot be switched off (payment and tax records, D-144). In-app notifications always stay. `reachable` says whether each channel can reach the agent at all (D-467).
+         *
+         *     Implements: D-143, D-416, D-467, D-144.
+         */
+        get: operations["store.agentNotificationPreferences.get"];
+        /**
+         * Change my notification choices
+         * @description Switches channels on or off per agent event; what is not listed keeps its value. A locked e-mail sent with `enabled: false` is refused (`validation.failed`, code `locked`, D-144); an event and channel listed twice too (`duplicate`). Audited and evented (`sales_agent.notification_preferences_changed`). Returns the full matrix (D-467).
+         *
+         *     Implements: D-143, D-416, D-467, D-144.
+         */
+        put: operations["store.agentNotificationPreferences.set"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/agent/payout-profile": {
         parameters: {
             query?: never;
@@ -27804,6 +27876,72 @@ export interface paths {
          *     Implements: D-466, D-464.
          */
         get: operations["store.agentProgramme.public"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/push/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register this browser for agent push
+         * @description Registers the agent zone’s browser (getpack Agent PWA) for web push; the auth secret is stored encrypted. Agent events (lead converted, protection ending, commission earned, statement ready, paid, payout details needed) are pushed only to agent-zone browsers, as the agent’s channel choices allow; storefront events never reach them. One subscription per endpoint: a browser registered by another zone or person moves here (D-467).
+         *
+         *     Implements: D-143, D-416, D-467.
+         */
+        post: operations["store.agentPush.subscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/push/subscriptions/{subscriptionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Stop agent push to a browser
+         * @description Only the owner can remove one of their agent-zone subscriptions (D-467).
+         *
+         *     Implements: D-143, D-416, D-467.
+         */
+        delete: operations["store.agentPush.unsubscribe"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/push/vapid-public-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * VAPID public key for the getpack Agent app
+         * @description The key the agent zone’s service worker subscribes with (VAPID keys come from the environment). Null when web push is not configured (D-467, D-143).
+         *
+         *     Implements: D-143, D-416, D-467.
+         */
+        get: operations["store.agentPush.vapidPublicKey"];
         put?: never;
         post?: never;
         delete?: never;
@@ -31508,6 +31646,50 @@ export interface paths {
          *     Implements: D-222.
          */
         post: operations["store.me.createPrivacyRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/me/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my signed-in sessions
+         * @description Open sessions of the signed-in customer with the surface each was opened from (`storefront` or `agent` — the agent zone agent.getpack.co), newest activity first (D-467). One row per session (refresh-token family).
+         *
+         *     Implements: ADR-0004, D-467.
+         */
+        get: operations["store.me.sessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/me/sessions/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign out every session of one surface
+         * @description Ends the open sessions of the signed-in customer opened from `client` (`storefront` or `agent`, D-467), including access tokens already issued for them. The session making the request is kept unless `includeCurrent` is true. Audited (`auth.sessions_revoked`) and evented (`customer.sessions_revoked`).
+         *
+         *     Implements: ADR-0004, D-467.
+         */
+        post: operations["store.me.revokeSessions"];
         delete?: never;
         options?: never;
         head?: never;
@@ -40030,6 +40212,52 @@ export interface components {
              */
             paidOn: string;
         };
+        /**
+         * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details
+         * @enum {string}
+         */
+        AgentNotificationEvent: "lead_converted" | "lead_protection_expiring" | "commission_earned" | "statement_ready" | "payout_paid" | "payout_profile_needed";
+        AgentNotificationPreferenceDto: {
+            /**
+             * @description `web_push` push to the agent zone (getpack Agent) · `line` LINE OA · `email`
+             * @example line
+             */
+            channel: components["schemas"]["PartnerNotificationChannel"];
+            /** @example false */
+            enabled: boolean;
+            /**
+             * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details
+             * @example commission_earned
+             */
+            event: components["schemas"]["AgentNotificationEvent"];
+            /**
+             * @description Cannot be switched off: e-mail of payment and tax records (statement_ready, payout_paid, payout_profile_needed; D-144)
+             * @example false
+             */
+            locked: boolean;
+        };
+        AgentNotificationPreferencesDto: {
+            /** @description Every event × channel (18 rows); default on */
+            items: components["schemas"]["AgentNotificationPreferenceDto"][];
+            reachable: components["schemas"]["AgentNotificationReachDto"];
+        };
+        AgentNotificationReachDto: {
+            /**
+             * @description The account has an e-mail address
+             * @example true
+             */
+            email: boolean;
+            /**
+             * @description A LINE account is linked to this person (LINE OA messages need it)
+             * @example true
+             */
+            line: boolean;
+            /**
+             * @description At least one agent-zone browser accepts push
+             * @example true
+             */
+            webPush: boolean;
+        };
         AgentPayoutProfileDto: {
             /** @example 99/1 ถนนพระราม 9 … */
             address: string | null;
@@ -42027,6 +42255,11 @@ export interface components {
             seed: string;
             selected: components["schemas"]["SampleItemDto"][];
         };
+        /**
+         * @description The surface signing in (D-467): `agent` from the agent zone (agent.getpack.co), else `storefront`. The session is recorded with it and listed / revoked per surface.
+         * @enum {string}
+         */
+        AuthClient: "storefront" | "agent";
         B2bCompanyDto: {
             /**
              * Format: uuid
@@ -48192,6 +48425,15 @@ export interface components {
             /** @example ลอนอี */
             termTh: string;
         };
+        CreateHandoffDto: {
+            /**
+             * @description Opaque device fingerprint chosen by the web server (e.g. a hash of the agent-zone device cookie id and the user agent); the same string must be sent to redeem. Only its SHA-256 is stored.
+             * @example fp_example_7c1e9b1f3c4d5e6f
+             */
+            fingerprint: string;
+            /** @example agent */
+            target: components["schemas"]["HandoffTarget"];
+        };
         CreateHomeCaseDto: {
             /** @example ร้านขนมทดสอบ (fake) */
             brandNameTh: string;
@@ -49990,6 +50232,21 @@ export interface components {
          * @enum {string}
          */
         CustomerOrderStatus: "awaiting_payment" | "awaiting_artwork" | "awaiting_approval" | "in_production" | "shipping" | "received" | "claim_in_review" | "completed" | "cancelled";
+        CustomerOtpVerifyDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c0de
+             */
+            challengeId: string;
+            /**
+             * @description The surface signing in (D-467): `agent` from the agent zone (agent.getpack.co), else `storefront`. The session is recorded with it and listed / revoked per surface.
+             * @default storefront
+             * @example agent
+             */
+            client: components["schemas"]["AuthClient"];
+            /** @example 123456 */
+            code: string;
+        };
         CustomerProfileDto: {
             /**
              * Format: date-time
@@ -62578,6 +62835,12 @@ export interface components {
         FinishSlot: "finish1" | "finish2";
         FirebaseLoginDto: {
             /**
+             * @description The surface signing in (D-467): `agent` from the agent zone (agent.getpack.co), else `storefront`. The session is recorded with it and listed / revoked per surface.
+             * @default storefront
+             * @example agent
+             */
+            client: components["schemas"]["AuthClient"];
+            /**
              * @description Firebase Auth ID token (Google or Apple)
              * @example eyJhbGciOiJSUzI1NiIsImtpZCI6ImV4YW1wbGUifQ.eyJzdWIiOiJleGFtcGxlIn0.c2ln
              */
@@ -63583,6 +63846,23 @@ export interface components {
             /** @example 1 */
             versionNo: number;
         };
+        HandoffCodeDto: {
+            /**
+             * @description One-time code (single use, shown once); pass it to the target zone’s server, never in a URL that is logged
+             * @example hc_example_Zm9vYmFyYmF6cXV4cXV1eGNvcmdl
+             */
+            code: string;
+            /**
+             * Format: date-time
+             * @description Setting `auth.handoff_code_ttl_seconds` (60 s)
+             * @example 2026-11-03T14:06:00+07:00
+             */
+            expiresAt: string;
+            /** @example agent */
+            target: components["schemas"]["HandoffTarget"];
+        };
+        /** @enum {string} */
+        HandoffTarget: "agent";
         HandoverCartonDto: {
             /** @example 9F3A0C1B2D4E-01 */
             labelCode: string;
@@ -65758,6 +66038,12 @@ export interface components {
         LineFriendStatus: "followed" | "blocked" | "unknown";
         LineLoginDto: {
             /**
+             * @description The surface signing in (D-467): `agent` from the agent zone (agent.getpack.co), else `storefront`. The session is recorded with it and listed / revoked per surface.
+             * @default storefront
+             * @example agent
+             */
+            client: components["schemas"]["AuthClient"];
+            /**
              * @description LINE Login ID token (web)
              * @example eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJleGFtcGxlIn0.c2ln
              */
@@ -65854,6 +66140,8 @@ export interface components {
             /** @example ใบกำกับภาษีเต็มรูปแบบทุกคำสั่งซื้อ */
             th: string;
         };
+        /** @enum {string} */
+        LoginMethod: "password" | "phone_otp" | "firebase_google" | "firebase_apple" | "line" | "line_liff" | "device_pin";
         LoyaltySummaryDto: {
             /**
              * @description Points that can be redeemed now
@@ -66416,6 +66704,48 @@ export interface components {
             rewardPoints: number;
             /** @example rewarded */
             status: components["schemas"]["ReferralStatus"];
+        };
+        MySessionDto: {
+            /** @example agent */
+            client: components["schemas"]["AuthClient"];
+            /**
+             * @description The session making this request
+             * @example false
+             */
+            current: boolean;
+            /**
+             * Format: date-time
+             * @description Idle expiry
+             * @example 2026-11-10T14:05:00+07:00
+             */
+            expiresAt: string;
+            /**
+             * Format: uuid
+             * @description The session (its refresh-token family; the access token’s `sid`)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a5e5
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Last refresh (or sign-in)
+             * @example 2026-11-03T14:05:00+07:00
+             */
+            lastActiveAt: string;
+            /** @example line */
+            loginMethod: components["schemas"]["LoginMethod"];
+            /**
+             * Format: date-time
+             * @example 2026-11-03T09:15:00+07:00
+             */
+            signedInAt: string;
+            /**
+             * @description Browser as reported at the last refresh
+             * @example Mozilla/5.0 (fake test agent)
+             */
+            userAgent: string | null;
+        };
+        MySessionListDto: {
+            data: components["schemas"]["MySessionDto"][];
         };
         MySignatoryDto: {
             /** @example นายสมชาย ใจดี */
@@ -67935,7 +68265,10 @@ export interface components {
         };
         /** @enum {string} */
         PartnerNotificationCategory: "transactional" | "security";
-        /** @enum {string} */
+        /**
+         * @description `web_push` push to the agent zone (getpack Agent) · `line` LINE OA · `email`
+         * @enum {string}
+         */
         PartnerNotificationChannel: "web_push" | "line" | "email";
         PartnerNotificationChoiceDto: {
             /** @example transactional */
@@ -73664,6 +73997,15 @@ export interface components {
         };
         /** @enum {string} */
         RecurringJournalStatus: "pending_approval" | "active" | "paused" | "ended" | "rejected";
+        RedeemHandoffDto: {
+            /** @example hc_example_Zm9vYmFyYmF6cXV4cXV1eGNvcmdl */
+            code: string;
+            /**
+             * @description Opaque device fingerprint chosen by the web server (e.g. a hash of the agent-zone device cookie id and the user agent); the same string must be sent to redeem. Only its SHA-256 is stored.
+             * @example fp_example_7c1e9b1f3c4d5e6f
+             */
+            fingerprint: string;
+        };
         ReferenceConfigurationDto: {
             /**
              * @description The product type's calculator configuration (`FoldingConfigurationDto` / `CorrugateConfigurationDto`) with exactly one quantity; `catalogProductId` is set to this product
@@ -75091,6 +75433,23 @@ export interface components {
             count: number;
             /** @example folding_carton */
             productTypeCode: string;
+        };
+        RevokedSessionsDto: {
+            /**
+             * @description Sessions signed out
+             * @example 2
+             */
+            revoked: number;
+        };
+        RevokeMySessionsDto: {
+            /** @example agent */
+            client: components["schemas"]["AuthClient"];
+            /**
+             * @description Also end the session making this request (it is kept by default)
+             * @default false
+             * @example false
+             */
+            includeCurrent: boolean;
         };
         /**
          * @description How the customer accepted
@@ -77204,6 +77563,24 @@ export interface components {
             nameTh: string;
             /** @example print-plate */
             slug: string;
+        };
+        SetAgentNotificationPreferenceDto: {
+            /**
+             * @description `web_push` push to the agent zone (getpack Agent) · `line` LINE OA · `email`
+             * @example line
+             */
+            channel: components["schemas"]["PartnerNotificationChannel"];
+            /** @example false */
+            enabled: boolean;
+            /**
+             * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details
+             * @example commission_earned
+             */
+            event: components["schemas"]["AgentNotificationEvent"];
+        };
+        SetAgentNotificationPreferencesDto: {
+            /** @description The choices to change; what is not listed keeps its value */
+            items: components["schemas"]["SetAgentNotificationPreferenceDto"][];
         };
         SetBasketDetailsDto: {
             /**
@@ -218212,6 +218589,202 @@ export interface operations {
             };
         };
     };
+    "auth.customerHandoff.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateHandoffDto"];
+            };
+        };
+        responses: {
+            /** @description Code issued */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "hc_example_Zm9vYmFyYmF6cXV4cXV1eGNvcmdl",
+                     *       "expiresAt": "2026-11-03T14:06:00+07:00",
+                     *       "target": "agent"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HandoffCodeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.token_expired`, `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "auth.customerHandoff.redeem": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RedeemHandoffDto"];
+            };
+        };
+        responses: {
+            /** @description Signed in to the agent zone */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accessToken": "eyJhbGciOiJFZERTQSIsImtpZCI6ImV4YW1wbGUiLCJ0eXAiOiJhdCtqd3QifQ.eyJzdWIiOiJleGFtcGxlIn0.c2lnbmF0dXJl",
+                     *       "accessTokenExpiresAt": "2026-09-23T14:15:00+07:00",
+                     *       "refreshToken": "rt_example_Zm9vYmFyYmF6cXV4cXV1eGNvcmdlZ3JhdWx0",
+                     *       "refreshTokenExpiresAt": "2026-09-23T16:05:00+07:00",
+                     *       "subject": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b",
+                     *         "permissions": [],
+                     *         "roles": [],
+                     *         "scopes": [],
+                     *         "type": "customer"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TokenPairDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.handoff_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "auth.customer.line": {
         parameters: {
             query?: never;
@@ -218442,7 +219015,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OtpVerifyDto"];
+                "application/json": components["schemas"]["CustomerOtpVerifyDto"];
             };
         };
         responses: {
@@ -292355,7 +292928,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -292944,7 +293517,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293057,7 +293630,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293173,7 +293746,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293282,7 +293855,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293389,7 +293962,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293411,6 +293984,404 @@ export interface operations {
             };
             /** @description Problem: `agents.lead_closed` */
             409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentNotificationPreferences.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Choices */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "lead_converted",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "lead_converted",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "lead_converted",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "lead_protection_expiring",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "lead_protection_expiring",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "lead_protection_expiring",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "commission_earned",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": false,
+                     *           "event": "commission_earned",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "commission_earned",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "statement_ready",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "statement_ready",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "statement_ready",
+                     *           "locked": true
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "payout_paid",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "payout_paid",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "payout_paid",
+                     *           "locked": true
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "payout_profile_needed",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "payout_profile_needed",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "payout_profile_needed",
+                     *           "locked": true
+                     *         }
+                     *       ],
+                     *       "reachable": {
+                     *         "email": true,
+                     *         "line": true,
+                     *         "webPush": true
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentNotificationPreferencesDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentNotificationPreferences.set": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetAgentNotificationPreferencesDto"];
+            };
+        };
+        responses: {
+            /** @description Choices */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "lead_converted",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "lead_converted",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "lead_converted",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "lead_protection_expiring",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "lead_protection_expiring",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "lead_protection_expiring",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "commission_earned",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": false,
+                     *           "event": "commission_earned",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "commission_earned",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "statement_ready",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "statement_ready",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "statement_ready",
+                     *           "locked": true
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "payout_paid",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "payout_paid",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "payout_paid",
+                     *           "locked": true
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "payout_profile_needed",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "payout_profile_needed",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "payout_profile_needed",
+                     *           "locked": true
+                     *         }
+                     *       ],
+                     *       "reachable": {
+                     *         "email": true,
+                     *         "line": true,
+                     *         "webPush": true
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentNotificationPreferencesDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -293518,7 +294489,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293638,7 +294609,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293774,7 +294745,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -294379,6 +295350,265 @@ export interface operations {
             };
         };
     };
+    "store.agentPush.subscribe": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscribeWebPushDto"];
+            };
+        };
+        responses: {
+            /** @description Registered */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000beef",
+                     *       "vapidPublicKey": "BFakeVapidPublicKey"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WebPushSubscriptionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentPush.unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentPush.vapidPublicKey": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Key */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "vapidPublicKey": "BFakeVapidPublicKey"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VapidKeyDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.agent.statements": {
         parameters: {
             query?: {
@@ -294451,7 +295681,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -294566,7 +295796,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -294662,7 +295892,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -294772,7 +296002,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -294881,7 +296111,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -319225,6 +320455,187 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.me.sessions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sessions */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "client": "agent",
+                     *           "current": false,
+                     *           "expiresAt": "2026-11-10T14:05:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a5e5",
+                     *           "lastActiveAt": "2026-11-03T14:05:00+07:00",
+                     *           "loginMethod": "line",
+                     *           "signedInAt": "2026-11-03T09:15:00+07:00",
+                     *           "userAgent": "Mozilla/5.0 (fake test agent)"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MySessionListDto"];
+                };
+            };
+            /** @description Problem: `auth.session_revoked`, `auth.token_expired`, `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.me.revokeSessions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeMySessionsDto"];
+            };
+        };
+        responses: {
+            /** @description Signed out */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "revoked": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RevokedSessionsDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.token_expired`, `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
