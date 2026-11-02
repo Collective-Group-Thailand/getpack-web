@@ -4,8 +4,8 @@ import { Link } from "@/i18n/navigation";
 import { trackBusiness } from "@/lib/analytics/business";
 
 type Props = Omit<React.ComponentProps<typeof Link>, "onClick"> & {
-  /** `biz_cta` on /business, `fx_cta` on /partner-with-us (business pack analytics). */
-  event: "biz_cta" | "fx_cta";
+  /** `biz_cta` on /business, `fx_cta` on /partner-with-us, `agent_cta` on /agent. */
+  event: "biz_cta" | "fx_cta" | "agent_cta";
   target: string;
 };
 
@@ -19,6 +19,6 @@ export function TrackedAnchor({
   event,
   target,
   ...props
-}: React.ComponentProps<"a"> & { event: "biz_cta" | "fx_cta"; target: string }) {
+}: React.ComponentProps<"a"> & { event: "biz_cta" | "fx_cta" | "agent_cta"; target: string }) {
   return <a {...props} onClick={() => trackBusiness(event, { target })} />;
 }

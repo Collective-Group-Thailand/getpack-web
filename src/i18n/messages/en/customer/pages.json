@@ -473,7 +473,8 @@
         "toastDetail": "From the same screen"
       },
       "role": "carousel"
-    }
+    },
+    "agentLink": "Don't manufacture, but know people who need boxes? Become a getpack sales agent"
   },
   "legal": {
     "terms": {
@@ -621,6 +622,8 @@
     "network": "getpack's production standard",
     "networkBody": "Every job ordered through getpack meets the same production standard, from the file check to the final check before dispatch, and getpack is the seller responsible to you throughout.",
     "contact": "Contact",
-    "contactBody": "How to reach the team and business hours"
+    "contactBody": "How to reach the team and business hours",
+    "agent": "getpack sales agents",
+    "agentBody": "The sales agent programme: introduce new customers and earn commission on their paid orders. Free to join; rates and worked examples are on the page."
   }
 }

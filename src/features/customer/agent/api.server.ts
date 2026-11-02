@@ -112,3 +112,19 @@ export async function getMyTaxDeclaration(): Promise<MyTaxDeclaration> {
   const { data } = await (await serverApi("customer")).GET("/v1/store/agent/tax-declaration");
   return data!;
 }
+
+export type PublicAgentProgramme = Schemas["PublicAgentProgrammeDto"];
+
+/** The programme as the public landing shows it (`store.agentProgramme.public`, anonymous, D-466). */
+export async function getPublicProgramme(): Promise<PublicAgentProgramme> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/agent/programme/public");
+  return data!;
+}
+
+export type MyPayoutProfile = Schemas["MyPayoutProfileDto"];
+
+/** My payout profile (`store.agentPayoutProfile.get`, D-466) with the ETag a save needs. */
+export async function getMyPayoutProfile(): Promise<{ data: MyPayoutProfile; etag: string | null }> {
+  const { data, response } = await (await serverApi("customer")).GET("/v1/store/agent/payout-profile");
+  return { data: data!, etag: response.headers.get("ETag") };
+}
