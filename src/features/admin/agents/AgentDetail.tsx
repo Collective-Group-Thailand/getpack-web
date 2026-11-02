@@ -339,7 +339,11 @@ export function AgentDetail({ agentId }: { agentId: string }) {
             </Button>
           }
         >
-          {agent.terms ? <TermsList terms={agent.terms} /> : <p className="text-muted text-sm">{t("noTerms")}</p>}
+          {agent.planTerms ? (
+            <TermsList terms={agent.planTerms} />
+          ) : (
+            <p className="text-muted text-sm">{t("noTerms")}</p>
+          )}
         </Section>
 
         <Section

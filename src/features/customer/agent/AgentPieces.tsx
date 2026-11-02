@@ -8,7 +8,7 @@ import { LinkPagination } from "@/ui/components/LinkPagination";
 
 import { AgentNav } from "./AgentActions";
 
-type Terms = Schemas["AgentPlanTermsDto"];
+type Terms = Schemas["StoreAgentTermsDto"];
 
 /** The agent pages' title and tabs (D-416). */
 export async function AgentFrame({
@@ -42,17 +42,9 @@ export async function PlanTerms({ terms }: { terms: Terms }) {
     <ul className="text-muted flex list-disc flex-col gap-1 ps-5 text-sm">
       <li>{t("first", { pct: terms.firstOrderPct })}</li>
       <li>{t("repeat", { pct: terms.repeatOrderPct, months: terms.attributionMonths })}</li>
-      <li>{t("cap", { pct: terms.marginCapPct })}</li>
+      {/* D-464: the full rate at every order size, no cap. */}
+      {terms.uncapped ? <li className="text-foreground font-medium">{t("uncapped")}</li> : null}
       {Number(terms.minBaseAmount) > 0 ? <li>{t("minBase", { amount: format.thb(terms.minBaseAmount) })}</li> : null}
-      {Number(terms.factoryBountyAmount) > 0 ? (
-        <li>
-          {t("bounty", {
-            amount: format.thb(terms.factoryBountyAmount),
-            jobs: terms.factoryQualifyJobs,
-            days: terms.factoryQualifyDays,
-          })}
-        </li>
-      ) : null}
       <li>{t("when")}</li>
     </ul>
   );

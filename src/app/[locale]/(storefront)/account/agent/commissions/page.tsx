@@ -109,9 +109,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
                         first: entry.isFirstOrder ? "yes" : "no",
                       })
                     : (entry.note ?? "")}
-                  {entry.capAmount !== null && entry.kind === "order"
-                    ? ` · ${t("cap", { amount: format.thb(entry.capAmount) })}`
-                    : ""}
                 </span>
               ),
               date: (
