@@ -7,12 +7,14 @@ const hosts: ZoneHosts = {
   customer: "getpack.co",
   admin: "admin.getpack.co",
   partner: "partner.getpack.co",
+  agent: "agent.getpack.co",
 };
 
 const localHosts: ZoneHosts = {
   customer: "localhost:3000",
   admin: "admin.localhost:3000",
   partner: "partner.localhost:3000",
+  agent: "agent.localhost:3000",
 };
 
 describe("normaliseHost", () => {
@@ -38,6 +40,7 @@ describe("resolveZone", () => {
     ["getpack.co", "customer"],
     ["admin.getpack.co", "admin"],
     ["partner.getpack.co", "partner"],
+    ["agent.getpack.co", "agent"],
   ] as const)("maps %s to the %s zone", (host, zone) => {
     expect(resolveZone(host, hosts)).toBe(zone);
   });
@@ -71,16 +74,25 @@ describe("resolveZone", () => {
 });
 
 describe("isInternalOnlyPath", () => {
-  it.each(["/admin", "/admin/", "/admin/orders", "/partner", "/partner/jobs/1"])("refuses %s", (pathname) => {
-    expect(isInternalOnlyPath(pathname)).toBe(true);
-  });
-
-  it.each(["/", "/design/new", "/bff/orders", "/administration", "/partners", "/en/admin-guide"])(
-    "allows %s",
+  it.each(["/admin", "/admin/", "/admin/orders", "/partner", "/partner/jobs/1", "/agent-zone", "/agent-zone/leads"])(
+    "refuses %s",
     (pathname) => {
-      expect(isInternalOnlyPath(pathname)).toBe(false);
+      expect(isInternalOnlyPath(pathname)).toBe(true);
     },
   );
+
+  it.each([
+    "/",
+    "/design/new",
+    "/bff/orders",
+    "/administration",
+    "/partners",
+    "/en/admin-guide",
+    "/agent",
+    "/agent/apply",
+  ])("allows %s", (pathname) => {
+    expect(isInternalOnlyPath(pathname)).toBe(false);
+  });
 });
 
 describe("upstream surface allow-list", () => {
@@ -118,6 +130,61 @@ describe("upstream surface allow-list", () => {
   });
 });
 
+describe("agent zone allow-list (D-467)", () => {
+  it("reaches the agent surface and customer sign-in, the named store paths first", () => {
+    expect(upstreamPrefixes("agent")).toEqual([
+      "/v1/store/me/sessions",
+      "/v1/store/me/consents",
+      "/v1/store/files",
+      "/v1/store/rum",
+      "/v1/store/agent",
+      "/v1/auth/customer",
+    ]);
+  });
+
+  it.each([
+    "/v1/store/agent",
+    "/v1/store/agent/leads",
+    "/v1/store/agent/statements/abc/wht-certificate",
+    "/v1/store/agent/notification-preferences",
+    "/v1/store/agent/push/subscriptions",
+    "/v1/auth/customer/otp/verify",
+    "/v1/auth/customer/handoff/actions/redeem",
+    "/v1/store/me",
+    "/v1/store/me/sessions",
+    "/v1/store/me/sessions/actions/revoke",
+    "/v1/store/me/consents",
+    "/v1/store/files/presign",
+    "/v1/store/files/{fileId}/actions/complete",
+    "/v1/store/rum/web-vitals",
+  ])("allows %s", (path) => {
+    expect(isUpstreamPathAllowed("agent", path)).toBe(true);
+  });
+
+  it.each([
+    "/v1/store/orders",
+    "/v1/store/cart",
+    "/v1/store/notifications",
+    "/v1/store/me/preferences",
+    "/v1/store/me/privacy-requests",
+    "/v1/store/customer-profile",
+    "/v1/store/agents",
+    "/v1/store/agentx/leads",
+    "/v1/store/agent/../orders",
+    "/v1/admin/agents",
+    "/v1/partner/me",
+    "/v1/auth/staff/login",
+    "/v1/auth/partner/login",
+  ])("refuses %s", (path) => {
+    expect(isUpstreamPathAllowed("agent", path)).toBe(false);
+  });
+
+  it("keeps the storefront off nothing it had: the customer zone still reaches the agent programme", () => {
+    expect(isUpstreamPathAllowed("customer", "/v1/store/agent/programme")).toBe(true);
+    expect(isUpstreamPathAllowed("customer", "/v1/store/orders")).toBe(true);
+  });
+});
+
 describe("browserBffUrl", () => {
   it("always addresses /bff, whatever the zone", () => {
     // The trap this exists for: `ZONE_CONFIG.admin.bffPath` is `/admin/bff`, which is the
@@ -126,6 +193,8 @@ describe("browserBffUrl", () => {
     expect(browserBffUrl("customer", "/notifications")).toBe("/bff/v1/store/notifications");
     expect(browserBffUrl("admin", "/notifications")).toBe("/bff/v1/admin/notifications");
     expect(browserBffUrl("partner", "/notifications")).toBe("/bff/v1/partner/notifications");
+    // The agent zone's token is a customer token: its surface is /v1/store, its allow-list far narrower.
+    expect(browserBffUrl("agent", "/rum/web-vitals")).toBe("/bff/v1/store/rum/web-vitals");
   });
 
   it("produces a path the BFF allow-list accepts for that zone", () => {

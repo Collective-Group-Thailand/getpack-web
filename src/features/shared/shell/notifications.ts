@@ -43,6 +43,9 @@ async function fetchFeed(zone: Zone) {
       return (await api.GET("/v1/partner/notifications", query)).data;
     case "customer":
       return (await api.GET("/v1/store/notifications", query)).data;
+    case "agent":
+      // getpack Agent has no inbox (D-467): its messages are push, LINE and e-mail, chosen in การแจ้งเตือน.
+      return undefined;
   }
 }
 
@@ -86,6 +89,8 @@ export async function markRead(zone: Zone, notificationId: string): Promise<void
     case "customer":
       await api.POST("/v1/store/notifications/{notificationId}/actions/read", params);
       return;
+    case "agent":
+      return;
   }
 }
 
@@ -101,6 +106,8 @@ export async function markAllRead(zone: Zone): Promise<void> {
       return;
     case "customer":
       await api.POST("/v1/store/notifications/actions/read-all", {});
+      return;
+    case "agent":
       return;
   }
 }

@@ -12,6 +12,7 @@ import {
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { TierProgress } from "@/features/customer/account/TierProgress";
 import { getProgramme, getPublicProgramme } from "@/features/customer/agent/api.server";
+import { OpenAgentApp } from "@/features/customer/agent/OpenAgentApp";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getApprovals, getMyCompany } from "@/features/customer/business/api.server";
 import { listOrderPage } from "@/features/customer/orders/api.server";
@@ -324,6 +325,27 @@ export default async function Page() {
           </Button>
         </section>
       )}
+
+      {agentProgramme?.state === "agent" ? (
+        // D-467: an agent's work is in getpack Agent; this opens it signed in (one-time hand-off code).
+        <section
+          aria-labelledby="account-agent-app"
+          className="border-primary bg-surface grid gap-4 rounded-2xl border p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-5"
+        >
+          <span className="bg-primary-subtle text-primary-subtle-fg grid size-11 place-items-center rounded-xl">
+            <Icon name="handshake" size={22} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 id="account-agent-app" className="font-semibold">
+              {t("agentAppTitle")}
+            </h2>
+            <p className="text-muted mt-0.5 text-sm">{t("agentAppBody")}</p>
+          </div>
+          <div className="justify-self-start sm:justify-self-end">
+            <OpenAgentApp />
+          </div>
+        </section>
+      ) : null}
 
       {offerAgent ? (
         <section

@@ -19,6 +19,8 @@ const contentVariants = cva(
         md: "max-w-lg",
         lg: "max-w-3xl",
         xl: "max-w-5xl",
+        /** The whole screen, for something shown across a table — getpack Agent's meeting QR (D-467). */
+        full: "inset-0 top-0 left-0 h-dvh max-h-none w-full max-w-none translate-x-0 translate-y-0 rounded-none border-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
       },
     },
     defaultVariants: { size: "md" },

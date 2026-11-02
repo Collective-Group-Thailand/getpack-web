@@ -27,7 +27,8 @@ export function RealtimeProvider({ zone }: { zone: Zone }) {
   const driver = clientEnv.NEXT_PUBLIC_REALTIME_DRIVER;
 
   useEffect(() => {
-    if (driver !== "sse") return;
+    // The agent zone (D-467) has no live feed to keep fresh and no realtime path in its allow-list.
+    if (driver !== "sse" || zone === "agent") return;
 
     const controller = new AbortController();
     const { signal } = controller;

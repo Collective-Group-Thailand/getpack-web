@@ -3,13 +3,13 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
-import { Link } from "@/i18n/navigation";
 import { useConsent } from "@/lib/analytics/useConsent";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 
 import { useConsentLabel } from "./consent-label";
+import { SignInLink, STOREFRONT_SIGN_IN_LINKS, type SignInLinks } from "./links";
 import { recordConsents, type Consent, type ConsentSource } from "./onboarding";
 
 /** The optional purposes one "news and offers" tick covers; anything else optional is listed on its own. */
@@ -30,10 +30,12 @@ export function ConsentStep({
   consents,
   source,
   onDone,
+  links = STOREFRONT_SIGN_IN_LINKS,
 }: {
   consents: Consent[];
   source: ConsentSource;
   onDone: () => void;
+  links?: SignInLinks;
 }) {
   const t = useTranslations("auth.customer.consent");
   const label = useConsentLabel();
@@ -101,14 +103,14 @@ export function ConsentStep({
           required
           label={t.rich("agree", {
             terms: (chunks) => (
-              <Link href="/legal/terms" target="_blank" className="text-primary underline underline-offset-2">
+              <SignInLink href={links.terms} newTab className="text-primary underline underline-offset-2">
                 {chunks}
-              </Link>
+              </SignInLink>
             ),
             privacy: (chunks) => (
-              <Link href="/legal/privacy" target="_blank" className="text-primary underline underline-offset-2">
+              <SignInLink href={links.privacy} newTab className="text-primary underline underline-offset-2">
                 {chunks}
-              </Link>
+              </SignInLink>
             ),
           })}
           description={

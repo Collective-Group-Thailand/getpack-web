@@ -123,6 +123,9 @@ import {
   ScanLine,
   Search,
   Send,
+  Share2,
+  QrCode,
+  Smartphone,
   Settings,
   ShieldAlert,
   ShieldCheck,
@@ -408,6 +411,10 @@ export const ICONS = {
   keyboard: Keyboard,
   sliders: SlidersHorizontal,
   wand: WandSparkles,
+  // getpack Agent (D-467): the share sheet, the meeting QR and "signed in on this device"
+  share: Share2,
+  "qr-code": QrCode,
+  smartphone: Smartphone,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

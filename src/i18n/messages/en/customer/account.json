@@ -154,7 +154,10 @@
     "businessAction": "See company accounts",
     "agentTitle": "Become a getpack sales agent",
     "agentBody": "Introduce new customers to getpack and earn commission when they order. Free to join.",
-    "agentAction": "Learn more"
+    "agentAction": "Learn more",
+    "agentAppTitle": "getpack Agent",
+    "agentAppBody": "Your link, leads, commission and tax statements are in your agent app now.",
+    "agentAppAction": "Open getpack Agent"
   },
   "quotes": {
     "title": "Saved quotations",

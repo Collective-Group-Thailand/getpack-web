@@ -16,6 +16,8 @@ export type DeepLinkOutcome =
   { kind: "go"; path: string } | { kind: "elsewhere"; url: string } | { kind: "expired" } | { kind: "not-found" };
 
 async function resolveOn(zone: Zone, token: string): Promise<string> {
+  // getpack Agent prints no notification links of its own yet (API-CHANGES-P2: agent events carry no `url`).
+  if (zone === "agent") return "";
   const api = await serverApi(zone);
   const body = { token };
   const { data } =

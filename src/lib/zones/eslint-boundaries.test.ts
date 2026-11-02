@@ -47,6 +47,15 @@ describe("zone import boundaries", { timeout: 60_000 }, () => {
     ["src/app/admin/page.tsx", "@/features/customer/cart"],
     ["src/features/admin/orders/OrderTable.tsx", "@/features/partner/jobs"],
     ["src/features/partner/jobs/JobList.tsx", "@/features/admin/orders"],
+    // getpack Agent (D-467) both ways, and its routes too.
+    ["src/features/agent/leads/LeadList.tsx", "@/features/customer/account/AccountHeader"],
+    ["src/app/agent-zone/(app)/page.tsx", "@/features/customer/agent/api.server"],
+    ["src/features/agent/shell/AgentShell.tsx", "@/features/partner/shell"],
+    ["src/features/agent/shell/AgentShell.tsx", "@/features/admin/orders"],
+    ["src/features/customer/agent/AgentActions.tsx", "@/features/agent/shell"],
+    ["src/app/[locale]/(storefront)/account/page.tsx", "@/features/agent/handoff"],
+    ["src/features/partner/jobs/JobList.tsx", "@/features/agent/leads"],
+    ["src/app/admin/page.tsx", "@/features/agent/leads"],
   ])("refuses %s importing %s", async (filePath, specifier) => {
     const messages = await messagesFor(filePath, `import { Thing } from "${specifier}";\nexport const x = Thing;\n`);
     expect(boundaryErrors(messages).length).toBeGreaterThan(0);
@@ -95,6 +104,21 @@ describe("zone import boundaries", { timeout: 60_000 }, () => {
       'import { OrderTable } from "@/features/admin/orders";\nexport const x = OrderTable;\n',
     );
     expect(boundaryErrors(messages)).toEqual([]);
+  });
+
+  it("lets the agent zone import its own features and the shared middle", async () => {
+    for (const specifier of [
+      "@/features/agent/shell",
+      "@/features/shared/customer-auth/SignInFlow",
+      "@/ui",
+      "@/lib/zones",
+    ]) {
+      const messages = await messagesFor(
+        "src/app/agent-zone/(app)/page.tsx",
+        `import { Thing } from "${specifier}";\nexport const x = Thing;\n`,
+      );
+      expect(boundaryErrors(messages), specifier).toEqual([]);
+    }
   });
 
   it("keeps @getpack/dieline free of this app (ADR-0007)", async () => {

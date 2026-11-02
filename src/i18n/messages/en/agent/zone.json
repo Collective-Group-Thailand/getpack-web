@@ -1,0 +1,243 @@
+{
+  "nav": {
+    "label": "getpack Agent menu",
+    "home": "Overview",
+    "leads": "Leads",
+    "quotes": "Quotes",
+    "commissions": "Commission",
+    "customers": "Customers",
+    "statements": "Statements",
+    "payout": "Payout details",
+    "tax": "Tax allowances",
+    "notifications": "Notifications",
+    "profile": "Profile & agreement",
+    "profileMenu": "Profile menu",
+    "groups": {
+      "sell": "Selling",
+      "earn": "Earnings",
+      "account": "Account"
+    }
+  },
+  "shell": {
+    "home": "getpack Agent overview",
+    "agent": "Agent",
+    "code": "Agent code"
+  },
+  "home": {
+    "title": "Hello, {name}",
+    "intro": "Your link, your customers and all your commission, in one place.",
+    "shareMessage": "Get boxes and packaging made with getpack — instant prices through my link",
+    "money": "Your commission",
+    "moneyAll": "See every entry"
+  },
+  "share": {
+    "share": "Share link",
+    "copy": "Copy link",
+    "showQr": "Show QR",
+    "copied": "Link copied",
+    "copyFailed": "Couldn't copy — press and hold the link to copy it",
+    "shareTitle": "getpack",
+    "sheetTitle": "Share your link",
+    "sheetBody": "Anyone who reaches getpack through this link counts as your customer.",
+    "line": "Send on LINE",
+    "qrTitle": "Your QR code",
+    "qrBody": "Let the customer scan it with their phone camera to open getpack through your link.",
+    "qrLabel": "QR code of your agent link",
+    "codeLabel": "Agent code {code}"
+  },
+  "notAgent": {
+    "title": "getpack Agent is for sales agents",
+    "body": "This account isn't a getpack sales agent yet. See the programme and apply on getpack.co.",
+    "action": "See the agent programme",
+    "appliedTitle": "We have your application",
+    "appliedBody": "The team is reviewing it. Once approved, this app opens for you. See where it stands in your getpack.co account.",
+    "appliedAction": "See my application"
+  },
+  "ended": {
+    "title": "Your agent agreement has ended",
+    "body": "You can still read your commission statements and download your withholding tax certificates (50 Tawi) here."
+  },
+  "signIn": {
+    "title": "Sign in to getpack Agent",
+    "subtitle": "Use your getpack.co account — mobile number, Google, Apple or LINE",
+    "headline": "Sell packaging<br></br>with <em>your own link</em>",
+    "lead": "Your link and QR, your leads and every baht of commission, in one app on your phone.",
+    "point1": "Share your link, or let a customer scan your QR, in one tap",
+    "point2": "Register leads so the customer is held for you",
+    "point3": "Commission, monthly statements and 50 Tawi, any time",
+    "home": "getpack Agent",
+    "notAgent": "Not an agent yet?",
+    "apply": "See the programme",
+    "agent": "Agent"
+  },
+  "handoff": {
+    "opening": "Opening getpack Agent",
+    "openingBody": "Signing in with your getpack.co account",
+    "failedTitle": "This link can't open the app",
+    "failedBody": "These links work once and expire quickly. Sign in again to continue.",
+    "signIn": "Sign in"
+  },
+  "offline": {
+    "title": "You're offline",
+    "body": "getpack Agent always shows current figures, so it needs a connection. Try again once you're back online.",
+    "retry": "Try again"
+  },
+  "quotes": {
+    "title": "Quotes",
+    "intro": "For now, customers see prices or ask for a quote themselves on getpack.co through your link. The link is remembered for {days} days, so their orders count as yours.",
+    "step": "Step {n}",
+    "steps": {
+      "share": {
+        "title": "Send your link",
+        "body": "On LINE, as a copied link, or as a QR code when you meet."
+      },
+      "price": {
+        "title": "They see a price at once",
+        "body": "They pick a box, size and quantity and get an instant price; special jobs ask for a quote from the product page."
+      },
+      "order": {
+        "title": "They order, you earn",
+        "body": "They order and pay in their own account; the order's commission shows on your Commission page."
+      }
+    },
+    "linkTitle": "The link to send",
+    "linkBody": "Send it before the customer starts looking at prices, so the order counts as yours.",
+    "storefrontTitle": "See what customers see",
+    "storefrontBody": "Open the products on getpack.co to show a customer how to choose a box and get a price.",
+    "openProducts": "Open products",
+    "protectTitle": "Talking to a new customer?",
+    "protectBody": "Register them as a lead first — they are held for you for {days} days.",
+    "protectAction": "Register a lead"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "intro": "Choose what getpack tells you about, and where.",
+    "matrixTitle": "What we tell you",
+    "matrixIntro": "Changes apply at once.",
+    "unreachableTitle": "Some channels can't reach you yet",
+    "unreachable": {
+      "line": "LINE: no LINE account is linked to this account. Link one in your account on getpack.co.",
+      "email": "E-mail: this account has no e-mail address. Add one in your account on getpack.co."
+    },
+    "events": {
+      "lead_converted": {
+        "title": "A lead became a customer",
+        "body": "When someone you registered signs up or orders for the first time"
+      },
+      "lead_protection_expiring": {
+        "title": "A lead's hold is ending",
+        "body": "7 days and 1 day before a lead is no longer held for you"
+      },
+      "commission_earned": {
+        "title": "Commission earned",
+        "body": "When an order's commission is ready for the monthly statement"
+      },
+      "statement_ready": {
+        "title": "Monthly statement ready",
+        "body": "When Finance approves the month's statement, with the tax withheld"
+      },
+      "payout_paid": {
+        "title": "Paid",
+        "body": "When your commission is transferred to your account"
+      },
+      "payout_profile_needed": {
+        "title": "Payout details needed",
+        "body": "When commission is waiting but your payout details are incomplete"
+      }
+    },
+    "channels": {
+      "web_push": "In the app",
+      "line": "LINE OA",
+      "email": "E-mail"
+    },
+    "locked": "Money e-mails are always sent: they are financial records.",
+    "savedOn": "Notification on",
+    "savedOff": "Notification off",
+    "failed": "Couldn't save — try again",
+    "push": {
+      "title": "Notifications on this device",
+      "intro": "Let getpack Agent show notifications on this phone or computer.",
+      "iosTitle": "On an iPhone, add the app to your Home Screen first",
+      "iosBody": "iPhone and iPad receive notifications when getpack Agent is opened from its Home Screen icon.",
+      "iosAction": "How to add it",
+      "on": "On for this device",
+      "off": "Not on for this device yet",
+      "turnOn": "Turn on notifications",
+      "turnOff": "Turn off on this device",
+      "turnedOn": "Notifications on for this device",
+      "turnedOff": "Notifications off for this device",
+      "denied": "This browser has blocked getpack Agent's notifications. Allow them in the browser's site settings.",
+      "unavailable": "This device or browser can't receive getpack Agent notifications. LINE and e-mail still reach you as chosen below."
+    }
+  },
+  "install": {
+    "title": "Install getpack Agent",
+    "body": "Open it from your Home Screen like an app, full screen, with notifications.",
+    "bodyIos": "Add it to your Home Screen to open it like an app and get notifications on iPhone.",
+    "install": "Install",
+    "howTo": "Show me how",
+    "notNow": "Not now",
+    "ios": {
+      "title": "Add getpack Agent to your Home Screen",
+      "body": "Three steps in Safari",
+      "step1": "Tap the Share button in Safari's bottom bar",
+      "step2": "Scroll down and tap \"Add to Home Screen\"",
+      "step3": "Tap \"Add\", then open getpack Agent from its Home Screen icon",
+      "stepLabel": "Step {n}"
+    }
+  },
+  "profile": {
+    "title": "Profile & agreement",
+    "intro": "Your agent details, the agreement you accepted, and where you're signed in.",
+    "agentTitle": "Agent",
+    "code": "Agent code",
+    "legalName": "Name",
+    "kind": "Type",
+    "kinds": {
+      "freelance": "Freelance agent",
+      "employee": "getpack sales staff"
+    },
+    "plan": "Plan",
+    "joinedAt": "Agent since",
+    "link": "Your link",
+    "agreementTitle": "Sales agent agreement",
+    "agreementVersion": "Version you accepted",
+    "agreementAcceptedAt": "Accepted on",
+    "agreementInForce": "Version in force",
+    "version": "Version {n}",
+    "agreementNone": "No acceptance is recorded for this account. Contact the team for a copy.",
+    "agreementHint": "When a new version comes, getpack asks you to read and accept it before it applies.",
+    "sessions": {
+      "title": "Where you're signed in",
+      "intro": "Signing getpack Agent out on other devices doesn't affect getpack.co.",
+      "none": "No other devices are signed in.",
+      "current": "This device",
+      "signedIn": "Signed in {date}",
+      "lastActive": "Last used {when}",
+      "clients": {
+        "storefront": "getpack.co",
+        "agent": "getpack Agent"
+      },
+      "methods": {
+        "password": "Password",
+        "phone_otp": "Mobile number",
+        "firebase_google": "Google",
+        "firebase_apple": "Apple",
+        "line": "LINE",
+        "line_liff": "LINE",
+        "device_pin": "PIN"
+      },
+      "signOutOthers": "Sign out other devices",
+      "confirmTitle": "Sign getpack Agent out on every other device?",
+      "confirmBody": "Other devices will have to sign in again. This device and getpack.co stay signed in.",
+      "confirm": "Sign out other devices",
+      "done": "Signed out {count, plural, one {# device} other {# devices}}",
+      "failed": "That didn't work — try again"
+    }
+  },
+  "titles": {
+    "leads": "Leads",
+    "commissions": "Commission",
+    "statements": "Statements and 50 Tawi"
+  }
+}

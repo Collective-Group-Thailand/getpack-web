@@ -26,7 +26,7 @@ const STORYBOOK_PORT = Number(process.env.STORYBOOK_PORT ?? 3300);
 const runningVisualProject = process.argv.some((arg) => arg.includes("visual"));
 
 /**
- * The three zone hosts, as the suite reaches them. Chromium resolves `*.localhost` to
+ * The four zone hosts, as the suite reaches them. Chromium resolves `*.localhost` to
  * loopback by itself, but the glibc resolver on CI does not, so `--host-resolver-rules`
  * makes it the browser's decision rather than the machine's.
  */
@@ -34,6 +34,7 @@ export const HOSTS = {
   customer: baseURL,
   admin: `http://admin.localhost:${PORT}`,
   partner: `http://partner.localhost:${PORT}`,
+  agent: `http://agent.localhost:${PORT}`,
 };
 
 /** Every first-run hint the storefront shows once (`useFirstRun` keys). */
@@ -43,6 +44,7 @@ const zoneEnv = {
   PUBLIC_HOST: `localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
   PARTNER_HOST: `partner.localhost:${PORT}`,
+  AGENT_HOST: `agent.localhost:${PORT}`,
   // Deliberately a port nothing listens on: MSW intercepts in-process, so nothing should
   // ever reach the network. If an interception is missed, the call fails fast and loudly
   // rather than quietly finding some other service.
@@ -69,6 +71,7 @@ const realEnv = {
   PUBLIC_HOST: `localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
   PARTNER_HOST: `partner.localhost:${PORT}`,
+  AGENT_HOST: `agent.localhost:${PORT}`,
   API_INTERNAL_URL: process.env.INTEGRATION_API_URL ?? "http://localhost:3400",
   // Built in, so the real API's own refusal (off at launch, D-218) is what the panel shows.
   NEXT_PUBLIC_ASSISTANT: "1",

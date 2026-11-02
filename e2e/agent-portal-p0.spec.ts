@@ -1,16 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { signInAsCustomer } from "./helpers/customer";
+import { AGENT_PHONE, signInToAgentZone } from "./helpers/agent";
 import { signInAsStaff } from "./helpers/session";
-
-/** The mock persona `agent` (mocks/store/agent.ts): an approved freelance agent. */
-const AGENT_PHONE = "0861234567";
 const shots = process.env["E2E_SHOTS"];
 const WIDTHS = [360, 375, 393, 768, 1024, 1280, 1440, 1920] as const;
 
 async function noHorizontalScroll(page: Page) {
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
@@ -25,9 +24,10 @@ async function shoot(page: Page, name: string) {
   }
 }
 
+// Since P2 (D-467) the agent pages live in getpack Agent (agent.localhost), so these sign in there.
 test.describe("agent portal P0 (D-464, D-465)", () => {
   test("the agent's terms say there is no cap and never speak of profit", async ({ page }) => {
-    await signInAsCustomer(page, "/account/agent", AGENT_PHONE);
+    await signInToAgentZone(page, "/", AGENT_PHONE);
     await expect(page.getByText("ไม่จำกัดรายได้ ยิ่งขายมาก ยิ่งได้มาก")).toBeVisible();
     await expect(page.getByText(/กำไร/)).toHaveCount(0);
     await expect(page.getByRole("link", { name: "ลดหย่อนภาษี" })).toBeVisible();
@@ -35,7 +35,7 @@ test.describe("agent portal P0 (D-464, D-465)", () => {
   });
 
   test("the lead form registers customers only and points manufacturers to the partner page", async ({ page }) => {
-    await signInAsCustomer(page, "/account/agent/leads", AGENT_PHONE);
+    await signInToAgentZone(page, "/leads", AGENT_PHONE);
     await page.getByRole("button", { name: "ลงทะเบียนผู้มุ่งหวัง" }).first().click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByText("ประเภท")).toHaveCount(0);
@@ -47,7 +47,7 @@ test.describe("agent portal P0 (D-464, D-465)", () => {
   });
 
   test("an agent sends a ล.ย.01 and waits for Finance", async ({ page }) => {
-    await signInAsCustomer(page, "/account/agent/tax", AGENT_PHONE);
+    await signInToAgentZone(page, "/tax", AGENT_PHONE);
     await expect(page.getByRole("heading", { level: 1, name: "ข้อมูลลดหย่อนภาษี (ล.ย.01)" })).toBeVisible();
     await expect(page.getByText(/ถ้าไม่ส่ง ระบบใช้ค่าลดหย่อนส่วนตัวตามกฎหมายเท่านั้น/)).toBeVisible();
     for (const width of WIDTHS) {
@@ -68,7 +68,7 @@ test.describe("agent portal P0 (D-464, D-465)", () => {
   });
 
   test("a statement shows how the withholding was worked out", async ({ page }) => {
-    await signInAsCustomer(page, "/account/agent/statements", AGENT_PHONE);
+    await signInToAgentZone(page, "/statements", AGENT_PHONE);
     await page.getByRole("link", { name: "ต.ค. 2569" }).click();
     await expect(page.getByText("บุคคลธรรมดา: คำนวณตามอัตราก้าวหน้า")).toBeVisible();
     await shoot(page, "agent-statement");

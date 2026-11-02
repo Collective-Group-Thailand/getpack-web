@@ -1,11 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
+import { AGENT_PHONE, signInToAgentZone } from "./helpers/agent";
 import { acceptCookies, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
-/** The mock persona `agent` (mocks/store/agent.ts): an approved freelance agent. */
-const AGENT_PHONE = "0861234567";
 const shots = process.env["E2E_SHOTS"];
 const WIDTHS = [360, 375, 393, 768, 1024, 1280, 1440, 1920] as const;
 
@@ -82,7 +81,7 @@ test.describe("agent portal P1 — entry and two-step apply (D-466)", () => {
   });
 
   test("step 2: an approved agent fills in payout details and sends them to Finance", async ({ page }) => {
-    await signInAsCustomer(page, "/account/agent/payout", AGENT_PHONE);
+    await signInToAgentZone(page, "/payout", AGENT_PHONE);
     await expect(page.getByRole("heading", { level: 1, name: "ข้อมูลรับเงิน" })).toBeVisible();
     await expect(page.getByText("ยังไม่ได้กรอก")).toBeVisible();
     await noHorizontalScroll(page);
@@ -92,11 +91,8 @@ test.describe("agent portal P1 — entry and two-step apply (D-466)", () => {
   });
 
   test("an agent without verified payout details is asked for them on the agent home", async ({ page }) => {
-    await signInAsCustomer(page, "/account/agent", AGENT_PHONE);
-    await expect(page.getByRole("link", { name: "กรอกข้อมูลรับเงิน" })).toHaveAttribute(
-      "href",
-      /\/account\/agent\/payout$/,
-    );
+    await signInToAgentZone(page, "/", AGENT_PHONE);
+    await expect(page.getByRole("link", { name: "กรอกข้อมูลรับเงิน" })).toHaveAttribute("href", /^\/payout$/);
   });
 
   test("the header, footer and partner page lead to the programme", async ({ page }) => {

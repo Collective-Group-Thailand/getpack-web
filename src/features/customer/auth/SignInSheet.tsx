@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Dialog } from "@/ui/components/Dialog";
 import { Sheet } from "@/ui/components/Sheet";
 
-import { SignInFlow } from "./SignInFlow";
+import { SignInFlow } from "@/features/shared/customer-auth/SignInFlow";
 
 export interface SignInSheetProps {
   open: boolean;

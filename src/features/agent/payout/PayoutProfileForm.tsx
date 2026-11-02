@@ -3,10 +3,10 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { isValidThaiTaxId } from "@/features/customer/account/tax-id";
+import { isValidThaiTaxId } from "@/domain/tax-id";
 import { uploadFile } from "@/features/shared/files/upload";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from "next/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
@@ -61,7 +61,7 @@ export function PayoutProfileForm({ mine, etag }: { mine: Mine; etag: string | n
   async function attach(file: File, put: (u: Upload | null) => void) {
     put({ name: file.name });
     try {
-      const uploaded = await uploadFile("customer", file, "evidence");
+      const uploaded = await uploadFile("agent", file, "evidence");
       put({ name: file.name, fileId: uploaded.id });
     } catch {
       put({ name: file.name, failed: true });

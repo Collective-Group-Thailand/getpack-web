@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 
-import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { IconTile } from "@/ui/components/Decor";
 import { Field } from "@/ui/components/Field";
@@ -12,7 +11,8 @@ import { formatThaiMobile, isThaiMobile, PhoneInput } from "@/ui/components/Phon
 import { ReferenceCode, shortReference } from "@/ui/components/ReferenceCode";
 import { cn } from "@/ui/lib/cn";
 
-import { requestOtp, signInWithFirebase, signInWithLine, verifyOtp } from "./actions";
+import { requestOtp, signInWithFirebase, signInWithLine, verifyOtp, type SignInClient } from "./actions";
+import { SignInLink, STOREFRONT_SIGN_IN_LINKS, type SignInLinks } from "./links";
 import { ConsentStep } from "./ConsentStep";
 import { consentsToAsk, loadOnboarding, needsProfile, type Consent, type ConsentSource } from "./onboarding";
 import { OTP_CODE_LENGTH, type OtpChallenge } from "./otp";
@@ -35,6 +35,17 @@ export interface SignInFlowProps {
   variant: "page" | "overlay";
   /** Tells the dialog or sheet which step it shows, for its title. */
   onStepChange?: (step: "phone" | "otp" | "onboarding") => void;
+  /** The surface signing in (D-467): `agent` from getpack Agent, whose sessions are their own family. */
+  client?: SignInClient;
+  /** Where terms, privacy and "talk to us" go — absolute storefront URLs from a zone without those pages. */
+  links?: SignInLinks;
+  /**
+   * Whether the skippable name-and-type step follows a first sign-in. The storefront asks; getpack Agent does not
+   * (a person's shop profile belongs to the storefront), but the PDPA consent step is asked everywhere.
+   */
+  askProfile?: boolean;
+  /** The page's title and line under it, when the surface has its own words for them. */
+  heading?: { title: string; subtitle: string };
 }
 
 interface Failure {
@@ -75,7 +86,17 @@ function clock(seconds: number): string {
  * SDKs loaded on click. After the API issues a session: PDPA consent when a purpose is unanswered,
  * then — skippably — a name and a customer type.
  */
-export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepChange }: SignInFlowProps) {
+export function SignInFlow({
+  onSignedIn,
+  resume,
+  lineReturnUrl,
+  variant,
+  onStepChange,
+  client = "storefront",
+  links = STOREFRONT_SIGN_IN_LINKS,
+  askProfile: offerProfile = true,
+  heading,
+}: SignInFlowProps) {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
 
@@ -98,9 +119,9 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
 
   /** After the API issued a session: ask for what is missing, or finish. */
   async function afterSession(source: ConsentSource) {
-    const { consents, profile } = await loadOnboarding();
+    const { consents, profile } = await loadOnboarding({ withProfile: offerProfile });
     const ask = consentsToAsk(consents);
-    const askProfile = needsProfile(profile);
+    const askProfile = offerProfile && needsProfile(profile);
     const displayName = profile?.displayName ?? "";
     const customerId = profile?.id ?? "";
     if (ask.length > 0) setStep({ kind: "consent", consents: ask, source, displayName, customerId, askProfile });
@@ -133,7 +154,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
     if (!challenge) return;
     setFailure(null);
     startTransition(async () => {
-      const result = await verifyOtp(challenge.challengeId, value);
+      const result = await verifyOtp(challenge.challengeId, value, client);
       // Deliberately not closing on success: closing and signing in are different events, and a
       // parent that treats a close as "cancelled" would undo the sign-in.
       if (result.ok) await afterSession("web");
@@ -146,7 +167,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
     startTransition(async () => {
       const { firebaseIdToken, ProviderCancelled } = await import("./provider-sdks");
       try {
-        const result = await signInWithFirebase(await firebaseIdToken(provider));
+        const result = await signInWithFirebase(await firebaseIdToken(provider), client);
         if (result.ok) await afterSession("web");
         else fail(result);
       } catch (error) {
@@ -162,7 +183,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
       try {
         const identity = await lineIdentity(lineReturnUrl ?? window.location.href);
         if (!identity) return; // on the way to LINE's login page
-        const result = await signInWithLine(identity);
+        const result = await signInWithLine(identity, client);
         if (result.ok) await afterSession(identity.inClient ? "line_liff" : "web");
         else fail(result);
       } catch {
@@ -186,6 +207,7 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
       <ConsentStep
         consents={step.consents}
         source={step.source}
+        links={links}
         onDone={() => {
           if (step.askProfile) setStep({ kind: "profile", displayName: step.displayName, customerId: step.customerId });
           else onSignedIn?.();
@@ -305,9 +327,9 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
         </p>
         <p className="text-muted mt-4 text-center text-sm">
           {t("customer.trouble")}{" "}
-          <Link href="/help/contact" className="text-primary font-medium underline-offset-4 hover:underline">
+          <SignInLink href={links.help} className="text-primary font-medium underline-offset-4 hover:underline">
             {t("customer.talkToUs")}
-          </Link>
+          </SignInLink>
         </p>
       </div>
     );
@@ -317,8 +339,8 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
     <div className="flex flex-col">
       {variant === "page" ? (
         <>
-          <Title className="text-3xl font-bold tracking-tight">{t("customer.title")}</Title>
-          <p className="text-muted mt-2 text-base">{t("customer.subtitle")}</p>
+          <Title className="text-3xl font-bold tracking-tight">{heading?.title ?? t("customer.title")}</Title>
+          <p className="text-muted mt-2 text-base">{heading?.subtitle ?? t("customer.subtitle")}</p>
         </>
       ) : null}
 
@@ -404,14 +426,14 @@ export function SignInFlow({ onSignedIn, resume, lineReturnUrl, variant, onStepC
       <p className="text-muted mt-7 text-center text-sm leading-relaxed">
         {t.rich("customer.legal", {
           terms: (chunks) => (
-            <Link href="/legal/terms" className="text-primary underline-offset-2 hover:underline">
+            <SignInLink href={links.terms} className="text-primary underline-offset-2 hover:underline">
               {chunks}
-            </Link>
+            </SignInLink>
           ),
           privacy: (chunks) => (
-            <Link href="/legal/privacy" className="text-primary underline-offset-2 hover:underline">
+            <SignInLink href={links.privacy} className="text-primary underline-offset-2 hover:underline">
               {chunks}
-            </Link>
+            </SignInLink>
           ),
         })}
         <br />

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { uploadFile } from "@/features/shared/files/upload";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from "next/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { Button } from "@/ui/components/Button";
@@ -63,7 +63,7 @@ export function TaxDeclarationForm({
     const key = `${file.name}-${file.size}-${Date.now()}`;
     setFiles((current) => [...current, { key, name: file.name }]);
     try {
-      const uploaded = await uploadFile("customer", file, "evidence");
+      const uploaded = await uploadFile("agent", file, "evidence");
       setFiles((current) => current.map((f) => (f.key === key ? { ...f, fileId: uploaded.id } : f)));
     } catch {
       setFiles((current) => current.map((f) => (f.key === key ? { ...f, failed: true } : f)));
