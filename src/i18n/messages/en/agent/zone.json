@@ -30,9 +30,6 @@
     "money": "Your commission",
     "moneyAll": "See every entry"
   },
-  "commissions": {
-    "statements": "Statements and 50 Tawi"
-  },
   "share": {
     "share": "Share link",
     "copy": "Copy link",
@@ -237,5 +234,10 @@
       "done": "Signed out {count, plural, one {# device} other {# devices}}",
       "failed": "That didn't work — try again"
     }
+  },
+  "titles": {
+    "leads": "Leads",
+    "commissions": "Commission",
+    "statements": "Statements and 50 Tawi"
   }
 }

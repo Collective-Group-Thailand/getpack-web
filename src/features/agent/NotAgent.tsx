@@ -22,7 +22,9 @@ export async function NotAgent({ programme }: { programme: AgentProgramme }) {
         description={applied ? t("appliedBody") : t("body")}
         action={
           <Button asChild iconEnd="external">
-            <a href={`${storefront}${applied ? "/account/agent" : "/agent"}`}>{applied ? t("appliedAction") : t("action")}</a>
+            <a href={`${storefront}${applied ? "/account/agent" : "/agent"}`}>
+              {applied ? t("appliedAction") : t("action")}
+            </a>
           </Button>
         }
       />

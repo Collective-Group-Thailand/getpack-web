@@ -30,4 +30,3 @@ export async function openAgentApp(formData: FormData): Promise<void> {
   if (!code) redirect(`${origin}${AGENT_ZONE_PATHS.signIn}`);
   redirect(`${origin}${AGENT_ZONE_PATHS.handoff}#code=${encodeURIComponent(code)}&to=${encodeURIComponent(to)}`);
 }
-

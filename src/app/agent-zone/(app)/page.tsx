@@ -34,8 +34,7 @@ export default async function Page() {
     getMyPayoutProfile(),
   ]);
   const { totals } = agent;
-  const askPayout =
-    payout.data.applicable && !payout.data.payoutReady && payout.data.profile?.status !== "submitted";
+  const askPayout = payout.data.applicable && !payout.data.payoutReady && payout.data.profile?.status !== "submitted";
 
   return (
     <AgentPage title={tz("title", { name: agent.legalName })} intro={tz("intro")}>
@@ -106,13 +105,34 @@ export default async function Page() {
         </div>
         <SummaryCards
           items={[
-            { key: "earned", label: t("earned"), value: format.thb(totals.earned), hint: t("earnedHint"), icon: "coins", highlight: true },
-            { key: "pending", label: t("pending"), value: format.thb(totals.pending), hint: t("pendingHint"), icon: "hourglass" },
-            { key: "statemented", label: t("statemented"), value: format.thb(totals.statemented), hint: t("statementedHint"), icon: "document" },
+            {
+              key: "earned",
+              label: t("earned"),
+              value: format.thb(totals.earned),
+              hint: t("earnedHint"),
+              icon: "coins",
+              highlight: true,
+            },
+            {
+              key: "pending",
+              label: t("pending"),
+              value: format.thb(totals.pending),
+              hint: t("pendingHint"),
+              icon: "hourglass",
+            },
+            {
+              key: "statemented",
+              label: t("statemented"),
+              value: format.thb(totals.statemented),
+              hint: t("statementedHint"),
+              icon: "document",
+            },
             { key: "paid", label: t("paidThisYear"), value: format.thb(totals.paidThisYear), icon: "wallet" },
           ]}
         />
-        {Number(totals.held) > 0 ? <Callout tone="warning">{t("held", { amount: format.thb(totals.held) })}</Callout> : null}
+        {Number(totals.held) > 0 ? (
+          <Callout tone="warning">{t("held", { amount: format.thb(totals.held) })}</Callout>
+        ) : null}
       </section>
 
       <div className="grid items-start gap-4 lg:grid-cols-2">

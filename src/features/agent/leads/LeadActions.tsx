@@ -177,4 +177,3 @@ export function WithdrawLead({ leadId, name }: { leadId: string; name: string })
     </Button>
   );
 }
-

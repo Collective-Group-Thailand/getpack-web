@@ -4,7 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { getNotificationPreferences } from "@/features/agent/api.server";
 import { AgentPage } from "@/features/agent/AgentPage";
 import { requireActiveAgent } from "@/features/agent/context.server";
-import { CHANNELS, PreferencesMatrix, reachableFor } from "@/features/agent/notifications/PreferencesMatrix";
+import { CHANNELS, reachableFor } from "@/features/agent/notifications/model";
+import { PreferencesMatrix } from "@/features/agent/notifications/PreferencesMatrix";
 import { PushOnThisDevice } from "@/features/agent/notifications/PushOnThisDevice";
 import { Callout } from "@/ui/components/Callout";
 
@@ -24,7 +25,9 @@ export default async function Page() {
     getTranslations("agentZone.notifications"),
     getNotificationPreferences(),
   ]);
-  const unreachable = CHANNELS.filter((channel) => channel !== "web_push" && !reachableFor(preferences.reachable, channel));
+  const unreachable = CHANNELS.filter(
+    (channel) => channel !== "web_push" && !reachableFor(preferences.reachable, channel),
+  );
 
   return (
     <AgentPage title={t("title")} intro={t("intro")}>

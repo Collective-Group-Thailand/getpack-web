@@ -22,6 +22,14 @@ export function countVisit(local: KeyValue, session: KeyValue): number {
   return visits + 1;
 }
 
-export function shouldOffer({ visits, dismissed, installed }: { visits: number; dismissed: boolean; installed: boolean }) {
+export function shouldOffer({
+  visits,
+  dismissed,
+  installed,
+}: {
+  visits: number;
+  dismissed: boolean;
+  installed: boolean;
+}) {
   return !installed && !dismissed && visits >= PROMPT_FROM_VISIT;
 }

@@ -26,7 +26,7 @@ export default async function Page({ params }: { params: Promise<{ statementId: 
     getTranslations("agent.statements"),
     getTranslations("agent.commissions"),
     getTranslations("agent.table"),
-    getTranslations("agent.nav"),
+    getTranslations("agentZone.titles"),
     getFormat(),
     getMyStatement(statementId),
   ]);

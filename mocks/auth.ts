@@ -198,7 +198,11 @@ export const authHandlers = [
     }
     const code = `hc_mock_${crypto.randomUUID().replaceAll("-", "")}`;
     const expiresAt = new Date(Date.now() + 60_000);
-    handoffCodes.set(code, { persona: principal.persona, fingerprint: body.fingerprint, expiresAt: expiresAt.getTime() });
+    handoffCodes.set(code, {
+      persona: principal.persona,
+      fingerprint: body.fingerprint,
+      expiresAt: expiresAt.getTime(),
+    });
     return HttpResponse.json({ code, expiresAt: expiresAt.toISOString(), target: "agent" }, { status: 201 });
   }),
   http.post("*/v1/auth/customer/handoff/actions/redeem", async ({ request }) => {

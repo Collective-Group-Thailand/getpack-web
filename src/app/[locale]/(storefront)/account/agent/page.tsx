@@ -68,10 +68,7 @@ export default async function Page({
           <h2 id="agent-how" className="text-lg font-semibold">
             {t("howTitle")}
           </h2>
-          <HowItWorks
-            leadProtectionDays={programme.leadProtectionDays}
-            paymentTermsDays={programme.paymentTermsDays}
-          />
+          <HowItWorks leadProtectionDays={programme.leadProtectionDays} paymentTermsDays={programme.paymentTermsDays} />
         </section>
       </div>
       {programme.state === "applied" ? null : programme.agreement ? (

@@ -44,7 +44,10 @@ export default async function Page() {
           >
             <DescriptionList
               items={[
-                { term: t("code"), description: <span className="font-semibold tracking-wide tabular-nums">{state.agent.code}</span> },
+                {
+                  term: t("code"),
+                  description: <span className="font-semibold tracking-wide tabular-nums">{state.agent.code}</span>,
+                },
                 { term: t("legalName"), description: state.agent.legalName },
                 { term: t("kind"), description: t(`kinds.${state.agent.kind}`) },
                 { term: t("plan"), description: state.agent.plan.nameTh },
@@ -60,7 +63,12 @@ export default async function Page() {
                   { term: t("agreementVersion"), description: t("version", { n: application.agreementVersionNo }) },
                   { term: t("agreementAcceptedAt"), description: format.dateTime(application.agreementAcceptedAt) },
                   ...(state.programme.agreement
-                    ? [{ term: t("agreementInForce"), description: t("version", { n: state.programme.agreement.versionNo }) }]
+                    ? [
+                        {
+                          term: t("agreementInForce"),
+                          description: t("version", { n: state.programme.agreement.versionNo }),
+                        },
+                      ]
                     : []),
                 ]}
               />

@@ -5,29 +5,10 @@ import { useState } from "react";
 
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import type { Schemas } from "@/lib/api/types";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
-type Preferences = Schemas["AgentNotificationPreferencesDto"];
-type Event = Schemas["AgentNotificationEvent"];
-type Channel = Schemas["PartnerNotificationChannel"];
-
-/** The order an agent reads them in: their leads, their money, the paperwork around it. */
-export const EVENTS: readonly Event[] = [
-  "lead_converted",
-  "lead_protection_expiring",
-  "commission_earned",
-  "statement_ready",
-  "payout_paid",
-  "payout_profile_needed",
-];
-export const CHANNELS: readonly Channel[] = ["web_push", "line", "email"];
-
-/** Whether a channel can reach this person at all, from `reachable`. */
-export function reachableFor(reachable: Preferences["reachable"], channel: Channel): boolean {
-  return channel === "web_push" ? reachable.webPush : channel === "line" ? reachable.line : reachable.email;
-}
+import { CHANNELS, EVENTS, type Channel, type Event, type Preferences } from "./model";
 
 /**
  * การแจ้งเตือน (D-467): six events × three channels, each an immediate switch (`store.agentNotificationPreferences.set`
@@ -71,7 +52,7 @@ export function PreferencesMatrix({ initial }: { initial: Preferences }) {
           <fieldset>
             <legend className="font-semibold">{t(`events.${event}.title`)}</legend>
             <p className="text-muted mt-0.5 text-sm">{t(`events.${event}.body`)}</p>
-            <div className="mt-3 grid gap-1 sm:grid-cols-3 sm:gap-4">
+            <div className="mt-3 grid gap-1 sm:grid-cols-3 sm:gap-x-6">
               {CHANNELS.map((channel) => {
                 const item = find(event, channel);
                 if (!item) return null;
@@ -86,7 +67,7 @@ export function PreferencesMatrix({ initial }: { initial: Preferences }) {
                     checked={item.enabled}
                     disabled={item.locked || saving === key}
                     onCheckedChange={(checked) => void set(event, channel, checked)}
-                    className="min-h-11 justify-between rounded-lg sm:justify-start [&>div]:flex-1 sm:[&>div]:flex-none"
+                    className="min-h-11 justify-between rounded-lg [&>div]:min-w-0 [&>div]:flex-1"
                   />
                 );
               })}

@@ -153,7 +153,12 @@ describe("root assets", () => {
 
 describe("agent app files (D-467)", () => {
   it("serves the agent worker, its icons and the sign-in marks unprefixed on the agent host only", async () => {
-    for (const path of ["/agent-sw.js", "/agent-app/icon-192.png", "/agent-app/apple-touch-icon.png", "/brands/line.svg"]) {
+    for (const path of [
+      "/agent-sw.js",
+      "/agent-app/icon-192.png",
+      "/agent-app/apple-touch-icon.png",
+      "/brands/line.svg",
+    ]) {
       expect(rewriteTarget(await proxy(request("agent.getpack.co", path))), path).toBeNull();
     }
     expect(rewriteTarget(await proxy(request("admin.getpack.co", "/agent-sw.js")))).toBe("/admin/agent-sw.js");

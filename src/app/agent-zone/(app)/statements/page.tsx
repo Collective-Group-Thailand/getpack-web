@@ -14,8 +14,8 @@ import { AGENT_STATEMENT_STATUS } from "@/domain/status";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("agent.statements");
-  return { title: t("title") };
+  const t = await getTranslations("agentZone.titles");
+  return { title: t("statements") };
 }
 
 /** Monthly statements (D-420): approved by Finance, then transferred with tax withheld (D-421). */
@@ -23,17 +23,22 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   const state = await requireAgentRecords();
   const ended = state.kind === "ended";
   const page = pageOf((await searchParams).page);
-  const [t, tt, tz, format, list] = await Promise.all([
+  const [t, tTitles, tt, tz, format, list] = await Promise.all([
     getTranslations("agent.statements"),
+    getTranslations("agentZone.titles"),
     getTranslations("agent.table"),
     getTranslations("agentZone.ended"),
     getFormat(),
     getMyStatements(page),
   ]);
   return (
-    <AgentPage title={t("title")} intro={t("intro")}>
+    <AgentPage title={tTitles("statements")} intro={t("intro")}>
       {/* D-467: after the agreement ends, the statements and 50 ทวิ stay readable — and nothing else. */}
-      {ended ? <Callout tone="info" title={tz("title")}>{tz("body")}</Callout> : null}
+      {ended ? (
+        <Callout tone="info" title={tz("title")}>
+          {tz("body")}
+        </Callout>
+      ) : null}
       {list.data.length === 0 ? (
         <EmptyState
           icon="receipt"
@@ -49,7 +54,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
         />
       ) : (
         <PortalTable
-          caption={t("title")}
+          caption={tTitles("statements")}
           columns={[
             { key: "period", label: tt("period"), className: "md:w-[34%]" },
             { key: "number", label: tt("number"), className: "md:whitespace-nowrap" },
@@ -60,10 +65,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
             id: s.id,
             cells: {
               period: (
-                <Link
-                  href={`/statements/${s.id}`}
-                  className="text-fg font-semibold underline-offset-4 hover:underline"
-                >
+                <Link href={`/statements/${s.id}`} className="text-fg font-semibold underline-offset-4 hover:underline">
                   {format.date(s.periodStart, { style: "month" })}
                 </Link>
               ),

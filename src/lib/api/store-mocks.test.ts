@@ -92,9 +92,13 @@ describe("the storefront's customers", () => {
   });
 
   it("accepts its own Firebase and LINE tokens and refuses anything else", async () => {
-    const ok = await anonymous().POST("/v1/auth/customer/firebase", { body: { idToken: MOCK_ID_TOKENS.google, client: "storefront" } });
+    const ok = await anonymous().POST("/v1/auth/customer/firebase", {
+      body: { idToken: MOCK_ID_TOKENS.google, client: "storefront" },
+    });
     expect(ok.data?.subject.type).toBe("customer");
-    const line = await anonymous().POST("/v1/auth/customer/line", { body: { idToken: MOCK_ID_TOKENS.line, client: "storefront" } });
+    const line = await anonymous().POST("/v1/auth/customer/line", {
+      body: { idToken: MOCK_ID_TOKENS.line, client: "storefront" },
+    });
     expect(line.data?.subject.type).toBe("customer");
     await expect(
       anonymous().POST("/v1/auth/customer/firebase", { body: { idToken: "real-looking", client: "storefront" } }),

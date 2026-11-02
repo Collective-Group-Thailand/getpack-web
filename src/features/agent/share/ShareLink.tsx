@@ -67,7 +67,7 @@ export function ShareLink({ link, code, message }: { link: string; code: string;
         title={t("sheetTitle")}
         description={t("sheetBody")}
         closeLabel={tCommon("actions.close")}
-        className="sm:inset-x-auto sm:start-1/2 sm:bottom-6 sm:w-[28rem] sm:-translate-x-1/2 sm:rounded-card sm:border"
+        className="sm:rounded-card sm:inset-x-auto sm:start-1/2 sm:bottom-6 sm:w-[28rem] sm:-translate-x-1/2 sm:border"
       >
         <ul className="flex flex-col gap-1 pb-[env(safe-area-inset-bottom)]">
           <li>

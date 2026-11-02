@@ -19,7 +19,7 @@ export function AgentTabBar({ items }: { items: readonly AgentNavItem[] }) {
   return (
     <nav
       aria-label={t("label")}
-      className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)] ps-[env(safe-area-inset-left)] pe-[env(safe-area-inset-right)] sm:hidden print:hidden"
+      className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t ps-[env(safe-area-inset-left)] pe-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] sm:hidden print:hidden"
     >
       <ul className="flex">
         {items.map((item) => {
@@ -38,11 +38,16 @@ export function AgentTabBar({ items }: { items: readonly AgentNavItem[] }) {
               >
                 <span
                   className={cn(
-                    "flex h-7 w-12 items-center justify-center rounded-full",
+                    "flex h-7 w-12 items-center justify-center rounded-lg",
                     current && "bg-primary-subtle",
                   )}
                 >
-                  <Icon name={item.icon} size={22} className={current ? "text-primary" : undefined} aria-hidden="true" />
+                  <Icon
+                    name={item.icon}
+                    size={22}
+                    className={current ? "text-primary" : undefined}
+                    aria-hidden="true"
+                  />
                 </span>
                 <span className="max-w-full truncate">{t(item.key)}</span>
               </Link>
@@ -59,40 +64,48 @@ export function AgentRail({ items }: { items: readonly AgentNavItem[] }) {
   const t = useTranslations("agentZone.nav");
   const pathname = usePathname();
   return (
-    <nav
-      aria-label={t("label")}
-      className="border-border bg-surface sticky top-16 hidden h-[calc(100dvh-4rem)] w-[4.5rem] shrink-0 border-e ps-[env(safe-area-inset-left)] sm:block lg:hidden print:hidden"
-    >
-      <ul className="flex flex-col gap-1 px-1.5 py-3">
-        {items.map((item) => {
-          const current = isCurrent(item.href, pathname);
-          return (
-            <li key={item.key}>
-              <Link
-                href={item.href}
-                aria-current={current ? "page" : undefined}
-                className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center text-xs leading-tight",
-                  "focus-visible:ring-focus-ring outline-none focus-visible:ring-2",
-                  "hover:bg-bg motion-safe:transition-colors motion-safe:duration-100",
-                  current ? "text-primary-subtle-fg font-semibold" : "text-muted font-medium",
-                )}
-              >
-                <span
+    // The column carries the surface and the rule the full height of the page; the list inside stays in view.
+    <div className="border-border bg-surface hidden w-[4.5rem] shrink-0 border-e sm:block lg:hidden print:hidden">
+      <nav
+        aria-label={t("label")}
+        className="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto ps-[env(safe-area-inset-left)]"
+      >
+        <ul className="flex flex-col gap-1 px-1.5 py-3">
+          {items.map((item) => {
+            const current = isCurrent(item.href, pathname);
+            return (
+              <li key={item.key}>
+                <Link
+                  href={item.href}
+                  aria-current={current ? "page" : undefined}
                   className={cn(
-                    "flex h-8 w-12 items-center justify-center rounded-full",
-                    current && "bg-primary-subtle",
+                    "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center text-xs leading-tight",
+                    "focus-visible:ring-focus-ring outline-none focus-visible:ring-2",
+                    "hover:bg-bg motion-safe:transition-colors motion-safe:duration-100",
+                    current ? "text-primary-subtle-fg font-semibold" : "text-muted font-medium",
                   )}
                 >
-                  <Icon name={item.icon} size={22} className={current ? "text-primary" : undefined} aria-hidden="true" />
-                </span>
-                <span className="line-clamp-2 break-words">{t(item.key)}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+                  <span
+                    className={cn(
+                      "flex h-8 w-12 items-center justify-center rounded-lg",
+                      current && "bg-primary-subtle",
+                    )}
+                  >
+                    <Icon
+                      name={item.icon}
+                      size={22}
+                      className={current ? "text-primary" : undefined}
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span className="line-clamp-2 break-words">{t(item.key)}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </div>
   );
 }
 
@@ -105,46 +118,45 @@ export function AgentSidebar({
   const t = useTranslations("agentZone.nav");
   const pathname = usePathname();
   return (
-    <nav
-      aria-label={t("label")}
-      className="border-border bg-surface sticky top-16 hidden h-[calc(100dvh-4rem)] w-64 shrink-0 overflow-y-auto border-e lg:block print:hidden"
-    >
-      <div className="flex flex-col gap-6 px-3 py-5">
-        {groups.map((group) => (
-          <div key={group.key}>
-            <h2 className="text-muted px-3 pb-1.5 text-xs font-medium">{t(`groups.${group.key}`)}</h2>
-            <ul className="flex flex-col gap-0.5">
-              {group.items.map((item) => {
-                const current = isCurrent(item.href, pathname);
-                return (
-                  <li key={item.key}>
-                    <Link
-                      href={item.href}
-                      aria-current={current ? "page" : undefined}
-                      className={cn(
-                        "flex h-11 items-center gap-3 rounded-lg px-3 text-sm",
-                        "focus-visible:ring-focus-ring outline-none focus-visible:ring-2",
-                        "motion-safe:transition-colors motion-safe:duration-100",
-                        current
-                          ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
-                          : "text-fg hover:bg-bg font-medium",
-                      )}
-                    >
-                      <Icon
-                        name={item.icon}
-                        size={20}
-                        className={current ? "text-primary" : "text-muted"}
-                        aria-hidden="true"
-                      />
-                      {t(item.key)}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </nav>
+    <div className="border-border bg-surface hidden w-64 shrink-0 border-e lg:block print:hidden">
+      <nav aria-label={t("label")} className="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto">
+        <div className="flex flex-col gap-6 px-3 py-5">
+          {groups.map((group) => (
+            <div key={group.key}>
+              <h2 className="text-muted px-3 pb-1.5 text-xs font-medium">{t(`groups.${group.key}`)}</h2>
+              <ul className="flex flex-col gap-0.5">
+                {group.items.map((item) => {
+                  const current = isCurrent(item.href, pathname);
+                  return (
+                    <li key={item.key}>
+                      <Link
+                        href={item.href}
+                        aria-current={current ? "page" : undefined}
+                        className={cn(
+                          "flex h-11 items-center gap-3 rounded-lg px-3 text-sm",
+                          "focus-visible:ring-focus-ring outline-none focus-visible:ring-2",
+                          "motion-safe:transition-colors motion-safe:duration-100",
+                          current
+                            ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                            : "text-fg hover:bg-bg font-medium",
+                        )}
+                      >
+                        <Icon
+                          name={item.icon}
+                          size={20}
+                          className={current ? "text-primary" : "text-muted"}
+                          aria-hidden="true"
+                        />
+                        {t(item.key)}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </nav>
+    </div>
   );
 }

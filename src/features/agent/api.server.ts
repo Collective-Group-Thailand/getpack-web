@@ -52,9 +52,7 @@ export const getAgentOrState = cache(async (): Promise<Agent | "ended" | null> =
 });
 
 export async function getMyCustomers(page = 1): Promise<Page<AgentLink>> {
-  const { data } = await (
-    await api()
-  ).GET("/v1/store/agent/customers", { params: { query: { page, perPage: 25 } } });
+  const { data } = await (await api()).GET("/v1/store/agent/customers", { params: { query: { page, perPage: 25 } } });
   return data!;
 }
 
@@ -64,9 +62,7 @@ export async function getMyLeads(page = 1): Promise<Page<AgentLead>> {
 }
 
 export async function getMyCommissions(page = 1): Promise<Page<AgentCommission>> {
-  const { data } = await (
-    await api()
-  ).GET("/v1/store/agent/commissions", { params: { query: { page, perPage: 25 } } });
+  const { data } = await (await api()).GET("/v1/store/agent/commissions", { params: { query: { page, perPage: 25 } } });
   return data!;
 }
 

@@ -21,7 +21,11 @@ export function PushOnThisDevice() {
   const t = useTranslations("agentZone.notifications.push");
   const { state, busy, enable, disable } = usePushSubscription("agent");
   const [guide, setGuide] = useState(false);
-  const iosBrowser = useSyncExternalStore(noop, () => isIos() && !isStandalone(), () => false);
+  const iosBrowser = useSyncExternalStore(
+    noop,
+    () => isIos() && !isStandalone(),
+    () => false,
+  );
 
   let body: React.ReactNode;
   if (iosBrowser) {

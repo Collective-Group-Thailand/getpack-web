@@ -74,16 +74,25 @@ describe("resolveZone", () => {
 });
 
 describe("isInternalOnlyPath", () => {
-  it.each(["/admin", "/admin/", "/admin/orders", "/partner", "/partner/jobs/1", "/agent-zone", "/agent-zone/leads"])("refuses %s", (pathname) => {
-    expect(isInternalOnlyPath(pathname)).toBe(true);
-  });
-
-  it.each(["/", "/design/new", "/bff/orders", "/administration", "/partners", "/en/admin-guide", "/agent", "/agent/apply"])(
-    "allows %s",
+  it.each(["/admin", "/admin/", "/admin/orders", "/partner", "/partner/jobs/1", "/agent-zone", "/agent-zone/leads"])(
+    "refuses %s",
     (pathname) => {
-      expect(isInternalOnlyPath(pathname)).toBe(false);
+      expect(isInternalOnlyPath(pathname)).toBe(true);
     },
   );
+
+  it.each([
+    "/",
+    "/design/new",
+    "/bff/orders",
+    "/administration",
+    "/partners",
+    "/en/admin-guide",
+    "/agent",
+    "/agent/apply",
+  ])("allows %s", (pathname) => {
+    expect(isInternalOnlyPath(pathname)).toBe(false);
+  });
 });
 
 describe("upstream surface allow-list", () => {

@@ -14,8 +14,8 @@ import { AGENT_COMMISSION_STATUS } from "@/domain/status";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("agent.commissions");
-  return { title: t("title") };
+  const t = await getTranslations("agentZone.titles");
+  return { title: t("commissions") };
 }
 
 /**
@@ -29,13 +29,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
     getTranslations("agent.commissions"),
     getTranslations("agent.table"),
     getTranslations("agent.home"),
-    getTranslations("agentZone.commissions"),
+    getTranslations("agentZone.titles"),
     getFormat(),
     getMyCommissions(page),
   ]);
   return (
     <AgentPage
-      title={t("title")}
+      title={tz("commissions")}
       intro={t("intro")}
       actions={
         // On a phone the statements sit behind this tab (PROMPT <responsive>: four tabs, no "more").
@@ -85,7 +85,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
         />
       ) : (
         <PortalTable
-          caption={t("title")}
+          caption={tz("commissions")}
           columns={[
             { key: "item", label: tt("item"), className: "md:w-[30%]" },
             { key: "detail", label: tt("detail") },

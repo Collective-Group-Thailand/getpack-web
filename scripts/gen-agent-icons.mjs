@@ -25,7 +25,15 @@ function svg(size, { rounded, scale }) {
 }
 
 const out = (name) => new URL(`../public/agent-app/${name}`, import.meta.url).pathname;
-await sharp(Buffer.from(svg(192, { rounded: true, scale: 1 }))).png().toFile(out("icon-192.png"));
-await sharp(Buffer.from(svg(512, { rounded: true, scale: 1 }))).png().toFile(out("icon-512.png"));
-await sharp(Buffer.from(svg(512, { rounded: false, scale: 0.72 }))).png().toFile(out("icon-maskable-512.png"));
-await sharp(Buffer.from(svg(180, { rounded: false, scale: 0.86 }))).png().toFile(out("apple-touch-icon.png"));
+await sharp(Buffer.from(svg(192, { rounded: true, scale: 1 })))
+  .png()
+  .toFile(out("icon-192.png"));
+await sharp(Buffer.from(svg(512, { rounded: true, scale: 1 })))
+  .png()
+  .toFile(out("icon-512.png"));
+await sharp(Buffer.from(svg(512, { rounded: false, scale: 0.72 })))
+  .png()
+  .toFile(out("icon-maskable-512.png"));
+await sharp(Buffer.from(svg(180, { rounded: false, scale: 0.86 })))
+  .png()
+  .toFile(out("apple-touch-icon.png"));

@@ -107,7 +107,12 @@ describe("zone import boundaries", { timeout: 60_000 }, () => {
   });
 
   it("lets the agent zone import its own features and the shared middle", async () => {
-    for (const specifier of ["@/features/agent/shell", "@/features/shared/customer-auth/SignInFlow", "@/ui", "@/lib/zones"]) {
+    for (const specifier of [
+      "@/features/agent/shell",
+      "@/features/shared/customer-auth/SignInFlow",
+      "@/ui",
+      "@/lib/zones",
+    ]) {
       const messages = await messagesFor(
         "src/app/agent-zone/(app)/page.tsx",
         `import { Thing } from "${specifier}";\nexport const x = Thing;\n`,

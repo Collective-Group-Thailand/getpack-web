@@ -100,7 +100,13 @@ export function InstallPrompt() {
               </Button>
             </div>
           </div>
-          <IconButton name="close" label={tCommon("actions.close")} size="sm" onClick={dismiss} className="-me-1 -mt-1" />
+          <IconButton
+            name="close"
+            label={tCommon("actions.close")}
+            size="sm"
+            onClick={dismiss}
+            className="-me-1 -mt-1"
+          />
         </section>
       ) : null}
       <IosInstallGuide open={guide} onOpenChange={setGuide} />

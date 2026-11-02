@@ -12,7 +12,8 @@ import { serviceWorkerPath } from "@/lib/push/usePushSubscription";
 export function RegisterAgentWorker() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
-    const register = () => void navigator.serviceWorker.register(serviceWorkerPath("agent"), { scope: "/" }).catch(() => undefined);
+    const register = () =>
+      void navigator.serviceWorker.register(serviceWorkerPath("agent"), { scope: "/" }).catch(() => undefined);
     if (document.readyState === "complete") register();
     else window.addEventListener("load", register, { once: true });
   }, []);

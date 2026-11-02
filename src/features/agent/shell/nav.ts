@@ -35,15 +35,32 @@ export const TAB_ITEMS: readonly AgentNavItem[] = [
 ];
 
 /** The tablet rail: the four, then the two lists that sit behind them on a phone. */
-export const RAIL_ITEMS: readonly AgentNavItem[] = [...TAB_ITEMS, item("customers", "users"), item("statements", "receipt")];
+export const RAIL_ITEMS: readonly AgentNavItem[] = [
+  ...TAB_ITEMS,
+  item("customers", "users"),
+  item("statements", "receipt"),
+];
 
 /** The desktop sidebar, in groups. */
 export const SIDEBAR_GROUPS: readonly { key: "sell" | "earn" | "account"; items: readonly AgentNavItem[] }[] = [
-  { key: "sell", items: [item("home", "dashboard"), item("leads", "user-plus"), item("customers", "users"), item("quotes", "document")] },
+  {
+    key: "sell",
+    items: [
+      item("home", "dashboard"),
+      item("leads", "user-plus"),
+      item("customers", "users"),
+      item("quotes", "document"),
+    ],
+  },
   { key: "earn", items: [item("commissions", "coins"), item("statements", "receipt")] },
   {
     key: "account",
-    items: [item("payout", "wallet"), item("tax", "calculator"), item("notifications", "bell"), item("profile", "user")],
+    items: [
+      item("payout", "wallet"),
+      item("tax", "calculator"),
+      item("notifications", "bell"),
+      item("profile", "user"),
+    ],
   },
 ];
 

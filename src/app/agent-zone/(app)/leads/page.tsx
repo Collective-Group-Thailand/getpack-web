@@ -15,8 +15,8 @@ import { AGENT_LEAD_STATUS } from "@/domain/status";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("agent.leads");
-  return { title: t("title") };
+  const t = await getTranslations("agentZone.titles");
+  return { title: t("leads") };
 }
 
 /**
@@ -26,8 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { agent, programme } = await requireActiveAgent();
   const page = pageOf((await searchParams).page);
-  const [t, tt, format, list, storefront] = await Promise.all([
+  const [t, tz, tt, format, list, storefront] = await Promise.all([
     getTranslations("agent.leads"),
+    getTranslations("agentZone.titles"),
     getTranslations("agent.table"),
     getFormat(),
     getMyLeads(page),
@@ -36,7 +37,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   const partnerPageUrl = `${storefront}/partner-with-us`;
   return (
     <AgentPage
-      title={t("title")}
+      title={tz("leads")}
       intro={t("intro", { days: programme.leadProtectionDays })}
       actions={
         agent.status === "active" ? (
@@ -61,7 +62,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
         />
       ) : (
         <PortalTable
-          caption={t("title")}
+          caption={tz("leads")}
           columns={[
             { key: "lead", label: tt("lead"), className: "md:w-[30%]" },
             { key: "kind", label: tt("kind"), className: "md:whitespace-nowrap" },
