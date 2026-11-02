@@ -9,7 +9,8 @@
     "leads": "Leads",
     "factories": "Referred factories",
     "plans": "Commission plans",
-    "toAgents": "Go to agents"
+    "toAgents": "Go to agents",
+    "taxDeclarations": "ล.ย.01"
   },
   "kinds": {
     "freelance": "Freelance",
@@ -53,18 +54,16 @@
     "none": "None",
     "bountyValue": "{amount} after {jobs} completed jobs within {days} days",
     "pctHint": "Of net sales before VAT, after discounts",
-    "capHint": "Commission on an order never exceeds this share of its gross margin",
-    "bountyHint": "0 if this plan pays no factory bounty",
     "errors": {
       "firstOrderPct": "Enter the first-order rate as a number from 0 to 99.99",
       "repeatOrderPct": "Enter the repeat-order rate as a number from 0 to 99.99",
-      "marginCapPct": "Enter the margin cap as a number from 0 to 99.99",
       "minBaseAmount": "Enter the minimum base as an amount",
-      "factoryBountyAmount": "Enter the factory bounty as an amount",
-      "attributionMonths": "Enter at least 1 month",
-      "factoryQualifyJobs": "Enter at least 1 job",
-      "factoryQualifyDays": "Enter at least 1 day"
-    }
+      "attributionMonths": "Enter at least 1 month"
+    },
+    "cap": "Commission cap",
+    "uncapped": "None (D-464)",
+    "uncappedHint": "No commission cap and no factory bounty any more (D-464, P-03). Management is alerted when commission exceeds the set share of gross margin; the commission is never cut.",
+    "bountyHistory": "Factory bounty {amount} (retired)"
   },
   "list": {
     "title": "Sales agents",
@@ -458,7 +457,8 @@
     "decided": "Saved",
     "failed": "That didn't work",
     "adjust": "Adjust commission",
-    "empty": "No commission yet"
+    "empty": "No commission yet",
+    "marginAlert": "Above margin share"
   },
   "adjust": {
     "title": "Adjust commission",
@@ -523,7 +523,7 @@
         "label": "Approve",
         "title": "Approve statement",
         "done": "Approved",
-        "bodyFreelance": "{agent}'s {no} for {amount} becomes a vendor bill (account 6160) with PND 1 withholding, paid in the next payout run. Type the number to confirm.",
+        "bodyFreelance": "{no} of {agent}, {amount}, becomes a vendor bill (account 6160). Withholding is worked out on approval (individual: progressive, ภ.ง.ด.1 · company: 3%, ภ.ง.ด.53) and paid in the next payout run. Type the number to confirm.",
         "bodyEmployee": "{agent}'s {no} for {amount} is accrued (AG01) and ready for the payroll file. Type the number to confirm."
       },
       "void": {
@@ -537,6 +537,12 @@
         "title": "Record payment through payroll",
         "body": "{agent}'s {no} for {amount} was paid with salary",
         "done": "Recorded"
+      },
+      "attachTaxInvoice": {
+        "label": "Attach tax invoice",
+        "title": "Attach the agent’s tax invoice",
+        "body": "{agent}’s tax invoice for {no}, {amount} before VAT",
+        "done": "Attached"
       }
     },
     "voided": "Voided",
@@ -562,7 +568,25 @@
     },
     "paidOn": "Paid on",
     "reason": "Reason",
-    "failed": "That didn't work"
+    "failed": "That didn't work",
+    "whtMethodLabel": "Withholding method",
+    "whtMethod": {
+      "progressive_40_2": "Individual: progressive (ภ.ง.ด.1)",
+      "juristic_service": "Company: 3% (ภ.ง.ด.53)",
+      "payroll": "Through payroll"
+    },
+    "whtWorking": "Withholding working (D-465)",
+    "whtYtd": "Paid this year incl. this statement",
+    "whtProjected": "Projected year",
+    "whtAllowances": "Allowances",
+    "whtAnnualTax": "Annual tax (projected)",
+    "taxInvoice": "Agent’s tax invoice",
+    "taxInvoiceNeeded": "A VAT-registered company agent’s tax invoice is needed before approval",
+    "taxInvoiceNo": "Tax invoice no.",
+    "taxInvoiceFile": "Tax invoice file",
+    "pickFile": "Choose a PDF or picture",
+    "taxInvoiceAttached": "Tax invoice attached",
+    "taxInvoiceMissing": "Enter the number and attach the file"
   },
   "plans": {
     "title": "Commission plans",
@@ -623,7 +647,7 @@
     },
     "versionNo": "Version {no}",
     "inForce": "In force",
-    "rates": "First {first} · repeat {repeat} · cap {cap} · {months} months",
+    "rates": "First {first} · repeat {repeat} · {months} months",
     "proposedBy": "Proposed by {name}",
     "decidedBy": "Decided by {name} {date}",
     "ownProposal": "Your proposal — someone else approves it",
@@ -647,5 +671,58 @@
     "retiredDone": "Plan retired",
     "failed": "That didn't work",
     "panelTitle": "This plan"
+  },
+  "taxDeclarations": {
+    "title": "Agents’ ล.ย.01",
+    "description": "Allowances individual agents declare for the progressive withholding; used only once Finance accepts them (D-465).",
+    "statusesLabel": "ล.ย.01 status",
+    "all": "All",
+    "search": "Search agents",
+    "empty": "No ล.ย.01 yet",
+    "columns": {
+      "agent": "Agent",
+      "taxYear": "Tax year",
+      "total": "Allowances",
+      "evidence": "Evidence",
+      "status": "Status",
+      "submitted": "Sent"
+    },
+    "evidenceCount": "{count, plural, one {# file} other {# files}}",
+    "yearOf": "Tax year {year}",
+    "decidePanel": "Check and decide",
+    "decision": "Decision",
+    "decideHint": "Check the amounts against the evidence under the Revenue Department rules; they apply to the next statements of this tax year.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "acceptTitle": "Accept the ล.ย.01",
+    "acceptBody": "{name}’s allowances of {amount} will be used for the withholding in tax year {year}",
+    "rejectTitle": "Reject the ล.ย.01",
+    "rejectBody": "{name} sees this reason and can send a new one",
+    "reason": "Reason",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "failed": "Could not save",
+    "allowances": "Allowances requested",
+    "allowancesNote": "Per year; the personal allowance is added on top.",
+    "noAllowances": "None",
+    "noEvidence": "No evidence attached",
+    "fields": {
+      "spouse": "Spouse with no income",
+      "children": "Children",
+      "parents": "Parents",
+      "disabledDependants": "Disabled dependants",
+      "lifeInsurance": "Life insurance",
+      "healthInsurance": "Health insurance",
+      "parentsHealthInsurance": "Parents’ health insurance",
+      "pensionInsurance": "Pension insurance",
+      "providentFund": "Provident fund",
+      "rmf": "RMF",
+      "ssf": "SSF",
+      "thaiEsg": "Thai ESG",
+      "socialSecurity": "Social security",
+      "homeLoanInterest": "Home loan interest",
+      "donations": "Donations",
+      "educationDonations": "Education donations"
+    }
   }
 }

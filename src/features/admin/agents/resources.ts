@@ -17,6 +17,7 @@ export type AgentPlan = Schemas["AgentPlanDto"];
 export type AgentPlanVersion = Schemas["AgentPlanVersionDto"];
 export type AgentPlanTerms = Schemas["AgentPlanTermsDto"];
 export type AgentKind = Schemas["AgentKind"];
+export type AgentTaxDeclaration = Schemas["AdminAgentTaxDeclarationDto"];
 
 export const AGENT_KINDS = ["freelance", "employee"] as const satisfies readonly AgentKind[];
 export const AGENT_STATUSES = ["active", "suspended", "ended"] as const satisfies readonly Schemas["AgentStatus"][];
@@ -126,4 +127,21 @@ export const statementsList = defineList<AgentStatement>({
   getRowId: (row) => row.id,
   getRowName: (row) => row.statementNo,
   defaults: { filterKeys: ["status", "period", "kind", "agentId"] },
+});
+
+export const TAX_DECLARATION_STATUSES = [
+  "submitted",
+  "accepted",
+  "rejected",
+] as const satisfies readonly Schemas["AgentTaxDeclarationStatus"][];
+
+/** D-465: ล.ย.01 declarations for Finance (`agent_tax_declarations.review`). */
+export const taxDeclarationsList = defineList<AgentTaxDeclaration>({
+  key: "agent_tax_declaration",
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/agent-tax-declarations", { params: { query: query as never } })).data!,
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.agent.legalName,
+  defaults: { filterKeys: ["status", "taxYear"] },
+  staleTime: STALE_TIME.live,
 });

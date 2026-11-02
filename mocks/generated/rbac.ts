@@ -6,7 +6,7 @@
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "6ec8adba", tag: "v0.75.0" } as const;
+export const RBAC_SOURCE = { commit: "02f0c965", tag: "v0.75.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -15,6 +15,7 @@ export const STAFF_PERMISSIONS = [
   "agent_plans.approve",
   "agent_plans.manage",
   "agent_statements.approve",
+  "agent_tax_declarations.review",
   "agents.manage",
   "agents.read",
   "agreements.manage",
@@ -198,6 +199,7 @@ export type StaffPermission = (typeof STAFF_PERMISSIONS)[number];
 export const SENSITIVE_PERMISSIONS: readonly StaffPermission[] = [
   "agent_plans.approve",
   "agent_statements.approve",
+  "agent_tax_declarations.review",
   "factory_buy_prices.read",
   "factory_cost.read",
   "factory_shipping_rates.manage",
@@ -216,6 +218,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "agent_plans.approve",
     "agent_plans.manage",
     "agent_statements.approve",
+    "agent_tax_declarations.review",
     "agents.manage",
     "agents.read",
     "agreements.manage",
@@ -787,6 +790,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
   finance_manager: [
     "agent_commissions.adjust",
     "agent_statements.approve",
+    "agent_tax_declarations.review",
     "agents.read",
     "approvals.act",
     "approvals.delegate",
