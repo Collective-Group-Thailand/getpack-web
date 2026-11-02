@@ -43,3 +43,46 @@ files read as text. getpack tokens, Anuphan and the light theme win over any ski
 ### Admin — statement detail
 - New "การคำนวณภาษีหัก ณ ที่จ่าย (D-465)" section: method, YTD, projected year, allowances, annual tax — every figure
   the API's. "แนบใบกำกับภาษี" action for company agents before approval (number + file, If-Match).
+
+## P1 — entry points and two-step apply (D-466)
+
+### Landing `/agent` (public, indexable, th + en)
+- Same hero family as /business and /partner-with-us (light paper, two-column grid from 1280 px, the h1 with one
+  `<em>` in the primary colour). No eyebrow (design-language test). Primary CTA "สมัครเป็นตัวแทน" → /agent/apply,
+  secondary scrolls to the commission section; three trust ticks (free, no stock, WHT handled).
+- Hero story (`AgentStory`): four scenes — share the link, a lead moving through stages, a quote sent, paid — drawn
+  with placeholder lines, never an invented customer, order or date. The paid figure is the API's worked example.
+- Commission: first/repeat rates from `store.agentProgramme.public`, a worked-example table (`th scope=row`, sr-only
+  header row), "ไม่จำกัดรายได้" as the section title (D-464), and a calculator whose figures come from
+  `store.agentProgramme.example` (debounced 300 ms, polite live region, text validated, "—" before a result —
+  never "฿0"). The web does no arithmetic.
+- How it works (3 numbered cards), benefits (5 cards), audience chips, FAQ (`details/summary`, FAQPage JSON-LD only
+  when Marketing has published questions), final CTA band on the primary tint, link to /partner-with-us for makers.
+- JSON-LD: BreadcrumbList, WebPage, FAQPage. Sitemap priority 0.6, llms.txt entry.
+
+### Apply `/agent/apply` (step 1)
+- Sign-in first (the application belongs to an account); agent / pending applicant are redirected to /account/agent;
+  flag off → plain "not open" callout; no agreement → plain callout. Nothing promised.
+- `ApplySteps`: two cards, `aria-current="step"`, so the applicant knows step 2 (tax, bank) comes later.
+- Form: juristic segmented control, name, phone with inline OTP (a phone already verified at sign-in needs no code;
+  any other number: send → 6-digit `OTPInput`, auto-confirm on complete, resend countdown), e-mail, LINE id,
+  sales-channel checkboxes (2 columns from 640 px), pitch, agreement read in a `Sheet` with "อ่านแล้ว ยอมรับ"
+  that ticks the box. One error summary callout focused on submit; per-field errors via `Field`.
+
+### Payout profile `/account/agent/payout` (step 2)
+- New "ข้อมูลรับเงิน" tab. A status callout (none / draft / submitted / verified / rejected with the reason) above
+  the form; fieldsets disabled while Finance checks. The full account number is never shown again — the hint says
+  which last four digits are on file and that blank keeps it. "ส่งให้ฝ่ายการเงินตรวจ" (save + submit) is primary,
+  "บันทึกไว้ก่อน" secondary.
+- Agent home: a warning callout links to the payout tab until the profile is verified (hidden while it waits).
+
+### Entry points
+- Header: "ตัวแทนขาย" in the bar from 74 rem only (the 1040–1184 px width budget stays as it was) and always in the
+  drawer. Footer company column, /account card (only for non-agents while applications are open), /business and
+  /partner-with-us text links. No "โรงงาน" in any agent surface (wording test).
+
+### Admin — payout profiles (`/admin/agents/payout-profiles`)
+- Same desk frame as ล.ย.01: status tabs with counts, warning tone on waiting rows; review shows the details as a
+  definition list, documents as short-lived links, verify (If-Match) / send back (reason ≥3) in the action panel.
+- Applications review: two-step applications show LINE id and channels; the bank section says details come after
+  approval instead of empty rows.
