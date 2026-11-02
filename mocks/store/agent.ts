@@ -87,7 +87,7 @@ export const storeAgentHandlers = [
   }),
   http.post("*/v1/store/agent/phone-verification/actions/confirm", async ({ request }) => {
     const body = (await request.json()) as Schemas["OtpVerifyDto"];
-    if (body.code !== "123456") return problem(422, "auth.otp_invalid", "รหัสไม่ถูกต้อง (รหัสจำลองคือ 123456)");
+    if (body.code !== "000000") return problem(422, "auth.otp_invalid", "รหัสไม่ถูกต้อง (รหัสจำลองคือ 000000)");
     return HttpResponse.json({ phone: otpPhone ?? "0810000000" } satisfies Schemas["AgentPhoneVerifiedDto"]);
   }),
   http.get("*/v1/store/agent/payout-profile", ({ request }) => {
