@@ -151,7 +151,10 @@
     "companyCreditAvailable": "Credit available {amount}",
     "businessTitle": "Order as a company, pay on credit terms",
     "businessBody": "Open a free company account: one account for the team, tax invoices per branch, and a credit limit once you meet the terms",
-    "businessAction": "See company accounts"
+    "businessAction": "See company accounts",
+    "agentTitle": "Become a getpack sales agent",
+    "agentBody": "Introduce new customers to getpack and earn commission when they order. Free to join.",
+    "agentAction": "Learn more"
   },
   "quotes": {
     "title": "Saved quotations",

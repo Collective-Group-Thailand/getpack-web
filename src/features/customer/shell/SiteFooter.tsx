@@ -55,6 +55,7 @@ export async function SiteFooter() {
       links: [
         { key: "about", href: "/about" },
         { key: "network", href: "/network" },
+        { key: "agent", href: "/agent" },
         { key: "partner", href: "/partner-with-us" },
         { key: "guarantee", href: "/guarantee" },
         { key: "reviews", href: "/reviews" },
