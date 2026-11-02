@@ -47,3 +47,24 @@
   - Landing benefits "quote in your name" and "getpack Agent app" depend on P3 / P2 shipping — re-check at P7 before the flag opens
   - Lighthouse performance must be confirmed in CI (VM throttling)
 - Screenshots: `docs/design/agent-portal/screenshots/P1/` (landing, apply, payout empty, admin queue/review; phone 390 + desktop 1440)
+
+## P2 — Agent zone agent.getpack.co (PWA "getpack Agent") · PASS
+- Branches `feat/agent-p2-zone` · merge SHAs: api `16211925`, web `ee7c593f`
+- Delivered
+  - API: sessions record their surface (`client` storefront|agent), list/revoke my sessions per surface; storefront → agent hand-off by one-time code (60 s, single use, fingerprint-bound, hashed, audited); agent-zone guard on every `/v1/store/agent` handler (ended agents: statements + 50 ทวิ for `agents.ended_record_access_years` = 5); agent web push; notification choices per event × channel (payment/tax e-mails locked on, D-144); lead-protection reminders 7 and 1 days; seeds for push/LINE/e-mail routes
+  - Web: fourth host zone `agent` (env AGENT_HOST, BFF allow-list, CSP, ESLint boundaries, noindex); sign-in OTP/LINE/Google/Apple with `client: "agent"`; hand-off button on the storefront (code in the URL fragment); installable PWA (manifest, icons, service worker, install prompt after 2nd visit, iOS guide); shell — phone tab bar (ภาพรวม · ลูกค้ามุ่งหวัง · ใบเสนอราคา · ค่าคอม), tablet rail, desktop sidebar; all agent pages moved (overview, customers, leads, commissions, statements + 50 ทวิ, payout, tax, notifications, profile with sessions); `/account/agent/**` → 308; share sheet (Web Share, copy, LINE, full-screen QR)
+- Decisions recorded: D-467 (both repos)
+- Gate results
+  - API: typecheck ✔ · lint ✔ · unit 1,705 ✔ · contract:build (no drift) + Spectral ✔ · migrations ×3 with down.sql, rollback + redeploy ✔ · seed idempotent ✔ · confidentiality spec extended ✔ · e2e SKIPPED-DOCKER (agents e2e extended)
+  - Web: typecheck ✔ · lint ✔ · unit 1,878 ✔ · build ✔ · gen:api:check ✔ · tokens:check ✔ · e2e P0+P1+P2 26/26 ✔ (+ zones.spec) · no horizontal scroll 360–1920 ✔ · Lighthouse mobile: agent `/` perf 94 / a11y 100, `/sign-in` perf 77 (VM) / a11y 100 · PWA installable (manifest, icons, active worker — e2e; this Lighthouse has no PWA category)
+  - Wording/confidentiality (agent deny-list extended to src/features/agent) ✔ · Anuphan only, light surfaces ✔ · commits Superball, no trailers ✔
+- Assumptions taken
+  - `statement_ready` = statement approved (amounts and WHT final); operation ids follow the contract pattern (`auth.customerHandoff.*`, `store.agentPush.*`, `store.agentNotificationPreferences.*`)
+  - Channel enum reuses `PartnerNotificationChannel` (Spectral forbids duplicate shapes)
+  - Ended agents lose ล.ย.01 and payout profile access (Finance handles late cases)
+  - The API has no CORS host list (web calls it server-side), so AGENT_HOST is web-only
+  - ใบเสนอราคา tab in P2 = how a quote reaches a customer today + share actions (P3 brings quotes on behalf)
+- Open questions
+  - Push/LINE deep links for agent events are null until P3 routes settle
+- Screenshots: `docs/design/agent-portal/screenshots/P2/` (overview, leads, commissions, statements, payout, tax, notifications, profile, sign-in; phone 390 + desktop 1440; overview tablet 768)
+
