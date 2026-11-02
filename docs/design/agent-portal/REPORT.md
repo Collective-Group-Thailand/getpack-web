@@ -28,7 +28,7 @@
 - Screenshots: `docs/design/agent-portal/screenshots/P0/` (agent home, ล.ย.01 empty/submitted, statement, admin queue/review; phone 390 + desktop 1440)
 
 ## P1 — Entry points and two-step apply · PASS
-- Branches `feat/agent-p1-entry` · merge SHAs: api `e28f4962`, web (see AUTORUN-STATE)
+- Branches `feat/agent-p1-entry` · merge SHAs: api `e28f4962`, web `6a01d784`
 - Delivered
   - API: step-1 application (name, verified phone, e-mail, LINE, sales channels, pitch, agreement) behind flag `agents.programme`; phone OTP `store.agentPhone.request/confirm`; payout profile (Thai tax-id check digit, bank-name match, encrypted account, draft → submitted → verified/rejected) with Finance verification creating the vendor and proposing the bank account (dual approval); statements without a verified profile stay draft with `payout_profile_missing`; public programme + commission example endpoints; FAQ drafts, notifications, flag seed
   - Web: landing `/agent` (th/en, JSON-LD, calculator from the API), `/agent/apply`, `/account/agent/payout`, non-agent account page as compact landing, admin payout-profile queue/review, entry points (header ≥74 rem + drawer, footer, /account, /business, /partner-with-us)
