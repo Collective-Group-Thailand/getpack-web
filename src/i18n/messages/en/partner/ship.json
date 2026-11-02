@@ -94,7 +94,6 @@
     "photos": "Delivery photos",
     "photosHint": "Photograph the goods where they were left",
     "receiver": "Received by",
-    "receiverRecorded": "Recorded",
     "delivered": "Delivered quantity",
     "deliveredHint": "This shipment: {quantity}",
     "signature": "Receiver's signature",
@@ -141,7 +140,8 @@
       "labelBody": "One label per carton; the packing list travels with the goods",
       "send": "2. Send",
       "sendBody": "Send with your own truck, or ask getpack to book a carrier"
-    }
+    },
+    "receiverRecorded": "Recorded"
   },
   "tolerance": {
     "exact": "Delivered in full",

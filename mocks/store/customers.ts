@@ -43,6 +43,8 @@ export type CustomerPersona =
   | "creditbuyer"
   | "founder"
   | "designer"
+  /** An approved freelance sales agent (agent portal pack, `./agent.ts`). */
+  | "agent"
   /** A scorecard round's participant, P01–P10 (`../uat.ts`; only with `MOCK_DATASET=uat`). */
   | `uat_p${string}`;
 
@@ -58,6 +60,7 @@ export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0892223333": "creditbuyer",
   "0889012345": "founder",
   "0856789012": "designer",
+  "0861234567": "agent",
   ...Object.fromEntries(uatParticipants().map((participant) => [participant.phone, uatPersona(participant)])),
 };
 
@@ -222,6 +225,13 @@ function fresh(persona: CustomerPersona): MockCustomer {
       ownerIndex: 7,
     },
     artist: { n: 4, name: "ลูกค้าส่งไฟล์งาน (ข้อมูลจำลอง)", email: "seed.artist", phone: "0834567890", ownerIndex: 3 },
+    agent: {
+      n: 12,
+      name: "ตัวแทนขายอิสระ (ข้อมูลจำลอง)",
+      email: "seed.agent",
+      phone: "0861234567",
+      ownerIndex: null,
+    },
     designer: {
       n: 9,
       name: "ลูกค้าออกแบบออนไลน์ (ข้อมูลจำลอง)",
@@ -262,6 +272,7 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   creditbuyer: fresh("creditbuyer"),
   founder: fresh("founder"),
   designer: fresh("designer"),
+  agent: fresh("agent"),
   ...Object.fromEntries(
     uatParticipants().map((participant) => [uatPersona(participant), fresh(uatPersona(participant))]),
   ),

@@ -9,6 +9,8 @@ import { describe, expect, it } from "vitest";
  */
 const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/shared/shell/NotificationBell.tsx": "inside the bell's popover; closing it is the next step",
+  "src/features/shared/errors/PageError.tsx":
+    "a 403 / 404 answer rendered inside the page's own frame, whose back link and navigation stay on screen",
 };
 
 const CUSTOMER = ["src/app/[[]locale]/**/*.tsx", "src/features/customer/**/*.tsx", "src/features/shared/**/*.tsx"];
