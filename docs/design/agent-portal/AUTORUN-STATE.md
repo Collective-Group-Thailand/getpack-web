@@ -5,7 +5,7 @@ Maintained by the autorun (block A of `AGENT-PORTAL-AUTORUN.md`). Identical copy
 ## Status
 
 - Started: 2026-11-02 22:18 Asia/Bangkok
-- Current phase: P0
+- Current phase: P1
 - Step: api
 - Overall: RUNNING
 
@@ -13,8 +13,9 @@ Maintained by the autorun (block A of `AGENT-PORTAL-AUTORUN.md`). Identical copy
 
 - Runs in a Linux workspace linked to the owner's folder `~/Collective/getpack` (both repos cloned from GitHub,
   the owner's unpushed main commits applied by bundle, main pushed). Node 24.11.0, pnpm 10.18.1.
-- Docker: **not available** → every Docker gate (API e2e, web e2e/visual) is SKIPPED-DOCKER; unit, lint,
-  typecheck, build, contract, migrate status, confidentiality and golden tests run.
+- Docker: **not available** → API e2e / integration are SKIPPED-DOCKER. Web e2e runs against the MSW mock server
+  (`pnpm build && pnpm start -p 3100` with the playwright zone env), so it is NOT skipped.
+- RAM 8 GB + 10 GB swap added (next build needs it); gates run one at a time.
 - Database: local PostgreSQL 16 + pgvector with a `uuidv7()` shim (production is PostgreSQL 18); the owner's UAT
   copy DB on his Mac is not reachable from here → data jobs run dry-run against the local DB; UAT runs listed under
   "สิ่งที่คุณต้องทำ".
@@ -28,11 +29,12 @@ Maintained by the autorun (block A of `AGENT-PORTAL-AUTORUN.md`). Identical copy
 | Phase | Branch | api | web |
 |---|---|---|---|
 | docs | main | c868f281 | b3a2e015 |
+| P0 | feat/agent-p0-rules → main | merge fbaceab4 | merge e0176433 |
 
 ## Last commit per repo
 
-- getpack-api: c868f281 (main)
-- getpack-web: b3a2e015 (main)
+- getpack-api: fbaceab4 (main, P0 merged)
+- getpack-web: e0176433 (main, P0 merged)
 
 ## BLOCKED
 
@@ -48,4 +50,4 @@ Maintained by the autorun (block A of `AGENT-PORTAL-AUTORUN.md`). Identical copy
 
 ## Decisions recorded
 
-(none yet)
+- D-464, D-465 (P0)
