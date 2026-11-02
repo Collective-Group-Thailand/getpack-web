@@ -104,3 +104,11 @@ export async function getMyStatement(statementId: string): Promise<AgentStatemen
     throw error;
   }
 }
+
+export type MyTaxDeclaration = Schemas["MyTaxDeclarationDto"];
+
+/** My ล.ย.01 of the current tax year (`store.agentTaxDeclaration.get`, D-465). */
+export async function getMyTaxDeclaration(): Promise<MyTaxDeclaration> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/agent/tax-declaration");
+  return data!;
+}

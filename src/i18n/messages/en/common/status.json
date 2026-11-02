@@ -1077,5 +1077,10 @@
   "stockAvailability": {
     "in_stock": "In stock",
     "out_of_stock": "Out of stock"
+  },
+  "agentTaxDeclaration": {
+    "submitted": "Waiting",
+    "accepted": "In use",
+    "rejected": "Not accepted"
   }
 }

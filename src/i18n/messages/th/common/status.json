@@ -1077,5 +1077,10 @@
   "stockAvailability": {
     "in_stock": "พร้อมส่ง",
     "out_of_stock": "สินค้าหมด"
+  },
+  "agentTaxDeclaration": {
+    "submitted": "รอตรวจ",
+    "accepted": "ใช้แล้ว",
+    "rejected": "ไม่ผ่าน"
   }
 }
