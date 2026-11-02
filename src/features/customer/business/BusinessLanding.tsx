@@ -423,6 +423,17 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
               </TrackedLink>
             </Button>
           </div>
+          {/* D-466: for people who bring customers rather than buy — the agent programme. */}
+          <p className="text-muted mt-4 text-sm">
+            <TrackedLink
+              event="biz_cta"
+              target="agent"
+              href="/agent"
+              className="hover:text-fg underline underline-offset-4"
+            >
+              {t("visibility.agentLink")}
+            </TrackedLink>
+          </p>
         </section>
       </div>
 

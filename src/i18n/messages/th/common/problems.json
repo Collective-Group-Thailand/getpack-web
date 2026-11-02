@@ -47,7 +47,16 @@
     "tax_declaration_decided": "แบบ ล.ย.01 นี้ตรวจแล้ว",
     "tax_declaration_not_applicable": "ไม่ต้องส่ง ล.ย.01",
     "tax_declaration_open": "มีแบบ ล.ย.01 รอตรวจอยู่แล้ว",
-    "too_many_leads": "ผู้มุ่งหวังเต็มแล้ว"
+    "too_many_leads": "ผู้มุ่งหวังเต็มแล้ว",
+    "payout_profile_not_submitted": "ข้อมูลรับเงินนี้ไม่ได้อยู่ในสถานะรอตรวจ",
+    "payout_profile_missing": "ตัวแทนยังไม่มีข้อมูลรับเงินที่ตรวจแล้ว จึงยังอนุมัติจ่ายไม่ได้",
+    "phone_in_use": "เบอร์นี้ใช้กับบัญชีอื่นอยู่แล้ว",
+    "programme_closed": "ตอนนี้ยังไม่เปิดรับสมัครตัวแทน",
+    "phone_unverified": "ยืนยันเบอร์มือถือก่อนส่งใบสมัคร",
+    "payout_profile_waiting": "ข้อมูลรับเงินรอฝ่ายการเงินตรวจอยู่ แก้ไขไม่ได้ระหว่างนี้",
+    "bank_name_mismatch": "ชื่อบัญชีธนาคารต้องตรงกับชื่อตามกฎหมาย",
+    "payout_profile_not_applicable": "ตัวแทนที่เป็นพนักงานรับค่าตอบแทนผ่านเงินเดือน",
+    "payout_profile_verified": "ข้อมูลรับเงินนี้ตรวจแล้ว"
   },
   "approval": {
     "already_acted": "คุณอนุมัติคำขอนี้ไปแล้ว",

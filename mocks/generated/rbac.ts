@@ -6,12 +6,13 @@
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "02f0c965", tag: "v0.75.0" } as const;
+export const RBAC_SOURCE = { commit: "345bfc70", tag: "v0.75.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
   "advisory.read",
   "agent_commissions.adjust",
+  "agent_payout_profiles.verify",
   "agent_plans.approve",
   "agent_plans.manage",
   "agent_statements.approve",
@@ -197,6 +198,7 @@ export type StaffPermission = (typeof STAFF_PERMISSIONS)[number];
 
 /** Cost and margin data (D-141), marked ◆ in the source. */
 export const SENSITIVE_PERMISSIONS: readonly StaffPermission[] = [
+  "agent_payout_profiles.verify",
   "agent_plans.approve",
   "agent_statements.approve",
   "agent_tax_declarations.review",
@@ -215,6 +217,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "advisory.evaluate",
     "advisory.read",
     "agent_commissions.adjust",
+    "agent_payout_profiles.verify",
     "agent_plans.approve",
     "agent_plans.manage",
     "agent_statements.approve",
@@ -789,6 +792,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
   ],
   finance_manager: [
     "agent_commissions.adjust",
+    "agent_payout_profiles.verify",
     "agent_statements.approve",
     "agent_tax_declarations.review",
     "agents.read",

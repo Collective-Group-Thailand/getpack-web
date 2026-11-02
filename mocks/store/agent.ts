@@ -24,12 +24,121 @@ const TERMS: Schemas["StoreAgentTermsDto"] = {
 const AGENT_ID = "00000000-0000-4000-8000-0000000a0001";
 
 let declaration: Schemas["AgentTaxDeclarationDto"] | null = null;
+let payoutProfile: Schemas["AgentPayoutProfileDto"] | null = null;
+let otpPhone: string | null = null;
 
 export function resetAgentMock(): void {
   declaration = null;
+  payoutProfile = null;
+  otpPhone = null;
 }
 
+/** The public programme the landing reads (D-466) — open for applications in the mock so the flow can be walked. */
+const PUBLIC_PROGRAMME: Schemas["PublicAgentProgrammeDto"] = {
+  terms: TERMS,
+  linkCookieDays: 90,
+  leadProtectionDays: 60,
+  paymentTermsDays: 15,
+  applyOpen: true,
+  agreement: {
+    key: "sales_agent_agreement",
+    versionNo: 1,
+    effectiveFrom: "2026-01-01T00:00:00+07:00",
+    textTh: "ข้อตกลงตัวแทนขาย (ข้อความจำลองสำหรับทดสอบ ไม่ใช่ข้อตกลงจริง)",
+    textEn: "Sales agent agreement (mock text for testing — not the real agreement)",
+  },
+  examples: [
+    { orderValue: "20000.00", firstOrder: "1000.00", repeatOrder: "600.00" },
+    { orderValue: "100000.00", firstOrder: "5000.00", repeatOrder: "3000.00" },
+    { orderValue: "1000000.00", firstOrder: "50000.00", repeatOrder: "30000.00" },
+  ],
+  faqs: [
+    {
+      questionTh: "คำถามตัวอย่าง (ข้อมูลจำลอง)",
+      questionEn: "Sample question (mock)",
+      answerTh: "คำตอบตัวอย่างจากระบบจำลอง คำถามจริงมาจากทีมการตลาด",
+      answerEn: "A mock answer; the real questions come from Marketing.",
+    },
+  ],
+};
+
 export const storeAgentHandlers = [
+  http.get("*/v1/store/agent/programme/public", () => HttpResponse.json(PUBLIC_PROGRAMME)),
+  // The API computes the example; the mock does the same so the calculator shows a figure (never the web).
+  http.get("*/v1/store/agent/programme/example", ({ request }) => {
+    const value = new URL(request.url).searchParams.get("orderValue") ?? "0";
+    const satang = Math.round(Number(value) * 100);
+    return HttpResponse.json({
+      orderValue: (satang / 100).toFixed(2),
+      firstOrder: (Math.round(satang * 0.05) / 100).toFixed(2),
+      repeatOrder: (Math.round(satang * 0.03) / 100).toFixed(2),
+    } satisfies Schemas["AgentCommissionExampleDto"]);
+  }),
+  http.post("*/v1/store/agent/phone-verification", async ({ request }) => {
+    otpPhone = ((await request.json()) as Schemas["AgentPhoneOtpRequestDto"]).phone;
+    const now = Date.now();
+    return HttpResponse.json({
+      challengeId: "00000000-0000-4000-8000-00000000c0de",
+      codeLength: 6,
+      expiresAt: new Date(now + 5 * 60_000).toISOString(),
+      maxAttempts: 5,
+      resendAvailableAt: new Date(now + 30_000).toISOString(),
+    } satisfies Schemas["OtpChallengeDto"]);
+  }),
+  http.post("*/v1/store/agent/phone-verification/actions/confirm", async ({ request }) => {
+    const body = (await request.json()) as Schemas["OtpVerifyDto"];
+    if (body.code !== "000000") return problem(422, "auth.otp_invalid", "รหัสไม่ถูกต้อง (รหัสจำลองคือ 000000)");
+    return HttpResponse.json({ phone: otpPhone ?? "0810000000" } satisfies Schemas["AgentPhoneVerifiedDto"]);
+  }),
+  http.get("*/v1/store/agent/payout-profile", ({ request }) => {
+    if (!isAgent(request)) return undefined;
+    return HttpResponse.json(
+      {
+        applicable: true,
+        juristicType: "individual",
+        payoutReady: payoutProfile?.status === "verified",
+        profile: payoutProfile,
+      } satisfies Schemas["MyPayoutProfileDto"],
+      payoutProfile ? { headers: { ETag: `W/"${payoutProfile.rowVersion}"` } } : undefined,
+    );
+  }),
+  http.put("*/v1/store/agent/payout-profile", async ({ request }) => {
+    if (!isAgent(request)) return undefined;
+    const body = (await request.json()) as Schemas["UpsertAgentPayoutProfileDto"];
+    const digits = (body.bankAccountNo ?? "").replace(/[^0-9]/g, "");
+    payoutProfile = {
+      id: "00000000-0000-4000-8000-0000000a0301",
+      status: "draft",
+      legalName: body.legalName ?? null,
+      taxId: body.taxId ?? null,
+      branchCode: body.branchCode ?? "00000",
+      isVatRegistered: body.isVatRegistered ?? false,
+      address: body.address ?? null,
+      postcode: body.postcode ?? null,
+      idDocument: body.idDocumentFileId ? { id: body.idDocumentFileId, originalName: "id-card.jpg" } : null,
+      bankCode: body.bankCode ?? null,
+      bankBranchName: body.bankBranchName ?? null,
+      bankAccountName: body.bankAccountName ?? null,
+      bankAccountNoLast4: digits ? digits.slice(-4) : (payoutProfile?.bankAccountNoLast4 ?? null),
+      bankBook: body.bankBookFileId ? { id: body.bankBookFileId, originalName: "bank-book.jpg" } : null,
+      submittedAt: null,
+      verifiedAt: null,
+      rejectReason: null,
+      rowVersion: (payoutProfile?.rowVersion ?? 0) + 1,
+    };
+    return HttpResponse.json(payoutProfile, { headers: { ETag: `W/"${payoutProfile.rowVersion}"` } });
+  }),
+  http.post("*/v1/store/agent/payout-profile/actions/submit", ({ request }) => {
+    if (!isAgent(request)) return undefined;
+    if (!payoutProfile) return problem(404, "http.not_found", "ยังไม่มีข้อมูลรับเงิน");
+    payoutProfile = {
+      ...payoutProfile,
+      status: "submitted",
+      submittedAt: new Date().toISOString(),
+      rowVersion: payoutProfile.rowVersion + 1,
+    };
+    return HttpResponse.json(payoutProfile);
+  }),
   http.get("*/v1/store/agent/programme", ({ request }) => {
     if (!isAgent(request)) return undefined;
     return HttpResponse.json({

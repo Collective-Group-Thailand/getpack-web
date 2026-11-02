@@ -47,7 +47,16 @@
     "tax_declaration_decided": "Already decided",
     "tax_declaration_not_applicable": "No ล.ย.01 needed",
     "tax_declaration_open": "A ล.ย.01 is waiting",
-    "too_many_leads": "Too many leads"
+    "too_many_leads": "Too many leads",
+    "payout_profile_not_submitted": "This payout profile isn't waiting for review",
+    "payout_profile_missing": "The agent has no verified payout details yet, so this can't be approved",
+    "phone_in_use": "That number is already used by another account",
+    "programme_closed": "Agent applications aren't open right now",
+    "phone_unverified": "Verify your mobile number before applying",
+    "payout_profile_waiting": "Your payout details are with Finance and can't be changed meanwhile",
+    "bank_name_mismatch": "The bank account name must match the legal name",
+    "payout_profile_not_applicable": "Employee agents are paid through payroll",
+    "payout_profile_verified": "These payout details are already verified"
   },
   "approval": {
     "already_acted": "Already approved by you",

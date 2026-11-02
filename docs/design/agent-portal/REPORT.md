@@ -26,3 +26,24 @@
   - A juristic agent's statement below ฿1,000 records 0 WHT but the payout run's flat service rate still withholds 3 % — edge case for the accountant
   - Agreement v2 draft not exported yet (Phase 1 needs it)
 - Screenshots: `docs/design/agent-portal/screenshots/P0/` (agent home, ล.ย.01 empty/submitted, statement, admin queue/review; phone 390 + desktop 1440)
+
+## P1 — Entry points and two-step apply · PASS
+- Branches `feat/agent-p1-entry` · merge SHAs: api `e28f4962`, web (see AUTORUN-STATE)
+- Delivered
+  - API: step-1 application (name, verified phone, e-mail, LINE, sales channels, pitch, agreement) behind flag `agents.programme`; phone OTP `store.agentPhone.request/confirm`; payout profile (Thai tax-id check digit, bank-name match, encrypted account, draft → submitted → verified/rejected) with Finance verification creating the vendor and proposing the bank account (dual approval); statements without a verified profile stay draft with `payout_profile_missing`; public programme + commission example endpoints; FAQ drafts, notifications, flag seed
+  - Web: landing `/agent` (th/en, JSON-LD, calculator from the API), `/agent/apply`, `/account/agent/payout`, non-agent account page as compact landing, admin payout-profile queue/review, entry points (header ≥74 rem + drawer, footer, /account, /business, /partner-with-us)
+- Decisions recorded: D-466 (both repos)
+- Gate results
+  - API: typecheck ✔ · lint ✔ · unit 1,686 ✔ · contract:build (no drift) + Spectral ✔ · migrate status clean ✔ · rollback (down.sql → redeploy) ✔ · seed idempotent ✔ · e2e SKIPPED-DOCKER (suite rewritten for two-step; CI runs it)
+  - Web: typecheck ✔ · lint ✔ · unit 1,793 ✔ · build ✔ · gen:api:check ✔ · tokens:check ✔ · i18n ✔ · e2e `agent-portal-p1` 7/7 + `agent-portal-p0` 5/5 ✔ · no horizontal scroll 360–1920 ✔ · Lighthouse `/agent` mobile: a11y 99 · SEO 100 · best practices 100 · perf 64 (VM-limited: the approved /partner-with-us scores 67 on the same machine) → **CI lhci to confirm ≥90**
+  - Wording (no โรงงาน/factory, profit/margin, ฿0, coming soon on /agent — e2e asserts) ✔ · light theme, getpack tokens, Anuphan only ✔ · commits Superball, no trailers ✔
+- Assumptions taken
+  - A phone on the account counts as verified (signed in by OTP); otherwise the form asks for a code (API refuses `agents.phone_unverified`)
+  - Payout profile only after approval (API requires an agent); apply copy says so and promises no review time
+  - Payment copy follows `paymentTermsDays` (D-466 §5)
+  - Header link shown in the bar only from 74 rem so the 1040–1184 px width budget is unchanged
+- Open questions
+  - Agreement v2 draft still missing → v1 stays in force
+  - Landing benefits "quote in your name" and "getpack Agent app" depend on P3 / P2 shipping — re-check at P7 before the flag opens
+  - Lighthouse performance must be confirmed in CI (VM throttling)
+- Screenshots: `docs/design/agent-portal/screenshots/P1/` (landing, apply, payout empty, admin queue/review; phone 390 + desktop 1440)

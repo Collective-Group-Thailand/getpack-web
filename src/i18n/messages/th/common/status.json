@@ -1082,5 +1082,11 @@
     "submitted": "รอตรวจ",
     "accepted": "ใช้แล้ว",
     "rejected": "ไม่ผ่าน"
+  },
+  "agentPayoutProfile": {
+    "draft": "ร่าง",
+    "submitted": "รอตรวจ",
+    "verified": "ตรวจแล้ว",
+    "rejected": "ต้องแก้ไข"
   }
 }

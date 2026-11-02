@@ -16,6 +16,7 @@ export function AgentsNav() {
         { href: "/agents/commissions", label: t("commissions") },
         { href: "/agents/statements", label: t("statements") },
         { href: "/agents/tax-declarations", label: t("taxDeclarations") },
+        { href: "/agents/payout-profiles", label: t("payoutProfiles") },
         { href: "/agents/links", label: t("links") },
         { href: "/agents/leads", label: t("leads") },
         { href: "/agents/factories", label: t("factories") },

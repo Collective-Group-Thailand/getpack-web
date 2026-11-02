@@ -18,6 +18,7 @@ export type AgentPlanVersion = Schemas["AgentPlanVersionDto"];
 export type AgentPlanTerms = Schemas["AgentPlanTermsDto"];
 export type AgentKind = Schemas["AgentKind"];
 export type AgentTaxDeclaration = Schemas["AdminAgentTaxDeclarationDto"];
+export type AgentPayoutProfile = Schemas["AdminAgentPayoutProfileDto"];
 
 export const AGENT_KINDS = ["freelance", "employee"] as const satisfies readonly AgentKind[];
 export const AGENT_STATUSES = ["active", "suspended", "ended"] as const satisfies readonly Schemas["AgentStatus"][];
@@ -143,5 +144,23 @@ export const taxDeclarationsList = defineList<AgentTaxDeclaration>({
   getRowId: (row) => row.id,
   getRowName: (row) => row.agent.legalName,
   defaults: { filterKeys: ["status", "taxYear"] },
+  staleTime: STALE_TIME.live,
+});
+
+export const PAYOUT_PROFILE_STATUSES = [
+  "submitted",
+  "verified",
+  "rejected",
+  "draft",
+] as const satisfies readonly Schemas["AgentPayoutProfileStatus"][];
+
+/** D-466: agents' payout profiles for Finance (`agent_payout_profiles.verify`). */
+export const payoutProfilesList = defineList<AgentPayoutProfile>({
+  key: "agent_payout_profile",
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/agent-payout-profiles", { params: { query: query as never } })).data!,
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.agent.legalName,
+  defaults: { filterKeys: ["status"] },
   staleTime: STALE_TIME.live,
 });

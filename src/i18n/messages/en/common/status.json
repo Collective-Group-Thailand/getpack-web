@@ -1082,5 +1082,11 @@
     "submitted": "Waiting",
     "accepted": "In use",
     "rejected": "Not accepted"
+  },
+  "agentPayoutProfile": {
+    "draft": "Draft",
+    "submitted": "Waiting for review",
+    "verified": "Verified",
+    "rejected": "Needs a fix"
   }
 }

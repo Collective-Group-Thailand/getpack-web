@@ -6,7 +6,8 @@
     "leads": "Leads",
     "commissions": "Commission",
     "statements": "Statements",
-    "tax": "Tax allowances"
+    "tax": "Tax allowances",
+    "payout": "Payout details"
   },
   "home": {
     "title": "getpack sales agent",
@@ -42,11 +43,11 @@
     "joinIntro": "Introduce customers to getpack and earn commission on every paid order of the customers you bring.",
     "offer": "Standard commission",
     "applied": "Application sent on {date}",
-    "appliedBody": "Sales will check your documents and get back to you. Once approved, your agent code appears here.",
+    "appliedBody": "We'll review your application and let you know by e-mail and SMS. Once approved, your agent code appears here.",
     "rejected": "Your last application was not approved; you can correct it and apply again",
     "noAgreement": "We are not taking agent applications right now",
     "applyOpen": "Apply to be an agent",
-    "applyOpenHint": "Payee details and a bank account — about five minutes"
+    "moreAbout": "More about the agent programme"
   },
   "application": {
     "withdraw": "Withdraw application",
@@ -62,7 +63,12 @@
       "bankAccountName": "Enter the account name",
       "bankAccountNo": "Account number of 6–15 digits",
       "idDocument": "Attach your ID card or company certificate",
-      "agreement": "Read and accept the agent agreement first"
+      "agreement": "Read and accept the agent agreement first",
+      "displayName": "Enter your name",
+      "phone": "That mobile number isn't valid",
+      "phoneVerify": "Verify your mobile number with the code",
+      "email": "That e-mail isn't valid",
+      "channels": "Pick at least one channel"
     },
     "failed": "Could not send the application; try again",
     "drop": "Drop a file here",
@@ -121,7 +127,59 @@
     "pitchHint": "For example cafés and bakeries in your area, or print shops you know",
     "agreement": "Sales agent agreement (version {version})",
     "accept": "I have read and accept this sales agent agreement",
-    "submit": "Send application"
+    "submit": "Send application",
+    "steps": {
+      "label": "Application steps",
+      "one": "1 · Apply",
+      "oneBody": "Name, phone, e-mail and how you sell — about two minutes",
+      "two": "2 · Payout details",
+      "twoBody": "Tax id, address and bank account — before your first payout"
+    },
+    "whoStep1": "Who you are",
+    "displayName": "Full name",
+    "companyName": "Company or partnership name",
+    "displayNameHint": "The name the getpack team will use to reach you",
+    "contact": "How to reach you",
+    "contactIntro": "For the result of your application and your commission updates",
+    "phone": "Mobile number",
+    "phoneHint": "Verified with a one-time SMS code",
+    "otp": {
+      "send": "Send code",
+      "resend": "Send again",
+      "resendIn": "Send again in {seconds}s",
+      "code": "Verification code",
+      "sentTo": "Enter the {length}-digit code we sent by SMS",
+      "verified": "This number is verified",
+      "verifiedBadge": "✓ Verified",
+      "failed": "Couldn't verify the number. Try again."
+    },
+    "email": "E-mail",
+    "emailHint": "For statements and withholding tax certificates",
+    "lineId": "LINE ID (optional)",
+    "lineIdHint": "So the team can message you faster",
+    "channels": "Where do you sell?",
+    "channelOptions": {
+      "line_groups": "LINE groups",
+      "facebook": "Facebook",
+      "own_network": "People I already know",
+      "agency": "Agency",
+      "print_shop": "Print or sign shop",
+      "design_studio": "Design studio",
+      "other": "Other"
+    },
+    "agreementIntro": "Read the full agreement before you accept",
+    "readAgreement": "Read the agreement",
+    "acceptAndClose": "I've read it — accept",
+    "close": "Close",
+    "afterSubmit": "We'll review your application and let you know by e-mail and SMS. Once approved you can start sharing right away; payout details are needed before your first payout.",
+    "page": {
+      "title": "Apply to be a getpack sales agent",
+      "lede": "Free to join, no stock to hold — payout details can come later.",
+      "closed": "Agent applications aren't open right now",
+      "closedBody": "Check the programme page for the next intake.",
+      "back": "Back to the agent programme",
+      "noAgreement": "The current agent agreement hasn't been published yet, so applications can't be taken."
+    }
   },
   "terms": {
     "first": "A new customer's first order: {pct}% of the goods before VAT, shipping excluded",
@@ -300,5 +358,182 @@
     "nothing": "Enter at least one allowance",
     "waiting": "You can send again once Finance has checked the waiting one.",
     "sentOn": "Sent"
+  },
+  "landing": {
+    "metaTitle": "getpack sales agents — introduce customers, earn on every paid order",
+    "metaDescription": "Join the getpack sales agent programme for free. Share your link or send quotes, earn commission on every paid order with no cap — no stock, no production follow-up.",
+    "breadcrumb": "Sales agents",
+    "hero": {
+      "titleStart": "Introduce customers,",
+      "titleEm": "earn on every paid order",
+      "lede": "Send a quote in minutes. No stock, no production follow-up — getpack handles design, production and delivery.",
+      "apply": "Become an agent",
+      "free": "Free",
+      "howCta": "How commission works",
+      "trust": {
+        "noFee": "No sign-up fee",
+        "noStock": "No stock to buy",
+        "wht": "Withholding certificate with every payment"
+      },
+      "signedInAgent": "Open my agent pages"
+    },
+    "story": {
+      "label": "How getpack Agent works",
+      "role": "animated demo",
+      "share": {
+        "label": "Share",
+        "before": "Your link and QR",
+        "title": "Customers open your link; getpack remembers you",
+        "copy": "Copy link",
+        "line": "Send on LINE",
+        "toast": "A new customer came through your link",
+        "toastDetail": "Linked to you automatically",
+        "linkPlaceholder": "getpack.co/a/••••••••"
+      },
+      "lead": {
+        "label": "Follow up",
+        "before": "Leads",
+        "title": "Register first — the lead is protected",
+        "stages": {
+          "new": "New",
+          "contacted": "Contacted",
+          "quoted": "Quoted"
+        },
+        "protected": "Protected {days} days"
+      },
+      "quote": {
+        "label": "Quote",
+        "before": "Sent in your name",
+        "title": "Prices from the system; customers order and pay themselves",
+        "send": "Send quote",
+        "sent": "Sent",
+        "opened": "Opened by the customer",
+        "toast": "Your customer opened the quote",
+        "toastDetail": "It shows in your timeline at once"
+      },
+      "paid": {
+        "label": "Get paid",
+        "before": "Worked example at the standard rate",
+        "title": "Paid in full: commission transferred with the certificate",
+        "order": "Goods before VAT",
+        "first": "First order {pct}%",
+        "pill": "No earnings cap",
+        "toast": "Commission transferred",
+        "toastDetail": "Download the 50 ทวิ right away"
+      }
+    },
+    "how": {
+      "title": "Start in 3 steps",
+      "lead": "Apply once; everything works on your phone",
+      "steps": {
+        "apply": {
+          "title": "Apply and get your link",
+          "body": "Your name, phone and e-mail, the agreement, and Sales approves. You get your code, link and QR."
+        },
+        "sell": {
+          "title": "Introduce customers or send quotes",
+          "body": "Share your link, register leads or send quotes from the system. Prices and terms are what getpack shows."
+        },
+        "earn": {
+          "title": "Get paid every month",
+          "body": "Summarised at the start of each month, paid within {days} days of Finance’s approval, with a withholding tax certificate."
+        }
+      }
+    },
+    "commission": {
+      "title": "No earnings cap",
+      "lead": "The more you sell, the more you earn. On goods before VAT, excluding shipping — the full rate at every order size.",
+      "first": "A new customer’s first order",
+      "repeat": "Later orders",
+      "repeatFor": "for {months} months",
+      "calcTitle": "Work out your commission",
+      "calcLabel": "Goods before VAT (baht)",
+      "calcHint": "Excluding shipping",
+      "calcFirst": "As a first order",
+      "calcRepeat": "As a later order",
+      "calcInvalid": "Enter a number, e.g. 50000",
+      "calcFailed": "Could not work it out; try again",
+      "examples": "Examples at the standard rate",
+      "exampleRow": "Order of {value}",
+      "when": "Paid once the order is complete, past the claim window and fully paid",
+      "noTerms": "Rates show once applications open",
+      "colOrder": "Order value before VAT"
+    },
+    "benefits": {
+      "title": "What you get",
+      "items": {
+        "link": {
+          "title": "Your own link and QR",
+          "body": "New customers who open it are remembered for {days} days and linked to you when they sign up"
+        },
+        "quote": {
+          "title": "Quotes in your name",
+          "body": "Send system quotes on LINE in minutes and see when the customer opens them"
+        },
+        "track": {
+          "title": "Customers and commission in real time",
+          "body": "Every order, every status and when commission arrives — in one place"
+        },
+        "wht": {
+          "title": "Automatic 50 ทวิ",
+          "body": "Tax withheld by law and a certificate with every payment, ready for your tax return"
+        },
+        "app": {
+          "title": "The getpack Agent app",
+          "body": "Add it to your home screen and use it like an app"
+        }
+      }
+    },
+    "audience": {
+      "title": "Who it is for",
+      "items": {
+        "freelance": "Freelance packaging and print sales",
+        "agency": "Design and branding agencies",
+        "broker": "Print brokers",
+        "designer": "Designers working with product brands",
+        "customer": "getpack customers who refer other businesses"
+      }
+    },
+    "faq": {
+      "title": "Questions"
+    },
+    "final": {
+      "title": "Start introducing customers today",
+      "body": "Apply for free; once approved, your link is ready",
+      "apply": "Become an agent"
+    },
+    "partners": "A packaging manufacturer? See the programme for manufacturers"
+  },
+  "payout": {
+    "title": "Payout details",
+    "intro": "Used for your withholding tax certificate and your commission transfers. Fill it in once; Finance checks it before the first transfer.",
+    "whoIntro": "Paid as: {type}, as you applied",
+    "branchCode": "Branch code",
+    "branchCodeHint": "Head office is 00000",
+    "bankNameHint": "Must match the legal name above",
+    "accountKept": "Account ending {last4} is on file — leave blank to keep it",
+    "submit": "Send to Finance to check",
+    "saveDraft": "Save for now",
+    "failed": "Couldn't save your payout details. Try again.",
+    "errors": {
+      "branchCode": "Branch code is 5 digits"
+    },
+    "status": {
+      "none": "Not filled in yet",
+      "draft": "Saved, not sent yet",
+      "submitted": "Waiting for Finance",
+      "verified": "Checked — ready for payouts",
+      "rejected": "Needs a fix"
+    },
+    "statusBody": {
+      "none": "Your commission keeps adding up and is transferred once these details are checked.",
+      "draft": "Press “Send to Finance to check” when it's complete.",
+      "submitted": "It can't be changed while it's being checked. We'll e-mail you the result.",
+      "verified": "If you change anything it's checked again before the next transfer.",
+      "rejected": "Reason: {reason}"
+    },
+    "notApplicable": "Agents who are getpack employees are paid through payroll and don't need this page.",
+    "banner": "Fill in your payout details before your first commission payout",
+    "bannerCta": "Add payout details"
   }
 }
