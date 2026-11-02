@@ -36,7 +36,7 @@ import { isInternalOnlyPath, PATH_HEADER, resolveZone, ZONE_CONFIG, ZONE_HEADER,
  * through, and it does five things in order (F1 Deliverable 1.1):
  *
  * 1. decide which zone the `Host` belongs to — unknown hosts are not served;
- * 2. refuse the internal route prefixes (`/admin/*`, `/partner/*`) from outside;
+ * 2. refuse the internal route prefixes (`/admin/*`, `/partner/*`, `/agent-zone/*`) from outside;
  * 3. refresh the access token before anything renders, because Server Components cannot
  *    set cookies (00-master-plan.md §4);
  * 4. rewrite the host's path into that zone's route segment, running next-intl on the
@@ -64,6 +64,19 @@ const ROOT_ASSETS = new Set([
   // The logo as files (`src/ui/brand/Brand.tsx` draws it inline; these are for emails and documents).
   "/brand/getpack-logo.svg",
   "/brand/getpack-logo.png",
+]);
+
+/**
+ * getpack Agent's installable-app files (D-467): its own service worker — an offline shell for the agent host
+ * only, so it is a separate file from the push-only `/sw.js` — and the home-screen icons the agent manifest names.
+ * Root files, like `/sw.js`, so the worker's scope is the whole agent origin; answered on the agent host only.
+ */
+const AGENT_APP_ASSETS = new Set([
+  "/agent-sw.js",
+  "/agent-app/icon-192.png",
+  "/agent-app/icon-512.png",
+  "/agent-app/icon-maskable-512.png",
+  "/agent-app/apple-touch-icon.png",
 ]);
 
 /**
@@ -168,7 +181,12 @@ function route(request: NextRequest, zone: Zone, requestHeaders: Headers): NextR
   const { pathname } = request.nextUrl;
   const { routePrefix, bffPath } = ZONE_CONFIG[zone];
 
-  if (ROOT_ASSETS.has(pathname)) {
+  if (ROOT_ASSETS.has(pathname) || (zone === "agent" && AGENT_APP_ASSETS.has(pathname))) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  // The agent zone signs people in with the same providers as the storefront, so it shows their marks too.
+  if (zone === "agent" && pathname.startsWith(BRAND_MARKS)) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 

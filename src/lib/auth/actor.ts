@@ -12,6 +12,8 @@ export interface ActorByZone {
   customer: CustomerMe;
   admin: StaffMe;
   partner: PartnerMe;
+  /** getpack Agent signs a customer in (D-467): `/v1/store/me` through the agent host's own cookies. */
+  agent: CustomerMe;
 }
 
 export type Actor = ActorByZone[Zone];

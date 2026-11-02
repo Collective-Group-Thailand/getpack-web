@@ -12,6 +12,7 @@ describe("serverEnvSchema", () => {
     expect(env.PUBLIC_HOST).toBe("localhost:3000");
     expect(env.ADMIN_HOST).toBe("admin.localhost:3000");
     expect(env.PARTNER_HOST).toBe("partner.localhost:3000");
+    expect(env.AGENT_HOST).toBe("agent.localhost:3000");
     expect(env.API_INTERNAL_URL).toBe("http://localhost:4000");
   });
 
@@ -32,6 +33,7 @@ describe("serverEnvSchema", () => {
     expect(message).toContain("PUBLIC_HOST");
     expect(message).toContain("ADMIN_HOST");
     expect(message).toContain("PARTNER_HOST");
+    expect(message).toContain("AGENT_HOST");
     expect(message).toContain("API_INTERNAL_URL");
   });
 
@@ -103,6 +105,7 @@ function productionHosts() {
     PUBLIC_HOST: "getpack.co",
     ADMIN_HOST: "admin.getpack.co",
     PARTNER_HOST: "partner.getpack.co",
+    AGENT_HOST: "agent.getpack.co",
     API_INTERNAL_URL: "https://api.internal.getpack.co",
   };
 }

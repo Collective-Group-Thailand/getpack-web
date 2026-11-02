@@ -77,6 +77,8 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
     PUBLIC_HOST: isProduction ? hostValue : hostValue.default("localhost:3000"),
     ADMIN_HOST: isProduction ? hostValue : hostValue.default("admin.localhost:3000"),
     PARTNER_HOST: isProduction ? hostValue : hostValue.default("partner.localhost:3000"),
+    /** getpack Agent, `agent.getpack.co` (D-467). */
+    AGENT_HOST: isProduction ? hostValue : hostValue.default("agent.localhost:3000"),
 
     /** Server-to-server base URL for `getpack-api`; never reaches the browser (ADR-0005). */
     API_INTERNAL_URL: isProduction ? originUrl : originUrl.default("http://localhost:4000"),

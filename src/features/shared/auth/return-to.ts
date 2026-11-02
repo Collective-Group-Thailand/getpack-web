@@ -17,7 +17,7 @@ export function safeReturnTo(value: string | null | undefined, fallback = "/"): 
 /** The sign-in pages of every zone, with or without the customer zone's `/en` prefix. */
 const SIGN_IN_PAGE = /^(?:\/en)?\/(?:login|sign-in)(?:[/?#]|$)/;
 /** Internal route segments (`src/proxy.ts` rewrites to them); a browser path never starts with one. */
-const INTERNAL_PREFIX = /^\/(?:admin|partner|bff)(?:[/?#]|$)/;
+const INTERNAL_PREFIX = /^\/(?:admin|partner|agent-zone|bff)(?:[/?#]|$)/;
 
 /**
  * Where to go once signed in: `safeReturnTo`, and never back to a sign-in page or an internal

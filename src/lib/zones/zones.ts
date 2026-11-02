@@ -1,12 +1,12 @@
 /**
- * The three audiences this one Next app serves (00-master-plan.md §2).
+ * The four audiences this one Next app serves (00-master-plan.md §2; the agent zone, D-467).
  *
  * One host per zone, so cookies are host-only, the CSP differs per zone, and a storefront
  * XSS cannot ride a staff session. This is the canonical list: `src/lib/env` validates the
  * `ZONES` allow-list against it and `src/ui/theme/themes.ts` keys its per-zone defaults off
  * it, so a fourth zone cannot be half-added.
  */
-export const ZONES = ["customer", "admin", "partner"] as const;
+export const ZONES = ["customer", "admin", "partner", "agent"] as const;
 
 export type Zone = (typeof ZONES)[number];
 
@@ -34,6 +34,9 @@ export const ZONE_CONFIG = {
     apiPrefix: "/v1/store",
     /** Customer sign-in runs through the BFF; the other zones' logins are Server Actions. */
     authPrefixes: ["/v1/auth/customer"],
+    extraPrefixes: [],
+    exactPaths: [],
+    surface: "/v1/store",
     indexable: true,
     /** Only the customer zone is multilingual by URL: `th` at `/`, `en` at `/en`. */
     localePrefixed: true,
@@ -43,6 +46,9 @@ export const ZONE_CONFIG = {
     bffPath: "/admin/bff",
     apiPrefix: "/v1/admin",
     authPrefixes: [],
+    extraPrefixes: [],
+    exactPaths: [],
+    surface: "/v1/admin",
     indexable: false,
     localePrefixed: false,
   },
@@ -51,6 +57,33 @@ export const ZONE_CONFIG = {
     bffPath: "/partner/bff",
     apiPrefix: "/v1/partner",
     authPrefixes: [],
+    extraPrefixes: [],
+    exactPaths: [],
+    surface: "/v1/partner",
+    indexable: false,
+    localePrefixed: false,
+  },
+  /**
+   * getpack Agent, `agent.getpack.co` (D-467, PLAN A-08): a freelance sales agent's own app. The person is a
+   * customer (the customer audience token, kept in this host's own cookies — never the storefront's), but this
+   * zone reaches only the agent surface, customer sign-in, and the handful of `/v1/store` paths named below —
+   * nothing else of the shop.
+   */
+  agent: {
+    routePrefix: "/agent-zone",
+    bffPath: "/agent-zone/bff",
+    apiPrefix: "/v1/store/agent",
+    /** Phone OTP, LINE, Google / Apple with `client: "agent"`, and the hand-off redeem. */
+    authPrefixes: ["/v1/auth/customer"],
+    /**
+     * Most specific first. `me/sessions` — the agent's signed-in devices (โปรไฟล์และสัญญา); `me/consents` — the
+     * PDPA step right after a first sign-in here; `files` — the payout profile's and the ล.ย.01's evidence
+     * uploads; `rum` — field Web Vitals. Every other `/v1/store` path is refused.
+     */
+    extraPrefixes: ["/v1/store/me/sessions", "/v1/store/me/consents", "/v1/store/files", "/v1/store/rum"],
+    /** Who is signed in (`store.me.get`), for the zone's guard — the path itself, nothing under it. */
+    exactPaths: ["/v1/store/me"],
+    surface: "/v1/store",
     indexable: false,
     localePrefixed: false,
   },
@@ -61,6 +94,12 @@ export interface ZoneConfig {
   readonly bffPath: string;
   readonly apiPrefix: string;
   readonly authPrefixes: readonly string[];
+  /** Further upstream prefixes outside `apiPrefix` this zone may reach (the agent zone's few `/v1/store` paths). */
+  readonly extraPrefixes: readonly string[];
+  /** Upstream paths allowed as themselves only, not as a prefix. */
+  readonly exactPaths: readonly string[];
+  /** The API surface the zone's token belongs to (api-conventions §2): what `browserBffUrl` builds on. */
+  readonly surface: string;
   readonly indexable: boolean;
   readonly localePrefixed: boolean;
 }
@@ -74,7 +113,7 @@ export interface ZoneConfig {
  */
 export function upstreamPrefixes(zone: Zone): readonly string[] {
   const config = ZONE_CONFIG[zone];
-  return [config.apiPrefix, ...config.authPrefixes];
+  return [...config.extraPrefixes, config.apiPrefix, ...config.authPrefixes];
 }
 
 /** True when `path` is on a surface this zone is allowed to call. */
@@ -82,6 +121,7 @@ export function isUpstreamPathAllowed(zone: Zone, path: string): boolean {
   // A path must match a prefix at a segment boundary: `/v1/storefront` must not pass as
   // `/v1/store`, and `/v1/store/../admin/orders` must not pass at all.
   if (path.includes("..")) return false;
+  if ((ZONE_CONFIG[zone].exactPaths as readonly string[]).includes(path)) return true;
   return upstreamPrefixes(zone).some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
@@ -102,7 +142,7 @@ export function isUpstreamPathAllowed(zone: Zone, path: string): boolean {
 export const BROWSER_BFF_PATH = "/bff";
 
 export function browserBffUrl(zone: Zone, upstreamPath: string): string {
-  return `${BROWSER_BFF_PATH}${ZONE_CONFIG[zone].apiPrefix}${upstreamPath}`;
+  return `${BROWSER_BFF_PATH}${ZONE_CONFIG[zone].surface}${upstreamPath}`;
 }
 
 /** The `x-getpack-zone` request header the proxy stamps so server code can read the zone. */

@@ -12,6 +12,7 @@ beforeAll(async () => {
   process.env.PUBLIC_HOST = "getpack.co";
   process.env.ADMIN_HOST = "admin.getpack.co";
   process.env.PARTNER_HOST = "partner.getpack.co";
+  process.env.AGENT_HOST = "agent.getpack.co";
   proxy = (await import("./proxy")).default;
 });
 
@@ -36,6 +37,16 @@ describe("host → zone", () => {
     expect(rewriteTarget(await proxy(request("partner.getpack.co", "/bff/v1/partner/me")))).toBe(
       "/partner/bff/v1/partner/me",
     );
+  });
+
+  it("rewrites the agent host onto the /agent-zone segment, including its BFF (D-467)", async () => {
+    expect(rewriteTarget(await proxy(request("agent.getpack.co", "/leads")))).toBe("/agent-zone/leads");
+    expect(rewriteTarget(await proxy(request("agent.getpack.co", "/")))).toBe("/agent-zone");
+    expect(rewriteTarget(await proxy(request("agent.getpack.co", "/bff/v1/store/agent")))).toBe(
+      "/agent-zone/bff/v1/store/agent",
+    );
+    // No locale negotiation on the agent host: `/en/leads` is not an English page there.
+    expect(rewriteTarget(await proxy(request("agent.getpack.co", "/en/leads")))).toBe("/agent-zone/en/leads");
   });
 
   it("prefixes the customer host with the locale and leaves its BFF alone", async () => {
@@ -65,6 +76,11 @@ describe("cross-zone paths", () => {
     // the internal path leaking, and is refused just the same.
     ["admin.getpack.co", "/admin/orders"],
     ["partner.getpack.co", "/admin"],
+    ["getpack.co", "/agent-zone"],
+    ["getpack.co", "/agent-zone/bff/v1/store/agent"],
+    ["agent.getpack.co", "/agent-zone/leads"],
+    ["agent.getpack.co", "/partner/jobs"],
+    ["agent.getpack.co", "/admin"],
   ])("answers 404 for %s%s", async (host, path) => {
     const response = await proxy(request(host, path));
 
@@ -94,6 +110,7 @@ describe("security headers", () => {
   it("marks admin and partner noindex and leaves the storefront indexable", async () => {
     expect((await proxy(request("admin.getpack.co"))).headers.get("x-robots-tag")).toBe("noindex, nofollow");
     expect((await proxy(request("partner.getpack.co"))).headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect((await proxy(request("agent.getpack.co"))).headers.get("x-robots-tag")).toBe("noindex, nofollow");
     expect((await proxy(request("getpack.co"))).headers.get("x-robots-tag")).toBeNull();
   });
 
@@ -103,6 +120,7 @@ describe("security headers", () => {
     expect(await policy("partner.getpack.co")).toContain("camera=(self)");
     expect(await policy("admin.getpack.co")).toContain("camera=()");
     expect(await policy("getpack.co")).toContain("camera=()");
+    expect(await policy("agent.getpack.co")).toContain("camera=()");
   });
 
   it("sends HSTS over TLS and not over plain http", async () => {
@@ -123,13 +141,23 @@ describe("security headers", () => {
 
 describe("root assets", () => {
   it("serves them unprefixed on every host — they belong to no zone", async () => {
-    for (const host of ["getpack.co", "admin.getpack.co", "partner.getpack.co"]) {
+    for (const host of ["getpack.co", "admin.getpack.co", "partner.getpack.co", "agent.getpack.co"]) {
       expect(rewriteTarget(await proxy(request(host, "/icon.svg")))).toBeNull();
       expect(rewriteTarget(await proxy(request(host, "/favicon.ico")))).toBeNull();
       expect(rewriteTarget(await proxy(request(host, "/apple-icon.png")))).toBeNull();
       expect(rewriteTarget(await proxy(request(host, "/brand/getpack-logo.png")))).toBeNull();
       expect(rewriteTarget(await proxy(request(host, "/brand/getpack-logo.svg")))).toBeNull();
     }
+  });
+});
+
+describe("agent app files (D-467)", () => {
+  it("serves the agent worker, its icons and the sign-in marks unprefixed on the agent host only", async () => {
+    for (const path of ["/agent-sw.js", "/agent-app/icon-192.png", "/agent-app/apple-touch-icon.png", "/brands/line.svg"]) {
+      expect(rewriteTarget(await proxy(request("agent.getpack.co", path))), path).toBeNull();
+    }
+    expect(rewriteTarget(await proxy(request("admin.getpack.co", "/agent-sw.js")))).toBe("/admin/agent-sw.js");
+    expect(rewriteTarget(await proxy(request("partner.getpack.co", "/agent-app/icon-192.png")))).not.toBeNull();
   });
 });
 
@@ -154,7 +182,7 @@ describe("crawler files", () => {
 
   it("does not answer them at all on a zone that is noindex", async () => {
     // Answering on admin.getpack.co would publish the shape of the back office to anyone.
-    for (const host of ["admin.getpack.co", "partner.getpack.co"]) {
+    for (const host of ["admin.getpack.co", "partner.getpack.co", "agent.getpack.co"]) {
       for (const path of ["/robots.txt", "/sitemap.xml", "/llms.txt"]) {
         expect((await proxy(request(host, path))).status, `${host}${path}`).toBe(404);
       }

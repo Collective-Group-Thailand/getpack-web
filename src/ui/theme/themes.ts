@@ -29,6 +29,8 @@ export const ZONE_DEFAULT_THEME = {
   customer: "light",
   admin: "light",
   partner: "light",
+  /** getpack Agent is light only (agent portal pack: no dark surfaces). */
+  agent: "light",
 } as const satisfies Record<Zone, ThemeChoice>;
 
 export type { Zone };
@@ -47,5 +49,6 @@ export function dataThemeAttribute(choice: ThemeChoice): Theme | undefined {
 
 /** Whether a zone offers the high-contrast palette in its toggle (design-system.md §5). */
 export function themeChoicesFor(zone: Zone): readonly ThemeChoice[] {
+  if (zone === "agent") return ["light"] as const;
   return zone === "partner" ? THEME_CHOICES : (["system", "light", "dark"] as const);
 }

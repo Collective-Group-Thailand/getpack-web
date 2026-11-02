@@ -26,6 +26,7 @@ export const zoneHosts: ZoneHosts = {
   customer: serverEnv.PUBLIC_HOST,
   admin: serverEnv.ADMIN_HOST,
   partner: serverEnv.PARTNER_HOST,
+  agent: serverEnv.AGENT_HOST,
 };
 
 /** The zones this deployment answers for; every zone unless `ZONES` narrows it. */

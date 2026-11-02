@@ -20,7 +20,7 @@ export type WebVitalReport = Schemas["WebVitalDto"];
 
 /** The API names the customer zone after its surface. */
 export function rumZone(zone: Zone): Schemas["RumZone"] {
-  return zone === "customer" ? "store" : zone;
+  return zone === "customer" || zone === "agent" ? "store" : zone;
 }
 
 /**
