@@ -12,6 +12,10 @@ import { problem } from "../support";
 import { customerOf } from "./customers";
 
 const isAgent = (request: Request) => customerOf(request)?.persona === "agent";
+/** The ended agent (phone 0861234568, D-467): statements and 50 ทวิ only. */
+const isEndedAgent = (request: Request) => customerOf(request)?.persona === "agentended";
+/** Who holds an agent's record, ended or not: the programme says "agent" for both. */
+const hasAgentRecord = (request: Request) => isAgent(request) || isEndedAgent(request);
 
 const TERMS: Schemas["StoreAgentTermsDto"] = {
   firstOrderPct: "5",
@@ -27,11 +31,86 @@ let declaration: Schemas["AgentTaxDeclarationDto"] | null = null;
 let payoutProfile: Schemas["AgentPayoutProfileDto"] | null = null;
 let otpPhone: string | null = null;
 
+type Preference = Schemas["AgentNotificationPreferenceDto"];
+const EVENTS: Schemas["AgentNotificationEvent"][] = [
+  "lead_converted",
+  "lead_protection_expiring",
+  "commission_earned",
+  "statement_ready",
+  "payout_paid",
+  "payout_profile_needed",
+];
+/** E-mail of the money events is locked on (D-144, API-CHANGES-P2). */
+const LOCKED_EMAIL = new Set(["statement_ready", "payout_paid", "payout_profile_needed"]);
+const freshPreferences = (): Preference[] =>
+  EVENTS.flatMap((event) =>
+    (["web_push", "line", "email"] as const).map((channel) => ({
+      event,
+      channel,
+      enabled: true,
+      locked: channel === "email" && LOCKED_EMAIL.has(event),
+    })),
+  );
+let preferences = freshPreferences();
+/** Sessions this mock knows of: the agent's storefront session and this device's getpack Agent one. */
+let revokedOtherAgentSessions = false;
+
 export function resetAgentMock(): void {
   declaration = null;
   payoutProfile = null;
   otpPhone = null;
+  preferences = freshPreferences();
+  revokedOtherAgentSessions = false;
 }
+
+/** A few leads in every state, so the list is worth looking at (obviously fake). */
+const LEADS: Schemas["AgentLeadDto"][] = [
+  {
+    id: "00000000-0000-4000-8000-0000000a0401",
+    kind: "customer",
+    contactName: "คุณมานี ใจดี",
+    organisationName: "ร้านกาแฟบ้านสวน (ข้อมูลจำลอง)",
+    phone: "+66890001234",
+    email: null,
+    taxId: null,
+    note: null,
+    status: "registered",
+    protectedUntil: "2027-01-05T10:00:00+07:00",
+    convertedAt: null,
+    closedReason: null,
+    createdAt: "2026-11-06T10:00:00+07:00",
+  },
+  {
+    id: "00000000-0000-4000-8000-0000000a0402",
+    kind: "customer",
+    contactName: "คุณปิติ รักษ์ดี",
+    organisationName: "แบรนด์สบู่ธรรมชาติ (ข้อมูลจำลอง)",
+    phone: null,
+    email: "piti@example.invalid",
+    taxId: null,
+    note: null,
+    status: "converted",
+    protectedUntil: "2026-12-20T10:00:00+07:00",
+    convertedAt: "2026-10-28T14:00:00+07:00",
+    closedReason: null,
+    createdAt: "2026-10-21T10:00:00+07:00",
+  },
+  {
+    id: "00000000-0000-4000-8000-0000000a0403",
+    kind: "customer",
+    contactName: "คุณชูใจ มีสุข",
+    organisationName: null,
+    phone: "+66870004567",
+    email: null,
+    taxId: null,
+    note: null,
+    status: "registered",
+    protectedUntil: "2026-12-12T10:00:00+07:00",
+    convertedAt: null,
+    closedReason: null,
+    createdAt: "2026-10-13T10:00:00+07:00",
+  },
+];
 
 /** The public programme the landing reads (D-466) — open for applications in the mock so the flow can be walked. */
 const PUBLIC_PROGRAMME: Schemas["PublicAgentProgrammeDto"] = {
@@ -63,6 +142,101 @@ const PUBLIC_PROGRAMME: Schemas["PublicAgentProgrammeDto"] = {
 };
 
 export const storeAgentHandlers = [
+  /*
+   * The ended agent (D-467 guard): every agent-level path answers `agents.ended`; the programme and the statements
+   * (list, detail, 50 ทวิ) still answer as for any agent.
+   */
+  http.all("*/v1/store/agent/*", ({ request }) => {
+    if (!isEndedAgent(request)) return undefined;
+    const path = new URL(request.url).pathname;
+    if (/\/v1\/store\/agent\/(programme|statements)(\/|$)/.test(path)) return undefined;
+    return problem(403, "agents.ended", "บัญชีตัวแทนนี้สิ้นสุดแล้ว ยังดูรายงานค่าคอมและ 50 ทวิ ได้");
+  }),
+  http.get("*/v1/store/agent", ({ request }) =>
+    isEndedAgent(request)
+      ? problem(403, "agents.ended", "บัญชีตัวแทนนี้สิ้นสุดแล้ว ยังดูรายงานค่าคอมและ 50 ทวิ ได้")
+      : undefined,
+  ),
+  http.get("*/v1/store/agent/leads", ({ request }) => {
+    if (!isAgent(request)) return undefined;
+    return HttpResponse.json({ data: LEADS, meta: { page: 1, perPage: 25, total: LEADS.length } });
+  }),
+  // getpack Agent's notification choices (D-467): stateful, with the money e-mails locked on.
+  http.get("*/v1/store/agent/notification-preferences", ({ request }) => {
+    if (!isAgent(request)) return undefined;
+    return HttpResponse.json({
+      items: preferences,
+      reachable: { webPush: false, line: false, email: true },
+    } satisfies Schemas["AgentNotificationPreferencesDto"]);
+  }),
+  http.put("*/v1/store/agent/notification-preferences", async ({ request }) => {
+    if (!isAgent(request)) return undefined;
+    const body = (await request.json()) as Schemas["SetAgentNotificationPreferencesDto"];
+    for (const change of body.items) {
+      const current = preferences.find((item) => item.event === change.event && item.channel === change.channel);
+      if (current?.locked && !change.enabled) {
+        return problem(422, "validation.failed", "อีเมลเรื่องเงินปิดไม่ได้", [
+          { path: "items", code: "locked", message: "locked" },
+        ]);
+      }
+    }
+    preferences = preferences.map((item) => {
+      const change = body.items.find((one) => one.event === item.event && one.channel === item.channel);
+      return change ? { ...item, enabled: change.enabled } : item;
+    });
+    return HttpResponse.json({
+      items: preferences,
+      reachable: { webPush: false, line: false, email: true },
+    } satisfies Schemas["AgentNotificationPreferencesDto"]);
+  }),
+  // Where the person is signed in (D-467, `store.me.sessions`): their storefront session and this device's agent one.
+  http.get("*/v1/store/me/sessions", ({ request }) => {
+    if (!hasAgentRecord(request)) return undefined;
+    const data: Schemas["MySessionDto"][] = [
+      {
+        id: "00000000-0000-4000-8000-0000000a0501",
+        client: "agent",
+        loginMethod: "phone_otp",
+        signedInAt: "2026-11-03T09:15:00+07:00",
+        lastActiveAt: "2026-11-03T14:05:00+07:00",
+        expiresAt: "2026-12-03T14:05:00+07:00",
+        userAgent: "Mozilla/5.0 (mock browser — this device)",
+        current: true,
+      },
+      ...(revokedOtherAgentSessions
+        ? []
+        : [
+            {
+              id: "00000000-0000-4000-8000-0000000a0502",
+              client: "agent" as const,
+              loginMethod: "line" as const,
+              signedInAt: "2026-10-30T19:40:00+07:00",
+              lastActiveAt: "2026-11-01T08:12:00+07:00",
+              expiresAt: "2026-12-01T08:12:00+07:00",
+              userAgent: "Mozilla/5.0 (mock phone — another device)",
+              current: false,
+            },
+          ]),
+      {
+        id: "00000000-0000-4000-8000-0000000a0503",
+        client: "storefront",
+        loginMethod: "phone_otp",
+        signedInAt: "2026-10-16T10:00:00+07:00",
+        lastActiveAt: "2026-11-02T21:30:00+07:00",
+        expiresAt: "2026-12-02T21:30:00+07:00",
+        userAgent: "Mozilla/5.0 (mock laptop)",
+        current: false,
+      },
+    ];
+    return HttpResponse.json({ data } satisfies Schemas["MySessionListDto"]);
+  }),
+  http.post("*/v1/store/me/sessions/actions/revoke", async ({ request }) => {
+    if (!hasAgentRecord(request)) return undefined;
+    const body = (await request.json()) as Schemas["RevokeMySessionsDto"];
+    const revoked = body.client === "agent" && !revokedOtherAgentSessions ? 1 : 0;
+    if (body.client === "agent") revokedOtherAgentSessions = true;
+    return HttpResponse.json({ revoked } satisfies Schemas["RevokedSessionsDto"]);
+  }),
   http.get("*/v1/store/agent/programme/public", () => HttpResponse.json(PUBLIC_PROGRAMME)),
   // The API computes the example; the mock does the same so the calculator shows a figure (never the web).
   http.get("*/v1/store/agent/programme/example", ({ request }) => {
@@ -140,7 +314,7 @@ export const storeAgentHandlers = [
     return HttpResponse.json(payoutProfile);
   }),
   http.get("*/v1/store/agent/programme", ({ request }) => {
-    if (!isAgent(request)) return undefined;
+    if (!hasAgentRecord(request)) return undefined;
     return HttpResponse.json({
       agreement: null,
       plan: TERMS,
