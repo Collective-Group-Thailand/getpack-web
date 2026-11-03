@@ -93,7 +93,7 @@ export function LeadBoard({ leads }: { leads: Lead[] }) {
               <ul className="flex flex-col gap-3">
                 {inColumn.map((lead) => (
                   <li key={lead.id} className={cn(moving === lead.id && "opacity-60")}>
-                    <LeadCard lead={lead} draggable />
+                    <LeadCard lead={lead} draggable headingLevel={3} />
                   </li>
                 ))}
               </ul>

@@ -68,7 +68,17 @@ export function ProtectionText({ lead, className }: { lead: Pick<Lead, "status" 
  * A lead as a card — the phone's list and the tablet's two columns (PROMPT <responsive>): who, which business, the
  * stage, when to follow up, how long it stays protected, and "ย้ายไปขั้น…". The whole name is the link to the lead.
  */
-export function LeadCard({ lead, draggable = false }: { lead: Lead; draggable?: boolean }) {
+export function LeadCard({
+  lead,
+  draggable = false,
+  headingLevel = 2,
+}: {
+  lead: Lead;
+  draggable?: boolean;
+  /** h2 in the list (under the page's h1), h3 inside a board column. */
+  headingLevel?: 2 | 3;
+}) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const t = useTranslations("agentSales.list");
   const format = useFormat();
   return (
@@ -87,14 +97,14 @@ export function LeadCard({ lead, draggable = false }: { lead: Lead; draggable?: 
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-base leading-snug font-semibold">
+          <Heading className="text-base leading-snug font-semibold">
             <Link
               href={`/leads/${lead.id}`}
               className="focus-visible:ring-focus-ring rounded-sm outline-none hover:underline focus-visible:ring-2"
             >
               {lead.contactName}
             </Link>
-          </h3>
+          </Heading>
           {lead.organisationName ? <p className="text-muted truncate text-sm">{lead.organisationName}</p> : null}
         </div>
         <StatusChip map={AGENT_LEAD_STAGE} value={lead.stage} />
