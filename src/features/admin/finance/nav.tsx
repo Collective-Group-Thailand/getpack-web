@@ -71,6 +71,11 @@ export const FINANCE_NAV: readonly { group: string; items: readonly NavItem[] }[
       { key: "audit", href: "/finance/audit", icon: "shield", anyOf: ["audit_support.read"] },
     ],
   },
+  {
+    // D-472: the management P&L — confidential, for C-Level, VP, Director and the Finance Manager only.
+    group: "planning",
+    items: [{ key: "pnl", href: "/finance/pnl", icon: "chart-line", anyOf: ["pnl.read"] }],
+  },
 ];
 
 /** Whether a person may open at least one desk — the finance menu entry's rule. */

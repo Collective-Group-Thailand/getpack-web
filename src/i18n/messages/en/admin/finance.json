@@ -7,7 +7,8 @@
       "suppliers": "Factories & vendors (AP)",
       "banking": "Banking",
       "books": "Books & tax",
-      "close": "Close & audit"
+      "close": "Close & audit",
+      "planning": "Planning"
     },
     "items": {
       "home": "Finance overview",
@@ -26,7 +27,8 @@
       "close": "Period close",
       "reports": "Financial reports",
       "audit": "Auditor",
-      "corrections": "Correction requests"
+      "corrections": "Correction requests",
+      "pnl": "Management P&L"
     }
   },
   "common": {
@@ -2991,5 +2993,311 @@
     "failed": "Could not save",
     "decidedBy": "Decided by",
     "decidedAt": "Decided at"
+  },
+  "pnl": {
+    "title": "Management P&L",
+    "description": "A monthly plan the system fills from the books and the sales desk, entered by hand where the system has no data, then locked to compare with actuals — management figures, never posted.",
+    "confidential": "Confidential — every view and export is logged",
+    "header": {
+      "label": "Choose a plan",
+      "year": "Year",
+      "yearOption": "Year {year}",
+      "scenario": "Scenario",
+      "scenarios": {
+        "base": "Base",
+        "best": "Best",
+        "worst": "Worst",
+        "custom": "Custom"
+      },
+      "plan": "Plan",
+      "planOption": "{name} · version {version}",
+      "planOptionLocked": "{name} · version {version} · locked",
+      "computedAt": "Computed {at}",
+      "notComputed": "Not computed yet",
+      "lockedBy": "Locked by {name} · {at}",
+      "owner": "Owner {name}",
+      "variance": "Compare with actual",
+      "varianceHint": "The plan against actuals of past months",
+      "recompute": "Recompute",
+      "recomputed": "Recomputed from the latest data — entered and overridden values are all kept",
+      "recomputeFailed": "Could not recompute",
+      "copy": "Copy to another scenario",
+      "lock": "Lock plan",
+      "export": "Export",
+      "exportXlsx": "Excel (.xlsx)",
+      "exportPdf": "PDF",
+      "exportVariance": "Plan vs actual — Excel",
+      "exportHint": "Files carry a watermark with your name and the time; the link works for 5 minutes",
+      "exportStarted": "Downloading the export",
+      "exportFailed": "Could not export",
+      "create": "New plan",
+      "more": "More plan actions",
+      "readOnly": "Read only — C-Level and the Finance Manager edit plans",
+      "lockedNote": "This plan is locked: figures cannot change and it is the baseline for actuals — copy it to a new plan to adjust",
+      "emptyManual": "{count, plural, one {# cell} other {# cells}} still to enter"
+    },
+    "empty": {
+      "noPlansTitle": "No plans for {year} yet",
+      "noPlansBody": "Create the first plan: past months fill from the books and the months ahead are forecast at once",
+      "noScenarioTitle": "No “{scenario}” plan for {year} yet",
+      "noScenarioBody": "Copy another plan of this year and adjust it, or create a new one",
+      "readerBody": "Plans appear here once Finance creates them",
+      "copyFrom": "Copy from “{name}”",
+      "openLatest": "Open “{name}”",
+      "backToFinance": "Back to the finance overview"
+    },
+    "create": {
+      "title": "New plan",
+      "description": "Computed right after it is created: past months from the posted ledger, months ahead from open deals and trailing averages",
+      "name": "Plan name",
+      "namePlaceholder": "e.g. Plan 2027",
+      "year": "Year",
+      "yearHint": "January–December, Bangkok time",
+      "scenario": "Scenario",
+      "note": "Note",
+      "noteHint": "Optional — the plan's main assumptions",
+      "submit": "Create and compute",
+      "created": "Plan created and filled from system data",
+      "failed": "Could not create the plan",
+      "nameRequired": "Name the plan",
+      "yearInvalid": "Enter a 4-digit year",
+      "cancel": "Cancel"
+    },
+    "copyDialog": {
+      "title": "Copy plan",
+      "description": "Creates a new draft from “{name}” with its entered and overridden values, then refreshes what comes from the system",
+      "scenario": "To scenario",
+      "name": "Plan name",
+      "nameHint": "Leave empty to keep the name — the version is counted on",
+      "note": "Note",
+      "submit": "Copy",
+      "copied": "Copied to a new plan",
+      "failed": "Could not copy",
+      "cancel": "Cancel"
+    },
+    "lockDialog": {
+      "title": "Lock “{name}”?",
+      "description": "Once locked, figures cannot change and the plan becomes the baseline for actuals. To adjust later, copy it to a new plan.",
+      "emptyManual": "{count, plural, one {# cell} other {# cells}} to enter by hand {count, plural, one {is} other {are}} still empty — empty counts as zero",
+      "confirm": "Lock plan",
+      "cancel": "Cancel",
+      "locked": "Plan locked",
+      "failed": "Could not lock the plan"
+    },
+    "summary": {
+      "label": "Year summary",
+      "netRevenue": "Net revenue",
+      "grossMarginPct": "Gross margin",
+      "grossMarginHint": "Gross margin {amount}",
+      "contribution": "Contribution after commission",
+      "contributionHint": "{pct} of net revenue",
+      "ebitda": "EBITDA",
+      "netProfit": "Net profit",
+      "netProfitHint": "After estimated tax",
+      "ccc": "Cash conversion cycle",
+      "days": "{days} days",
+      "breakEven": "Break-even revenue",
+      "breakEvenHint": "A year, on the plan's cost structure",
+      "citSme": "Estimated tax at the SME rate",
+      "citStandard": "Estimated tax at the standard rate",
+      "figures": {
+        "netRevenue": {
+          "definition": "Sales and shipping revenue after discounts, for the plan's year",
+          "formula": "Goods revenue + shipping revenue − discounts"
+        },
+        "grossMarginPct": {
+          "definition": "Gross margin as a share of net revenue",
+          "formula": "Gross margin ÷ net revenue"
+        },
+        "contribution": {
+          "definition": "Gross margin left after agent and employee commission, before fixed costs",
+          "formula": "Gross margin − agent commission − employee commission"
+        },
+        "ebitda": {
+          "definition": "Profit before interest, tax and depreciation",
+          "formula": "Operating profit + depreciation"
+        },
+        "netProfit": {
+          "definition": "Profit after everything, including estimated tax",
+          "formula": "Operating profit − finance cost − income tax (estimate)"
+        },
+        "ccc": {
+          "definition": "Days cash is tied up between paying factories and being paid by customers",
+          "formula": "Days sales outstanding − days payables outstanding"
+        },
+        "breakEven": {
+          "definition": "Revenue at which operating profit is zero",
+          "formula": "Fixed costs ÷ (gross margin % − commission %)"
+        }
+      },
+      "source": "This plan's P&L",
+      "asOf": "As of"
+    },
+    "chart": {
+      "revenueTitle": "Net revenue by month",
+      "profitTitle": "Net profit by month",
+      "plan": "Plan",
+      "actual": "Actual",
+      "value": "Planned",
+      "month": "Month",
+      "showTable": "Show as table",
+      "hideTable": "Show as chart",
+      "caption": "Past months pair plan with actual; months ahead show the plan only"
+    },
+    "grid": {
+      "label": "P&L {name}",
+      "varianceLabel": "Plan vs actual {name}",
+      "line": "Line",
+      "total": "Year",
+      "unit": "THB excl. VAT",
+      "groups": {
+        "revenue": "Revenue",
+        "cost_of_sales": "Cost of sales",
+        "gross_margin": "Gross margin",
+        "selling_expenses": "Selling expenses",
+        "admin_expenses": "Administrative expenses",
+        "operating_profit": "Operating profit",
+        "finance_and_tax": "Interest and tax",
+        "net_profit": "Net profit",
+        "memo": "Reference indicators"
+      },
+      "memoNote": "Not part of net profit",
+      "collapse": "Collapse {group}",
+      "expand": "Expand {group}",
+      "periodOpen": "Period open",
+      "legend": "Where figures come from",
+      "fill": "Enter",
+      "notSet": "Not set",
+      "estimate": "Estimate",
+      "days": "days",
+      "keys": "Arrows move · Enter edits · Esc cancels · Shift+Enter shows sources",
+      "keysReadOnly": "Arrows move · Shift+Enter shows sources",
+      "cellName": "{line} · {month}",
+      "systemBeside": "System {value}"
+    },
+    "edit": {
+      "value": "{line}, {month}",
+      "note": "Where the figure comes from",
+      "noteHint": "Required for this cell's first value — say where the number comes from",
+      "save": "Save",
+      "cancel": "Cancel",
+      "invalid": "Enter a number with up to 2 decimals",
+      "noteRequired": "Give the source in at least 3 characters",
+      "saved": "Saved",
+      "cleared": "Cleared",
+      "stale": "Someone changed this plan first — the latest figures are loaded, try again",
+      "failed": "Could not save"
+    },
+    "override": {
+      "title": "Override the system value",
+      "description": "{line} · {month}",
+      "system": "System value",
+      "value": "New value",
+      "reason": "Reason",
+      "reasonHint": "Why the figure will differ from the system's, e.g. a large deal the customer confirmed",
+      "reasonRequired": "Give a reason in at least 3 characters",
+      "previous": "Previous reason: {reason}",
+      "submit": "Override",
+      "revert": "Use the system value",
+      "cancel": "Cancel",
+      "saved": "Overridden — the system value is still shown beside it",
+      "reverted": "Back to the system value"
+    },
+    "tip": {
+      "formula": "Formula",
+      "source": "Source",
+      "howToFill": "How to fill",
+      "accounts": "Accounts",
+      "asOf": "As of",
+      "entered": "Entered by",
+      "reason": "Reason",
+      "note": "Source note",
+      "by": "{name} · {at}",
+      "autoValue": "System {value}",
+      "drill": "Show source records",
+      "drillKey": "Shift+Enter",
+      "noHowToFill": "From the fixed-asset depreciation schedule; nothing to enter",
+      "notSet": "The bad-debt provision rate by credit grade is not set",
+      "periodOpen": "This period is still open; the figure may change",
+      "forecastMonth": "Forecast month",
+      "actualMonth": "Actual month (to the compute date)",
+      "kinds": {
+        "gl": "General ledger — posted entries",
+        "pipeline_run_rate": "Open deals × probability + repeat-order run rate",
+        "trailing_ratio": "3-month trailing ratio",
+        "trailing_average": "3-month trailing average",
+        "commission_rates": "Commission rates in force",
+        "fixed_assets": "Fixed-asset depreciation schedule",
+        "balances": "Receivable / payable balances",
+        "formula": "Formula over other lines",
+        "none": "No system data"
+      },
+      "ref": {
+        "accounts": "Accounts {codes}",
+        "lines": "{count, plural, one {# entry} other {# entries}}",
+        "window": "{from} to {to}",
+        "ratioPct": "Ratio {pct}",
+        "pipeline": "Deals {amount} a month",
+        "runRate": "Repeat orders {amount} a month",
+        "openLeads": "{count, plural, one {# open deal} other {# open deals}}",
+        "repeatCustomers": "{count, plural, one {# repeat customer} other {# repeat customers}}",
+        "assets": "{count, plural, one {# asset} other {# assets}}",
+        "citSme": "SME rate applied",
+        "citStandard": "Standard rate {pct}"
+      }
+    },
+    "sources": {
+      "title": "Source records",
+      "description": "{line} · {month}",
+      "close": "Close",
+      "kinds": {
+        "gl_line": "Journal lines",
+        "commission": "Commissions",
+        "lead": "Open deals",
+        "fixed_asset": "Fixed assets",
+        "customer_run_rate": "Repeat customers"
+      },
+      "tabs": "Record type",
+      "date": "Date",
+      "code": "No.",
+      "detail": "Description",
+      "account": "Account",
+      "amount": "Amount",
+      "count": "{count, plural, one {# record} other {# records}}",
+      "empty": "No records for this cell",
+      "more": "Show more",
+      "failed": "Could not load the source records",
+      "open": "Open {code}",
+      "companyRef": "Company {id}"
+    },
+    "variance": {
+      "plan": "Plan",
+      "actual": "Actual",
+      "diff": "Variance",
+      "asOf": "Actuals as of {at}",
+      "cellName": "{line} · {month}: plan {plan}, actual {actual}, variance {diff}",
+      "above": "Above plan",
+      "below": "Below plan",
+      "even": "On plan",
+      "noteTitle": "Variance note",
+      "noteDescription": "{line} · {month}",
+      "note": "Note",
+      "noteHint": "Explain why the actual differs from the plan (3–1,000 characters)",
+      "noteSave": "Save note",
+      "noteSaved": "Note saved",
+      "noteFailed": "Could not save the note",
+      "noteRequired": "Write at least 3 characters",
+      "cancel": "Cancel",
+      "noteBy": "{name} · {at}",
+      "hasNote": "Has a note",
+      "keys": "Arrows move · Enter writes a variance note",
+      "keysReadOnly": "Arrows move",
+      "totalsNote": "Totals cover months with actuals only"
+    },
+    "phone": {
+      "months": "By month",
+      "readOnly": "Read only on a phone — edit on a tablet or computer",
+      "empty": "{count, plural, one {# cell} other {# cells}} to enter"
+    }
   }
 }
