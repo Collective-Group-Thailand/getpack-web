@@ -43,6 +43,7 @@
     "payouts": "Factory payouts",
     "marketing": "Marketing",
     "agents": "Sales agents",
+    "sales": "Sales desk",
     "campaigns": "Campaigns",
     "customers": "Customers",
     "companies": "Companies",
@@ -134,6 +135,7 @@
     "factory_purchaser": "Purchaser",
     "factory_maintenance": "Maintenance",
     "factory_sales": "Factory sales",
-    "factory_auditor": "External auditor / CPA"
+    "factory_auditor": "External auditor / CPA",
+    "sales_rep": "Sales rep"
   }
 }

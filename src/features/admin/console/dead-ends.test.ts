@@ -54,6 +54,7 @@ const G1 = [
     "notifications",
     "assistant",
     "advisor",
+    "sales",
   ].map((area) => `src/app/admin/[(]console[)]/${area}/**/*.tsx`),
   ...[
     "console",
@@ -68,6 +69,7 @@ const G1 = [
     "samples",
     "assistant",
     "advisor",
+    "sales",
   ].map((area) => `src/features/admin/${area}/**/*.tsx`),
   "src/features/admin/logistics/Claim*.tsx",
 ];

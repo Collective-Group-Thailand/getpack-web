@@ -1118,5 +1118,45 @@
     "earned": "Earned",
     "statemented": "On a statement",
     "paid": "Paid"
+  },
+  "salesInbound": {
+    "new": "New, unassigned",
+    "assigned": "Assigned",
+    "contacted": "Contacted",
+    "converted_to_lead": "Lead created",
+    "disqualified": "Disqualified"
+  },
+  "salesApproval": {
+    "pending": "Awaiting approval",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "countered": "Countered",
+    "stale": "Voided, quote changed",
+    "withdrawn": "Withdrawn"
+  },
+  "salesAuthority": {
+    "green": "Within a rep's authority",
+    "amber": "Needs a sales manager",
+    "red": "Needs C-Level"
+  },
+  "salesFloor": {
+    "pass": "At or above the floor",
+    "fail": "Below the floor"
+  },
+  "salesPlaybook": {
+    "draft": "Draft",
+    "published": "Published",
+    "retired": "Retired"
+  },
+  "salesOutcome": {
+    "open": "Open",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "salesPriceLock": {
+    "requested": "Lock requested",
+    "confirmed": "Factory confirmed",
+    "expired": "Expired",
+    "released": "Released"
   }
 }

@@ -568,7 +568,7 @@ function createQuote(
   );
   if (quote instanceof Response) return quote;
   quotesOf(QUOTE_PERSONA).unshift(quote);
-  const row = leads.find((candidate) => candidate.id === leadId)!;
+  const row = (leads.find((candidate) => candidate.id === leadId) ?? externalLeadOf(leadId))!;
   const token = Array.from(
     { length: 43 },
     (_, i) => "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"[(i * 7 + seq) % 56],
@@ -616,7 +616,8 @@ function toAgentQuote(record: (typeof agentQuotes)[number], request: Request): A
   };
 }
 
-const findAgentQuote = (id: unknown) => agentQuotes.find((row) => row.id === id);
+const findAgentQuote = (id: unknown) =>
+  agentQuotes.find((row) => row.id === id && leads.some((candidate) => candidate.id === row.lead.id));
 
 /* -------------------------------------------------------------------------------------- playbook */
 
@@ -1264,7 +1265,9 @@ export const storeAgentLeadHandlers = [
     const url = new URL(request.url);
     const leadId = url.searchParams.get("leadId");
     const status = url.searchParams.get("status");
+    // Quotes a staff rep made (P4, employee agents' leads) never reach the freelance agent's zone.
     const all = agentQuotes
+      .filter((row) => leads.some((candidate) => candidate.id === row.lead.id))
       .map((row) => toAgentQuote(row, request))
       .filter((row) => (!leadId || row.lead.id === leadId) && (!status || row.status === status));
     const page = Number(url.searchParams.get("page") ?? 1) || 1;
@@ -1448,6 +1451,7 @@ export const storeAgentLeadHandlers = [
     } as DiscountRequest;
     rounds.push(created);
     discountRequests.set(record.id, rounds);
+    for (const listener of discountListeners) listener(record.id, created);
     const row = findLead(record.lead.id);
     if (row) moveForward(row, "negotiating", "discount_requested");
     return HttpResponse.json(created, { status: 201 });
@@ -1514,6 +1518,61 @@ export const storeAgentLeadHandlers = [
     return HttpResponse.json(forecast());
   }),
 ];
+
+/* ------------------------------------------------------------------ the sales desk (P4, mocks/admin/sales-desk.ts) */
+
+let externalLeadOf: (leadId: string) => Pick<Lead, "id" | "contactName" | "organisationName"> | undefined = () =>
+  undefined;
+const discountListeners: ((agentQuoteId: string, round: DiscountRequest) => void)[] = [];
+
+/** Lets the staff pipeline's leads (employee agents) own agent quotes made through `createQuote`. */
+export function setExternalLeadResolver(resolve: typeof externalLeadOf): void {
+  externalLeadOf = resolve;
+}
+/** P4: a discount request opens an approval on the desk (`sales_agent_discount.requested` subscriber). */
+export function onDiscountRequested(listener: (agentQuoteId: string, round: DiscountRequest) => void): void {
+  discountListeners.push(listener);
+}
+export const ensureAgentQuotesSeeded = () => ensureSeeded();
+export const AGENT_LEAD_IDS = LEAD_IDS;
+export const agentQuoteRecords = () => agentQuotes;
+export const discountRoundsOf = (agentQuoteId: string): DiscountRequest[] => discountRequests.get(agentQuoteId) ?? [];
+export function pushDiscountRound(agentQuoteId: string, round: DiscountRequest): void {
+  discountRequests.set(agentQuoteId, [...discountRoundsOf(agentQuoteId), round]);
+}
+export const nextAgentMockId = nextId;
+export const bangkokDayAt = bangkokAt;
+export const thaiConditionsDate = (iso: string) => thaiDate(iso);
+export function createAgentQuote(
+  leadId: string,
+  productTypeCode: string,
+  configuration: Record<string, unknown>,
+  deliveryPostcode?: string,
+) {
+  return createQuote(leadId, productTypeCode, configuration, deliveryPostcode);
+}
+/** The default instant spec the seeded quotes use (the first instant catalogue product with a default spec). */
+export function defaultInstantSpec(): { productTypeCode: string; configuration: Record<string, unknown> } | null {
+  const dto = catalogProducts()
+    .map((row) => configuratorOf(row))
+    .map((configurator) => (configurator ? toStoreConfiguratorDto(configurator) : null))
+    .find((candidate) => candidate?.instant && candidate.defaultSpec);
+  const base = dto?.defaultSpec?.configuration as Record<string, unknown> | undefined;
+  return dto && base ? { productTypeCode: dto.productTypeCode, configuration: base } : null;
+}
+export const agentQuoteDto = (record: (typeof agentQuotes)[number], request: Request) => toAgentQuote(record, request);
+export const quoteOptionIdOf = (record: (typeof agentQuotes)[number]) => optionIdOf(findQuote(record.quoteId)!);
+export const savedQuoteOf = (record: (typeof agentQuotes)[number]) => findQuote(record.quoteId);
+export function addAgentLeadActivity(
+  leadId: string,
+  partial: Partial<Activity> & Pick<Activity, "kind" | "occurredAt">,
+) {
+  addActivity(leadId, activity(leadId, partial));
+}
+export function moveAgentLeadForward(leadId: string, to: Stage, event: Schemas["AgentLeadSystemEvent"] | null) {
+  const row = findLead(leadId);
+  if (row) moveForward(row, to, event);
+}
 
 export type { StoreQuote };
 export { IMPORT_HEADERS };

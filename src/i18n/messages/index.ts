@@ -72,6 +72,7 @@ const NAMESPACES = [
   "reports",
   "finance",
   "agents",
+  "sales",
   "pricing",
   "advisor",
   "partner",
@@ -176,6 +177,9 @@ export const ZONE_NAMESPACES = {
     "reports",
     "finance",
     "agents",
+    // D-469 / D-470: the company sales desk, and the agent zone's lead components it shares (src/features/shared/sales).
+    "sales",
+    "agentSales",
     "pricing",
     "advisor",
     // The designer, for prepress opening a design read-only or as a copy (F4 C.2).
@@ -246,6 +250,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     assistant: () => import("./th/customer/assistant.json"),
     agent: () => import("./th/customer/agent.json"),
     agents: () => import("./th/admin/agents.json"),
+    sales: () => import("./th/admin/sales.json"),
     pricing: () => import("./th/admin/pricing.json"),
     advisor: () => import("./th/admin/advisor.json"),
     admin: () => import("./th/admin/admin.json"),
@@ -321,6 +326,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     assistant: () => import("./en/customer/assistant.json"),
     agent: () => import("./en/customer/agent.json"),
     agents: () => import("./en/admin/agents.json"),
+    sales: () => import("./en/admin/sales.json"),
     pricing: () => import("./en/admin/pricing.json"),
     advisor: () => import("./en/admin/advisor.json"),
     admin: () => import("./en/admin/admin.json"),

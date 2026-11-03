@@ -1,0 +1,948 @@
+{
+  "nav": {
+    "label": "Sales desk sections",
+    "inbox": "Inbox",
+    "pipeline": "Leads",
+    "quotes": "Quotes",
+    "dashboard": "Team dashboard",
+    "approvals": "Discount approvals",
+    "playbook": "Sales playbook",
+    "negotiations": "Negotiation history",
+    "lostToPrice": "Lost to price",
+    "postDeal": "Post-deal review",
+    "views": "Figures access log"
+  },
+  "tip": {
+    "formula": "Worked out as",
+    "source": "Source",
+    "asOf": "As of"
+  },
+  "inbox": {
+    "title": "Sales inbox",
+    "description": "Purchase enquiries from the contact form, quote requests from people who have not ordered yet, and entries the team added — soonest first response first.",
+    "statusesLabel": "Enquiry status",
+    "all": "All",
+    "search": "Search name, company, reference or need",
+    "columns": {
+      "contact": "Contact",
+      "reach": "Reach",
+      "source": "Source",
+      "status": "Status",
+      "assignee": "Owner",
+      "sla": "First response",
+      "actions": "Actions",
+      "statusOwner": "Status and owner"
+    },
+    "sources": {
+      "contact_form": "Contact form",
+      "rfq": "Quote request",
+      "line_chat": "LINE chat",
+      "manual": "Added by the team"
+    },
+    "leadRefused": "Cannot be registered as a lead",
+    "leadRefusedHint": "This contact cannot be registered as a lead; keep in touch as usual.",
+    "unassigned": "Unassigned",
+    "answered": "Answered",
+    "answeredLate": "Answered late",
+    "dueAt": "Answer by {at}",
+    "assign": "Assign",
+    "reassign": "Reassign",
+    "markContacted": "Mark as contacted",
+    "convert": "Convert to lead",
+    "openLead": "Open lead",
+    "actionsFor": "Actions for {name}",
+    "sla": "Response time",
+    "breachedOnly": "Past the response time",
+    "unassignedOnly": "Unassigned",
+    "bulkAssign": "Assign {count}",
+    "empty": "No enquiries in this view",
+    "emptyManager": "New enquiries arrive by themselves from the contact form and quote requests, or add one taken by phone.",
+    "emptyRep": "Enquiries your manager assigns to you appear here. If a customer calls you directly, add it as yours.",
+    "failed": "That did not go through. Try again.",
+    "done": {
+      "convert": "{name} is now a lead"
+    },
+    "assignDialog": {
+      "title": "Assign {name}",
+      "titleMany": "Assign {count} enquiries",
+      "description": "Pick a rep, or let the system pick whoever has the least open work. Assigning registers the lead for that rep.",
+      "submit": "Assign",
+      "rep": "Sales rep",
+      "roundRobin": "Let the system pick (round robin)",
+      "roundRobinHint": "Fewest open enquiries; on a tie, whoever was assigned least recently",
+      "load": "{inbound} open enquiries · {leads} open leads",
+      "notAssignable": "Not taking work now",
+      "reason": "Why move it",
+      "reasonHint": "Kept in the history; the previous rep sees it",
+      "reasonRequired": "Say why it moves from the previous rep",
+      "done": "{name} assigned to {rep}",
+      "doneMany": "{assigned} assigned, {skipped} skipped",
+      "failed": "Could not assign"
+    },
+    "contactedDialog": {
+      "title": "Contacted {name}",
+      "description": "Records the first response as now.",
+      "submit": "Save",
+      "note": "What was discussed",
+      "noteHint": "Optional",
+      "done": "Contact with {name} recorded",
+      "failed": "Could not save"
+    },
+    "disqualify": {
+      "action": "Not a target customer",
+      "title": "Close {name}",
+      "description": "The enquiry closes and no longer counts as open work.",
+      "submit": "Close",
+      "reason": "Reason",
+      "reasonRequired": "Pick a reason",
+      "note": "Details",
+      "done": "{name} closed",
+      "failed": "Could not close",
+      "reasons": {
+        "not_a_buyer": "Not looking to buy",
+        "duplicate": "Duplicate",
+        "no_response": "No response",
+        "out_of_scope": "Not something we make",
+        "spam": "Spam",
+        "other": "Other"
+      }
+    },
+    "create": {
+      "action": "Add enquiry",
+      "title": "Add enquiry",
+      "description": "For a customer who called or walked in.",
+      "submit": "Add",
+      "contactName": "Contact name",
+      "reach": "Reach (at least one)",
+      "contactPhone": "Phone",
+      "contactEmail": "E-mail",
+      "organisationName": "Shop or company",
+      "need": "What they need",
+      "assignee": "Owner",
+      "assigneeHint": "Leave it to the assignment mode in settings",
+      "byMode": "By the assignment mode",
+      "yours": "This enquiry will be yours",
+      "reachRequired": "Enter a phone or an e-mail",
+      "phoneInvalid": "Phone number not valid, e.g. 0812345678",
+      "done": "{name} added",
+      "failed": "Could not add"
+    },
+    "ownerLine": "Owner: {name}"
+  },
+  "pipeline": {
+    "title": "Leads",
+    "descriptionManager": "Every rep's leads — the same stages and rules as the agent portal.",
+    "descriptionRep": "Your leads. Move a stage from “Move to…” on any row.",
+    "kindLabel": "Seller",
+    "kinds": {
+      "employee": "Sales reps",
+      "freelance": "Freelance agents"
+    },
+    "layoutLabel": "Layout",
+    "layouts": {
+      "table": "Table",
+      "board": "Board"
+    },
+    "repLabel": "Rep",
+    "allReps": "Everyone",
+    "freelanceReadOnly": "Freelance agents' leads are read-only; the agent works them.",
+    "agentColumn": "Worked by",
+    "empty": {
+      "all": "No open leads yet",
+      "today": "Nothing to follow up today",
+      "ending": "No leads close to the end of protection",
+      "closed": "No closed leads yet"
+    },
+    "emptyHintManager": "Assign inbound enquiries to reps; the leads are registered for them.",
+    "emptyHintRep": "Convert an enquiry you were given and it appears here.",
+    "toInbox": "Go to the inbox"
+  },
+  "lead": {
+    "pageTitle": "Lead",
+    "back": "Leads",
+    "workedBy": "Worked by {name} ({code})",
+    "readOnly": "A freelance agent's lead — read-only.",
+    "followUp": "Next follow-up",
+    "noFollowUp": "Not set",
+    "noQuotes": "No quotes yet — make one with the button above.",
+    "quantity": "{count} pcs",
+    "asked": "Asked {pct} (round {round})",
+    "openApproval": "Open the approval",
+    "accepted": "chosen by the customer",
+    "optionLine": {
+      "standard": "{pct} off · usual commission {rate}",
+      "co_fund": "{pct} off · co-funded, commission {rate}",
+      "spiff": "{pct} off · spiff {rate}"
+    },
+    "history": "Negotiation history",
+    "historyHint": "Rounds, outcomes and competitors this customer has named.",
+    "openHistory": "View history",
+    "log": {
+      "action": "Log a contact",
+      "title": "Log a contact",
+      "submit": "Save",
+      "kind": "How",
+      "body": "What was discussed",
+      "bodyRequired": "Write a short note",
+      "done": "Saved",
+      "failed": "Could not save"
+    },
+    "quote": {
+      "action": "New quote",
+      "title": "Quote for {name}",
+      "description": "Start from a spec the desk has quoted, then set the customer's quantity; it is priced like the website.",
+      "submit": "Create and send",
+      "loading": "Loading specs…",
+      "spec": "Starting spec",
+      "specHint": "Style, material and print stay as in that quote",
+      "quotedFor": "Quoted {quantity} pcs · {date}",
+      "noSpecTitle": "No spec to start from",
+      "noSpec": "The desk has no quote to start from yet. Ask CS to price the first one.",
+      "quantity": "Quantity (pcs)",
+      "quantityRequired": "Enter a quantity",
+      "postcode": "Delivery postcode",
+      "postcodeHint": "Optional, for shipping",
+      "done": "Quote created",
+      "failed": "Could not create the quote"
+    },
+    "discount": {
+      "action": "Ask for a discount",
+      "title": "Discount for {code}",
+      "description": "Say first what the customer gives back, then the discount. The request goes to the approval desk.",
+      "submit": "Send request",
+      "giveLegend": "What the customer gives back",
+      "giveHint": "At least one",
+      "giveRequired": "Pick at least one thing the customer gives back",
+      "give": {
+        "depositPct": "Deposit (%)",
+        "cashWithinDays": "Pays cash within (days)",
+        "quantityChange": "Raises quantity to (pcs)",
+        "leadTimeFlexDays": "Accepts a longer lead time (days)",
+        "callOff": "Signs a call-off contract",
+        "commitmentMonths": "Contract length (months)"
+      },
+      "pct": "Discount asked (%)",
+      "pctHint": "Before VAT, off the website price",
+      "pctRequired": "Enter the discount asked",
+      "reason": "Reason",
+      "note": "Details",
+      "done": "Discount request sent",
+      "failed": "Could not send the request"
+    }
+  },
+  "quotes": {
+    "title": "Sales quotes",
+    "description": "Quotes sent from the desk's leads, with whether the customer opened them.",
+    "statusesLabel": "Quote status",
+    "all": "All",
+    "search": "Search customer or quote number",
+    "columns": {
+      "quote": "Quote",
+      "lead": "Customer",
+      "quantity": "Quantity",
+      "amount": "Price incl. VAT",
+      "status": "Status",
+      "sent": "Sent"
+    },
+    "deal": "Deal registered",
+    "opened": "Opened {at}",
+    "empty": "No quotes yet",
+    "emptyHint": "Make a quote from a lead's page.",
+    "toPipeline": "Go to leads"
+  },
+  "dashboard": {
+    "title": "Sales team dashboard",
+    "description": "How reps and agents did over the chosen range.",
+    "filters": "Filters",
+    "range": "Range",
+    "lastDays": "{days} days",
+    "period": "By",
+    "periods": {
+      "month": "month",
+      "week": "week"
+    },
+    "kind": "Seller",
+    "kinds": {
+      "all": "All",
+      "employee": "Sales reps",
+      "freelance": "Freelance agents"
+    },
+    "export": "Download CSV",
+    "exportFailed": "Could not download",
+    "scope": "{from} – {to} · as of {at}",
+    "totals": "Headline figures",
+    "sourceDashboard": "Sales team dashboard",
+    "sourceLeads": "Leads and their timelines",
+    "kpi": {
+      "leads": "New leads",
+      "won": "Won",
+      "lost": "Lost",
+      "winRate": "Win rate",
+      "openValue": "Open value",
+      "firstResponseSla": "Enquiries answered in time"
+    },
+    "inboundTotal": "of {count} enquiries",
+    "winRateOf": "{won} won · {lost} lost",
+    "stages": {
+      "new": "New",
+      "contacted": "Contacted",
+      "quoted": "Quoted",
+      "negotiating": "Negotiating",
+      "won": "Won"
+    },
+    "funnel": {
+      "title": "Leads by stage",
+      "hint": "How many reached each stage, and the share lost since the previous one",
+      "dropOff": "−{pct}"
+    },
+    "trend": {
+      "won": "Won per {period}",
+      "wonHint": "Deals won in each period",
+      "leads": "New leads per {period}",
+      "leadsHint": "Leads registered in each period"
+    },
+    "bySource": {
+      "title": "Leads by source",
+      "hint": "Most first, with how many were won",
+      "aside": "{won} won · {rate}"
+    },
+    "sources": {
+      "staff": "Sales inbox",
+      "link": "Agent link",
+      "manual": "Added by the agent",
+      "card_scan": "Card scan",
+      "csv_import": "CSV import"
+    },
+    "medianDays": {
+      "title": "Time in each stage",
+      "hint": "Median days, from the stage moves in the timeline",
+      "days": "{days} days",
+      "samples": "from {count}"
+    },
+    "byRep": {
+      "title": "By rep",
+      "hint": "Open a name to see that rep's leads",
+      "rep": "Rep",
+      "leads": "Leads",
+      "won": "Won",
+      "lost": "Lost",
+      "winRate": "Win rate",
+      "openValue": "Open value"
+    },
+    "split": {
+      "title": "Reps against freelance agents",
+      "hint": "The same figures, by kind of seller"
+    }
+  },
+  "approvals": {
+    "title": "Discount approvals",
+    "description": "Discount requests from reps and agents, by the time a decision is due. Figures are in each record, in your tier.",
+    "statusesLabel": "Approval status",
+    "all": "All",
+    "search": "Search customer, quote number or agent code",
+    "columns": {
+      "quote": "Customer, quote and requester",
+      "agent": "Asked by",
+      "pct": "Discount asked",
+      "level": "Decided at",
+      "due": "Decide by",
+      "status": "Status",
+      "created": "Asked"
+    },
+    "round": "Round {round}",
+    "kinds": {
+      "employee": "Sales rep",
+      "freelance": "Freelance agent"
+    },
+    "levels": {
+      "rep": "Sales rep",
+      "sales_manager": "Sales manager",
+      "c_level": "C-Level"
+    },
+    "raised": "raised one level",
+    "heavy": "Negotiation-heavy customer",
+    "dueAt": "Decide by {at}",
+    "escalated": "Escalated",
+    "awaitingMeLabel": "Mine",
+    "awaitingMe": "Waiting for me",
+    "empty": "No requests in this view",
+    "emptyHint": "Discount requests from quotes arrive here by themselves.",
+    "toQuotes": "Go to quotes",
+    "askedBy": "Asked by {name} ({code}) · {kind}",
+    "askedAt": "Asked {at}"
+  },
+  "approval": {
+    "pageTitle": "Discount request",
+    "back": "Discount approvals",
+    "quote": "Quote",
+    "subtitle": "{pct} asked · {code} · round {round}",
+    "dueAt": "Decide by {at}",
+    "levels": {
+      "rep": "A rep may decide",
+      "sales_manager": "A sales manager decides",
+      "c_level": "C-Level decides"
+    },
+    "kinds": {
+      "employee": "Sales rep",
+      "freelance": "Freelance agent"
+    },
+    "header": "The request",
+    "export": "Download CSV",
+    "exportFailed": "Could not download",
+    "facts": {
+      "quote": "Quote",
+      "validUntil": "Valid until {date}",
+      "customer": "Customer",
+      "heavy": "Negotiation-heavy: approval raised a level",
+      "agent": "Seller",
+      "requestedBy": "Asked by {name}",
+      "deal": "Deal registration",
+      "dealRegistered": "Registered",
+      "dealUntil": "Protected until {date}",
+      "noDeal": "Not registered",
+      "dealHidden": "See the lead's page"
+    },
+    "ask": {
+      "title": "What is asked",
+      "reason": "Reason: {reason}"
+    },
+    "reasons": {
+      "competitor_price": "A competitor quoted less",
+      "budget": "Limited budget",
+      "volume": "Large volume",
+      "strategic_account": "Strategic account",
+      "other": "Other"
+    },
+    "give": {
+      "title": "What the customer gives back",
+      "none": "Nothing stated",
+      "quantityChange": "Raises quantity to {count} pcs",
+      "callOff": "{months}-month call-off contract",
+      "depositPct": "{pct} deposit",
+      "cashWithinDays": "Pays cash within {days} days",
+      "leadTimeFlexDays": "Accepts {days} more days of lead time",
+      "specChange": "Spec change: {change}"
+    },
+    "compare": {
+      "title": "Against the competitor's quote",
+      "hint": "Spec for spec, before price",
+      "line": "Line",
+      "ours": "getpack",
+      "theirs": "Competitor",
+      "unknown": "No data",
+      "notGiven": "Not given",
+      "differs": "differs",
+      "colours": "{colours} colours, {sides} side(s)",
+      "days": "{days} days",
+      "priceExVat": "{amount} before VAT",
+      "priceIncVat": "{amount} incl. VAT",
+      "shippingIncluded": "Shipping included",
+      "shippingExtra": "Shipping extra",
+      "evidence": "Evidence from the requester:",
+      "lines": {
+        "quantity": "Quantity",
+        "board": "Board",
+        "flute": "Flute",
+        "print": "Print",
+        "finish": "Finish",
+        "leadTime": "Lead time",
+        "price": "Price",
+        "shipping": "Shipping"
+      }
+    },
+    "waterfall": {
+      "title": "What this deal earns",
+      "which": "Figures for",
+      "request": "As asked {pct}",
+      "option": "Option {n} · {kind}",
+      "tier": {
+        "full": "Full figures for your role, with your name across the chart. Every view is logged.",
+        "margin_pct": "Your role sees percentages and the floor. Every view is logged.",
+        "authority": "Your role sees the approval authority only."
+      }
+    },
+    "optionKinds": {
+      "standard": "Usual commission",
+      "co_fund": "Co-funded",
+      "spiff": "Spiff"
+    },
+    "locks": {
+      "title": "Factory price lock",
+      "hint": "A big deal: a lock request is recorded for the approval's validity, awaiting the factory.",
+      "until": "until {date}"
+    },
+    "decision": {
+      "waiting": "Awaiting a decision",
+      "done": "Decision",
+      "notYours": "This is your own request; another approver decides it.",
+      "byLevel": "This level needs a {level}",
+      "rate": "commission {rate}",
+      "selfApproved": "Self-approved (solo-owner mode); recorded in the history."
+    }
+  },
+  "waterfall": {
+    "bridgeTitle": "From the website price to contribution after commission",
+    "marginTitle": "Margin against the floor",
+    "floorLine": "Dashed line = margin floor, {pct} of net revenue",
+    "notSet": "Not set, counted as 0",
+    "showTable": "Show as table",
+    "showChart": "Show as chart",
+    "tableStep": "Line",
+    "tableAmount": "Amount (before VAT)",
+    "tableShare": "Share",
+    "badDebt": {
+      "not_set": "No rate set, counted as 0",
+      "not_applicable": "Not applicable"
+    },
+    "authority": {
+      "green": "Within a sales rep's authority",
+      "amber": "Needs a sales manager",
+      "red": "Needs C-Level",
+      "why": "The level comes from the discount and the floor the system works out."
+    },
+    "lines": {
+      "listRevenue": "Revenue at website price",
+      "discount": "Discount",
+      "netRevenue": "Net revenue",
+      "factoryCost": "Factory cost",
+      "shippingDifference": "Shipping difference",
+      "paymentFee": "Payment fee",
+      "paymentFeeOf": "Payment fee ({method})",
+      "freeServices": "Free samples and services",
+      "grossMargin": "Gross margin",
+      "commission": "Seller commission",
+      "creditCost": "Credit cost",
+      "badDebt": "Bad-debt provision",
+      "contributionAfterCommission": "Contribution after commission",
+      "discountPct": "Discount",
+      "grossMarginPct": "Gross margin",
+      "contributionPct": "Contribution after commission",
+      "floorPct": "Floor"
+    }
+  },
+  "simulator": {
+    "title": "Try other terms",
+    "hint": "Worked out again at once in your tier. Nothing is saved except the view log.",
+    "discountPct": "Discount (%)",
+    "discountInvalid": "0–50, up to 2 decimals",
+    "creditDays": "Credit (days)",
+    "creditDaysHint": "From delivery, 0–180",
+    "template": "Payment schedule",
+    "templateNone": "As requested",
+    "depositPct": "Deposit (%)",
+    "ratePct": "Commission (%)",
+    "ratePctHint": "Lower = co-fund, higher = spiff",
+    "level": "Level needed:",
+    "levels": {
+      "rep": "Sales rep",
+      "sales_manager": "Sales manager",
+      "c_level": "C-Level"
+    },
+    "failed": "Could not work it out; adjust the figures"
+  },
+  "history": {
+    "title": "This customer's negotiation history",
+    "rule": "Negotiation-heavy = {rounds}+ rounds on {quotes} of the last {last} quotes",
+    "open": "View all",
+    "heavy": "Negotiation-heavy customer",
+    "heavyHint": "This customer's discount requests go one approval level up.",
+    "average": "Average approved discount",
+    "won": "Won",
+    "lost": "Lost",
+    "rounds": "{count} rounds",
+    "accepted": "Took {pct}",
+    "lostReasons": "Lost because:",
+    "lastCompetitor": "Last competitor ({date}):"
+  },
+  "decision": {
+    "title": "Decide",
+    "hint": "Approve with options for the customer, counter with what to ask instead, or reject.",
+    "options": "Options to offer",
+    "optionN": "Option {n}",
+    "standardFixed": "Usual commission, always first",
+    "remove": "Remove",
+    "kind": "Kind",
+    "kinds": {
+      "standard": "Usual commission",
+      "co_fund": "Co-funded",
+      "spiff": "Spiff"
+    },
+    "discountPct": "Discount (%)",
+    "standardRate": "The seller keeps the usual commission rate",
+    "ratePct": "Commission for this option (%)",
+    "rateHint": {
+      "co_fund": "Below the usual rate: the seller shares the discount",
+      "spiff": "Above the usual rate"
+    },
+    "addOption": "Add an option (up to 3)",
+    "approve": "Approve",
+    "counter": "Counter",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "confirm": {
+      "approve": {
+        "title": "Approve and offer the options",
+        "body": "The seller sees {count} option(s) and may take one while the offer is valid."
+      },
+      "counter": {
+        "title": "Counter",
+        "body": "This request closes; the seller may ask again with different terms."
+      },
+      "reject": {
+        "title": "Reject",
+        "body": "The seller sees your reason."
+      }
+    },
+    "counterAsk": "Ask the customer for instead",
+    "counterAskHint": "e.g. 5,000 pcs or a 50% deposit",
+    "note": "Reason (the seller sees it)",
+    "noteOptional": "Note to the seller (optional)",
+    "noteRequired": "Give the seller a reason",
+    "selfReason": "Why you approve your own request",
+    "selfReasonHint": "At least 10 characters; kept in the history",
+    "selfReasonRequired": "Write at least 10 characters",
+    "optionsInvalid": "Check every option's figures (up to 2 decimals)",
+    "done": {
+      "approve": "Approved — the seller sees the options",
+      "counter": "Counter sent",
+      "reject": "Rejected"
+    },
+    "failed": "Could not decide"
+  },
+  "views": {
+    "title": "Figures access log",
+    "description": "Who viewed or downloaded which deal's margin figures, in which tier.",
+    "columns": {
+      "viewedAt": "When",
+      "viewer": "Who",
+      "quote": "Quote",
+      "tier": "Tier seen",
+      "purpose": "What"
+    },
+    "tiers": {
+      "authority": "Approval authority",
+      "margin_pct": "Margin percentages",
+      "full": "Full figures"
+    },
+    "purposes": {
+      "view": "Viewed",
+      "simulate": "Simulated",
+      "export": "Downloaded"
+    },
+    "empty": "No views yet",
+    "emptyHint": "Every opening of a discount approval is logged here.",
+    "toApprovals": "Go to discount approvals"
+  },
+  "playbook": {
+    "title": "Sales playbook",
+    "description": "The cards agents and reps see. Edit a draft, submit it, and someone else publishes.",
+    "statusesLabel": "Card status",
+    "all": "All",
+    "search": "Search cards",
+    "columns": {
+      "card": "Card",
+      "status": "Status",
+      "audiences": "Seen by",
+      "contexts": "Situations",
+      "owner": "Owner",
+      "updated": "Updated"
+    },
+    "waitingPublish": "Awaiting publish",
+    "audiences": {
+      "agent": "Agents",
+      "rep": "Reps",
+      "manager": "Managers"
+    },
+    "owners": {
+      "marketing": "Marketing",
+      "sales_manager": "Sales manager"
+    },
+    "new": "New card",
+    "empty": "No cards in this view",
+    "create": {
+      "title": "New card",
+      "description": "Starts as draft v1; write it and preview it on the next page.",
+      "submit": "Create draft",
+      "key": "Card key",
+      "keyHint": "Lowercase letters, digits and dashes, e.g. repeat-order",
+      "keyInvalid": "a–z, 0–9 and -, 3–48 characters",
+      "titleTh": "Title",
+      "owner": "Owner",
+      "ownerHint": "Only the owner edits",
+      "owners": {
+        "marketing": "Marketing",
+        "sales_manager": "Sales manager"
+      },
+      "done": "Draft created",
+      "failed": "Could not create"
+    },
+    "editor": {
+      "pageTitle": "Playbook card",
+      "untitled": "(untitled)",
+      "editTitle": "Edit draft",
+      "readTitle": "Content",
+      "titleTh": "Title",
+      "bodyTh": "Body",
+      "bodyHint": "Markdown: paragraphs, - lists and tables",
+      "english": "English (optional)",
+      "titleEn": "Title (English)",
+      "bodyEn": "Body (English)",
+      "contexts": "Shown in",
+      "audiences": "Seen by",
+      "agentWording": "Cards agents see may not mention cost, margin or factories; the API refuses them.",
+      "replies": "Suggested replies",
+      "replyN": "Suggested reply {n}",
+      "removeReply": "Remove suggested reply {n}",
+      "addReply": "Add a suggested reply",
+      "changeNote": "What changed in this version",
+      "steps": {
+        "save": "1 Save the draft",
+        "submit": "2 Submit",
+        "publish": "3 Someone else publishes"
+      },
+      "save": "Save",
+      "saved": "Saved",
+      "submit": "Submit",
+      "submitted": "Submitted; someone else publishes",
+      "publish": "Publish",
+      "published": "Published; the previous version retired",
+      "publishNeedsSubmit": "Submit it first, then it can be published",
+      "publishByOther": "The author or submitter cannot publish; another person from Marketing or a sales manager does",
+      "publishReady": "Submitted {at}; ready for you to publish",
+      "saveFirst": "There are unsaved changes",
+      "retire": "Retire this card",
+      "retired": "Retired",
+      "retiredNote": "This version is retired",
+      "liveNote": "This version is live; make a new draft to change it",
+      "newDraft": "New draft",
+      "newDraftDone": "New draft created",
+      "openDraft": "Open draft v{version}",
+      "notOwner": "This card belongs to {owner}; you can read it",
+      "preview": "Preview in the agent portal",
+      "previewHint": "The same card agents see, updated as you type",
+      "frame": "Screen size",
+      "phone": "Phone",
+      "desktop": "Desktop",
+      "versions": "All versions",
+      "publishTitle": "Publish this card",
+      "publishBody": "{audiences} see this version at once; the live version retires",
+      "retireTitle": "Retire this card",
+      "retireBody": "Agents and reps will no longer see it",
+      "failed": "That did not go through",
+      "frameApp": "getpack Agent",
+      "frameUrl": "agent.getpack.co/playbook",
+      "versionN": "v{version}"
+    },
+    "keyVersion": "{key} · v{version}",
+    "keyVersionOwner": "{key} · v{version} · {owner}"
+  },
+  "reports": {
+    "range": "Range",
+    "lastDays": "{days} days",
+    "negotiations": {
+      "pageTitle": "Negotiation history",
+      "description": "Rounds, approved discounts, outcomes and competitors, per customer.",
+      "pick": "The desk's recent customers",
+      "byCustomerId": "Or a customer id",
+      "byCustomerIdHint": "From the customer's back-office page",
+      "show": "Show",
+      "none": "Pick a customer on the left",
+      "noneHint": "Or open it from a lead or a discount approval",
+      "toApprovals": "Go to discount approvals",
+      "title": "Negotiation history",
+      "rule": "Negotiation-heavy = {rounds}+ rounds on {quotes} of the last {last} quotes"
+    },
+    "lostToPrice": {
+      "pageTitle": "Lost to price",
+      "description": "Closed deals lost on price, by product class and quantity band — for the pricing tables.",
+      "title": "Share lost to price",
+      "hint": "Darker = more lost on price; the count is under each percentage",
+      "scope": "{from} – {to}",
+      "productClass": "Product class",
+      "bands": {
+        "lt_1k": "Under 1,000",
+        "1k_10k": "1,000–9,999",
+        "10k_100k": "10,000–99,999",
+        "gte_100k": "100,000+"
+      },
+      "classes": {
+        "folding_carton": "Folding carton",
+        "corrugated": "Corrugated",
+        "label": "Labels and stickers",
+        "pouch": "Pouches"
+      },
+      "ofClosed": "{lost} of {closed}",
+      "legend": "Share:",
+      "legendSteps": [
+        "10–24%",
+        "25–39%",
+        "40%+"
+      ],
+      "empty": "No closed deals in this range",
+      "toDashboard": "Go to the team dashboard"
+    },
+    "postDeal": {
+      "pageTitle": "Post-deal review",
+      "description": "Won deals that had a discount approval: the margin approved against what was made.",
+      "groupBy": "Group by",
+      "groups": {
+        "approver": "Approver",
+        "agent": "Seller",
+        "customer": "Customer"
+      },
+      "tierFull": "Amounts and percentages, for your role",
+      "tierPct": "Percentages, for your role",
+      "byGroup": "By {group}",
+      "deals": "Deals",
+      "dealsTitle": "Every deal",
+      "deal": "Deal",
+      "discount": "Approved discount",
+      "heads": {
+        "netRevenue": "Net revenue",
+        "grossMarginPct": "Gross margin",
+        "contributionPct": "Contribution after commission (%)",
+        "contribution": "Contribution after commission"
+      },
+      "approvedAt": "approved at {value}",
+      "empty": "No won deals in this range",
+      "toApprovals": "Go to discount approvals",
+      "title": "Post-deal review",
+      "dealLine": "{code} · {seller} ({agentCode}) · approved by {approver} · {orders} order(s)"
+    }
+  },
+  "figures": {
+    "quoteGross": {
+      "definition": "What the customer pays incl. VAT for the quote's first quantity",
+      "formula": "Product + shipping + VAT at the website price"
+    },
+    "leads": {
+      "definition": "Leads registered in the chosen range",
+      "formula": "Counted by registration date"
+    },
+    "won": {
+      "definition": "Leads that became a sale",
+      "formula": "Counted when the first payment is seen"
+    },
+    "lost": {
+      "definition": "Leads closed without a sale",
+      "formula": "Counted when moved to lost"
+    },
+    "winRate": {
+      "definition": "Share of closed deals that were won",
+      "formula": "Won ÷ (won + lost)"
+    },
+    "openValue": {
+      "definition": "Expected value of the leads still open",
+      "formula": "Sum of the sellers' expected values (before VAT)"
+    },
+    "firstResponseSla": {
+      "definition": "Enquiries answered for the first time within the set time",
+      "formula": "Answered in time ÷ all enquiries, in working hours"
+    },
+    "funnelStep": {
+      "definition": "Leads that reached this stage in the range",
+      "formula": "From the stage moves in the timeline"
+    },
+    "dropOff": {
+      "definition": "Share that did not reach this stage from the previous one",
+      "formula": "1 − (this stage ÷ previous stage)"
+    },
+    "wonPerPeriod": {
+      "definition": "Deals won in each period (Bangkok time)"
+    },
+    "leadsPerPeriod": {
+      "definition": "Leads registered in each period (Bangkok time)"
+    },
+    "sourceLeads": {
+      "definition": "Leads that came from this source"
+    },
+    "medianDays": {
+      "definition": "The middle number of days leads spend in this stage",
+      "formula": "Median of the days between stage moves"
+    },
+    "repLeads": {
+      "definition": "This rep's leads in the range"
+    },
+    "requestedPct": {
+      "definition": "The discount the seller asked for, off the website price",
+      "formula": "Percent of revenue before VAT"
+    },
+    "discountPct": {
+      "definition": "The discount the figures use",
+      "formula": "Percent of revenue at the website price, before VAT"
+    },
+    "grossMarginPct": {
+      "definition": "Gross margin as a share of net revenue",
+      "formula": "(Net revenue − factory cost ± shipping difference − fees − free services) ÷ net revenue"
+    },
+    "contributionPct": {
+      "definition": "Contribution after commission as a share of net revenue",
+      "formula": "(Gross margin − commission − credit cost − bad-debt provision) ÷ net revenue"
+    },
+    "floorPct": {
+      "definition": "The lowest acceptable margin; below it C-Level decides",
+      "formula": "Set per product class (margin.floor_pct)"
+    },
+    "listRevenue": {
+      "definition": "Revenue for the quoted quantity at the website price",
+      "formula": "Unit price × quantity, before VAT"
+    },
+    "discount": {
+      "definition": "The discount asked or offered",
+      "formula": "Revenue at website price × discount %"
+    },
+    "netRevenue": {
+      "definition": "Revenue after the discount, before VAT",
+      "formula": "Revenue at website price − discount"
+    },
+    "factoryCost": {
+      "definition": "What the factory charges for this quantity",
+      "formula": "From the factory price in force or its quote"
+    },
+    "shippingDifference": {
+      "definition": "Shipping charged to the customer against what getpack pays",
+      "formula": "Shipping charged − shipping paid"
+    },
+    "paymentFee": {
+      "definition": "The fee for the customer's payment method",
+      "formula": "At the rate set per method"
+    },
+    "freeServices": {
+      "definition": "Samples and services given free in this deal"
+    },
+    "grossMargin": {
+      "definition": "Margin before commission",
+      "formula": "Net revenue − factory cost ± shipping difference − fees − free services"
+    },
+    "commission": {
+      "definition": "The seller's commission on this deal",
+      "formula": "Net revenue × commission rate"
+    },
+    "creditCost": {
+      "definition": "The cost of paying the factory before the customer pays (an estimate, not posted)",
+      "formula": "Each factory payment × annual cost of capital × days waited ÷ 365, rounded to the baht"
+    },
+    "badDebt": {
+      "definition": "Bad-debt provision by the customer's credit grade",
+      "formula": "Net revenue × provision rate for the grade"
+    },
+    "contributionAfterCommission": {
+      "definition": "What remains after commission and the cost of money; the figure a discount is decided on",
+      "formula": "Gross margin − commission − credit cost − bad-debt provision"
+    },
+    "buyPrice": {
+      "definition": "The factory buy price asked to be locked for the approval's validity"
+    },
+    "averageApprovedDiscount": {
+      "definition": "Average discount approved for this customer",
+      "formula": "Average of the options the customer took"
+    },
+    "rounds": {
+      "definition": "How many times a discount was asked on this quote"
+    },
+    "lostToPricePct": {
+      "definition": "Share of closed deals in this group lost on price",
+      "formula": "Lost on price ÷ closed deals"
+    }
+  }
+}

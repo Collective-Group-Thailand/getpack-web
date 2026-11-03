@@ -386,3 +386,12 @@ export type AgentForecastStatus = Schemas["AgentForecastStatus"];
 
 /** A reorder suggestion in the CS queue (D-288). **Source: contract** (v0.66.0). */
 export type ReorderSuggestionStatus = Schemas["ReorderSuggestionStatus"];
+
+// D-469 / D-470: the company sales desk.
+export type SalesInboundStatus = Schemas["SalesInboundStatus"];
+export type SalesDiscountApprovalStatus = Schemas["SalesDiscountApprovalStatus"];
+export type SalesAuthorityColour = Schemas["SalesAuthorityColour"];
+export type SalesFloorCheck = Schemas["SalesFloorCheck"];
+export type PlaybookCardStatus = Schemas["TemplateVersionStatus"];
+export type SalesNegotiationOutcome = Schemas["SalesNegotiationOutcome"];
+export type SalesFactoryPriceLockStatus = Schemas["SalesFactoryPriceLockStatus"];

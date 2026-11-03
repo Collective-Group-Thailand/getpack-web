@@ -63,6 +63,7 @@ const MENU_ICONS: Record<string, IconName> = {
   privacy: "shield-check",
   marketing: "megaphone",
   agents: "trend-up",
+  sales: "briefcase",
   customers: "user",
   companies: "building",
   analytics: "chart",
@@ -89,7 +90,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
   { key: "overview", entries: ["dashboard", "approvals"] },
   {
     key: "sales",
-    entries: ["orders", "inbox", "cs_calculators", "quotations", "rfq", "discount_memos", "pricing", "agents"],
+    entries: ["orders", "inbox", "cs_calculators", "quotations", "rfq", "discount_memos", "pricing", "agents", "sales"],
   },
   { key: "operations", entries: ["prepress", "production", "shipments", "shipping_setup", "claims", "samples"] },
   {

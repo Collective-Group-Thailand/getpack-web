@@ -324,3 +324,26 @@ Made in getpack-api (D-456): `StoreMeDto.editorMode` + `PATCH /v1/store/me/prefe
 - **C8-4 print-file export / import:** PDF/X-4 (CMYK, outlined text, separate die-cut layer, bleed), `.ai` with layers,
   PDF/`.ai` import on the dieline with the same preflight — after Prepress's file spec. Web meanwhile: the existing
   exports; the chooser's "อัปโหลดไฟล์ PDF หรือ .ai" goes to `/studio/upload`.
+
+## Sales desk (agent portal P4, D-469 / D-470, 2026-11-03)
+
+Written down only — no registry entry, no mock: the screens work on today's contract and say so.
+
+- **`sales_playbook.card-actors`:** on `PlaybookCardAdminDto` — `createdBy: UserRefDto`, `submittedBy: UserRefDto | null`,
+  `publishedBy: UserRefDto | null`. The maker-checker is the API's (409 `sales_playbook.maker_checker`); without the
+  actors the web cannot tell the maker that they are the maker, so it holds the publish button back only for the
+  cards this browser drafted, saved or submitted (`PlaybookEditor`). With the field: disable for `createdBy` /
+  `submittedBy` = me, and name who did each step in the versions list.
+- **`admin.salesQuotes.products`:** the catalogue products a rep may quote with their reference configuration
+  (`sales.pipeline.self` / `.manage`). `sales_rep` and `sales_manager` hold no `catalog.read`, so the desk's
+  "สร้างใบเสนอราคา" starts from the configuration of a sales quote the desk already priced and sets the quantity and
+  postcode (`NewSalesQuote`); a desk with no quote yet cannot start one.
+- **`admin.sales.dashboard` per-period win rate:** `SalesPeriodFiguresDto.lost` and `.winRatePct` (string | null),
+  so the dashboard can draw the win-rate trend the brief asks for. Meanwhile it draws won per period and new leads per
+  period as two charts (one measure each) and never divides the API's counts itself.
+- **`admin.discountApprovals.get` deal registration:** `dealRegistration` (the agent quote's `AgentDealRegistrationDto`)
+  on `DiscountApprovalDto`, so an approver without a pipeline permission (Finance Manager) sees it in the header.
+  Meanwhile the header reads it from `admin.salesQuotes.list?leadId` when the viewer may, and otherwise says where it is.
+- **Admin menu:** the `sales` entry needs `sales.pipeline.self` or `.manage`, so Finance Manager (approval desk, export)
+  and Auditor (view log) reach `/sales/approvals` and `/sales/approvals/views` by link only. Ask: the entry also for
+  `discount_approvals.read` / `sales_waterfall_views.read` / `sales_reports.read` holders.
