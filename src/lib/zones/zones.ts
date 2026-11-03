@@ -78,11 +78,24 @@ export const ZONE_CONFIG = {
     /**
      * Most specific first. `me/sessions` — the agent's signed-in devices (โปรไฟล์และสัญญา); `me/consents` — the
      * PDPA step right after a first sign-in here; `files` — the payout profile's and the ล.ย.01's evidence
-     * uploads; `rum` — field Web Vitals. Every other `/v1/store` path is refused.
+     * uploads, the card scan's photo and the competitor's quote (D-468); `rum` — field Web Vitals;
+     * `catalog/products` and `catalog/images` — the public catalogue an agent quotes from on a lead's behalf (D-468:
+     * product, its configurator, its pictures; the same public data getpack.co shows). Every other `/v1/store` path
+     * is refused.
      */
-    extraPrefixes: ["/v1/store/me/sessions", "/v1/store/me/consents", "/v1/store/files", "/v1/store/rum"],
-    /** Who is signed in (`store.me.get`), for the zone's guard — the path itself, nothing under it. */
-    exactPaths: ["/v1/store/me"],
+    extraPrefixes: [
+      "/v1/store/me/sessions",
+      "/v1/store/me/consents",
+      "/v1/store/catalog/products",
+      "/v1/store/catalog/images",
+      "/v1/store/files",
+      "/v1/store/rum",
+    ],
+    /**
+     * Who is signed in (`store.me.get`), for the zone's guard; and the store's live price (`store.quotes.calculate`)
+     * the quote-on-behalf flow shows while the agent configures (D-468) — the paths themselves, nothing under them.
+     */
+    exactPaths: ["/v1/store/me", "/v1/store/quotes/actions/calculate"],
     surface: "/v1/store",
     indexable: false,
     localePrefixed: false,

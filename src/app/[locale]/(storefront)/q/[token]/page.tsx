@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { QuoteAnswer } from "@/features/customer/quote-link/QuoteAnswer";
+import { getSharedQuote } from "@/features/customer/catalog/api.server";
 import { getQuoteLink } from "@/features/customer/quote-link/api.server";
 import { getFormat } from "@/features/shared/format/server";
 
@@ -14,10 +15,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * A factory's quotation as its customer opens it from the link the factory sent (D-360): the seller and buyer,
- * the lines and totals, the terms — and accepting or declining it without an account.
+ * the lines and totals, the terms — and accepting or declining it without an account. The same path also carries a
+ * store quotation an agent sent (D-468): that one is handed to `./open`.
  */
-export default async function QuoteLinkPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
+export default async function QuoteLinkPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ token: string; locale: string }>;
+  searchParams: Promise<{ gone?: string }>;
+}) {
+  const [{ token, locale }, { gone }] = await Promise.all([params, searchParams]);
   if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) notFound();
   const [t, tUnits, format, quote] = await Promise.all([
     getTranslations("storefront.quoteLink"),
@@ -25,7 +33,12 @@ export default async function QuoteLinkPage({ params }: { params: Promise<{ toke
     getFormat(),
     getQuoteLink(token),
   ]);
-  if (!quote) notFound();
+  if (!quote) {
+    // Not a factory's quotation: a store quotation an agent sent (D-468 §2) opens through `./open`, which keeps the
+    // agent's code like `/a/{code}` and shows it in the configurator. `gone` stops a loop when it has expired.
+    if (!gone && (await getSharedQuote(token))) redirect(`${locale === "en" ? "/en" : ""}/q/${token}/open`);
+    notFound();
+  }
   const party = (p: typeof quote.seller) =>
     [p.address, p.taxId ? t("taxId", { id: p.taxId }) : null, p.phone].filter(Boolean).join(" · ");
 

@@ -135,6 +135,8 @@ describe("agent zone allow-list (D-467)", () => {
     expect(upstreamPrefixes("agent")).toEqual([
       "/v1/store/me/sessions",
       "/v1/store/me/consents",
+      "/v1/store/catalog/products",
+      "/v1/store/catalog/images",
       "/v1/store/files",
       "/v1/store/rum",
       "/v1/store/agent",
@@ -157,6 +159,16 @@ describe("agent zone allow-list (D-467)", () => {
     "/v1/store/files/presign",
     "/v1/store/files/{fileId}/actions/complete",
     "/v1/store/rum/web-vitals",
+    // Phase 3 (D-468): the pipeline, quotes on behalf and the catalogue they price from.
+    "/v1/store/agent/leads/pipeline",
+    "/v1/store/agent/leads/actions/scan-card",
+    "/v1/store/agent/quotes/abc/discount-requests",
+    "/v1/store/agent/commissions/forecast",
+    "/v1/store/agent/playbook",
+    "/v1/store/catalog/products",
+    "/v1/store/catalog/products/rsc-carton/configurator",
+    "/v1/store/catalog/images/abc",
+    "/v1/store/quotes/actions/calculate",
   ])("allows %s", (path) => {
     expect(isUpstreamPathAllowed("agent", path)).toBe(true);
   });
@@ -171,6 +183,15 @@ describe("agent zone allow-list (D-467)", () => {
     "/v1/store/agents",
     "/v1/store/agentx/leads",
     "/v1/store/agent/../orders",
+    // The catalogue and pricing an agent quotes from, and nothing beside them (D-468).
+    "/v1/store/quotes",
+    "/v1/store/quotes/shared/abc",
+    "/v1/store/quotes/actions/calculate-batch",
+    "/v1/store/quotes/actions/calculate/x",
+    "/v1/store/catalog/search",
+    "/v1/store/catalog/price-hints",
+    "/v1/store/catalog/productsx",
+    "/v1/store/catalog/products/../../orders",
     "/v1/admin/agents",
     "/v1/partner/me",
     "/v1/auth/staff/login",
