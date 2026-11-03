@@ -3173,7 +3173,9 @@
       "keys": "ลูกศรเลื่อนช่อง · Enter แก้ไข · Esc ยกเลิก · Shift+Enter ดูรายการที่มา",
       "keysReadOnly": "ลูกศรเลื่อนช่อง · Shift+Enter ดูรายการที่มา",
       "cellName": "{line} · {month}",
-      "systemBeside": "ระบบ {value}"
+      "systemBeside": "ระบบ {value}",
+      "unit_days": "(วัน)",
+      "unit_percent": "(%)"
     },
     "edit": {
       "value": "ค่า {line} เดือน {month}",

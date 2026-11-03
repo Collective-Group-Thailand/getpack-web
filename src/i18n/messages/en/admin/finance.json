@@ -3173,7 +3173,9 @@
       "keys": "Arrows move · Enter edits · Esc cancels · Shift+Enter shows sources",
       "keysReadOnly": "Arrows move · Shift+Enter shows sources",
       "cellName": "{line} · {month}",
-      "systemBeside": "System {value}"
+      "systemBeside": "System {value}",
+      "unit_days": "(days)",
+      "unit_percent": "(%)"
     },
     "edit": {
       "value": "{line}, {month}",

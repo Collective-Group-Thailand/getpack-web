@@ -23,6 +23,7 @@ import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, download, problemMessage, QueryError, useCan } from "../../console";
 import { usePnlFormat } from "./format";
+import { PnlGridView } from "./Grid";
 import { CopyPlanDialog, CreatePlanDialog, LockPlanDialog } from "./PlanDialogs";
 import { PNL_SCENARIOS, pnlKeys, type PnlGrid, type PnlPlan, type PnlScenario } from "./resources";
 
@@ -197,7 +198,14 @@ function PlannerBody() {
       ) : grid.isError ? (
         <QueryError error={grid.error} onRetry={() => void grid.refetch()} />
       ) : (
-        <PlanNotices plan={plan} canManage={canManage} />
+        <>
+          <PlanNotices plan={plan} canManage={canManage} />
+          {grid.data ? (
+            <PnlGridView grid={grid.data} canEdit={canManage && grid.data.plan.status === "draft"} />
+          ) : (
+            <Skeleton className="h-[32rem] w-full" />
+          )}
+        </>
       )}
 
       {canManage ? (
