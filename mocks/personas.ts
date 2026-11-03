@@ -81,6 +81,8 @@ export const MENU_CATALOGUE: readonly {
       "payables.read",
       "banking.read",
       "tax.read",
+      // CONTRACT-REQUEST admin.menu-pnl: the P&L planner's readers (Directors hold no other finance desk, D-472).
+      "pnl.read",
     ],
   },
   { key: "approvals", path: "/admin/approvals", permission: "approvals.read" },

@@ -6,7 +6,7 @@
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "6567ab3f", tag: "v0.75.0" } as const;
+export const RBAC_SOURCE = { commit: "dc4132bf", tag: "v0.75.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -138,6 +138,9 @@ export const STAFF_PERMISSIONS = [
   "payments.verify_slip",
   "payouts.execute",
   "payouts.manage",
+  "pnl.export",
+  "pnl.manage",
+  "pnl.read",
   "prepress.review",
   "price_proposals.review",
   "price_suggestions.read",
@@ -221,6 +224,9 @@ export const SENSITIVE_PERMISSIONS: readonly StaffPermission[] = [
   "factory_shipping_rates.manage",
   "margin.read",
   "margin.read_pct_when_discounting",
+  "pnl.export",
+  "pnl.manage",
+  "pnl.read",
   "price_suggestions.read",
   "sell_margins.manage",
   "settings.read_sensitive",
@@ -355,6 +361,9 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "payments.verify_slip",
     "payouts.execute",
     "payouts.manage",
+    "pnl.export",
+    "pnl.manage",
+    "pnl.read",
     "prepress.review",
     "price_proposals.review",
     "price_suggestions.read",
@@ -458,6 +467,9 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "partners.read",
     "payables.read",
     "payments.read",
+    "pnl.export",
+    "pnl.manage",
+    "pnl.read",
     "price_suggestions.read",
     "production.read",
     "promotions.read",
@@ -499,6 +511,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "margin.read",
     "orders.read",
     "partners.read",
+    "pnl.read",
     "production.read",
     "reports.export",
     "reports.schedule",
@@ -523,6 +536,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "files.read",
     "files.upload",
     "orders.read",
+    "pnl.read",
     "production.read",
     "reports.export",
     "reports.schedule",
@@ -888,6 +902,9 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "payments.verify_slip",
     "payouts.execute",
     "payouts.manage",
+    "pnl.export",
+    "pnl.manage",
+    "pnl.read",
     "production.read",
     "promotions.read",
     "quotes.read",

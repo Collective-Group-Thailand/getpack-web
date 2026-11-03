@@ -124,6 +124,7 @@ import {
   SALES_INBOUND_SOURCE,
   leadScoreTone,
 } from "./sales";
+import { PNL_ACTUAL_BASIS, PNL_CELL_MODE, PNL_MONTH_KIND, PNL_PLAN_STATUS } from "./pnl";
 import { CALL_OFF_RELEASE_STATUS, CALL_OFF_STATUS, REORDER_SUGGESTION_STATUS } from "./calloff";
 import { STRUCTURAL_REQUEST_STATUS, STYLE_INTAKE_STATUS } from "./structural";
 import { SAMPLE_KIND, SAMPLE_STATUS } from "./sample";
@@ -270,6 +271,8 @@ export {
   SALES_INBOUND_SOURCE,
   leadScoreTone,
 };
+
+export { PNL_PLAN_STATUS, PNL_CELL_MODE, PNL_MONTH_KIND, PNL_ACTUAL_BASIS };
 
 export {
   ERP_CHECK_RESULT,
@@ -549,5 +552,9 @@ export const STATUS_MAPS = {
   salesOutcome: SALES_NEGOTIATION_OUTCOME,
   salesPriceLock: SALES_PRICE_LOCK_STATUS,
   salesSource: SALES_INBOUND_SOURCE,
+  pnlPlan: PNL_PLAN_STATUS,
+  pnlCell: PNL_CELL_MODE,
+  pnlMonth: PNL_MONTH_KIND,
+  pnlActual: PNL_ACTUAL_BASIS,
 } as const;
 export { CUSTOMER_ORDER_STAGE, ORDER_STAGES, type OrderStage } from "./customer-order";
