@@ -46,6 +46,11 @@ export interface SignInFlowProps {
   askProfile?: boolean;
   /** The page's title and line under it, when the surface has its own words for them. */
   heading?: { title: string; subtitle: string };
+  /**
+   * One-tap providers (Google, Apple, LINE) above the phone OTP form, for a sign-in asked in the middle of a task —
+   * the second free dieline download (D-471) — where one tap gets the person back to what they were doing.
+   */
+  providersFirst?: boolean;
 }
 
 interface Failure {
@@ -96,6 +101,7 @@ export function SignInFlow({
   links = STOREFRONT_SIGN_IN_LINKS,
   askProfile: offerProfile = true,
   heading,
+  providersFirst = false,
 }: SignInFlowProps) {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
@@ -335,6 +341,90 @@ export function SignInFlow({
     );
   }
 
+  const phoneForm = (
+    <form
+      className={cn(variant === "page" && !providersFirst && "mt-8")}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (isThaiMobile(phone)) send();
+      }}
+    >
+      <Field
+        label={t("customer.phone")}
+        hint={t("customer.phoneHint")}
+        error={
+          errorText ? (
+            // Announced where it is (UX audit: inline under the field, not a banner).
+            <span role="status" className="block text-sm">
+              {errorText}
+              {errorNote}
+            </span>
+          ) : undefined
+        }
+      >
+        <PhoneInput
+          size="lg"
+          value={phone}
+          onChange={(next) => {
+            setPhone(next);
+            if (failure) setFailure(null);
+          }}
+          disabled={pending}
+          placeholder={t("customer.phonePlaceholder")}
+        />
+      </Field>
+
+      <Button
+        type="submit"
+        size="lg"
+        block
+        className="mt-6"
+        loading={pending}
+        disabled={!isThaiMobile(phone)}
+        iconEnd="arrow-right"
+      >
+        {pending ? t("customer.sending") : t("customer.sendOtp")}
+      </Button>
+    </form>
+  );
+
+  const providerButtons = (
+    <div className={cn("flex flex-col gap-2.5", variant === "page" && providersFirst && "mt-8")}>
+      <ProviderButton
+        brand="google"
+        available={providers.firebase}
+        disabled={pending}
+        label={t("customer.google")}
+        unavailable={t("customer.providerUnavailable")}
+        onClick={() => withFirebase("google")}
+      />
+      <ProviderButton
+        brand="apple"
+        available={providers.firebase}
+        disabled={pending}
+        label={t("customer.apple")}
+        unavailable={t("customer.providerUnavailable")}
+        onClick={() => withFirebase("apple")}
+      />
+      <ProviderButton
+        brand="line"
+        available={providers.line}
+        disabled={pending}
+        label={t("customer.line")}
+        unavailable={t("customer.providerUnavailable")}
+        onClick={withLine}
+      />
+    </div>
+  );
+
+  const divider = (label: string) => (
+    <div className="text-muted my-7 flex items-center gap-3 text-sm">
+      <span aria-hidden className="bg-border h-px flex-1" />
+      {label}
+      <span aria-hidden className="bg-border h-px flex-1" />
+    </div>
+  );
+
   return (
     <div className="flex flex-col">
       {variant === "page" ? (
@@ -344,83 +434,19 @@ export function SignInFlow({
         </>
       ) : null}
 
-      <form
-        className={cn(variant === "page" && "mt-8")}
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (isThaiMobile(phone)) send();
-        }}
-      >
-        <Field
-          label={t("customer.phone")}
-          hint={t("customer.phoneHint")}
-          error={
-            errorText ? (
-              // Announced where it is (UX audit: inline under the field, not a banner).
-              <span role="status" className="block text-sm">
-                {errorText}
-                {errorNote}
-              </span>
-            ) : undefined
-          }
-        >
-          <PhoneInput
-            size="lg"
-            value={phone}
-            onChange={(next) => {
-              setPhone(next);
-              if (failure) setFailure(null);
-            }}
-            disabled={pending}
-            placeholder={t("customer.phonePlaceholder")}
-          />
-        </Field>
-
-        <Button
-          type="submit"
-          size="lg"
-          block
-          className="mt-6"
-          loading={pending}
-          disabled={!isThaiMobile(phone)}
-          iconEnd="arrow-right"
-        >
-          {pending ? t("customer.sending") : t("customer.sendOtp")}
-        </Button>
-      </form>
-
-      <div className="text-muted my-7 flex items-center gap-3 text-sm">
-        <span aria-hidden className="bg-border h-px flex-1" />
-        {t("customer.orDivider")}
-        <span aria-hidden className="bg-border h-px flex-1" />
-      </div>
-
-      <div className="flex flex-col gap-2.5">
-        <ProviderButton
-          brand="google"
-          available={providers.firebase}
-          disabled={pending}
-          label={t("customer.google")}
-          unavailable={t("customer.providerUnavailable")}
-          onClick={() => withFirebase("google")}
-        />
-        <ProviderButton
-          brand="apple"
-          available={providers.firebase}
-          disabled={pending}
-          label={t("customer.apple")}
-          unavailable={t("customer.providerUnavailable")}
-          onClick={() => withFirebase("apple")}
-        />
-        <ProviderButton
-          brand="line"
-          available={providers.line}
-          disabled={pending}
-          label={t("customer.line")}
-          unavailable={t("customer.providerUnavailable")}
-          onClick={withLine}
-        />
-      </div>
+      {providersFirst ? (
+        <>
+          {providerButtons}
+          {divider(t("customer.phoneDivider"))}
+          {phoneForm}
+        </>
+      ) : (
+        <>
+          {phoneForm}
+          {divider(t("customer.orDivider"))}
+          {providerButtons}
+        </>
+      )}
 
       {/* PDPA: say what the number is for before it is collected, and where to read more. */}
       <p className="text-muted mt-7 text-center text-sm leading-relaxed">

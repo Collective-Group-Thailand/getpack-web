@@ -25,6 +25,7 @@ import { clientIp, FORWARDED_FOR_HEADER } from "@/lib/security/client-ip";
 import { isHttpsRequest } from "@/lib/security/headers";
 import { isUpstreamPathAllowed, type Zone } from "@/lib/zones";
 
+import { DEVICE_COOKIE, deviceIdOf, needsDeviceId, withDeviceId } from "./device-id";
 import { bffProblem } from "./problem";
 
 /**
@@ -112,6 +113,17 @@ export function createBffHandler(zone: Zone) {
       request.cookies,
       isHttpsRequest(request.headers, request.nextUrl.protocol),
     );
+
+    // D-471: the free dieline download counts this browser by its httpOnly device cookie, never an id a script chose.
+    let deviceWrite: SessionCookieWrite | null = null;
+    if (needsDeviceId(zone, upstreamPath, request.method)) {
+      const device = deviceIdOf(
+        request.cookies.get(DEVICE_COOKIE)?.value,
+        isHttpsRequest(request.headers, request.nextUrl.protocol),
+      );
+      body = withDeviceId(body, device.id);
+      deviceWrite = device.write;
+    }
     const url = `${await apiInternalUrl()}${upstreamPath}${request.nextUrl.search}`;
     // Derived from the hops our own load balancers appended — never the browser's chain as sent.
     const visitor = clientIp(request.headers, await trustedProxyHops());
@@ -132,7 +144,7 @@ export function createBffHandler(zone: Zone) {
       }
     }
 
-    return respond(upstream, cookieWrites, requestId);
+    return respond(upstream, deviceWrite ? [...cookieWrites, deviceWrite] : cookieWrites, requestId);
   };
 }
 
