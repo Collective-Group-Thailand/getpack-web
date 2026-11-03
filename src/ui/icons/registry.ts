@@ -16,6 +16,7 @@ import {
   Bell,
   Bold,
   Box,
+  BriefcaseBusiness,
   Building2,
   Calculator,
   Calendar,
@@ -362,6 +363,7 @@ export const ICONS = {
   chart: ChartColumn,
   "chart-line": ChartLine,
   "trend-up": TrendingUp,
+  briefcase: BriefcaseBusiness,
   "trend-down": TrendingDown,
   coins: Coins,
   building: Building2,
@@ -415,6 +417,7 @@ export const ICONS = {
   share: Share2,
   "qr-code": QrCode,
   smartphone: Smartphone,
+  desktop: Monitor,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

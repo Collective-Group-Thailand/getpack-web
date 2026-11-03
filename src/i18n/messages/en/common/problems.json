@@ -61,7 +61,8 @@
     "tax_declaration_decided": "Already decided",
     "tax_declaration_not_applicable": "No ล.ย.01 needed",
     "tax_declaration_open": "A ล.ย.01 is waiting",
-    "too_many_leads": "Too many leads"
+    "too_many_leads": "Too many leads",
+    "discount_request_closed": "This discount request is closed"
   },
   "approval": {
     "already_acted": "Already approved by you",
@@ -648,5 +649,25 @@
   },
   "validation": {
     "failed": "Some fields need fixing — see the message under each."
+  },
+  "discount_approval": {
+    "already_open": "An approval is already open for this request",
+    "cost_unknown": "Not every quoted quantity has a buy price yet, so the approval cannot open",
+    "not_authorised": "This discount is above your approval authority",
+    "not_pending": "This approval has already been decided",
+    "self_approval": "You cannot approve your own request",
+    "stale": "The quotation changed, so this approval was voided. Open a new request"
+  },
+  "sales": {
+    "inbound_closed": "This enquiry is closed",
+    "lead_read_only": "Freelance agents' leads are read-only",
+    "no_employee_agent": "Your account has no active employee agent code yet",
+    "no_rep_available": "No sales rep can take work right now",
+    "rep_unavailable": "This sales rep cannot take work"
+  },
+  "sales_playbook": {
+    "maker_checker": "The author or submitter cannot publish; another person must",
+    "not_draft": "Only a draft can be edited, and a card has one draft at a time",
+    "not_submitted": "Submit the card before publishing"
   }
 }

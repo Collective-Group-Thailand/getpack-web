@@ -22,6 +22,7 @@ import { designContractHandlers, prepressHandlers } from "./prepress";
 import { productionHandlers } from "./production";
 import { rfqHandlers } from "./rfq";
 import { salesHandlers } from "./sales";
+import { salesDeskHandlers } from "./sales-desk";
 import { shipmentHandlers } from "./shipments";
 import { styleLibraryContentHandlers } from "./style-library-content";
 import { adminConversationHandlers } from "../store/conversations";
@@ -34,6 +35,7 @@ export const adminHandlers = [
   ...productionHandlers,
   ...orderHandlers,
   ...customerHandlers,
+  ...salesDeskHandlers,
   ...salesHandlers,
   ...rfqHandlers,
   ...artworkContractHandlers,

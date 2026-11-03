@@ -69,6 +69,8 @@ export const MENU_CATALOGUE: readonly {
     permission: ["margin.read", "payment_schedule_templates.manage", "guarantee_policies.read"],
   },
   { key: "agents", path: "/admin/agents", permission: "agents.read" },
+  // D-469: the company sales desk — inbox, pipeline, quotes, dashboard (reps see their own).
+  { key: "sales", path: "/admin/sales", permission: ["sales.pipeline.self", "sales.pipeline.manage"] },
   {
     key: "finance",
     path: "/admin/finance",
@@ -147,6 +149,9 @@ export const PERSONAS: readonly StaffPersona[] = [
   persona("auditor", 14, "ผู้ตรวจสอบบัญชี ตัวอย่าง (ข้อมูลจำลอง)", ["auditor"]),
   // D-222: the Data Protection Officer, the fifteenth staff role (getpack-api v0.4.0).
   persona("dpo", 15, "เจ้าหน้าที่คุ้มครองข้อมูล ตัวอย่าง (ข้อมูลจำลอง)", ["dpo"]),
+  // D-469 / D-470: the company sales desk — a manager and a rep with an employee agent (getpack-api P4).
+  persona("sales_manager", 16, "ผู้จัดการฝ่ายขาย ตัวอย่าง (ข้อมูลจำลอง)", ["sales_manager"]),
+  persona("sales_rep", 17, "พนักงานขาย ตัวอย่าง (ข้อมูลจำลอง)", ["sales_rep"]),
 ];
 
 /** The persona the F1 tests sign in as (`somchai.staff@…`), a CS agent. */
