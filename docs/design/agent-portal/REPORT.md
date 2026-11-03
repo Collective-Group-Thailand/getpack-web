@@ -113,3 +113,24 @@
   - Contract requests filed: win-rate per period, products for rep quotes, playbook card actors, deal registration in approval header, menu entry for finance/auditor
 - Screenshots: `docs/design/agent-portal/screenshots/P4/` (1440 + 1024 per screen; approval detail full tier also 1280 and 1920)
 
+## P5 — Automatic lead capture and scoring · PASS
+- Branches `feat/agent-p5-capture` · merge SHAs: api `45df1407`, web `c5dd9765`
+- Delivered
+  - API: capture sources behind flags (both seeded OFF) — studio designs not ordered after `capture.studio_idle_days` (3) and dieline downloads by signed-in non-customers, each only with recorded marketing consent; first dieline download free without sign-in (`store.dielines.downloadFree`, device cookie hashed, counted under lock, `dielines.anonymous_free_downloads` = 1), then free sign-in — never a paywall; lead score 0–100 from `sales.scoring_rules` with top-3 reasons for staff, score only for agents on their own leads; attribution precedence agent link > agent lead > rep > pool (agent-attributed customers never enter the company pool)
+  - Web: second dieline download → sign-in sheet (Google, Apple, LINE first, then OTP) and the download continues; consent copy explains the follow-up; admin inbox/pipeline score chip with reasons popover, min-score filter and sort, source icons; agent-zone score chip
+- Decisions recorded: D-471 (both repos)
+- Gate results
+  - API: typecheck ✔ · lint ✔ · prettier ✔ · unit 1,819 ✔ · contract:build (no drift) + Spectral ✔ · 3 migrations rolled back and redeployed ✔ · seed idempotent ✔ · e2e SKIPPED-DOCKER (sales-p5 + free-download specs written)
+  - Web: lint ✔ · typecheck ✔ · unit 1,916 ✔ · gen:api:check ✔ · tokens:check ✔ · build ✔ · e2e P0–P5 + zones 68/68 ✔ · no horizontal scroll 360–1920 on the style page with the dieline form and the agent leads page ✔ · Lighthouse mobile `/styles/pk-te-01` a11y 100, perf 60 (trace-engine error on this VM — indicative only) · visual baselines SKIPPED (story added)
+  - Wording ("ฟรี", never "฿0") ✔ · commits Superball, no trailers ✔
+- Assumptions taken
+  - Capture needs the latest record of at least one marketing consent purpose (e-mail, LINE or SMS); without it nothing is sent (no saved-design service reminder exists, none added)
+  - Studio idle: one item per design, one open studio item per person; designs idle before the flag's effective date are not captured; staff, agents and inactive accounts never captured
+  - Non-customer = no order group; a freelance agent's contact-form ticket or RFQ no longer creates a pool item
+  - Pricing-page visits not scored: page views are collected under analytics consent (PDPA purpose limitation)
+  - Clearing the device cookie gives another free first download — accepted, the file is free anyway
+- Open questions
+  - Turn on `capture.studio_idle_enabled` / `capture.dieline_download_enabled` when sales is staffed; confirm scoring weights and idle days (proposed)
+  - Pricing-page scoring needs its own consent purpose; LINE chat source still deferred
+- Screenshots: `docs/design/agent-portal/screenshots/P5/` (sign-in sheet 390/1440, admin inbox popover 1440/1024, agent leads 390/1440)
+
