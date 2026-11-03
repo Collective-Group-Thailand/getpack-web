@@ -443,3 +443,99 @@ modal", domain ux); getpack tokens and Anuphan win. Quick Reference §1–§3 ap
   tablet): the chip under the stage chip, right-aligned. Admin pipeline adds a segmented "คะแนน: ทุกคะแนน · 60 ขึ้นไป ·
   80 ขึ้นไป". Agent zone: the sort sheet / select gains "คะแนนสูงก่อน".
 - No horizontal scroll 360–1920 on the style page (dieline open) and the agent leads page (e2e).
+
+## P6 — management P&L planner `/finance/pnl` (D-472)
+
+Method: the dataviz skill (form → colour by job → validator → marks → hover → a11y) for the summary and the two
+charts; getpack tokens, Anuphan and the existing admin console patterns win everywhere else. Light theme only.
+
+### Where it lives and who sees it
+- A desk "งบกำไรขาดทุนบริหาร" in a new finance group "วางแผน", offered only with `pnl.read` (C-Level, VP, Director,
+  Finance Manager, Superadmin). Anyone else who types the address gets the shared 403 state ("คุณไม่มีสิทธิ์เปิดหน้านี้"),
+  and the API refuses their BFF calls. Directors hold no other finance permission, so the mock adds `pnl.read` to the
+  finance menu gate as a contract request (`admin.menu-pnl`).
+- `pnl.manage` draws create / recompute / copy / lock and editing; `pnl.export` draws the export menu. VP and Director
+  read: a quiet neutral callout says so, the grid is `aria-readonly`, empty manual cells print "—" not "กรอกค่า".
+- "ข้อมูลลับ": nothing of the planner reaches any other zone; exports are the API's watermarked files (5-minute link).
+
+### Plan bar
+- Row 1: year (Buddhist era in Thai), scenario as a segmented control (ฐาน · ดีที่สุด · แย่ที่สุด · กำหนดเอง), the plan of
+  that year and scenario ("name · ฉบับที่ n · ล็อกแล้ว"). Row 2, under a hairline: the status badge (draft = pencil,
+  locked = lock, from `PNL_PLAN_STATUS`), computed / locked by whom and when, the owner — then the actions on the
+  right: the "เทียบกับจริง" switch, คำนวณใหม่, คัดลอกเป็นสถานการณ์อื่น, ส่งออก ▾ (Excel / PDF / plan vs actual Excel, with
+  the watermark note as the menu heading), ล็อกแผน as the one primary button.
+- The open plan lives in the address (`?plan=`, or `?year=&scenario=` for a scenario with no plan yet; `?view=variance`).
+- A scenario with no plan is an empty state with the next step: copy from this year's other plan, create, or (a
+  reader) open the latest plan / back to the finance overview — never a dead end.
+- Lock is an AlertDialog that restates the plan and warns "ยังมีช่องที่ต้องกรอกเองว่างอยู่ n ช่อง — ช่องว่างนับเป็นศูนย์";
+  `If-Match` = the plan ETag, one `Idempotency-Key` per opening of the dialog.
+
+### Summary strip
+- Seven figures from `PnlSummaryDto`, never added up in the browser: four headline figures (รายได้สุทธิ, อัตรากำไรขั้นต้น,
+  กำไรหลังหักค่าคอม, กำไรสุทธิ) over three supporting ones (EBITDA, วงจรเงินสด, ยอดขายจุดคุ้มทุน) on a 12-column grid with
+  hairline gaps, so neither row has a hole; on a phone two columns with the last figure across.
+- The net profit tile takes the API's own line label ("กำไรสุทธิ"); contribution is "กำไรหลังหักค่าคอม", never "กำไรสุทธิ".
+  A negative net profit is printed with a true minus and in the danger ink — the sign carries it, the colour repeats it.
+- Every figure is a `FigureTip` (dotted underline, focusable): definition, formula, source, as-of = the compute time.
+
+### Charts
+- Two charts, one measure each (net revenue, net profit by month), one value axis each — never a dual axis. Without
+  the variance switch they draw the plan (one series, the title names it, no legend box); with it they pair แผน with
+  จริง for months that have an actual.
+- Colours: a new validated pair in `Chart` — `plan` blue-400 #81afff, `actual` brand-600 #24907a. The dataviz
+  validator passes the lightness band, chroma floor, CVD separation (ΔE 20.2 deutan) and the normal-vision floor;
+  `plan` is under 3:1 on the surface, so the legend is always drawn and the table view (`ดูเป็นตาราง`) is one click away
+  and is what a screen reader reads. Ticks compact (2.4M), tooltips and table exact (two places).
+
+### Grid (tablet and up)
+- A real `<table role="grid">`, one tab stop (`useGridNavigation`, new in `src/ui/lib`): arrows, Home / End,
+  Ctrl+Home / End, PageUp / PageDown; Enter or F2 (or typing a number) edits, Escape cancels and returns focus to the
+  cell, Shift+Enter opens the drill-down. A band's header row is one cell across the grid: Enter / Space folds it.
+- Bands read like a statement: รายได้ · ต้นทุนขาย · กำไรขั้นต้น · ค่าใช้จ่ายขาย · ค่าใช้จ่ายบริหาร · กำไรจากการดำเนินงาน ·
+  ดอกเบี้ยและภาษี · กำไรสุทธิ; the memo band sits below a 4 px rule labelled "ไม่รวมในกำไรสุทธิ". Folding a band keeps its
+  calculated lines (net revenue, the tax estimate) and hides the inputs. Inputs are indented; subtotal rows are bold
+  over a strong top rule; net profit has a double-weight rule and a tinted label cell.
+- First column (line names) and the header (month, then จริง / คาดการณ์ / ยังไม่ปิดงวด with its own icon) are sticky; the
+  frame scrolls both ways inside itself (max height = viewport − 9 rem) — the page never scrolls sideways. The year
+  column is tinted with a strong left rule. Forecast months sit on the subtle ground behind a dashed rule.
+- Figures: tabular numerals, right-aligned, two places, no ฿ (the unit "บาท ไม่รวม VAT" is in the title), a true minus.
+- Source marks (`CellMark`, new `src/ui` primitive): a 16 px hairline tile with a shape per mode — zap ระบบ, calculator
+  คำนวณ, pencil กรอกเอง (primary tint), flag แก้ทับ (warning tint, the only warm one). The shape and the words (`role=img`
+  label, legend chips in the grid header) carry the meaning; the tint only repeats it.
+- An override prints both values: the person's figure, and under it "ระบบ ~~3,721,222.57~~" muted and struck.
+- An empty manual cell shows a dashed "กรอกค่า" chip to someone who may fill it (click opens the editor). The editor is
+  the value in the cell plus a small raised panel under it: the note field when the cell's first value needs one
+  ("ที่มาของตัวเลข", placeholder = the line's how-to-fill), Save / Cancel; errors in words under the field.
+- Every save sends `If-Match` = the cell ETag; a 412 reloads the grid and says "มีคนแก้แผนนี้ก่อนคุณ — โหลดตัวเลขล่าสุดให้แล้ว".
+
+### Tooltips and drill-down
+- Every line name (and the year cell) explains the line in four labelled parts: definition, สูตร, ที่มา (with its GL
+  accounts and posting-rule filters), วิธีกรอก — a line nobody fills says why ("คำนวณจากบรรทัดอื่น ไม่ต้องกรอก").
+- Every cell: the line · month and its mark, definition, formula, the source in words with its inputs (accounts,
+  entries, window, ratio, deals / run rate, assets, tax rate), actual or forecast month and an open-period warning,
+  as-of; for a person's value who and when, and the note or the reason; for an override the system value.
+- English catalogue texts are `null` in the API (PNL-LINES.md is Thai only) — the planner falls back to Thai.
+- "ดูรายการที่มา (Shift+Enter)" opens a side sheet (30 rem): records with code (linked to the journal, lead, company,
+  asset or commission list), amount, description, date · account; tabs where a cell has two kinds (deals / repeat
+  customers, journal lines / commissions); 25 at a time with "แสดงเพิ่ม". A tooltip holds no tab stop, so the keyboard
+  path is the Shift+Enter shortcut, printed in the grid's key line and in the tooltip.
+
+### Override dialog
+- The system figure stays in view at the top (its source as a mark chip), then the new value (right-aligned), then a
+  required reason (the previous reason as the hint when changing an override). "กลับไปใช้ค่าระบบ" sits apart on the left;
+  แก้ทับ (flag icon) is the primary action.
+
+### Plan vs actual
+- The switch swaps the grid for the variance grid (same bands, same keys). A cell leads with the actual, then
+  "แผน …", then the variance with a trend arrow and the words "สูงกว่าแผน / ต่ำกว่าแผน" for screen readers and a signed
+  figure and percentage — never judged good or bad (a higher cost and a higher revenue read the same way).
+- Months without an actual show the plan muted and "ยังไม่ถึงงวด"; lines with no actual in the system say so. Totals
+  cover the months with actuals only (said in the key line).
+- Enter or a click writes a variance note (3–1,000 characters), also on a locked plan; a noted cell carries a speech
+  icon labelled "มีหมายเหตุ", and the tooltip shows the note with who and when.
+
+### Phone
+- Summary strip, then one card per month (read-only): month and its standing, net revenue, gross margin, operating
+  profit and net profit (bold), the count of manual cells still empty; with the switch on, actual over plan. Forecast
+  cards sit on the subtle ground. Create / recompute / copy / lock and the charts are not drawn below 768 px; a line says
+  editing is for a tablet or a computer.
