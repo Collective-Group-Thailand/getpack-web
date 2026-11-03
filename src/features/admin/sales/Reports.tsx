@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
+import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -78,7 +79,7 @@ export function NegotiationsReport() {
     enabled: Boolean(subject && id),
   });
   const picks = useQuery({
-    queryKey: ["admin", "list", "sales_quote", { perPage: 20, purpose: "history-picks" }],
+    queryKey: queryKeys.list("admin", "sales_quote", { perPage: 20, purpose: "history-picks" }),
     queryFn: async () =>
       (await adminBrowserApis().contract.GET("/v1/admin/sales/quotes", { params: { query: { perPage: 20 } } })).data!,
     enabled: pipeline,

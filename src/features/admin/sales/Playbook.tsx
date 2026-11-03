@@ -328,7 +328,7 @@ function EditorBody({ c, onChanged }: { c: PlaybookCardAdmin; onChanged: () => v
   };
   const refresh = () => {
     onChanged();
-    void client.invalidateQueries({ queryKey: ["admin", "list", "sales_playbook_card"] });
+    void client.invalidateQueries({ queryKey: ["admin", "sales_playbook_card"] });
   };
   const run = async (name: string, action: () => Promise<unknown>, done: string) => {
     setBusy(name);

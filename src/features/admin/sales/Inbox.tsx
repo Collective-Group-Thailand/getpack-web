@@ -64,7 +64,7 @@ export function Inbox({ initial }: { initial: InitialPage<SalesInbound> | null }
   const manage = useCan("sales.pipeline.manage");
   const client = useQueryClient();
   const [dialog, setDialog] = useState<Dialog | null>(null);
-  const refresh = () => void client.invalidateQueries({ queryKey: ["admin", "list", "sales_inbound_lead"] });
+  const refresh = () => void client.invalidateQueries({ queryKey: ["admin", "sales_inbound_lead"] });
 
   const act = async (row: SalesInbound, action: "convert") => {
     try {
@@ -282,7 +282,7 @@ export function Inbox({ initial }: { initial: InitialPage<SalesInbound> | null }
                   iconStart="user"
                   onClick={() => {
                     const rows = client
-                      .getQueriesData<{ data: SalesInbound[] }>({ queryKey: ["admin", "list", "sales_inbound_lead"] })
+                      .getQueriesData<{ data: SalesInbound[] }>({ queryKey: ["admin", "sales_inbound_lead"] })
                       .flatMap(([, page]) => page?.data ?? [])
                       .filter(
                         (row, at, all) => ids.includes(row.id) && all.findIndex((other) => other.id === row.id) === at,

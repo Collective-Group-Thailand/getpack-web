@@ -119,7 +119,7 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
       : (a.optionWaterfalls.find((option) => option.optionId === view)?.waterfall ?? a.waterfall);
   const refresh = () => {
     void query.refetch();
-    void client.invalidateQueries({ queryKey: ["admin", "list", "sales_discount_approval"] });
+    void client.invalidateQueries({ queryKey: ["admin", "sales_discount_approval"] });
   };
 
   return (
