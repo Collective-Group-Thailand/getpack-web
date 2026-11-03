@@ -395,3 +395,51 @@ bottom line is "กำไรหลังหักค่าคอม".
 - `FigureTip` (new `src/ui` primitive) wraps a figure in a focusable span with a dotted underline; the tooltip (hover
   and focus, Escape closes) holds the definition and formula from `sales.figures.*`, the source (with the record's link
   where there is one) and the as-of time. Chart rows carry the same text in their readout.
+
+## P5 — automatic lead capture and scoring; the dieline download stays free (D-471)
+
+Method: ui-ux-pro-max targeted searches only ("popover keyboard focus", "sortable table aria-sort", "bottom sheet mobile
+modal", domain ux); getpack tokens and Anuphan win. Quick Reference §1–§3 applied as the pre-delivery pass.
+
+### Dieline download (style page, quick view)
+- The form is open to everyone: signed out, a quiet line under the button says the first download needs no sign-in;
+  after it, the line changes to "ครั้งต่อไปเข้าสู่ระบบก่อน แล้วดาวน์โหลดต่อได้ฟรีเหมือนเดิม" — the second request is
+  expected, never a surprise wall. Copy says "ฟรี" throughout; no price, no "฿0", no plan word.
+- Second download → the existing sign-in surface (480 px dialog ≥ md, bottom sheet below, thumb zone) titled for the
+  task "ดาวน์โหลดต่อได้ฟรี" with one line on what happens next. `providersFirst`: Google, Apple, LINE on top (one tap
+  back to the task), then a divider "หรือใช้เบอร์มือถือ" and the phone OTP form. Visible labels, tel input, focus ring on
+  every control (Radix dialog keeps focus inside; Esc closes).
+- After sign-in the same file downloads by itself — no second tap. The interrupted request is held in sessionStorage
+  (style code and sizes only), so a LINE login that leaves the page continues too, once. The button reads
+  "กำลังดาวน์โหลดต่อ…" while it does.
+- The device id is a first-party httpOnly cookie set by the BFF (never readable by script); nothing in the UI shows it.
+
+### Score chip (`src/ui/components/ScoreChip`, new primitive)
+- 24/28 px pill: the number in tabular figures beside a 14 px ring that fills with it — a column scans by shape before
+  it is read; the ring is `aria-hidden`, the label carries the scale ("คะแนน 72 จาก 100"). Not scored = an en dash with
+  "ยังไม่มีคะแนน" for screen readers, never a 0.
+- Tone by thirds of the scale from `src/domain/status` (`leadScoreTone`) — presentation only, no band names ("hot")
+  because the rules are the API's and name none. Colour is never the only carrier: the number is always printed.
+- Interactive variant = a real `<button>` with a chevron, 32 px hit area around the chip (`before:` inset), visible
+  focus ring, hover / open state on the surface tint; 150 ms colour transition only.
+
+### Reasons popover (staff: inbox, pipeline table and cards, lead detail lists)
+- Radix popover (non-modal, `aria-expanded` / `aria-controls` on the chip, `role="dialog"` named "ทำไมได้ 72 คะแนน"):
+  Enter / Space opens, Tab moves through and out, Esc closes and focus returns to the chip.
+- Content: the score over "เต็ม 100", an ordered list of the top three reasons in words with signed points in small
+  tinted pills (positive success-subtle, negative neutral — "−5", a real minus), and a footnote that the rules are the
+  sales manager's and what the score is for (who to contact first), with the scored time.
+- Agents get the chip as a plain label on their own leads — no button, no reasons (the API never sends them).
+
+### Inbox `/sales`
+- New "คะแนน" column right after the contact, sortable (DataTable `aria-sort`, server-side `sort=score`, highest first,
+  unscored last). Filter "คะแนนขั้นต่ำ" with reading presets 80 / 60 / 40 (not business thresholds).
+- Source column: a 28 px icon tile per source from `SALES_INBOUND_SOURCE` (mail, calculator, pen-tool for "ออกแบบแล้ว
+  ยังไม่สั่ง", download for "ดาวน์โหลดแบบแผ่นคลี่", line, edit) beside the words and the reference; "กลับมา 3 ครั้ง" for
+  repeat signals; a small shield-check "ยินยอมรับข่าวสาร" on captured items so a rep sees the PDPA basis before calling.
+
+### Pipeline (admin) and agent zone leads
+- Table: score column after the lead, sortable by link (`?sort=score`, survives reload, shareable). Cards (phone /
+  tablet): the chip under the stage chip, right-aligned. Admin pipeline adds a segmented "คะแนน: ทุกคะแนน · 60 ขึ้นไป ·
+  80 ขึ้นไป". Agent zone: the sort sheet / select gains "คะแนนสูงก่อน".
+- No horizontal scroll 360–1920 on the style page (dieline open) and the agent leads page (e2e).
