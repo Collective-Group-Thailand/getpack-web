@@ -45,7 +45,7 @@ export function PortalTable({
   const [first, ...rest] = columns;
   if (!first) return null;
   return (
-    <div className={cn("border-border bg-surface rounded-card border md:overflow-x-auto", className)}>
+    <div className={cn("border-border bg-surface rounded-card relative border md:overflow-x-auto", className)}>
       <table className="w-full border-collapse text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-surface-subtle text-muted hidden text-xs md:table-header-group">

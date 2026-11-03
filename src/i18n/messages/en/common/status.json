@@ -1088,5 +1088,35 @@
     "submitted": "Waiting for review",
     "verified": "Verified",
     "rejected": "Needs a fix"
+  },
+  "agentLeadStage": {
+    "new": "New",
+    "contacted": "Contacted",
+    "quoted": "Quoted",
+    "negotiating": "Negotiating",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "agentQuote": {
+    "sent": "Sent",
+    "opened": "Opened by customer",
+    "accepted": "Accepted",
+    "expired": "Expired",
+    "withdrawn": "Withdrawn"
+  },
+  "agentDiscountRequest": {
+    "open": "Waiting for getpack",
+    "offered": "Options to choose",
+    "accepted": "Chosen",
+    "rejected": "Not approved",
+    "closed": "Closed"
+  },
+  "agentForecast": {
+    "in_progress": "Order in progress",
+    "pending": "Pending",
+    "held": "On hold",
+    "earned": "Earned",
+    "statemented": "On a statement",
+    "paid": "Paid"
   }
 }

@@ -14,6 +14,8 @@ export const AGENT_ZONE_PATHS = {
   tax: "/tax",
   notifications: "/notifications",
   profile: "/profile",
+  /** คู่มือการขาย (D-468): the sidebar and the profile menu, never a fifth phone tab. */
+  playbook: "/playbook",
   signIn: "/sign-in",
   handoff: "/handoff",
 } as const;

@@ -366,9 +366,9 @@ export interface paths {
         put?: never;
         /**
          * Assign or transfer a customer or company
-         * @description Links a customer or company to an agent, ending any current link — the only way to give an existing customer to an agent or move one between agents; audited with the reason (D-417).
+         * @description Links a customer or company to an agent, ending any current link — the only way to give an existing customer to an agent or move one between agents; audited with the reason (D-417). Refused while another agent’s registered deal protects the customer or company (`agents.deal_registered`, D-468).
          *
-         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423.
+         *     Implements: D-416, D-417, D-418, D-419, D-420, D-423, D-468.
          */
         post: operations["admin.agents.assignLink"];
         delete?: never;
@@ -27622,6 +27622,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/agent/commissions/forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * When my commission is expected
+         * @description Per order: orders of my customers in progress (expected at the rate locked or in force) and every commission not paid yet, with the expected payable date from the system’s rules — earned once the claim window has passed and the order is fully paid, summarised on the 1st of the next month, paid within `agents.rules.paymentTermsDays` of approval (employees: with payroll). Order code only, no other customer data (D-468, F47; D-466 §5).
+         *
+         *     Implements: D-468, D-466, D-420.
+         */
+        get: operations["store.agentCommissions.forecast"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/agent/customers": {
         parameters: {
             query?: never;
@@ -27661,11 +27683,61 @@ export interface paths {
         put?: never;
         /**
          * Register a lead
-         * @description A customer prospect with a phone, e-mail or tax id, who agreed to be contacted (PDPA). Protected for `agents.rules.leadProtectionDays`; refused when it is already a customer or company, or another agent’s protected lead (D-417). Kind `customer` only — anything else is `agents.lead_kind_unsupported` (P-03, D-464): factories apply at /partner-with-us.
+         * @description A customer prospect with a phone, e-mail or tax id, who agreed to be contacted (PDPA). Protected for `agents.rules.leadProtectionDays`; refused with the one neutral `agents.lead_unavailable` when it is already a customer or company, another agent’s protected lead or registered deal (D-417, D-440, D-468), `agents.lead_duplicate` when it is already mine. Kind `customer` only — anything else is `agents.lead_kind_unsupported` (P-03, D-464): factories apply at /partner-with-us. D-468: optional pipeline fields (source manual | card_scan, expected value, next follow-up, industry, LINE id, tags); the lead starts at stage `new`.
          *
-         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
+         *     Implements: D-416, D-417, D-418, D-420, D-422, D-464, D-440, D-468.
          */
         post: operations["store.agent.registerLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/{leadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one of my leads
+         * @description With its pipeline fields and protection; `ETag` for `update` (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        get: operations["store.agentLeads.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit one of my leads
+         * @description Any subset of the fields (`If-Match` required). Phone, e-mail and tax id change only while the lead is registered and go through the same neutral check as a new lead. A new follow-up time re-arms the reminder (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        patch: operations["store.agentLeads.update"];
+        trace?: never;
+    };
+    "/v1/store/agent/leads/{leadId}/actions/change-stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move a lead to another stage
+         * @description new, contacted, quoted, negotiating or lost (with a reason). `won` is set only by the system when the converted customer first pays. `lost` releases the protection at once; won and lost are final (`agents.lead_stage_final`). The move is written to the timeline (D-468, PLAN A-06).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        post: operations["store.agentLeads.changeStage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -27688,6 +27760,168 @@ export interface paths {
          *     Implements: D-416, D-417, D-418, D-420, D-422, D-464.
          */
         post: operations["store.agent.withdrawLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/{leadId}/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a lead’s timeline
+         * @description Newest first: my calls, LINE chats, visits, e-mails and notes, quotes sent, stage changes and system entries (signed up, quote opened / accepted, deal registered, won) — cursor paged (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        get: operations["store.agentLeads.listActivities"];
+        put?: never;
+        /**
+         * Log a contact with a lead
+         * @description A call, LINE chat, visit, e-mail or note in the lead’s timeline (append-only), optionally with the next follow-up; the first one moves a new lead to `contacted` (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        post: operations["store.agentLeads.addActivity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/actions/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check whether a contact can be my lead
+         * @description Before registering (on blur of phone, e-mail or tax id): `available`, or one neutral reason — `own_lead` (my own protected lead, with its id) or `unavailable` (cannot be registered). Never says whether a customer, another agent or a registered deal holds it (D-440, D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        post: operations["store.agentLeads.check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/actions/scan-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Read a business card photo
+         * @description OCR (Thai + English) of a card photo uploaded with purpose `agent_card_scan`: name, organisation, phone, e-mail, tax id, LINE id and website with a confidence each, and every line read. Nothing is saved — review the fields and register the lead with source `card_scan`. The photo is deleted after `agents.card_scan_retention_days` (7) (D-468, PDPA).
+         *
+         *     Implements: D-417, D-440, D-468.
+         *
+         *     **Files:** upload first — `store.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["store.agentLeads.scanCard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export my leads as CSV
+         * @description All my customer leads as a UTF-8 CSV behind a 5-minute link; cells that could run as a spreadsheet formula are neutralised, Thai mobile numbers are written locally (0812345678). Audited as an export (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        get: operations["store.agentLeads.export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check a CSV of leads (dry run)
+         * @description Parses up to 500 rows and puts each through the same checks as a new lead (fields, the neutral duplicate check, the open-leads limit) — nothing is created. The result is kept 24 h for `importCommit`; its contact data is dropped afterwards (PDPA). Requires the agent’s confirmation that every lead agreed to be contacted (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        post: operations["store.agentLeads.importPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/imports/{importId}/actions/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create the leads of a checked CSV
+         * @description Creates the rows of a dry run that had no errors, each checked again now (a contact taken since is skipped with its error). Leads get source `csv_import`. Only row numbers, errors and the created lead ids are kept afterwards (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        post: operations["store.agentLeads.importCommit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/leads/pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my lead pipeline
+         * @description My customer leads with stage, value, next follow-up and protection; views for the agent zone tabs (open, follow-up today, protection ending, closed), filters by stage, source, due and text; sorted with a cursor (D-468).
+         *
+         *     Implements: D-417, D-440, D-468.
+         */
+        get: operations["store.agentLeads.list"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -27812,6 +28046,28 @@ export interface paths {
          *     Implements: D-466.
          */
         post: operations["store.agentPhone.confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/playbook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the sales playbook
+         * @description Published guidance cards for agents — all of them (the "คู่มือการขาย" tab) or those for one context (lead lost to price, competitor cheaper, discount request, big deal, follow-up, first contact), with replies to copy to LINE. Read-only; Sales manages versions (D-468, PLAN A-13).
+         *
+         *     Implements: D-468.
+         */
+        get: operations["store.agentPlaybook.get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -27944,6 +28200,174 @@ export interface paths {
         get: operations["store.agentPush.vapidPublicKey"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the quotations I sent
+         * @description Newest first, with status and when they were opened or accepted; by lead or status (D-468).
+         *
+         *     Implements: D-441, D-051, D-468.
+         */
+        get: operations["store.agentQuotes.list"];
+        put?: never;
+        /**
+         * Send a quotation to one of my leads
+         * @description Prices the configuration on the store path (store rules, default spec, instant products only — D-441), saves it as getpack’s quotation with its validity and shares it: `shareUrl` (`/q/{token}`) opens it for anyone with the link and carries my agent code. The lead moves to `quoted`; when the lead signs up with its phone or e-mail the quotation becomes theirs (D-417). I never change the price (D-468).
+         *
+         *     Implements: D-441, D-051, D-468.
+         */
+        post: operations["store.agentQuotes.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/quotes/{agentQuoteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a quotation I sent
+         * @description The quotation as the customer sees it, its link and status (D-468).
+         *
+         *     Implements: D-441, D-051, D-468.
+         */
+        get: operations["store.agentQuotes.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/quotes/{agentQuoteId}/actions/register-deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register the deal of a quotation I sent
+         * @description Protection + rate lock, never a rate cut, no approval: for `agent.deal_protection_days` (90) nobody else can take this lead or its customer, and orders from its quotations keep the rates in force now (or the option I accepted); later plan changes never touch it. Quotations whose base reaches `agent.deal_registration_threshold` (฿500,000.00) and call-off agreements register automatically. A quotation of a lead with a registration joins it (D-468, PLAN A-11).
+         *
+         *     Implements: D-441, D-051, D-468, D-464.
+         */
+        post: operations["store.agentQuotes.registerDeal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/quotes/{agentQuoteId}/actions/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get a new link for a quotation I sent
+         * @description A new `/q/{token}` link (the previous one stops working) for a quotation still valid; written to the lead’s timeline (D-468).
+         *
+         *     Implements: D-441, D-051, D-468.
+         */
+        post: operations["store.agentQuotes.resend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/quotes/{agentQuoteId}/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a quotation I sent
+         * @description The link stops working at once; written to the lead’s timeline (D-468).
+         *
+         *     Implements: D-441, D-051, D-468.
+         */
+        post: operations["store.agentQuotes.withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/quotes/{agentQuoteId}/discount-options/{optionId}/actions/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept one of the options offered
+         * @description My own choice, recorded with its evidence (time, ip, browser, the option as shown and its SHA-256): a co-fund option lowers my rate on orders from this quotation only because I accept it; a spiff raises it. The other options lapse. Within the option’s validity (`quotes.discounted_validity_days`, D-468, D-464).
+         *
+         *     Implements: D-441, D-051, D-468, D-464.
+         */
+        post: operations["store.agentQuotes.acceptOption"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/agent/quotes/{agentQuoteId}/discount-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read my discount requests on a quotation
+         * @description Every round, oldest first, with the options offered: the customer’s discount, the price and my commission at that price (computed by getpack). Never cost or margin (D-468, D-464).
+         *
+         *     Implements: D-441, D-051, D-468, D-464.
+         */
+        get: operations["store.agentQuotes.discountRequests"];
+        put?: never;
+        /**
+         * Ask getpack for a better price on a quotation I sent
+         * @description Give-get first: what the customer gives in return (more quantity, a call-off of N months, a deposit or cash within N days, a longer lead time, a spec change — at least one), then the reason and, for a competitor’s price, their quotation (file) and a like-for-like spec. One open request per quotation; another round only when the give-get changed (`quotes.discount_round_limit`). Every round is kept. getpack answers with 1–3 options; the first always keeps my full rate (D-468, PLAN A-10).
+         *
+         *     Implements: D-441, D-051, D-468, D-464.
+         *
+         *     **Files:** upload first — `store.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["store.agentQuotes.requestDiscount"];
         delete?: never;
         options?: never;
         head?: never;
@@ -33081,9 +33505,9 @@ export interface paths {
         };
         /**
          * Open a shared quotation
-         * @description Anyone with the link sees the quotation, never its owner, while it is shared and the link is live: 404 once the link expired (`configurations.share_link_days`), was revoked or replaced, or the quotation was converted or expired (D-185, D-051).
+         * @description Anyone with the link sees the quotation, never its owner, while it is shared and the link is live: 404 once the link expired (`configurations.share_link_days`), was revoked or replaced, or the quotation was converted or expired (D-185, D-051). D-468: `agentCode` names the agent who sent it (the web keeps it like `/a/{code}`); the first open is shown to that agent.
          *
-         *     Implements: D-051, D-010, D-050, D-185.
+         *     Implements: D-051, D-010, D-050, D-185, D-468.
          */
         get: operations["store.quotes.getShared"];
         put?: never;
@@ -35416,6 +35840,24 @@ export interface components {
         ActivityVisibility: "internal" | "customer" | "partner";
         /** @enum {string} */
         ActorType: "user" | "api_client" | "system" | "webhook";
+        AddAgentLeadActivityDto: {
+            /** @example โทรคุยเรื่องขนาดกล่อง ขอดูตัวอย่างก่อนสั่ง */
+            body: string;
+            /** @example call */
+            kind: components["schemas"]["AgentLeadActivityEntryKind"];
+            /**
+             * Format: date-time
+             * @description Also set the next follow-up
+             * @example 2026-10-21T10:00:00+07:00
+             */
+            nextFollowUpAt?: string | null;
+            /**
+             * Format: date-time
+             * @description When it happened (default now; not in the future)
+             * @example 2026-10-18T09:30:00+07:00
+             */
+            occurredAt?: string;
+        };
         AddBasketProductDto: {
             /**
              * @description An active catalogue product. Never together with `stockProductSku`
@@ -36225,12 +36667,30 @@ export interface components {
             /** @example manee@example.invalid */
             email: string | null;
             /**
+             * @description Expected order value, THB
+             * @example 45000.00
+             */
+            expectedValue: string | null;
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6006
              */
             id: string;
+            /** @example ร้านกาแฟ / เบเกอรี่ */
+            industry: string | null;
             /** @example customer */
             kind: components["schemas"]["AgentLeadKind"];
+            /** @example manee.cafe */
+            lineId: string | null;
+            /** @example null */
+            lostNote: string | null;
+            /** @example null */
+            lostReason: components["schemas"]["AgentLeadLostReason"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T10:00:00+07:00
+             */
+            nextFollowUpAt: string | null;
             /** @example null */
             note: string | null;
             /** @example ร้านกาแฟบ้านสวน */
@@ -36242,10 +36702,39 @@ export interface components {
              * @example 2026-12-15T10:00:00+07:00
              */
             protectedUntil: string;
+            /** @example manual */
+            source: components["schemas"]["AgentLeadSource"];
+            /**
+             * @description `won` is set by the system when the converted customer first pays (a deposit counts)
+             * @example contacted
+             */
+            stage: components["schemas"]["AgentLeadStage"];
+            /**
+             * Format: date-time
+             * @example 2026-10-18T09:30:00+07:00
+             */
+            stageChangedAt: string | null;
             /** @example registered */
             status: components["schemas"]["AgentLeadStatus"];
+            /**
+             * @example [
+             *       "เบเกอรี่",
+             *       "รายเดือน"
+             *     ]
+             */
+            tags: string[];
             /** @example null */
             taxId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T09:30:00+07:00
+             */
+            updatedAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            wonAt: string | null;
         };
         AdminAgentLinkDto: {
             agent: components["schemas"]["AgentRefDto"];
@@ -39927,6 +40416,13 @@ export interface components {
          * @enum {string}
          */
         AgentBankAccountState: "none" | "pending_approval" | "active";
+        /** @enum {string} */
+        AgentCardScanEngine: "tesseract_cli" | "fake";
+        /**
+         * @description Languages on the card; `eng` alone reads an English-only card better
+         * @enum {string}
+         */
+        AgentCardScanLanguage: "tha" | "eng";
         AgentCommissionDto: {
             /**
              * @description Signed; the full rate, no cap (D-464)
@@ -40001,10 +40497,221 @@ export interface components {
              */
             repeatOrder: string;
         };
+        AgentCommissionForecastDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            asOf: string;
+            items: components["schemas"]["AgentForecastItemDto"][];
+            /**
+             * @description Days after a statement is approved within which it is paid (`agents.rules.paymentTermsDays`)
+             * @example 15
+             */
+            paymentTermsDays: number;
+            /**
+             * @description False: a freelance agent’s payout details still need verifying
+             * @example true
+             */
+            payoutProfileReady: boolean;
+            /**
+             * @description Everything not paid yet
+             * @example 2250.00
+             */
+            totalExpected: string;
+        };
         /** @enum {string} */
         AgentCommissionKind: "order" | "factory_bounty" | "adjustment" | "reversal";
         /** @enum {string} */
         AgentCommissionStatus: "pending" | "held" | "earned" | "statemented" | "paid" | "cancelled";
+        /** @enum {string} */
+        AgentCommitment: "one_off" | "call_off";
+        /**
+         * @description `automatic` a big quote or a call-off agreement · `requested` by me
+         * @enum {string}
+         */
+        AgentDealOrigin: "automatic" | "requested";
+        AgentDealRegistrationDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6027
+             */
+            id: string;
+            /**
+             * @description My locked first-order rate, %
+             * @example 5.0000
+             */
+            lockedFirstRatePct: string;
+            /**
+             * @description My locked repeat-order rate, %
+             * @example 3.0000
+             */
+            lockedRepeatRatePct: string;
+            /**
+             * @description `automatic` a big quote or a call-off agreement · `requested` by me
+             * @example automatic
+             */
+            origin: components["schemas"]["AgentDealOrigin"];
+            /**
+             * Format: date-time
+             * @example 2027-01-16T10:00:00+07:00
+             */
+            protectedUntil: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T10:00:00+07:00
+             */
+            registeredAt: string;
+            /** @example quote */
+            scope: components["schemas"]["AgentDealScope"];
+            /** @example registered */
+            status: components["schemas"]["AgentDealStatus"];
+        };
+        /** @enum {string} */
+        AgentDealScope: "quote" | "call_off_agreement";
+        /** @enum {string} */
+        AgentDealStatus: "registered" | "won" | "lost" | "expired";
+        AgentDiscountFileDto: {
+            /** @example quotation-other.pdf */
+            fileName: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6029
+             */
+            id: string;
+        };
+        AgentDiscountOptionDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acceptedAt: string | null;
+            /**
+             * @description My commission at this price
+             * @example 56400.00
+             */
+            commissionAmount: string;
+            /** @example This price is for 8,000 pieces · a 50% deposit · order by 2026-10-25 */
+            conditionsEn: string | null;
+            /** @example ราคานี้สำหรับ 8,000 ชิ้น · มัดจำ 50% · สั่งภายใน 25/10/2569 */
+            conditionsTh: string | null;
+            /**
+             * @description The customer’s discount, %
+             * @example 6.0000
+             */
+            discountPct: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6026
+             */
+            id: string;
+            /**
+             * @description `standard` my full rate (always first) · `co_fund` a lower rate I may accept to give a bigger discount · `spiff` a higher rate
+             * @example standard
+             */
+            kind: components["schemas"]["AgentDiscountOptionKind"];
+            /**
+             * @description Price before VAT, excl. shipping, after the discount
+             * @example 940000.00
+             */
+            netAmount: string;
+            /** @example 1 */
+            position: number;
+            /**
+             * @description My commission rate with this option
+             * @example 6.0000
+             */
+            ratePct: string;
+            /**
+             * @description My standard rate
+             * @example 6.0000
+             */
+            standardRatePct: string;
+            /** @example offered */
+            status: components["schemas"]["AgentDiscountOptionStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-10-25T23:59:00+07:00
+             */
+            validUntil: string;
+        };
+        /**
+         * @description `standard` my full rate (always first) · `co_fund` a lower rate I may accept to give a bigger discount · `spiff` a higher rate
+         * @enum {string}
+         */
+        AgentDiscountOptionKind: "standard" | "co_fund" | "spiff";
+        /** @enum {string} */
+        AgentDiscountOptionStatus: "offered" | "accepted" | "lapsed";
+        /** @enum {string} */
+        AgentDiscountReason: "competitor_price" | "budget" | "volume" | "strategic_account" | "other";
+        AgentDiscountRequestDto: {
+            /** @example null */
+            cashWithinDays: number | null;
+            /** @example one_off */
+            commitment: components["schemas"]["AgentCommitment"];
+            /** @example null */
+            commitmentMonths: number | null;
+            competitorFile: components["schemas"]["AgentDiscountFileDto"] | null;
+            competitorSpec: components["schemas"]["CompetitorSpecDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T15:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T17:00:00+07:00
+             */
+            decidedAt: string | null;
+            /**
+             * @description getpack’s note with the answer
+             * @example null
+             */
+            decisionNote: string | null;
+            /** @example 50.0000 */
+            depositPct: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6025
+             */
+            id: string;
+            /** @example null */
+            leadTimeFlexDays: number | null;
+            /** @description 1–3 options once offered; the standard one first */
+            options: components["schemas"]["AgentDiscountOptionDto"][];
+            /** @example 5000 */
+            quantity: number;
+            /** @example 8000 */
+            quantityChange: number | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6030
+             */
+            quoteOptionId: string;
+            /** @example competitor_price */
+            reason: components["schemas"]["AgentDiscountReason"];
+            /** @example null */
+            reasonNote: string | null;
+            /** @example 6.0000 */
+            requestedPct: string;
+            /**
+             * @description Negotiation round on this quotation
+             * @example 1
+             */
+            round: number;
+            /** @example null */
+            specChange: string | null;
+            /**
+             * @description `open` waiting for getpack · `offered` choose an option · `accepted` · `rejected` · `closed`
+             * @example offered
+             */
+            status: components["schemas"]["AgentDiscountRequestStatus"];
+        };
+        /**
+         * @description `open` waiting for getpack · `offered` choose an option · `accepted` · `rejected` · `closed`
+         * @enum {string}
+         */
+        AgentDiscountRequestStatus: "open" | "offered" | "accepted" | "rejected" | "closed";
         AgentDto: {
             /**
              * @description Shared in the agent link
@@ -40102,10 +40809,113 @@ export interface components {
             /** @example id-card.jpg */
             originalName: string;
         };
+        AgentForecastItemDto: {
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            earnableOn: string | null;
+            /**
+             * @description Before VAT, excl. shipping, after discounts
+             * @example 45000.00
+             */
+            expectedBase: string;
+            /** @example 2250.00 */
+            expectedCommission: string;
+            /**
+             * Format: date
+             * @description Null while the order is in progress or under review
+             * @example 2026-12-16
+             */
+            expectedPayableOn: string | null;
+            /** @example true */
+            isFirstOrder: boolean;
+            /** @example OR-2610-00042 */
+            orderCode: string | null;
+            /** @example 5.0000 */
+            ratePct: string;
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            statementOn: string | null;
+            /**
+             * @description `in_progress` the order is not completed yet · `pending` completed, waiting for the claim window / payment · `held` under review · `earned` · `statemented` in a statement · `paid`
+             * @example pending
+             */
+            status: components["schemas"]["AgentForecastStatus"];
+            /** @example claim_window */
+            waitingFor: components["schemas"]["AgentForecastWaitingFor"] | null;
+        };
+        /**
+         * @description `in_progress` the order is not completed yet · `pending` completed, waiting for the claim window / payment · `held` under review · `earned` · `statemented` in a statement · `paid`
+         * @enum {string}
+         */
+        AgentForecastStatus: "in_progress" | "pending" | "held" | "earned" | "statemented" | "paid";
+        /** @enum {string} */
+        AgentForecastWaitingFor: "completion" | "claim_window" | "payment" | "review" | "statement" | "approval" | "payout";
         /** @enum {string} */
         AgentHeldDecision: "release" | "cancel";
         /** @enum {string} */
         AgentKind: "freelance" | "employee";
+        /** @enum {string} */
+        AgentLeadActivityAuthor: "agent" | "system" | "getpack";
+        AgentLeadActivityDto: {
+            /**
+             * Format: uuid
+             * @description Agent quote
+             * @example null
+             */
+            agentQuoteId: string | null;
+            /** @example agent */
+            author: components["schemas"]["AgentLeadActivityAuthor"];
+            /** @example โทรคุยเรื่องขนาดกล่อง ขอดูตัวอย่างก่อนสั่ง */
+            body: string | null;
+            /**
+             * @description What a `system` entry records
+             * @example null
+             */
+            event: components["schemas"]["AgentLeadSystemEvent"] | null;
+            /** @example null */
+            fromStage: components["schemas"]["AgentLeadStage"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6021
+             */
+            id: string;
+            /** @example call */
+            kind: components["schemas"]["AgentLeadActivityKind"];
+            /**
+             * Format: date-time
+             * @example 2026-10-18T09:30:00+07:00
+             */
+            occurredAt: string;
+            /** @example null */
+            toStage: components["schemas"]["AgentLeadStage"] | null;
+        };
+        /** @enum {string} */
+        AgentLeadActivityEntryKind: "call" | "line" | "visit" | "email" | "note";
+        /** @enum {string} */
+        AgentLeadActivityKind: "call" | "line" | "visit" | "email" | "note" | "quote_sent" | "stage_change" | "system";
+        AgentLeadAvailabilityDto: {
+            /** @example false */
+            available: boolean;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            leadId: string | null;
+            /**
+             * @description `own_lead`: already your protected lead (see `leadId`); `unavailable`: cannot be registered — one neutral reason, never who holds it (D-440)
+             * @example unavailable
+             */
+            reason: components["schemas"]["AgentLeadAvailabilityReason"] | null;
+        };
+        /**
+         * @description `own_lead`: already your protected lead (see `leadId`); `unavailable`: cannot be registered — one neutral reason, never who holds it (D-440)
+         * @enum {string}
+         */
+        AgentLeadAvailabilityReason: "own_lead" | "unavailable";
         AgentLeadDto: {
             /**
              * @description Why it was closed
@@ -40127,12 +40937,30 @@ export interface components {
             /** @example manee@example.invalid */
             email: string | null;
             /**
+             * @description Expected order value, THB
+             * @example 45000.00
+             */
+            expectedValue: string | null;
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6006
              */
             id: string;
+            /** @example ร้านกาแฟ / เบเกอรี่ */
+            industry: string | null;
             /** @example customer */
             kind: components["schemas"]["StoreAgentLeadKind"];
+            /** @example manee.cafe */
+            lineId: string | null;
+            /** @example null */
+            lostNote: string | null;
+            /** @example null */
+            lostReason: components["schemas"]["AgentLeadLostReason"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T10:00:00+07:00
+             */
+            nextFollowUpAt: string | null;
             /** @example null */
             note: string | null;
             /** @example ร้านกาแฟบ้านสวน */
@@ -40144,15 +40972,136 @@ export interface components {
              * @example 2026-12-15T10:00:00+07:00
              */
             protectedUntil: string;
+            /** @example manual */
+            source: components["schemas"]["AgentLeadSource"];
+            /**
+             * @description `won` is set by the system when the converted customer first pays (a deposit counts)
+             * @example contacted
+             */
+            stage: components["schemas"]["AgentLeadStage"];
+            /**
+             * Format: date-time
+             * @example 2026-10-18T09:30:00+07:00
+             */
+            stageChangedAt: string | null;
             /** @example registered */
             status: components["schemas"]["AgentLeadStatus"];
+            /**
+             * @example [
+             *       "เบเกอรี่",
+             *       "รายเดือน"
+             *     ]
+             */
+            tags: string[];
+            /** @example null */
+            taxId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T09:30:00+07:00
+             */
+            updatedAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            wonAt: string | null;
+        };
+        /** @enum {string} */
+        AgentLeadDue: "today" | "overdue";
+        /**
+         * @description `card_scan` when the fields came from a scanned business card
+         * @enum {string}
+         */
+        AgentLeadEntrySource: "manual" | "card_scan";
+        AgentLeadImportDto: {
+            /**
+             * @description Leads created by the commit
+             * @example null
+             */
+            createdCount: number | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-19T10:00:00+07:00
+             */
+            expiresAt: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6022
+             */
+            id: string;
+            /** @example 2 */
+            rowCount: number;
+            rows: components["schemas"]["AgentLeadImportRowDto"][];
+            /** @example previewed */
+            status: components["schemas"]["AgentLeadImportStatus"];
+            /**
+             * @description Rows without errors (created at commit)
+             * @example 1
+             */
+            validCount: number;
+        };
+        /** @enum {string} */
+        AgentLeadImportErrorCode: "required" | "contact_missing" | "invalid_phone" | "invalid_email" | "invalid_tax_id" | "invalid_amount" | "invalid_date" | "too_long" | "duplicate_in_file" | "own_lead" | "unavailable" | "too_many_leads";
+        AgentLeadImportErrorDto: {
+            /** @example unavailable */
+            code: components["schemas"]["AgentLeadImportErrorCode"];
+            /** @example phone */
+            field: string;
+        };
+        AgentLeadImportRowDto: {
+            /** @example คุณมานี ใจดี */
+            contactName: string | null;
+            /** @example null */
+            email: string | null;
+            /** @example [] */
+            errors: components["schemas"]["AgentLeadImportErrorDto"][];
+            /**
+             * Format: uuid
+             * @description Set after commit
+             * @example null
+             */
+            leadId: string | null;
+            /** @example ร้านกาแฟบ้านสวน */
+            organisationName: string | null;
+            /** @example +66890001234 */
+            phone: string | null;
+            /**
+             * @description Line number in the file (the header is line 1)
+             * @example 2
+             */
+            rowNo: number;
             /** @example null */
             taxId: string | null;
         };
         /** @enum {string} */
+        AgentLeadImportStatus: "previewed" | "committed" | "expired";
+        /** @enum {string} */
         AgentLeadKind: "customer" | "factory";
         /** @enum {string} */
+        AgentLeadLostReason: "price" | "lead_time" | "no_need" | "competitor" | "no_response" | "other";
+        /** @enum {string} */
+        AgentLeadSort: "createdAt" | "updatedAt" | "nextFollowUpAt" | "protectedUntil" | "expectedValue";
+        /** @enum {string} */
+        AgentLeadSource: "manual" | "card_scan" | "csv_import" | "link" | "staff";
+        /**
+         * @description `won` is set by the system when the converted customer first pays (a deposit counts)
+         * @enum {string}
+         */
+        AgentLeadStage: "new" | "contacted" | "quoted" | "negotiating" | "won" | "lost";
+        /**
+         * @description `won` is never set by an agent (the first payment sets it)
+         * @enum {string}
+         */
+        AgentLeadStageTarget: "new" | "contacted" | "quoted" | "negotiating" | "lost";
+        /** @enum {string} */
         AgentLeadStatus: "registered" | "converted" | "expired" | "rejected" | "withdrawn";
+        /**
+         * @description What a `system` entry records
+         * @enum {string}
+         */
+        AgentLeadSystemEvent: "converted" | "won" | "quote_opened" | "quote_accepted" | "quote_withdrawn" | "discount_requested" | "discount_options" | "discount_option_accepted" | "deal_registered" | "deal_ended" | "lost";
+        /** @enum {string} */
+        AgentLeadView: "open" | "follow_up_today" | "protection_ending" | "closed";
         AgentLinkDto: {
             /**
              * Format: date-time
@@ -40213,10 +41162,10 @@ export interface components {
             paidOn: string;
         };
         /**
-         * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details
+         * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details · `follow_up_due` a follow-up time I set has come (D-468; never in the quiet hours 21:00–08:00) · `quote_opened` a customer opened a quotation I sent
          * @enum {string}
          */
-        AgentNotificationEvent: "lead_converted" | "lead_protection_expiring" | "commission_earned" | "statement_ready" | "payout_paid" | "payout_profile_needed";
+        AgentNotificationEvent: "lead_converted" | "lead_protection_expiring" | "commission_earned" | "statement_ready" | "payout_paid" | "payout_profile_needed" | "follow_up_due" | "quote_opened";
         AgentNotificationPreferenceDto: {
             /**
              * @description `web_push` push to the agent zone (getpack Agent) · `line` LINE OA · `email`
@@ -40226,7 +41175,7 @@ export interface components {
             /** @example false */
             enabled: boolean;
             /**
-             * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details
+             * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details · `follow_up_due` a follow-up time I set has come (D-468; never in the quiet hours 21:00–08:00) · `quote_opened` a customer opened a quotation I sent
              * @example commission_earned
              */
             event: components["schemas"]["AgentNotificationEvent"];
@@ -40502,6 +41451,52 @@ export interface components {
         };
         /** @enum {string} */
         AgentPlanVersionStatus: "draft" | "approved" | "rejected" | "withdrawn";
+        AgentPlaybookCardDto: {
+            /** @example null */
+            bodyEn: string | null;
+            /**
+             * @description Markdown
+             * @example ถามก่อนว่าลูกค้าให้อะไรกลับมาได้บ้าง …
+             */
+            bodyTh: string;
+            /**
+             * @description `all` = every context
+             * @example [
+             *       "discount_request",
+             *       "competitor_cheaper"
+             *     ]
+             */
+            contexts: string[];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6028
+             */
+            id: string;
+            /** @example give-get-menu */
+            key: string;
+            /** @description Replies to copy to LINE */
+            suggestedReplies: components["schemas"]["AgentPlaybookReplyDto"][];
+            /** @example null */
+            titleEn: string | null;
+            /** @example เมนูแลกเปลี่ยน: ให้ส่วนลด เมื่อได้อะไรกลับมา */
+            titleTh: string;
+            /** @example 1 */
+            version: number;
+        };
+        /** @enum {string} */
+        AgentPlaybookContext: "lead_lost_price" | "competitor_cheaper" | "discount_request" | "big_deal" | "follow_up" | "first_contact";
+        AgentPlaybookDto: {
+            data: components["schemas"]["AgentPlaybookCardDto"][];
+        };
+        AgentPlaybookReplyDto: {
+            /**
+             * @description Null until Marketing writes it
+             * @example null
+             */
+            en: string | null;
+            /** @example ถ้าสะดวกชำระภายใน 7 วัน เรามีส่วนลดเงินสดให้ค่ะ/ครับ */
+            th: string;
+        };
         AgentProgrammeDto: {
             /** @description The agreement in force (null: none yet) */
             agreement: components["schemas"]["AgentAgreementTextDto"] | null;
@@ -40533,6 +41528,66 @@ export interface components {
          * @enum {string}
          */
         AgentProgrammeState: "none" | "applied" | "rejected" | "withdrawn" | "agent";
+        AgentQuoteDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acceptedAt: string | null;
+            /** @description The deal registration protecting this quotation (D-468), if any */
+            dealRegistration: components["schemas"]["AgentDealRegistrationDto"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6023
+             */
+            id: string;
+            lead: components["schemas"]["AgentQuoteLeadRefDto"];
+            /**
+             * Format: date-time
+             * @example 2026-10-18T13:20:00+07:00
+             */
+            openedAt: string | null;
+            /** @description The quotation the customer sees (sell prices only) */
+            quote: components["schemas"]["SavedQuoteDto"];
+            /** @example 1 */
+            sendCount: number;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T10:00:00+07:00
+             */
+            sentAt: string;
+            /**
+             * @description The link to send (LINE, share sheet, copy); null once withdrawn, expired or accepted
+             * @example https://www.getpack.co/q/bX2kQ9…
+             */
+            shareUrl: string | null;
+            /**
+             * @description `sent` · `opened` the customer opened the link · `accepted` put in a cart · `expired` past its validity · `withdrawn` by me
+             * @example opened
+             */
+            status: components["schemas"]["AgentQuoteStatus"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            withdrawnAt: string | null;
+        };
+        AgentQuoteLeadRefDto: {
+            /** @example คุณมานี ใจดี */
+            contactName: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6006
+             */
+            id: string;
+            /** @example ร้านกาแฟบ้านสวน */
+            organisationName: string | null;
+        };
+        /**
+         * @description `sent` · `opened` the customer opened the link · `accepted` put in a cart · `expired` past its validity · `withdrawn` by me
+         * @enum {string}
+         */
+        AgentQuoteStatus: "sent" | "opened" | "accepted" | "expired" | "withdrawn";
         AgentRefDto: {
             /** @example K7QX2MAP */
             code: string;
@@ -44594,6 +45649,20 @@ export interface components {
              */
             variants: number;
         };
+        ChangeAgentLeadStageDto: {
+            /**
+             * @description Required with `lost`
+             * @example price
+             */
+            lostReason?: components["schemas"]["AgentLeadLostReason"];
+            /** @example ได้ราคาจากที่อื่นถูกกว่า 8% */
+            note?: string;
+            /**
+             * @description `won` is never set by an agent (the first payment sets it)
+             * @example lost
+             */
+            stage: components["schemas"]["AgentLeadStageTarget"];
+        };
         ChangeCustomerDto: {
             /**
              * Format: uuid
@@ -44641,6 +45710,17 @@ export interface components {
             } | {
                 [key: string]: unknown;
             }[]) | null;
+        };
+        CheckAgentLeadDto: {
+            /**
+             * Format: email
+             * @example null
+             */
+            email?: string | null;
+            /** @example +66890001234 */
+            phone?: string | null;
+            /** @example null */
+            taxId?: string | null;
         };
         CheckCodeDto: {
             /** @example WELCOME10 */
@@ -46102,6 +47182,39 @@ export interface components {
         };
         /** @enum {string} */
         CompanyStatus: "applied" | "kyc_review" | "active" | "suspended" | "closed";
+        CompetitorSpecDto: {
+            /** @example KA125/CA125 */
+            boardGrade?: string;
+            /** @example เคลือบด้าน */
+            finish?: string;
+            /** @example B */
+            flute?: string;
+            /** @example 14 */
+            leadTimeDays?: number;
+            /** @example ไม่รวมการตรวจไฟล์และ proof */
+            notes?: string;
+            /**
+             * @description Their total price, THB
+             * @example 42500.00
+             */
+            price?: string;
+            /**
+             * @description Colours per side
+             * @example 2
+             */
+            printColours?: number;
+            /**
+             * @description Printed sides
+             * @example 1
+             */
+            printSides?: number;
+            /** @example 5000 */
+            quantity?: number;
+            /** @example false */
+            shippingIncluded?: boolean;
+            /** @example true */
+            vatIncluded?: boolean;
+        };
         CompletedPartDto: {
             /** @example "etag-1" */
             etag: string;
@@ -47229,6 +48342,30 @@ export interface components {
             reason: string;
             /** @example 3 */
             repeatOrderPct: string;
+        };
+        CreateAgentQuoteDto: {
+            /** @description The configuration of the product type's calculator: `FoldingConfigurationDto` for folding cartons, `CorrugateConfigurationDto` for corrugated boxes, `LabelConfigurationDto` for labels, `TagSleeveConfigurationDto` for tags & sleeves, `PouchConfigurationDto` for pouches, `StandardProductConfigurationDto` for standard products, `ServiceConfigurationDto` for services (validated against it; paths under `configuration`) */
+            configuration: {
+                [key: string]: unknown;
+            } | components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"] | components["schemas"]["LabelConfigurationDto"] | components["schemas"]["TagSleeveConfigurationDto"] | components["schemas"]["PouchConfigurationDto"] | components["schemas"]["StandardProductConfigurationDto"] | components["schemas"]["ServiceConfigurationDto"];
+            /**
+             * @description Delivery postcode: prices shipping on the customer rate card (D-013)
+             * @example 10110
+             */
+            deliveryPostcode?: string;
+            /**
+             * Format: uuid
+             * @description One of my leads (open)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6006
+             */
+            leadId: string;
+            /** @example folding_carton */
+            productTypeCode: string;
+            /**
+             * @description Target price per unit (THB incl. VAT, excluding shipping — the basis of `unitPrice`), > 0; never shown to a factory (D-247, D-190). The response compares each instant quantity with it
+             * @example 11.50
+             */
+            targetPricePerUnit?: string;
         };
         CreateArticleCategoryDto: {
             /**
@@ -62604,7 +63741,7 @@ export interface components {
          * @description Decides retention, accepted types and size limit
          * @enum {string}
          */
-        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "image" | "published_document" | "design_asset" | "brand_mark" | "signature" | "dieline";
+        FilePurpose: "artwork" | "proof" | "slip" | "evidence" | "document" | "import" | "avatar" | "image" | "published_document" | "design_asset" | "brand_mark" | "signature" | "dieline" | "agent_card_scan";
         /** @enum {string} */
         FileRetentionClass: "transient" | "standard" | "customer_content" | "financial_record";
         /**
@@ -70059,6 +71196,19 @@ export interface components {
              */
             sizeBytes: number;
         };
+        PreviewAgentLeadImportDto: {
+            /**
+             * @description Every person in the file agreed to be contacted by getpack (PDPA); required
+             * @example true
+             */
+            consentConfirmed: boolean;
+            /**
+             * @description The CSV text (UTF-8, header row; columns contact_name, organisation_name, phone, email, tax_id, line_id, industry, tags, expected_value, next_follow_up_at, note); at most 500 rows
+             * @example contact_name,phone,organisation_name
+             *     คุณมานี ใจดี,0890001234,ร้านกาแฟบ้านสวน
+             */
+            csv: string;
+        };
         PreviewDestinationDto: {
             /** @example 10110 */
             postcode: string;
@@ -74191,17 +75341,39 @@ export interface components {
              * @example manee@example.invalid
              */
             email?: string | null;
+            /** @example 45000.00 */
+            expectedValue?: string | null;
+            /** @example ร้านกาแฟ / เบเกอรี่ */
+            industry?: string | null;
             /**
              * @description Customers only (P-03 / D-464); any other value is `agents.lead_kind_unsupported`
              * @example customer
              */
             kind: components["schemas"]["StoreAgentLeadKind"];
+            /** @example manee.cafe */
+            lineId?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-20T10:00:00+07:00
+             */
+            nextFollowUpAt?: string | null;
             /** @example สนใจกล่องเบเกอรี่ 1,000 ใบ/เดือน */
             note?: string | null;
             /** @example ร้านกาแฟบ้านสวน */
             organisationName?: string | null;
             /** @example +66890001234 */
             phone?: string | null;
+            /**
+             * @description `card_scan` when the fields came from a scanned business card
+             * @default manual
+             */
+            source: components["schemas"]["AgentLeadEntrySource"];
+            /**
+             * @example [
+             *       "เบเกอรี่"
+             *     ]
+             */
+            tags?: string[];
             /** @example null */
             taxId?: string | null;
         };
@@ -74932,6 +76104,59 @@ export interface components {
             quoteOptionId: string;
             /** @example ลูกค้าขอเปลี่ยนจำนวน */
             reason: string;
+        };
+        RequestAgentDiscountDto: {
+            /**
+             * @description Cash within N days
+             * @example 7
+             */
+            cashWithinDays?: number;
+            /** @default one_off */
+            commitment: components["schemas"]["AgentCommitment"];
+            /**
+             * @description With `call_off`
+             * @example 6
+             */
+            commitmentMonths?: number;
+            /**
+             * Format: uuid
+             * @description Their quotation, uploaded with `store.files.presign` (purpose `evidence`)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6029
+             */
+            competitorFileId?: string;
+            competitorSpec?: components["schemas"]["CompetitorSpecDto"];
+            /**
+             * @description Deposit they would pay, %
+             * @example 50.00
+             */
+            depositPct?: string;
+            /**
+             * @description Days later delivery is fine
+             * @example 7
+             */
+            leadTimeFlexDays?: number;
+            /**
+             * @description The quantity they would order
+             * @example 8000
+             */
+            quantityChange?: number;
+            /**
+             * Format: uuid
+             * @description The quantity (quote option); default the largest
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6030
+             */
+            quoteOptionId?: string;
+            /** @example competitor_price */
+            reason: components["schemas"]["AgentDiscountReason"];
+            /** @example ลูกค้าได้ใบเสนอราคาจากเจ้าอื่นถูกกว่า */
+            reasonNote?: string;
+            /**
+             * @description Discount asked, % of the price
+             * @example 6.00
+             */
+            requestedPct: string;
+            /** @example ลดจาก 4 สีเป็น 2 สี */
+            specChange?: string;
         };
         RequestCallOffDto: {
             /**
@@ -77093,6 +78318,63 @@ export interface components {
             /** @example 3 */
             versionNo?: number;
         };
+        ScanAgentCardDto: {
+            /**
+             * Format: uuid
+             * @description The photo uploaded with `store.files.presign` (purpose `agent_card_scan`) and completed
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6029
+             */
+            fileId: string;
+            /**
+             * @description Languages on the card; `eng` alone reads an English-only card better
+             * @default [
+             *       "tha",
+             *       "eng"
+             *     ]
+             */
+            languages: components["schemas"]["AgentCardScanLanguage"][];
+        };
+        ScannedCardDto: {
+            contactName: components["schemas"]["ScannedFieldDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-25T10:00:00+07:00
+             */
+            deleteAfter: string;
+            email: components["schemas"]["ScannedFieldDto"] | null;
+            /** @example tesseract_cli */
+            engine: components["schemas"]["AgentCardScanEngine"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6029
+             */
+            fileId: string;
+            lineId: components["schemas"]["ScannedFieldDto"] | null;
+            /** @description Every line read, to copy from */
+            lines: components["schemas"]["ScannedLineDto"][];
+            organisationName: components["schemas"]["ScannedFieldDto"] | null;
+            /** @description Other numbers on the card (office) */
+            otherPhones: components["schemas"]["ScannedFieldDto"][];
+            /** @description E.164; a mobile first */
+            phone: components["schemas"]["ScannedFieldDto"] | null;
+            taxId: components["schemas"]["ScannedFieldDto"] | null;
+            website: components["schemas"]["ScannedFieldDto"] | null;
+        };
+        ScannedFieldDto: {
+            /**
+             * @description 0–1; review anything below ~0.7
+             * @example 0.86
+             */
+            confidence: number;
+            /** @example คุณมานี ใจดี */
+            value: string;
+        };
+        ScannedLineDto: {
+            /** @example 90 */
+            confidence: number;
+            /** @example คุณมานี ใจดี */
+            text: string;
+        };
         ScbCallbackAckDto: {
             /** @example 00 */
             resCode: string;
@@ -77573,7 +78855,7 @@ export interface components {
             /** @example false */
             enabled: boolean;
             /**
-             * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details
+             * @description `lead_converted` a lead became a customer · `lead_protection_expiring` a lead’s protection ends in 7 days / 1 day · `commission_earned` · `statement_ready` the month’s statement is approved · `payout_paid` · `payout_profile_needed` a statement waits for payout details · `follow_up_due` a follow-up time I set has come (D-468; never in the quiet hours 21:00–08:00) · `quote_opened` a customer opened a quotation I sent
              * @example commission_earned
              */
             event: components["schemas"]["AgentNotificationEvent"];
@@ -78244,6 +79526,114 @@ export interface components {
              * @example bX2kQ9…
              */
             shareToken: string;
+        };
+        SharedQuoteDto: {
+            /** @description The Structure Advisor recommendation and choice it was saved from (D-240) */
+            advisory: components["schemas"]["QuoteAdvisoryDto"] | null;
+            /**
+             * @description The code of the agent who sent this quotation (set the agent cookie as `/a/{code}` does); else null
+             * @example K7QX2MAP
+             */
+            agentCode: string | null;
+            /** @description The configuration of the product type's calculator; null for RFQ quotes */
+            configuration: {
+                [key: string]: unknown;
+            } | (components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"] | components["schemas"]["LabelConfigurationDto"] | components["schemas"]["TagSleeveConfigurationDto"] | components["schemas"]["PouchConfigurationDto"] | components["schemas"]["StandardProductConfigurationDto"] | components["schemas"]["ServiceConfigurationDto"]) | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-01T09:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Always THB (one currency)
+             * @example THB
+             */
+            currency: components["schemas"]["Currency"];
+            /** @example 10110 */
+            deliveryPostcode: string | null;
+            /**
+             * @description The style variant’s dieline quantities at the size priced — blank, cut / crease / perforation / glue lengths, cut-out area, pieces — frozen with the engine version; no price effect until signed (D-267)
+             * @example null
+             */
+            dielineQuantities: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * @description The sizes frozen with the quote (D-182); null before measurement bases or for a product without a size
+             * @example null
+             */
+            dimensions: components["schemas"]["QuoteDimensionsDto"] | null;
+            /**
+             * @description The lever of an earlier quotation this one was saved from (D-249)
+             * @example null
+             */
+            fromLever: components["schemas"]["QuoteFromLeverDto"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e601
+             */
+            id: string;
+            options: components["schemas"]["SavedQuoteOptionDto"][];
+            /**
+             * @description How the quotation ended (D-250); null while it is open
+             * @example null
+             */
+            outcome: components["schemas"]["QuoteOutcomeDto"] | null;
+            /** @example none */
+            pdfStatus: components["schemas"]["QuotePdfStatus"];
+            /**
+             * @description Saved or shared and still within its validity
+             * @example true
+             */
+            priceLocked: boolean;
+            /** @example folding_carton */
+            productTypeCode: string;
+            /**
+             * @description Issued at share or PDF
+             * @example QT-2026-000042
+             */
+            quoteCode: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            sharedAt: string | null;
+            /**
+             * Format: date-time
+             * @description The share link stops resolving after this (D-185)
+             * @example null
+             */
+            shareExpiresAt: string | null;
+            /**
+             * @description `instant` (calculator), `rfq` (manual quotation of a request for quote), `sample` (a standalone sample, D-254) or `call_off` (a call-off release at its locked unit price, D-290)
+             * @example instant
+             */
+            source: components["schemas"]["QuoteSource"];
+            /** @example saved */
+            status: components["schemas"]["QuoteStatus"];
+            /**
+             * @description `status` (QuoteStatus) in Thai for staff and partner factories (D-313); on `/v1/store/*` responses the customer's words, equal to `statusLabelTh` (D-440).
+             * @example คำนวณแล้ว
+             */
+            statusLabelAdminTh: string;
+            /**
+             * @description `status` (QuoteStatus) in Thai for the customer — render this, not a label map of your own (D-313). The enum value in `status` never changes.
+             * @example คำนวณแล้ว
+             */
+            statusLabelTh: string;
+            /** @description Product, product type, sales unit and spec lines to display (frozen when the quote was made) */
+            summary: components["schemas"]["LineSummaryDto"];
+            /**
+             * @description The customer’s target per unit (THB incl. VAT, excl. shipping, D-247); never shown to a factory
+             * @example 11.50
+             */
+            targetPricePerUnit: string | null;
+            /**
+             * Format: date-time
+             * @description Price lock ends (D-051)
+             * @example 2026-10-16T09:00:00+07:00
+             */
+            validUntil: string;
         };
         ShareLinkDto: {
             /**
@@ -85612,6 +87002,45 @@ export interface components {
             /** @description Why (audited) */
             reason?: string | null;
         };
+        UpdateAgentLeadDto: {
+            /** @example คุณมานี ใจดี */
+            contactName?: string;
+            /**
+             * Format: email
+             * @example null
+             */
+            email?: string | null;
+            /** @example 60000.00 */
+            expectedValue?: string | null;
+            /** @example ร้านกาแฟ / เบเกอรี่ */
+            industry?: string | null;
+            /** @example manee.cafe */
+            lineId?: string | null;
+            /**
+             * Format: date-time
+             * @description A new time re-arms the reminder (sent outside the quiet hours 21:00–08:00)
+             * @example 2026-10-21T10:00:00+07:00
+             */
+            nextFollowUpAt?: string | null;
+            /** @example null */
+            note?: string | null;
+            /** @example ร้านกาแฟบ้านสวน */
+            organisationName?: string | null;
+            /**
+             * @description Contact keys change only while the lead is registered, through the same check as a new lead
+             * @example +66890001234
+             */
+            phone?: string | null;
+            /**
+             * @example [
+             *       "เบเกอรี่",
+             *       "รายเดือน"
+             *     ]
+             */
+            tags?: string[];
+            /** @example null */
+            taxId?: string | null;
+        };
         UpdateArticleCategoryDto: {
             /**
              * @description Default `public`; `partner`: the partner knowledge base only, never the store (D-295)
@@ -87922,6 +89351,10 @@ export interface components {
         WhtCertStatus: "pending" | "received" | "waived";
         /** @enum {string} */
         WhtForm: "pnd3" | "pnd53";
+        WithdrawAgentQuoteDto: {
+            /** @example ลูกค้าขอเปลี่ยนขนาด จะส่งใบใหม่ */
+            reason?: string;
+        };
         WithdrawDto: {
             /** @example Raised by mistake */
             reason: string;
@@ -90375,14 +91808,29 @@ export interface operations {
                      *           "convertedFactoryId": null,
                      *           "createdAt": "2026-10-16T10:00:00+07:00",
                      *           "email": "manee@example.invalid",
+                     *           "expectedValue": "45000.00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *           "industry": "ร้านกาแฟ / เบเกอรี่",
                      *           "kind": "customer",
+                     *           "lineId": "manee.cafe",
+                     *           "lostNote": null,
+                     *           "lostReason": null,
+                     *           "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
                      *           "note": null,
                      *           "organisationName": "ร้านกาแฟบ้านสวน",
                      *           "phone": "+66890001234",
                      *           "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *           "source": "manual",
+                     *           "stage": "contacted",
+                     *           "stageChangedAt": "2026-10-18T09:30:00+07:00",
                      *           "status": "registered",
-                     *           "taxId": null
+                     *           "tags": [
+                     *             "เบเกอรี่",
+                     *             "รายเดือน"
+                     *           ],
+                     *           "taxId": null,
+                     *           "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *           "wonAt": null
                      *         }
                      *       ],
                      *       "meta": {
@@ -90495,14 +91943,29 @@ export interface operations {
                      *       "convertedFactoryId": null,
                      *       "createdAt": "2026-10-16T10:00:00+07:00",
                      *       "email": "manee@example.invalid",
+                     *       "expectedValue": "45000.00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *       "industry": "ร้านกาแฟ / เบเกอรี่",
                      *       "kind": "customer",
+                     *       "lineId": "manee.cafe",
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
                      *       "note": null,
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "source": "manual",
+                     *       "stage": "contacted",
+                     *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
                      *       "status": "rejected",
-                     *       "taxId": null
+                     *       "tags": [
+                     *         "เบเกอรี่",
+                     *         "รายเดือน"
+                     *       ],
+                     *       "taxId": null,
+                     *       "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *       "wonAt": null
                      *     }
                      */
                     "application/json": components["schemas"]["AdminAgentLeadDto"];
@@ -90818,7 +92281,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.agent_inactive`, `agents.already_linked` */
+            /** @description Problem: `agents.agent_inactive`, `agents.already_linked`, `agents.deal_registered` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293560,6 +295023,96 @@ export interface operations {
             };
         };
     };
+    "store.agentCommissions.forecast": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Forecast */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-11-03T10:00:00+07:00",
+                     *       "items": [
+                     *         {
+                     *           "earnableOn": "2026-11-10",
+                     *           "expectedBase": "45000.00",
+                     *           "expectedCommission": "2250.00",
+                     *           "expectedPayableOn": "2026-12-16",
+                     *           "isFirstOrder": true,
+                     *           "orderCode": "OR-2610-00042",
+                     *           "ratePct": "5.0000",
+                     *           "statementOn": "2026-12-01",
+                     *           "status": "pending",
+                     *           "waitingFor": "claim_window"
+                     *         }
+                     *       ],
+                     *       "paymentTermsDays": 15,
+                     *       "payoutProfileReady": true,
+                     *       "totalExpected": "2250.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentCommissionForecastDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.agent.customers": {
         parameters: {
             query?: {
@@ -293713,14 +295266,29 @@ export interface operations {
                      *           "convertedAt": null,
                      *           "createdAt": "2026-10-16T10:00:00+07:00",
                      *           "email": "manee@example.invalid",
+                     *           "expectedValue": "45000.00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *           "industry": "ร้านกาแฟ / เบเกอรี่",
                      *           "kind": "customer",
+                     *           "lineId": "manee.cafe",
+                     *           "lostNote": null,
+                     *           "lostReason": null,
+                     *           "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
                      *           "note": null,
                      *           "organisationName": "ร้านกาแฟบ้านสวน",
                      *           "phone": "+66890001234",
                      *           "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *           "source": "manual",
+                     *           "stage": "contacted",
+                     *           "stageChangedAt": "2026-10-18T09:30:00+07:00",
                      *           "status": "registered",
-                     *           "taxId": null
+                     *           "tags": [
+                     *             "เบเกอรี่",
+                     *             "รายเดือน"
+                     *           ],
+                     *           "taxId": null,
+                     *           "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *           "wonAt": null
                      *         }
                      *       ],
                      *       "meta": {
@@ -293822,14 +295390,29 @@ export interface operations {
                      *       "convertedAt": null,
                      *       "createdAt": "2026-10-16T10:00:00+07:00",
                      *       "email": "manee@example.invalid",
+                     *       "expectedValue": "45000.00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *       "industry": "ร้านกาแฟ / เบเกอรี่",
                      *       "kind": "customer",
+                     *       "lineId": "manee.cafe",
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
                      *       "note": null,
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "source": "manual",
+                     *       "stage": "contacted",
+                     *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
                      *       "status": "registered",
-                     *       "taxId": null
+                     *       "tags": [
+                     *         "เบเกอรี่",
+                     *         "รายเดือน"
+                     *       ],
+                     *       "taxId": null,
+                     *       "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *       "wonAt": null
                      *     }
                      */
                     "application/json": components["schemas"]["AgentLeadDto"];
@@ -293865,7 +295448,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `agents.agent_inactive`, `agents.lead_duplicate`, `agents.lead_existing_customer`, `agents.lead_taken`, `agents.lead_unavailable` */
+            /** @description Problem: `agents.agent_inactive`, `agents.lead_duplicate`, `agents.lead_unavailable` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293876,6 +295459,444 @@ export interface operations {
                 };
             };
             /** @description Problem: `agents.lead_kind_unsupported`, `agents.too_many_leads`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lead */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedReason": null,
+                     *       "contactName": "คุณมานี ใจดี",
+                     *       "convertedAt": null,
+                     *       "createdAt": "2026-10-16T10:00:00+07:00",
+                     *       "email": "manee@example.invalid",
+                     *       "expectedValue": "45000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *       "industry": "ร้านกาแฟ / เบเกอรี่",
+                     *       "kind": "customer",
+                     *       "lineId": "manee.cafe",
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
+                     *       "note": null,
+                     *       "organisationName": "ร้านกาแฟบ้านสวน",
+                     *       "phone": "+66890001234",
+                     *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "source": "manual",
+                     *       "stage": "contacted",
+                     *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
+                     *       "status": "registered",
+                     *       "tags": [
+                     *         "เบเกอรี่",
+                     *         "รายเดือน"
+                     *       ],
+                     *       "taxId": null,
+                     *       "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentLeadDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAgentLeadDto"];
+            };
+        };
+        responses: {
+            /** @description Lead */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedReason": null,
+                     *       "contactName": "คุณมานี ใจดี",
+                     *       "convertedAt": null,
+                     *       "createdAt": "2026-10-16T10:00:00+07:00",
+                     *       "email": "manee@example.invalid",
+                     *       "expectedValue": "45000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *       "industry": "ร้านกาแฟ / เบเกอรี่",
+                     *       "kind": "customer",
+                     *       "lineId": "manee.cafe",
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
+                     *       "note": null,
+                     *       "organisationName": "ร้านกาแฟบ้านสวน",
+                     *       "phone": "+66890001234",
+                     *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "source": "manual",
+                     *       "stage": "contacted",
+                     *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
+                     *       "status": "registered",
+                     *       "tags": [
+                     *         "เบเกอรี่",
+                     *         "รายเดือน"
+                     *       ],
+                     *       "taxId": null,
+                     *       "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.lead_duplicate`, `agents.lead_unavailable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.changeStage": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeAgentLeadStageDto"];
+            };
+        };
+        responses: {
+            /** @description Lead */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "closedReason": null,
+                     *       "contactName": "คุณมานี ใจดี",
+                     *       "convertedAt": null,
+                     *       "createdAt": "2026-10-16T10:00:00+07:00",
+                     *       "email": "manee@example.invalid",
+                     *       "expectedValue": "45000.00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *       "industry": "ร้านกาแฟ / เบเกอรี่",
+                     *       "kind": "customer",
+                     *       "lineId": "manee.cafe",
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
+                     *       "note": null,
+                     *       "organisationName": "ร้านกาแฟบ้านสวน",
+                     *       "phone": "+66890001234",
+                     *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "source": "manual",
+                     *       "stage": "negotiating",
+                     *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
+                     *       "status": "registered",
+                     *       "tags": [
+                     *         "เบเกอรี่",
+                     *         "รายเดือน"
+                     *       ],
+                     *       "taxId": null,
+                     *       "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *       "wonAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.lead_closed`, `agents.lead_stage_final` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -293939,14 +295960,29 @@ export interface operations {
                      *       "convertedAt": null,
                      *       "createdAt": "2026-10-16T10:00:00+07:00",
                      *       "email": "manee@example.invalid",
+                     *       "expectedValue": "45000.00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *       "industry": "ร้านกาแฟ / เบเกอรี่",
                      *       "kind": "customer",
+                     *       "lineId": "manee.cafe",
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
                      *       "note": null,
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "source": "manual",
+                     *       "stage": "contacted",
+                     *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
                      *       "status": "withdrawn",
-                     *       "taxId": null
+                     *       "tags": [
+                     *         "เบเกอรี่",
+                     *         "รายเดือน"
+                     *       ],
+                     *       "taxId": null,
+                     *       "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *       "wonAt": null
                      *     }
                      */
                     "application/json": components["schemas"]["AgentLeadDto"];
@@ -293984,6 +296020,1009 @@ export interface operations {
             };
             /** @description Problem: `agents.lead_closed` */
             409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.listActivities": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One slice of the feed */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "agentQuoteId": null,
+                     *           "author": "agent",
+                     *           "body": "โทรคุยเรื่องขนาดกล่อง ขอดูตัวอย่างก่อนสั่ง",
+                     *           "event": null,
+                     *           "fromStage": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6021",
+                     *           "kind": "call",
+                     *           "occurredAt": "2026-10-18T09:30:00+07:00",
+                     *           "toStage": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "nextCursor": "eyJpZCI6IjEyMyJ9"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AgentLeadActivityDto"][];
+                        meta: components["schemas"]["CursorMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.addActivity": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddAgentLeadActivityDto"];
+            };
+        };
+        responses: {
+            /** @description Timeline entry */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "agentQuoteId": null,
+                     *       "author": "agent",
+                     *       "body": "โทรคุยเรื่องขนาดกล่อง ขอดูตัวอย่างก่อนสั่ง",
+                     *       "event": null,
+                     *       "fromStage": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6021",
+                     *       "kind": "call",
+                     *       "occurredAt": "2026-10-18T09:30:00+07:00",
+                     *       "toStage": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentLeadActivityDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.lead_closed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.check": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckAgentLeadDto"];
+            };
+        };
+        responses: {
+            /** @description Availability */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": false,
+                     *       "leadId": null,
+                     *       "reason": "unavailable"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentLeadAvailabilityDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.scanCard": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScanAgentCardDto"];
+            };
+        };
+        responses: {
+            /** @description Fields read */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "contactName": {
+                     *         "confidence": 0.86,
+                     *         "value": "คุณมานี ใจดี"
+                     *       },
+                     *       "deleteAfter": "2026-10-25T10:00:00+07:00",
+                     *       "email": {
+                     *         "confidence": 0.9,
+                     *         "value": "manee@example.invalid"
+                     *       },
+                     *       "engine": "tesseract_cli",
+                     *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6029",
+                     *       "lineId": {
+                     *         "confidence": 0.86,
+                     *         "value": "manee.cafe"
+                     *       },
+                     *       "lines": [
+                     *         {
+                     *           "confidence": 90,
+                     *           "text": "คุณมานี ใจดี"
+                     *         },
+                     *         {
+                     *           "confidence": 90,
+                     *           "text": "บริษัท ตัวอย่างบรรจุภัณฑ์ จำกัด"
+                     *         },
+                     *         {
+                     *           "confidence": 90,
+                     *           "text": "โทร 089-000-1234"
+                     *         },
+                     *         {
+                     *           "confidence": 90,
+                     *           "text": "manee@example.invalid"
+                     *         },
+                     *         {
+                     *           "confidence": 90,
+                     *           "text": "LINE: manee.cafe"
+                     *         }
+                     *       ],
+                     *       "organisationName": {
+                     *         "confidence": 0.81,
+                     *         "value": "บริษัท ตัวอย่างบรรจุภัณฑ์ จำกัด"
+                     *       },
+                     *       "otherPhones": [],
+                     *       "phone": {
+                     *         "confidence": 0.86,
+                     *         "value": "+66890001234"
+                     *       },
+                     *       "taxId": null,
+                     *       "website": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ScannedCardDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.agent_inactive`, `file.infected`, `file.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.card_scan_failed`, `file.too_large`, `file.upload_incomplete`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.export": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Download link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-18T10:05:00+07:00",
+                     *       "url": "https://getpack-files.s3.example.com/…"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadUrlDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.importPreview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewAgentLeadImportDto"];
+            };
+        };
+        responses: {
+            /** @description Dry run */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdCount": null,
+                     *       "expiresAt": "2026-10-19T10:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6022",
+                     *       "rowCount": 2,
+                     *       "rows": [
+                     *         {
+                     *           "contactName": "คุณมานี ใจดี",
+                     *           "email": null,
+                     *           "errors": [],
+                     *           "leadId": null,
+                     *           "organisationName": "ร้านกาแฟบ้านสวน",
+                     *           "phone": "+66890001234",
+                     *           "rowNo": 2,
+                     *           "taxId": null
+                     *         },
+                     *         {
+                     *           "contactName": "คุณสมศรี ตัวอย่าง",
+                     *           "email": null,
+                     *           "errors": [
+                     *             {
+                     *               "code": "unavailable",
+                     *               "field": "phone"
+                     *             }
+                     *           ],
+                     *           "leadId": null,
+                     *           "organisationName": null,
+                     *           "phone": "+66890005678",
+                     *           "rowNo": 3,
+                     *           "taxId": null
+                     *         }
+                     *       ],
+                     *       "status": "previewed",
+                     *       "validCount": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentLeadImportDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.agent_inactive` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.importCommit": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Committed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdCount": 1,
+                     *       "expiresAt": "2026-10-19T10:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6022",
+                     *       "rowCount": 2,
+                     *       "rows": [
+                     *         {
+                     *           "contactName": null,
+                     *           "email": null,
+                     *           "errors": [],
+                     *           "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *           "organisationName": null,
+                     *           "phone": null,
+                     *           "rowNo": 2,
+                     *           "taxId": null
+                     *         },
+                     *         {
+                     *           "contactName": null,
+                     *           "email": null,
+                     *           "errors": [
+                     *             {
+                     *               "code": "unavailable",
+                     *               "field": "phone"
+                     *             }
+                     *           ],
+                     *           "leadId": null,
+                     *           "organisationName": null,
+                     *           "phone": null,
+                     *           "rowNo": 3,
+                     *           "taxId": null
+                     *         }
+                     *       ],
+                     *       "status": "committed",
+                     *       "validCount": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentLeadImportDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.agent_inactive`, `agents.lead_import_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentLeads.list": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                /** @description `today`: follow-up due by the end of today (Bangkok, overdue included) · `overdue`: before now */
+                due?: components["schemas"]["AgentLeadDue"];
+                limit?: number;
+                order?: components["schemas"]["SortOrder"];
+                /** @description Name, organisation, phone, e-mail, tax id or LINE id */
+                q?: string;
+                sort?: components["schemas"]["AgentLeadSort"];
+                source?: components["schemas"]["AgentLeadSource"];
+                /** @description One or more stages, comma-separated */
+                stage?: components["schemas"]["AgentLeadStage"][];
+                /** @description `open` registered or converted and not won / lost · `follow_up_today` open with a follow-up due by the end of today (overdue included) · `protection_ending` registered, protection ends within 7 days · `closed` won, lost, expired, withdrawn or released */
+                view?: components["schemas"]["AgentLeadView"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One slice of the feed */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "closedReason": null,
+                     *           "contactName": "คุณมานี ใจดี",
+                     *           "convertedAt": null,
+                     *           "createdAt": "2026-10-16T10:00:00+07:00",
+                     *           "email": "manee@example.invalid",
+                     *           "expectedValue": "45000.00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *           "industry": "ร้านกาแฟ / เบเกอรี่",
+                     *           "kind": "customer",
+                     *           "lineId": "manee.cafe",
+                     *           "lostNote": null,
+                     *           "lostReason": null,
+                     *           "nextFollowUpAt": "2026-10-20T10:00:00+07:00",
+                     *           "note": null,
+                     *           "organisationName": "ร้านกาแฟบ้านสวน",
+                     *           "phone": "+66890001234",
+                     *           "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *           "source": "manual",
+                     *           "stage": "contacted",
+                     *           "stageChangedAt": "2026-10-18T09:30:00+07:00",
+                     *           "status": "registered",
+                     *           "tags": [
+                     *             "เบเกอรี่",
+                     *             "รายเดือน"
+                     *           ],
+                     *           "taxId": null,
+                     *           "updatedAt": "2026-10-18T09:30:00+07:00",
+                     *           "wonAt": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "nextCursor": "eyJpZCI6IjEyMyJ9"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AgentLeadDto"][];
+                        meta: components["schemas"]["CursorMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -294157,6 +297196,42 @@ export interface operations {
                      *           "enabled": true,
                      *           "event": "payout_profile_needed",
                      *           "locked": true
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "follow_up_due",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "follow_up_due",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "follow_up_due",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "quote_opened",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "quote_opened",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "quote_opened",
+                     *           "locked": false
                      *         }
                      *       ],
                      *       "reachable": {
@@ -294348,6 +297423,42 @@ export interface operations {
                      *           "enabled": true,
                      *           "event": "payout_profile_needed",
                      *           "locked": true
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "follow_up_due",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "follow_up_due",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "follow_up_due",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "web_push",
+                     *           "enabled": true,
+                     *           "event": "quote_opened",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "line",
+                     *           "enabled": true,
+                     *           "event": "quote_opened",
+                     *           "locked": false
+                     *         },
+                     *         {
+                     *           "channel": "email",
+                     *           "enabled": true,
+                     *           "event": "quote_opened",
+                     *           "locked": false
                      *         }
                      *       ],
                      *       "reachable": {
@@ -295046,6 +298157,112 @@ export interface operations {
             };
         };
     };
+    "store.agentPlaybook.get": {
+        parameters: {
+            query?: {
+                /** @description Cards for one context (with the cards for every context); omitted = all published cards */
+                context?: components["schemas"]["AgentPlaybookContext"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cards */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "bodyEn": null,
+                     *           "bodyTh": "ถามก่อนว่าลูกค้าให้อะไรกลับมาได้บ้าง …",
+                     *           "contexts": [
+                     *             "discount_request",
+                     *             "competitor_cheaper"
+                     *           ],
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6028",
+                     *           "key": "give-get-menu",
+                     *           "suggestedReplies": [
+                     *             {
+                     *               "en": null,
+                     *               "th": "ถ้าสะดวกชำระภายใน 7 วัน เรามีส่วนลดเงินสดให้ค่ะ/ครับ"
+                     *             }
+                     *           ],
+                     *           "titleEn": null,
+                     *           "titleTh": "เมนูแลกเปลี่ยน: ให้ส่วนลด เมื่อได้อะไรกลับมา",
+                     *           "version": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentPlaybookDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.agent.programme": {
         parameters: {
             query?: never;
@@ -295578,6 +298795,2010 @@ export interface operations {
             };
             /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
             403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.list": {
+        parameters: {
+            query?: {
+                leadId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["AgentQuoteStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "acceptedAt": null,
+                     *           "dealRegistration": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6027",
+                     *             "lockedFirstRatePct": "5.0000",
+                     *             "lockedRepeatRatePct": "3.0000",
+                     *             "origin": "automatic",
+                     *             "protectedUntil": "2027-01-16T10:00:00+07:00",
+                     *             "registeredAt": "2026-10-18T10:00:00+07:00",
+                     *             "scope": "quote",
+                     *             "status": "registered"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6023",
+                     *           "lead": {
+                     *             "contactName": "คุณมานี ใจดี",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *             "organisationName": "ร้านกาแฟบ้านสวน"
+                     *           },
+                     *           "openedAt": "2026-10-18T13:20:00+07:00",
+                     *           "quote": {
+                     *             "advisory": null,
+                     *             "configuration": {
+                     *               "d": 120,
+                     *               "design": {
+                     *                 "graphic": false,
+                     *                 "structure": false
+                     *               },
+                     *               "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *               "l": 40,
+                     *               "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *               "parts": [
+                     *                 {
+                     *                   "diecutTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a106",
+                     *                   "finish1FrontId": "0192f3a0-7c1e-7d2a-9b1f-00000000a105",
+                     *                   "printFront": [
+                     *                     {
+                     *                       "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                       "percent": 100
+                     *                     },
+                     *                     {
+                     *                       "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                       "percent": 100
+                     *                     },
+                     *                     {
+                     *                       "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                       "percent": 100
+                     *                     },
+                     *                     {
+                     *                       "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                       "percent": 100
+                     *                     }
+                     *                   ]
+                     *                 }
+                     *               ],
+                     *               "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *               "quantities": [
+                     *                 1000
+                     *               ],
+                     *               "w": 60
+                     *             },
+                     *             "createdAt": "2026-10-01T09:00:00+07:00",
+                     *             "currency": "THB",
+                     *             "deliveryPostcode": "10110",
+                     *             "dielineQuantities": null,
+                     *             "dimensions": null,
+                     *             "fromLever": null,
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *             "options": [
+                     *               {
+                     *                 "designFeeAmount": "0.00",
+                     *                 "earliestDeliveryDate": "2026-10-10",
+                     *                 "earliestShipDate": "2026-10-09",
+                     *                 "grossAmount": "13508.40",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *                 "leadTimeDays": 7,
+                     *                 "netAmount": "12624.67",
+                     *                 "productAmount": "13380.00",
+                     *                 "quantity": 1000,
+                     *                 "shippingAmount": "128.40",
+                     *                 "shippingPending": false,
+                     *                 "shippingPendingReason": null,
+                     *                 "structureDesignFeeAmount": "0.00",
+                     *                 "targetGap": {
+                     *                   "gapPct": "16.35",
+                     *                   "gapPerUnit": "1.88",
+                     *                   "meetsTarget": false
+                     *                 },
+                     *                 "toleranceColourDeltaE": "3.00",
+                     *                 "toleranceDimensionalMm": "1.00",
+                     *                 "toleranceOveragePct": "5.0000",
+                     *                 "toleranceShortagePct": "5.0000",
+                     *                 "toolingAmount": "0.00",
+                     *                 "toolingWaiver": null,
+                     *                 "unitPrice": "13.38",
+                     *                 "vatAmount": "883.73"
+                     *               }
+                     *             ],
+                     *             "outcome": null,
+                     *             "pdfStatus": "none",
+                     *             "priceLocked": true,
+                     *             "productTypeCode": "folding_carton",
+                     *             "quoteCode": "QT-2026-000042",
+                     *             "shareExpiresAt": null,
+                     *             "sharedAt": null,
+                     *             "source": "instant",
+                     *             "status": "shared",
+                     *             "statusLabelAdminTh": "บันทึกแล้ว",
+                     *             "statusLabelTh": "บันทึกแล้ว",
+                     *             "summary": {
+                     *               "product": {
+                     *                 "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *                 "nameEn": "Tuck-end box",
+                     *                 "nameTh": "กล่องฝาเสียบ",
+                     *                 "slug": "tuck-end-box"
+                     *               },
+                     *               "productTypeCode": "folding_carton",
+                     *               "productTypeNameEn": "Folding carton",
+                     *               "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *               "specs": [
+                     *                 {
+                     *                   "key": "style",
+                     *                   "labelEn": "Style",
+                     *                   "labelTh": "แบบกล่อง",
+                     *                   "valueEn": "ฝาเสียบ",
+                     *                   "valueTh": "ฝาเสียบ"
+                     *                 },
+                     *                 {
+                     *                   "key": "size",
+                     *                   "labelEn": "Size (L × W × H)",
+                     *                   "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *                   "valueEn": "60 × 60 × 150 mm",
+                     *                   "valueTh": "60 × 60 × 150 มม."
+                     *                 },
+                     *                 {
+                     *                   "key": "material",
+                     *                   "labelEn": "Material",
+                     *                   "labelTh": "วัสดุ",
+                     *                   "valueEn": "Art card 350 gsm",
+                     *                   "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *                 }
+                     *               ],
+                     *               "unit": "piece"
+                     *             },
+                     *             "targetPricePerUnit": "11.50",
+                     *             "validUntil": "2026-10-16T09:00:00+07:00"
+                     *           },
+                     *           "sendCount": 1,
+                     *           "sentAt": "2026-10-18T10:00:00+07:00",
+                     *           "shareUrl": "https://www.getpack.co/q/bX2kQ9",
+                     *           "status": "opened",
+                     *           "withdrawnAt": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AgentQuoteDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAgentQuoteDto"];
+            };
+        };
+        responses: {
+            /** @description Sent */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "dealRegistration": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6027",
+                     *         "lockedFirstRatePct": "5.0000",
+                     *         "lockedRepeatRatePct": "3.0000",
+                     *         "origin": "automatic",
+                     *         "protectedUntil": "2027-01-16T10:00:00+07:00",
+                     *         "registeredAt": "2026-10-18T10:00:00+07:00",
+                     *         "scope": "quote",
+                     *         "status": "registered"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6023",
+                     *       "lead": {
+                     *         "contactName": "คุณมานี ใจดี",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *         "organisationName": "ร้านกาแฟบ้านสวน"
+                     *       },
+                     *       "openedAt": null,
+                     *       "quote": {
+                     *         "advisory": null,
+                     *         "configuration": {
+                     *           "d": 120,
+                     *           "design": {
+                     *             "graphic": false,
+                     *             "structure": false
+                     *           },
+                     *           "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *           "l": 40,
+                     *           "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *           "parts": [
+                     *             {
+                     *               "diecutTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a106",
+                     *               "finish1FrontId": "0192f3a0-7c1e-7d2a-9b1f-00000000a105",
+                     *               "printFront": [
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 }
+                     *               ]
+                     *             }
+                     *           ],
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *           "quantities": [
+                     *             1000
+                     *           ],
+                     *           "w": 60
+                     *         },
+                     *         "createdAt": "2026-10-01T09:00:00+07:00",
+                     *         "currency": "THB",
+                     *         "deliveryPostcode": "10110",
+                     *         "dielineQuantities": null,
+                     *         "dimensions": null,
+                     *         "fromLever": null,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *         "options": [
+                     *           {
+                     *             "designFeeAmount": "0.00",
+                     *             "earliestDeliveryDate": "2026-10-10",
+                     *             "earliestShipDate": "2026-10-09",
+                     *             "grossAmount": "13508.40",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *             "leadTimeDays": 7,
+                     *             "netAmount": "12624.67",
+                     *             "productAmount": "13380.00",
+                     *             "quantity": 1000,
+                     *             "shippingAmount": "128.40",
+                     *             "shippingPending": false,
+                     *             "shippingPendingReason": null,
+                     *             "structureDesignFeeAmount": "0.00",
+                     *             "targetGap": {
+                     *               "gapPct": "16.35",
+                     *               "gapPerUnit": "1.88",
+                     *               "meetsTarget": false
+                     *             },
+                     *             "toleranceColourDeltaE": "3.00",
+                     *             "toleranceDimensionalMm": "1.00",
+                     *             "toleranceOveragePct": "5.0000",
+                     *             "toleranceShortagePct": "5.0000",
+                     *             "toolingAmount": "0.00",
+                     *             "toolingWaiver": null,
+                     *             "unitPrice": "13.38",
+                     *             "vatAmount": "883.73"
+                     *           }
+                     *         ],
+                     *         "outcome": null,
+                     *         "pdfStatus": "none",
+                     *         "priceLocked": true,
+                     *         "productTypeCode": "folding_carton",
+                     *         "quoteCode": "QT-2026-000042",
+                     *         "shareExpiresAt": null,
+                     *         "sharedAt": null,
+                     *         "source": "instant",
+                     *         "status": "shared",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
+                     *         "summary": {
+                     *           "product": {
+                     *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *             "nameEn": "Tuck-end box",
+                     *             "nameTh": "กล่องฝาเสียบ",
+                     *             "slug": "tuck-end-box"
+                     *           },
+                     *           "productTypeCode": "folding_carton",
+                     *           "productTypeNameEn": "Folding carton",
+                     *           "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *           "specs": [
+                     *             {
+                     *               "key": "style",
+                     *               "labelEn": "Style",
+                     *               "labelTh": "แบบกล่อง",
+                     *               "valueEn": "ฝาเสียบ",
+                     *               "valueTh": "ฝาเสียบ"
+                     *             },
+                     *             {
+                     *               "key": "size",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *               "valueEn": "60 × 60 × 150 mm",
+                     *               "valueTh": "60 × 60 × 150 มม."
+                     *             },
+                     *             {
+                     *               "key": "material",
+                     *               "labelEn": "Material",
+                     *               "labelTh": "วัสดุ",
+                     *               "valueEn": "Art card 350 gsm",
+                     *               "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *             }
+                     *           ],
+                     *           "unit": "piece"
+                     *         },
+                     *         "targetPricePerUnit": "11.50",
+                     *         "validUntil": "2026-10-16T09:00:00+07:00"
+                     *       },
+                     *       "sendCount": 1,
+                     *       "sentAt": "2026-10-18T10:00:00+07:00",
+                     *       "shareUrl": "https://www.getpack.co/q/bX2kQ9",
+                     *       "status": "sent",
+                     *       "withdrawnAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentQuoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.agent_inactive`, `agents.lead_closed`, `numbering.series_missing` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.not_instant`, `quotes.nothing_to_save`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.vat_rate_missing` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                agentQuoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Quotation */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "dealRegistration": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6027",
+                     *         "lockedFirstRatePct": "5.0000",
+                     *         "lockedRepeatRatePct": "3.0000",
+                     *         "origin": "automatic",
+                     *         "protectedUntil": "2027-01-16T10:00:00+07:00",
+                     *         "registeredAt": "2026-10-18T10:00:00+07:00",
+                     *         "scope": "quote",
+                     *         "status": "registered"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6023",
+                     *       "lead": {
+                     *         "contactName": "คุณมานี ใจดี",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *         "organisationName": "ร้านกาแฟบ้านสวน"
+                     *       },
+                     *       "openedAt": "2026-10-18T13:20:00+07:00",
+                     *       "quote": {
+                     *         "advisory": null,
+                     *         "configuration": {
+                     *           "d": 120,
+                     *           "design": {
+                     *             "graphic": false,
+                     *             "structure": false
+                     *           },
+                     *           "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *           "l": 40,
+                     *           "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *           "parts": [
+                     *             {
+                     *               "diecutTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a106",
+                     *               "finish1FrontId": "0192f3a0-7c1e-7d2a-9b1f-00000000a105",
+                     *               "printFront": [
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 }
+                     *               ]
+                     *             }
+                     *           ],
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *           "quantities": [
+                     *             1000
+                     *           ],
+                     *           "w": 60
+                     *         },
+                     *         "createdAt": "2026-10-01T09:00:00+07:00",
+                     *         "currency": "THB",
+                     *         "deliveryPostcode": "10110",
+                     *         "dielineQuantities": null,
+                     *         "dimensions": null,
+                     *         "fromLever": null,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *         "options": [
+                     *           {
+                     *             "designFeeAmount": "0.00",
+                     *             "earliestDeliveryDate": "2026-10-10",
+                     *             "earliestShipDate": "2026-10-09",
+                     *             "grossAmount": "13508.40",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *             "leadTimeDays": 7,
+                     *             "netAmount": "12624.67",
+                     *             "productAmount": "13380.00",
+                     *             "quantity": 1000,
+                     *             "shippingAmount": "128.40",
+                     *             "shippingPending": false,
+                     *             "shippingPendingReason": null,
+                     *             "structureDesignFeeAmount": "0.00",
+                     *             "targetGap": {
+                     *               "gapPct": "16.35",
+                     *               "gapPerUnit": "1.88",
+                     *               "meetsTarget": false
+                     *             },
+                     *             "toleranceColourDeltaE": "3.00",
+                     *             "toleranceDimensionalMm": "1.00",
+                     *             "toleranceOveragePct": "5.0000",
+                     *             "toleranceShortagePct": "5.0000",
+                     *             "toolingAmount": "0.00",
+                     *             "toolingWaiver": null,
+                     *             "unitPrice": "13.38",
+                     *             "vatAmount": "883.73"
+                     *           }
+                     *         ],
+                     *         "outcome": null,
+                     *         "pdfStatus": "none",
+                     *         "priceLocked": true,
+                     *         "productTypeCode": "folding_carton",
+                     *         "quoteCode": "QT-2026-000042",
+                     *         "shareExpiresAt": null,
+                     *         "sharedAt": null,
+                     *         "source": "instant",
+                     *         "status": "shared",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
+                     *         "summary": {
+                     *           "product": {
+                     *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *             "nameEn": "Tuck-end box",
+                     *             "nameTh": "กล่องฝาเสียบ",
+                     *             "slug": "tuck-end-box"
+                     *           },
+                     *           "productTypeCode": "folding_carton",
+                     *           "productTypeNameEn": "Folding carton",
+                     *           "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *           "specs": [
+                     *             {
+                     *               "key": "style",
+                     *               "labelEn": "Style",
+                     *               "labelTh": "แบบกล่อง",
+                     *               "valueEn": "ฝาเสียบ",
+                     *               "valueTh": "ฝาเสียบ"
+                     *             },
+                     *             {
+                     *               "key": "size",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *               "valueEn": "60 × 60 × 150 mm",
+                     *               "valueTh": "60 × 60 × 150 มม."
+                     *             },
+                     *             {
+                     *               "key": "material",
+                     *               "labelEn": "Material",
+                     *               "labelTh": "วัสดุ",
+                     *               "valueEn": "Art card 350 gsm",
+                     *               "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *             }
+                     *           ],
+                     *           "unit": "piece"
+                     *         },
+                     *         "targetPricePerUnit": "11.50",
+                     *         "validUntil": "2026-10-16T09:00:00+07:00"
+                     *       },
+                     *       "sendCount": 1,
+                     *       "sentAt": "2026-10-18T10:00:00+07:00",
+                     *       "shareUrl": "https://www.getpack.co/q/bX2kQ9",
+                     *       "status": "opened",
+                     *       "withdrawnAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentQuoteDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.registerDeal": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                agentQuoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Registered */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "dealRegistration": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6027",
+                     *         "lockedFirstRatePct": "5.0000",
+                     *         "lockedRepeatRatePct": "3.0000",
+                     *         "origin": "requested",
+                     *         "protectedUntil": "2027-01-16T10:00:00+07:00",
+                     *         "registeredAt": "2026-10-18T10:00:00+07:00",
+                     *         "scope": "quote",
+                     *         "status": "registered"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6023",
+                     *       "lead": {
+                     *         "contactName": "คุณมานี ใจดี",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *         "organisationName": "ร้านกาแฟบ้านสวน"
+                     *       },
+                     *       "openedAt": "2026-10-18T13:20:00+07:00",
+                     *       "quote": {
+                     *         "advisory": null,
+                     *         "configuration": {
+                     *           "d": 120,
+                     *           "design": {
+                     *             "graphic": false,
+                     *             "structure": false
+                     *           },
+                     *           "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *           "l": 40,
+                     *           "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *           "parts": [
+                     *             {
+                     *               "diecutTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a106",
+                     *               "finish1FrontId": "0192f3a0-7c1e-7d2a-9b1f-00000000a105",
+                     *               "printFront": [
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 }
+                     *               ]
+                     *             }
+                     *           ],
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *           "quantities": [
+                     *             1000
+                     *           ],
+                     *           "w": 60
+                     *         },
+                     *         "createdAt": "2026-10-01T09:00:00+07:00",
+                     *         "currency": "THB",
+                     *         "deliveryPostcode": "10110",
+                     *         "dielineQuantities": null,
+                     *         "dimensions": null,
+                     *         "fromLever": null,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *         "options": [
+                     *           {
+                     *             "designFeeAmount": "0.00",
+                     *             "earliestDeliveryDate": "2026-10-10",
+                     *             "earliestShipDate": "2026-10-09",
+                     *             "grossAmount": "13508.40",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *             "leadTimeDays": 7,
+                     *             "netAmount": "12624.67",
+                     *             "productAmount": "13380.00",
+                     *             "quantity": 1000,
+                     *             "shippingAmount": "128.40",
+                     *             "shippingPending": false,
+                     *             "shippingPendingReason": null,
+                     *             "structureDesignFeeAmount": "0.00",
+                     *             "targetGap": {
+                     *               "gapPct": "16.35",
+                     *               "gapPerUnit": "1.88",
+                     *               "meetsTarget": false
+                     *             },
+                     *             "toleranceColourDeltaE": "3.00",
+                     *             "toleranceDimensionalMm": "1.00",
+                     *             "toleranceOveragePct": "5.0000",
+                     *             "toleranceShortagePct": "5.0000",
+                     *             "toolingAmount": "0.00",
+                     *             "toolingWaiver": null,
+                     *             "unitPrice": "13.38",
+                     *             "vatAmount": "883.73"
+                     *           }
+                     *         ],
+                     *         "outcome": null,
+                     *         "pdfStatus": "none",
+                     *         "priceLocked": true,
+                     *         "productTypeCode": "folding_carton",
+                     *         "quoteCode": "QT-2026-000042",
+                     *         "shareExpiresAt": null,
+                     *         "sharedAt": null,
+                     *         "source": "instant",
+                     *         "status": "shared",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
+                     *         "summary": {
+                     *           "product": {
+                     *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *             "nameEn": "Tuck-end box",
+                     *             "nameTh": "กล่องฝาเสียบ",
+                     *             "slug": "tuck-end-box"
+                     *           },
+                     *           "productTypeCode": "folding_carton",
+                     *           "productTypeNameEn": "Folding carton",
+                     *           "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *           "specs": [
+                     *             {
+                     *               "key": "style",
+                     *               "labelEn": "Style",
+                     *               "labelTh": "แบบกล่อง",
+                     *               "valueEn": "ฝาเสียบ",
+                     *               "valueTh": "ฝาเสียบ"
+                     *             },
+                     *             {
+                     *               "key": "size",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *               "valueEn": "60 × 60 × 150 mm",
+                     *               "valueTh": "60 × 60 × 150 มม."
+                     *             },
+                     *             {
+                     *               "key": "material",
+                     *               "labelEn": "Material",
+                     *               "labelTh": "วัสดุ",
+                     *               "valueEn": "Art card 350 gsm",
+                     *               "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *             }
+                     *           ],
+                     *           "unit": "piece"
+                     *         },
+                     *         "targetPricePerUnit": "11.50",
+                     *         "validUntil": "2026-10-16T09:00:00+07:00"
+                     *       },
+                     *       "sendCount": 1,
+                     *       "sentAt": "2026-10-18T10:00:00+07:00",
+                     *       "shareUrl": "https://www.getpack.co/q/bX2kQ9",
+                     *       "status": "opened",
+                     *       "withdrawnAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentQuoteDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.agent_inactive`, `agents.quote_closed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.plan_not_in_force`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.resend": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                agentQuoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Quotation */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "dealRegistration": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6027",
+                     *         "lockedFirstRatePct": "5.0000",
+                     *         "lockedRepeatRatePct": "3.0000",
+                     *         "origin": "automatic",
+                     *         "protectedUntil": "2027-01-16T10:00:00+07:00",
+                     *         "registeredAt": "2026-10-18T10:00:00+07:00",
+                     *         "scope": "quote",
+                     *         "status": "registered"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6023",
+                     *       "lead": {
+                     *         "contactName": "คุณมานี ใจดี",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *         "organisationName": "ร้านกาแฟบ้านสวน"
+                     *       },
+                     *       "openedAt": "2026-10-18T13:20:00+07:00",
+                     *       "quote": {
+                     *         "advisory": null,
+                     *         "configuration": {
+                     *           "d": 120,
+                     *           "design": {
+                     *             "graphic": false,
+                     *             "structure": false
+                     *           },
+                     *           "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *           "l": 40,
+                     *           "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *           "parts": [
+                     *             {
+                     *               "diecutTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a106",
+                     *               "finish1FrontId": "0192f3a0-7c1e-7d2a-9b1f-00000000a105",
+                     *               "printFront": [
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 }
+                     *               ]
+                     *             }
+                     *           ],
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *           "quantities": [
+                     *             1000
+                     *           ],
+                     *           "w": 60
+                     *         },
+                     *         "createdAt": "2026-10-01T09:00:00+07:00",
+                     *         "currency": "THB",
+                     *         "deliveryPostcode": "10110",
+                     *         "dielineQuantities": null,
+                     *         "dimensions": null,
+                     *         "fromLever": null,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *         "options": [
+                     *           {
+                     *             "designFeeAmount": "0.00",
+                     *             "earliestDeliveryDate": "2026-10-10",
+                     *             "earliestShipDate": "2026-10-09",
+                     *             "grossAmount": "13508.40",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *             "leadTimeDays": 7,
+                     *             "netAmount": "12624.67",
+                     *             "productAmount": "13380.00",
+                     *             "quantity": 1000,
+                     *             "shippingAmount": "128.40",
+                     *             "shippingPending": false,
+                     *             "shippingPendingReason": null,
+                     *             "structureDesignFeeAmount": "0.00",
+                     *             "targetGap": {
+                     *               "gapPct": "16.35",
+                     *               "gapPerUnit": "1.88",
+                     *               "meetsTarget": false
+                     *             },
+                     *             "toleranceColourDeltaE": "3.00",
+                     *             "toleranceDimensionalMm": "1.00",
+                     *             "toleranceOveragePct": "5.0000",
+                     *             "toleranceShortagePct": "5.0000",
+                     *             "toolingAmount": "0.00",
+                     *             "toolingWaiver": null,
+                     *             "unitPrice": "13.38",
+                     *             "vatAmount": "883.73"
+                     *           }
+                     *         ],
+                     *         "outcome": null,
+                     *         "pdfStatus": "none",
+                     *         "priceLocked": true,
+                     *         "productTypeCode": "folding_carton",
+                     *         "quoteCode": "QT-2026-000042",
+                     *         "shareExpiresAt": null,
+                     *         "sharedAt": null,
+                     *         "source": "instant",
+                     *         "status": "shared",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
+                     *         "summary": {
+                     *           "product": {
+                     *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *             "nameEn": "Tuck-end box",
+                     *             "nameTh": "กล่องฝาเสียบ",
+                     *             "slug": "tuck-end-box"
+                     *           },
+                     *           "productTypeCode": "folding_carton",
+                     *           "productTypeNameEn": "Folding carton",
+                     *           "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *           "specs": [
+                     *             {
+                     *               "key": "style",
+                     *               "labelEn": "Style",
+                     *               "labelTh": "แบบกล่อง",
+                     *               "valueEn": "ฝาเสียบ",
+                     *               "valueTh": "ฝาเสียบ"
+                     *             },
+                     *             {
+                     *               "key": "size",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *               "valueEn": "60 × 60 × 150 mm",
+                     *               "valueTh": "60 × 60 × 150 มม."
+                     *             },
+                     *             {
+                     *               "key": "material",
+                     *               "labelEn": "Material",
+                     *               "labelTh": "วัสดุ",
+                     *               "valueEn": "Art card 350 gsm",
+                     *               "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *             }
+                     *           ],
+                     *           "unit": "piece"
+                     *         },
+                     *         "targetPricePerUnit": "11.50",
+                     *         "validUntil": "2026-10-16T09:00:00+07:00"
+                     *       },
+                     *       "sendCount": 2,
+                     *       "sentAt": "2026-10-18T10:00:00+07:00",
+                     *       "shareUrl": "https://www.getpack.co/q/bX2kQ9",
+                     *       "status": "opened",
+                     *       "withdrawnAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentQuoteDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.quote_closed`, `quotes.not_live` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.withdraw": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                agentQuoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WithdrawAgentQuoteDto"];
+            };
+        };
+        responses: {
+            /** @description Quotation */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceptedAt": null,
+                     *       "dealRegistration": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6027",
+                     *         "lockedFirstRatePct": "5.0000",
+                     *         "lockedRepeatRatePct": "3.0000",
+                     *         "origin": "automatic",
+                     *         "protectedUntil": "2027-01-16T10:00:00+07:00",
+                     *         "registeredAt": "2026-10-18T10:00:00+07:00",
+                     *         "scope": "quote",
+                     *         "status": "registered"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6023",
+                     *       "lead": {
+                     *         "contactName": "คุณมานี ใจดี",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
+                     *         "organisationName": "ร้านกาแฟบ้านสวน"
+                     *       },
+                     *       "openedAt": "2026-10-18T13:20:00+07:00",
+                     *       "quote": {
+                     *         "advisory": null,
+                     *         "configuration": {
+                     *           "d": 120,
+                     *           "design": {
+                     *             "graphic": false,
+                     *             "structure": false
+                     *           },
+                     *           "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *           "l": 40,
+                     *           "materialId": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *           "parts": [
+                     *             {
+                     *               "diecutTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a106",
+                     *               "finish1FrontId": "0192f3a0-7c1e-7d2a-9b1f-00000000a105",
+                     *               "printFront": [
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 },
+                     *                 {
+                     *                   "inkColourId": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *                   "percent": 100
+                     *                 }
+                     *               ]
+                     *             }
+                     *           ],
+                     *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *           "quantities": [
+                     *             1000
+                     *           ],
+                     *           "w": 60
+                     *         },
+                     *         "createdAt": "2026-10-01T09:00:00+07:00",
+                     *         "currency": "THB",
+                     *         "deliveryPostcode": "10110",
+                     *         "dielineQuantities": null,
+                     *         "dimensions": null,
+                     *         "fromLever": null,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e601",
+                     *         "options": [
+                     *           {
+                     *             "designFeeAmount": "0.00",
+                     *             "earliestDeliveryDate": "2026-10-10",
+                     *             "earliestShipDate": "2026-10-09",
+                     *             "grossAmount": "13508.40",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e602",
+                     *             "leadTimeDays": 7,
+                     *             "netAmount": "12624.67",
+                     *             "productAmount": "13380.00",
+                     *             "quantity": 1000,
+                     *             "shippingAmount": "128.40",
+                     *             "shippingPending": false,
+                     *             "shippingPendingReason": null,
+                     *             "structureDesignFeeAmount": "0.00",
+                     *             "targetGap": {
+                     *               "gapPct": "16.35",
+                     *               "gapPerUnit": "1.88",
+                     *               "meetsTarget": false
+                     *             },
+                     *             "toleranceColourDeltaE": "3.00",
+                     *             "toleranceDimensionalMm": "1.00",
+                     *             "toleranceOveragePct": "5.0000",
+                     *             "toleranceShortagePct": "5.0000",
+                     *             "toolingAmount": "0.00",
+                     *             "toolingWaiver": null,
+                     *             "unitPrice": "13.38",
+                     *             "vatAmount": "883.73"
+                     *           }
+                     *         ],
+                     *         "outcome": null,
+                     *         "pdfStatus": "none",
+                     *         "priceLocked": true,
+                     *         "productTypeCode": "folding_carton",
+                     *         "quoteCode": "QT-2026-000042",
+                     *         "shareExpiresAt": null,
+                     *         "sharedAt": null,
+                     *         "source": "instant",
+                     *         "status": "shared",
+                     *         "statusLabelAdminTh": "บันทึกแล้ว",
+                     *         "statusLabelTh": "บันทึกแล้ว",
+                     *         "summary": {
+                     *           "product": {
+                     *             "imageUrl": "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009",
+                     *             "nameEn": "Tuck-end box",
+                     *             "nameTh": "กล่องฝาเสียบ",
+                     *             "slug": "tuck-end-box"
+                     *           },
+                     *           "productTypeCode": "folding_carton",
+                     *           "productTypeNameEn": "Folding carton",
+                     *           "productTypeNameTh": "กล่องกระดาษแข็ง",
+                     *           "specs": [
+                     *             {
+                     *               "key": "style",
+                     *               "labelEn": "Style",
+                     *               "labelTh": "แบบกล่อง",
+                     *               "valueEn": "ฝาเสียบ",
+                     *               "valueTh": "ฝาเสียบ"
+                     *             },
+                     *             {
+                     *               "key": "size",
+                     *               "labelEn": "Size (L × W × H)",
+                     *               "labelTh": "ขนาด (ยาว × กว้าง × สูง)",
+                     *               "valueEn": "60 × 60 × 150 mm",
+                     *               "valueTh": "60 × 60 × 150 มม."
+                     *             },
+                     *             {
+                     *               "key": "material",
+                     *               "labelEn": "Material",
+                     *               "labelTh": "วัสดุ",
+                     *               "valueEn": "Art card 350 gsm",
+                     *               "valueTh": "อาร์ตการ์ด 350 แกรม"
+                     *             }
+                     *           ],
+                     *           "unit": "piece"
+                     *         },
+                     *         "targetPricePerUnit": "11.50",
+                     *         "validUntil": "2026-10-16T09:00:00+07:00"
+                     *       },
+                     *       "sendCount": 1,
+                     *       "sentAt": "2026-10-18T10:00:00+07:00",
+                     *       "shareUrl": null,
+                     *       "status": "withdrawn",
+                     *       "withdrawnAt": "2026-10-19T09:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentQuoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.quote_closed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.acceptOption": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                agentQuoteId: string;
+                optionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accepted */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cashWithinDays": null,
+                     *       "commitment": "one_off",
+                     *       "commitmentMonths": null,
+                     *       "competitorFile": {
+                     *         "fileName": "quotation-other.pdf",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6029"
+                     *       },
+                     *       "competitorSpec": {
+                     *         "boardGrade": "KA125/CA125",
+                     *         "flute": "B",
+                     *         "price": "42500.00",
+                     *         "quantity": 5000,
+                     *         "vatIncluded": true
+                     *       },
+                     *       "createdAt": "2026-10-18T15:00:00+07:00",
+                     *       "decidedAt": "2026-10-18T17:00:00+07:00",
+                     *       "decisionNote": null,
+                     *       "depositPct": "50.0000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6025",
+                     *       "leadTimeFlexDays": null,
+                     *       "options": [
+                     *         {
+                     *           "acceptedAt": "2026-10-19T09:00:00+07:00",
+                     *           "commissionAmount": "56400.00",
+                     *           "conditionsEn": "This price is for 8,000 pieces · a 50% deposit · order by 2026-10-25",
+                     *           "conditionsTh": "ราคานี้สำหรับ 8,000 ชิ้น · มัดจำ 50% · สั่งภายใน 25/10/2569",
+                     *           "discountPct": "6.0000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6026",
+                     *           "kind": "standard",
+                     *           "netAmount": "940000.00",
+                     *           "position": 1,
+                     *           "ratePct": "6.0000",
+                     *           "standardRatePct": "6.0000",
+                     *           "status": "accepted",
+                     *           "validUntil": "2026-10-25T17:00:00+07:00"
+                     *         }
+                     *       ],
+                     *       "quantity": 5000,
+                     *       "quantityChange": 8000,
+                     *       "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6030",
+                     *       "reason": "competitor_price",
+                     *       "reasonNote": null,
+                     *       "requestedPct": "6.0000",
+                     *       "round": 1,
+                     *       "specChange": null,
+                     *       "status": "accepted"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentDiscountRequestDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.discount_option_unavailable`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.discountRequests": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                agentQuoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rounds */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "cashWithinDays": null,
+                     *         "commitment": "one_off",
+                     *         "commitmentMonths": null,
+                     *         "competitorFile": {
+                     *           "fileName": "quotation-other.pdf",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6029"
+                     *         },
+                     *         "competitorSpec": {
+                     *           "boardGrade": "KA125/CA125",
+                     *           "flute": "B",
+                     *           "price": "42500.00",
+                     *           "quantity": 5000,
+                     *           "vatIncluded": true
+                     *         },
+                     *         "createdAt": "2026-10-18T15:00:00+07:00",
+                     *         "decidedAt": "2026-10-18T17:00:00+07:00",
+                     *         "decisionNote": null,
+                     *         "depositPct": "50.0000",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6025",
+                     *         "leadTimeFlexDays": null,
+                     *         "options": [
+                     *           {
+                     *             "acceptedAt": null,
+                     *             "commissionAmount": "56400.00",
+                     *             "conditionsEn": "This price is for 8,000 pieces · a 50% deposit · order by 2026-10-25",
+                     *             "conditionsTh": "ราคานี้สำหรับ 8,000 ชิ้น · มัดจำ 50% · สั่งภายใน 25/10/2569",
+                     *             "discountPct": "6.0000",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6026",
+                     *             "kind": "standard",
+                     *             "netAmount": "940000.00",
+                     *             "position": 1,
+                     *             "ratePct": "6.0000",
+                     *             "standardRatePct": "6.0000",
+                     *             "status": "offered",
+                     *             "validUntil": "2026-10-25T17:00:00+07:00"
+                     *           }
+                     *         ],
+                     *         "quantity": 5000,
+                     *         "quantityChange": 8000,
+                     *         "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6030",
+                     *         "reason": "competitor_price",
+                     *         "reasonNote": null,
+                     *         "requestedPct": "6.0000",
+                     *         "round": 1,
+                     *         "specChange": null,
+                     *         "status": "offered"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["AgentDiscountRequestDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.agentQuotes.requestDiscount": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                agentQuoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestAgentDiscountDto"];
+            };
+        };
+        responses: {
+            /** @description Requested */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cashWithinDays": null,
+                     *       "commitment": "one_off",
+                     *       "commitmentMonths": null,
+                     *       "competitorFile": {
+                     *         "fileName": "quotation-other.pdf",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6029"
+                     *       },
+                     *       "competitorSpec": {
+                     *         "boardGrade": "KA125/CA125",
+                     *         "flute": "B",
+                     *         "price": "42500.00",
+                     *         "quantity": 5000,
+                     *         "vatIncluded": true
+                     *       },
+                     *       "createdAt": "2026-10-18T15:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionNote": null,
+                     *       "depositPct": "50.0000",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a6025",
+                     *       "leadTimeFlexDays": null,
+                     *       "options": [],
+                     *       "quantity": 5000,
+                     *       "quantityChange": 8000,
+                     *       "quoteOptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6030",
+                     *       "reason": "competitor_price",
+                     *       "reasonNote": null,
+                     *       "requestedPct": "6.0000",
+                     *       "round": 1,
+                     *       "specChange": null,
+                     *       "status": "open"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentDiscountRequestDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.ended`, `agents.not_agent`, `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `agents.agent_inactive`, `agents.quote_closed`, `quotes.discount_request_open`, `quotes.discount_round_limit` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -331561,6 +336782,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "advisory": null,
+                     *       "agentCode": "K7QX2MAP",
                      *       "configuration": {
                      *         "d": 120,
                      *         "design": {
@@ -331687,7 +336909,7 @@ export interface operations {
                      *       "validUntil": "2026-10-16T09:00:00+07:00"
                      *     }
                      */
-                    "application/json": components["schemas"]["SavedQuoteDto"];
+                    "application/json": components["schemas"]["SharedQuoteDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */

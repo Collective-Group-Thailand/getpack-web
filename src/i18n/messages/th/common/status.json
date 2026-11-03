@@ -1088,5 +1088,35 @@
     "submitted": "รอตรวจ",
     "verified": "ตรวจแล้ว",
     "rejected": "ต้องแก้ไข"
+  },
+  "agentLeadStage": {
+    "new": "ใหม่",
+    "contacted": "ติดต่อแล้ว",
+    "quoted": "ส่งใบเสนอราคาแล้ว",
+    "negotiating": "กำลังต่อรอง",
+    "won": "ปิดการขายได้",
+    "lost": "ไม่ได้งาน"
+  },
+  "agentQuote": {
+    "sent": "ส่งแล้ว",
+    "opened": "ลูกค้าเปิดดูแล้ว",
+    "accepted": "ลูกค้าตอบรับแล้ว",
+    "expired": "หมดอายุ",
+    "withdrawn": "ยกเลิกแล้ว"
+  },
+  "agentDiscountRequest": {
+    "open": "รอ getpack ตอบ",
+    "offered": "มีทางเลือกให้เลือก",
+    "accepted": "เลือกแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "closed": "ปิดแล้ว"
+  },
+  "agentForecast": {
+    "in_progress": "ออเดอร์กำลังทำ",
+    "pending": "รอยืนยัน",
+    "held": "ระงับตรวจสอบ",
+    "earned": "ได้รับสิทธิ์แล้ว",
+    "statemented": "อยู่ในรายงานแล้ว",
+    "paid": "โอนแล้ว"
   }
 }

@@ -7,10 +7,10 @@
  *      figures (leads, commission, statements) are never served from a cache, because acting on a stale commission
  *      or a lead whose protection has run out is worse than waiting for the network;
  *   2. web push for agent events (`store.agentPush.*`), as `/sw.js` does for the other zones;
- *   3. the hook for Phase 3's lead draft queue (below) — a background sync tag with nothing queued yet.
+ *   3. the lead draft queue (D-468, below): leads saved on the device while offline, sent by background sync.
  */
 
-const SHELL_CACHE = "getpack-agent-shell-v1";
+const SHELL_CACHE = "getpack-agent-shell-v2";
 const OFFLINE_URL = "/offline";
 const SHELL_FILES = [OFFLINE_URL, "/agent-app/icon-192.png"];
 
@@ -54,12 +54,75 @@ self.addEventListener("fetch", (event) => {
 });
 
 /*
- * Phase 3 hook — the lead draft queue. A lead registered without a connection will be kept on the device and sent
- * when it returns, under this background-sync tag. Nothing is queued in Phase 2, so there is nothing to send.
+ * The lead draft queue (D-468): a lead registered without a connection is kept on the device in IndexedDB by the page
+ * (`src/features/agent/drafts/drafts.ts` — keep the names and the request in step) and sent here, under this
+ * background-sync tag, once the browser is back online. A sent draft is removed; a refusal (a duplicate, say) is kept
+ * with its reason for the agent to see; anything else waits for the next sync. Open pages are told to refresh.
  */
 const LEAD_DRAFT_SYNC_TAG = "agent-lead-drafts";
-async function flushLeadDrafts() {
-  return undefined;
+const DRAFT_DB = "getpack-agent";
+const DRAFT_STORE = "lead-drafts";
+
+function openDrafts() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DRAFT_DB, 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(DRAFT_STORE)) request.result.createObjectStore(DRAFT_STORE, { keyPath: "id" });
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function draftStore(db, mode, work) {
+  return new Promise((resolve, reject) => {
+    const request = work(db.transaction(DRAFT_STORE, mode).objectStore(DRAFT_STORE));
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/** The page sends the same queue on its `online` event: one Web Lock keeps a draft from being sent twice. */
+const DRAFT_LOCK = "getpack-agent-lead-drafts";
+function flushLeadDrafts() {
+  return self.navigator.locks ? self.navigator.locks.request(DRAFT_LOCK, flushLeadDraftsUnlocked) : flushLeadDraftsUnlocked();
+}
+
+async function flushLeadDraftsUnlocked() {
+  const db = await openDrafts();
+  let changed = false;
+  try {
+    const drafts = (await draftStore(db, "readonly", (store) => store.getAll())).sort((a, b) =>
+      a.createdAt.localeCompare(b.createdAt),
+    );
+    for (const draft of drafts) {
+      if (draft.refused) continue;
+      const response = await fetch("/bff/v1/store/agent/leads", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json", "x-getpack-csrf": "1" },
+        body: JSON.stringify(draft.body),
+      });
+      if (response.ok) {
+        await draftStore(db, "readwrite", (store) => store.delete(draft.id));
+        changed = true;
+      } else if (response.status >= 400 && response.status < 500 && ![401, 408, 429].includes(response.status)) {
+        const problem = await response.json().catch(() => null);
+        await draftStore(db, "readwrite", (store) =>
+          store.put({ ...draft, refused: { code: (problem && problem.code) || "http.conflict", detail: (problem && problem.detail) || "" } }),
+        );
+        changed = true;
+      } else {
+        // Offline again, signed out or a server error: throw so the browser retries this sync later.
+        throw new Error(`lead draft not sent (${response.status})`);
+      }
+    }
+  } finally {
+    db.close();
+    if (changed) {
+      for (const client of await self.clients.matchAll({ type: "window" })) client.postMessage({ type: "lead-drafts-flushed" });
+    }
+  }
 }
 self.addEventListener("sync", (event) => {
   if (event.tag === LEAD_DRAFT_SYNC_TAG) event.waitUntil(flushLeadDrafts());
@@ -81,7 +144,7 @@ self.addEventListener("push", (event) => {
       icon: "/agent-app/icon-192.png",
       badge: "/agent-app/icon-192.png",
       tag,
-      // Agent events carry no deep link yet (API-CHANGES-P2: `url` is null); the app opens on ภาพรวม.
+      // An event with a deep link (a lead, a quote) opens it; one without opens on ภาพรวม.
       data: { url: url || "/" },
     }),
   );

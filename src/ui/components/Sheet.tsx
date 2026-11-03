@@ -73,7 +73,11 @@ export function Sheet({
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
 
-          {footer ? <div className="border-border flex gap-2 border-t px-4 py-3">{footer}</div> : null}
+          {footer ? (
+            <div className="border-border flex gap-2 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              {footer}
+            </div>
+          ) : null}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

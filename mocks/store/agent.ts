@@ -9,6 +9,7 @@ import { http, HttpResponse } from "msw";
 import type { Schemas } from "@/lib/api/types";
 
 import { problem } from "../support";
+import { agentLeads, resetAgentLeadsMock } from "./agent-leads";
 import { customerOf } from "./customers";
 
 const isAgent = (request: Request) => customerOf(request)?.persona === "agent";
@@ -35,6 +36,8 @@ type Preference = Schemas["AgentNotificationPreferenceDto"];
 const EVENTS: Schemas["AgentNotificationEvent"][] = [
   "lead_converted",
   "lead_protection_expiring",
+  "follow_up_due",
+  "quote_opened",
   "commission_earned",
   "statement_ready",
   "payout_paid",
@@ -61,56 +64,8 @@ export function resetAgentMock(): void {
   otpPhone = null;
   preferences = freshPreferences();
   revokedOtherAgentSessions = false;
+  resetAgentLeadsMock();
 }
-
-/** A few leads in every state, so the list is worth looking at (obviously fake). */
-const LEADS: Schemas["AgentLeadDto"][] = [
-  {
-    id: "00000000-0000-4000-8000-0000000a0401",
-    kind: "customer",
-    contactName: "คุณมานี ใจดี",
-    organisationName: "ร้านกาแฟบ้านสวน (ข้อมูลจำลอง)",
-    phone: "+66890001234",
-    email: null,
-    taxId: null,
-    note: null,
-    status: "registered",
-    protectedUntil: "2027-01-05T10:00:00+07:00",
-    convertedAt: null,
-    closedReason: null,
-    createdAt: "2026-11-06T10:00:00+07:00",
-  },
-  {
-    id: "00000000-0000-4000-8000-0000000a0402",
-    kind: "customer",
-    contactName: "คุณปิติ รักษ์ดี",
-    organisationName: "แบรนด์สบู่ธรรมชาติ (ข้อมูลจำลอง)",
-    phone: null,
-    email: "piti@example.invalid",
-    taxId: null,
-    note: null,
-    status: "converted",
-    protectedUntil: "2026-12-20T10:00:00+07:00",
-    convertedAt: "2026-10-28T14:00:00+07:00",
-    closedReason: null,
-    createdAt: "2026-10-21T10:00:00+07:00",
-  },
-  {
-    id: "00000000-0000-4000-8000-0000000a0403",
-    kind: "customer",
-    contactName: "คุณชูใจ มีสุข",
-    organisationName: null,
-    phone: "+66870004567",
-    email: null,
-    taxId: null,
-    note: null,
-    status: "registered",
-    protectedUntil: "2026-12-12T10:00:00+07:00",
-    convertedAt: null,
-    closedReason: null,
-    createdAt: "2026-10-13T10:00:00+07:00",
-  },
-];
 
 /** The public programme the landing reads (D-466) — open for applications in the mock so the flow can be walked. */
 const PUBLIC_PROGRAMME: Schemas["PublicAgentProgrammeDto"] = {
@@ -159,7 +114,8 @@ export const storeAgentHandlers = [
   ),
   http.get("*/v1/store/agent/leads", ({ request }) => {
     if (!isAgent(request)) return undefined;
-    return HttpResponse.json({ data: LEADS, meta: { page: 1, perPage: 25, total: LEADS.length } });
+    const leads = agentLeads();
+    return HttpResponse.json({ data: leads, meta: { page: 1, perPage: 25, total: leads.length } });
   }),
   // getpack Agent's notification choices (D-467): stateful, with the money e-mails locked on.
   http.get("*/v1/store/agent/notification-preferences", ({ request }) => {

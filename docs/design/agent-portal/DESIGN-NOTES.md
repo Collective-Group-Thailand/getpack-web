@@ -180,3 +180,110 @@ pages) in th/en.
   Phase 3 lead-draft sync hook. Figures are never served from a cache.
 - Install card from the second visit, dismissible for good, floating above the tab bar (phone) or bottom-right
   (desktop); on iOS it opens the three-step Add to Home Screen sheet.
+
+## P3 — lead management (D-468)
+
+Rules applied per screen, in the pack's priority order: accessibility → touch → performance → layout → typography →
+motion → forms → navigation. Copy in the new `agentSales` namespace (th/en, `src/i18n/messages/*/agent/sales.json`),
+statuses from four new maps in `src/domain/status` (`AGENT_LEAD_STAGE`, `AGENT_QUOTE_STATUS`,
+`AGENT_DISCOUNT_REQUEST_STATUS`, `AGENT_FORECAST_STATUS`) — icon + words + tone, never colour alone. No new font,
+no dark surface, no illustration; the empty states teach with the product's own chips.
+
+### ลูกค้ามุ่งหวัง `/leads`
+- **Views** as the product's segmented `ViewTabs` (ทั้งหมด = the open pipeline · ต้องติดตามวันนี้ · ใกล้หมดสิทธิ์ ·
+  ปิดแล้ว), each a link (`?view=`), so back and share work. Filters (stage, sort) live in the URL too.
+- **Phone** cards (name as the link, organisation, stage chip top-right, follow-up line — overdue in danger tone with
+  a flag icon, today in warning tone —, protection countdown in Bangkok calendar days, warning tone in the last week,
+  expected value, source); filters in a bottom `Sheet` (radio cards, one "ดูผล", safe-area footer); the FAB sits above
+  the tab bar. **Tablet** the same cards in two columns. **Desktop** a real table (caption, `scope`, sortable headers
+  as links with `aria-sort`), protection and "updated" fold under the name below 1280 px so 1024 never scrolls the page
+  (the table's own wrapper is `relative` so its `sr-only` labels cannot widen the page).
+- **Stage change** is a `DropdownMenu` button "ย้ายไปขั้น…" on every card and row (Enter / arrows / Esc; `won` is never
+  offered — the system's). The desktop board (`?layout=board`) adds HTML5 drag between columns as an enhancement; a
+  hidden hint names the menu as the alternative (WCAG 2.5.7). Lost opens a dialog: reason (radio cards, required) +
+  note, with the consequence stated (protection ends, cannot reopen).
+- **Export** asks the API for its 5-minute link and downloads it; **import** is a header button (a link on a phone).
+- **รอส่ง**: leads saved offline sit above the list in a warning-tinted panel, each with a "รอส่ง" or "ส่งไม่ได้" badge
+  (with the problem's words) and a ≥ 44 px remove button; `role="status"` says whether the device is offline.
+
+### New lead (FAB · header button · `N`)
+- One form, a bottom sheet below 640 px (thumb zone, 92 dvh, sticky Save/Cancel with the safe-area inset) and a dialog
+  above; `N` opens it on a desktop unless the focus is in a field, menu or dialog (the header button shows the `Kbd`).
+- Fields: visible labels; `autocomplete` name / organization / tel-national / email; `inputmode` tel, email, numeric,
+  decimal; `enterkeyhint`; e-mail without autocapitalise. Contact fields grouped in a `fieldset` with its legend.
+- **Duplicate check on blur** of phone, e-mail and tax id: own lead → info callout with a link to it; anything else →
+  the one neutral sentence of `agents.lead_unavailable` and a next step, never who holds it (D-440).
+- **Card scan**: a strip at the top of the form ("มีนามบัตร?") opens the rear camera (`capture="environment"`; the
+  multi-shot `CameraCapture` was not used — one photo, no gallery), shows the photo, uploads (`agent_card_scan`), reads,
+  and fills the form; every filled field says "จากนามบัตร", and the unsure ones (< 0.8) get an amber ring and
+  "อ่านได้ไม่ชัด ตรวจอีกครั้ง" until edited. `file.not_ready` is retried with backoff.
+- **Follow-up** quick choices พรุ่งนี้ 10:00 · 3 วัน · 1 สัปดาห์ (Bangkok calendar), or a `datetime-local`.
+- Offline (or a network failure) keeps the lead in IndexedDB and registers background sync; a Web Lock shared by page
+  and service worker keeps a draft from being sent twice.
+
+### Lead detail `/leads/{id}`
+- **Desktop split view**: the open pipeline as a sticky list on the left (`aria-current="page"`), the lead on the
+  right; the page's own back link hides there. Phone: full page.
+- Header: name (h1), stage chip, organisation; a summary card with protection, expected value, registered date, the
+  **deal badge** ("ดีลนี้ถูกจองแล้วถึง …", locked first / repeat rate, success tone + shield icon) and the actions.
+- **Actions**: from 640 px a row (โทร · LINE · บันทึกการติดต่อ · ส่งใบเสนอราคา primary); on a phone the sticky
+  `MobileActionBar` above the tab bar — four icon-over-label targets ≥ 56 px, side safe-area insets. LINE opens the
+  contact's LINE id (`line.me/R/ti/p/~id`) or, without one, LINE's share with a greeting. A closed lead keeps call and
+  LINE only.
+- **Follow-up** panel (quick choices, own date, "ไม่ต้องเตือน"), saved with `If-Match`; a stale ETag reloads and says so.
+- **Timeline** (`Timeline`): agent entries, quotes sent (with a link), stage moves "จาก … ไป …", system events with their
+  own icon and tone (opened = primary eye, converted / won = success), author and Bangkok time on every line.
+- **Details** with "ยังไม่มี…" for empty fields and an edit dialog (contact keys read-only once a customer);
+  the contextual **playbook card** collapsed beside it (first contact, follow-up, discount, big deal, lost on price).
+
+### ใบเสนอราคา `/quotes`, quote on behalf `/quotes/new`, quote `/quotes/{id}`
+- **Decision**: the storefront's configurator lives in the customer zone and brings the studio, samples, cart and
+  analytics with it; moving it to `src/features/shared` was too large to finish safely in this phase. The agent zone
+  has its own focused flow on the same contract (PROMPT P3 Web 4 fallback): product grid (catalogue thumbnails through
+  this zone's BFF) → the product's D-441 default spec with size, material, up to three quantities and postcode → the
+  store's live price (`store.quotes.calculate`, debounced, an answer counts only for the spec it was asked for) →
+  review (spec lines, prices per quantity, validity days from the API) → create → share (P2 `ShareLink`: Web Share,
+  copy, LINE, QR). Phone: sections collapse to their summary, the price sits in a sticky bar above the tab bar;
+  desktop: all open with a sticky price card. A `ProgressTracker` shows the four steps from 768 px.
+- List: status tabs, `PortalTable` (cards on a phone, table from 768 px), deal mark, "opened" date under "sent";
+  the empty state shows the status path (ส่งแล้ว → ลูกค้าเปิดดูแล้ว → ลูกค้าตอบรับแล้ว) and sends the agent to leads.
+- Quote page: facts, prices, share card, a "จัดการใบเสนอราคา" card (จองดีล for a smaller quote, new link, withdraw with
+  an `AlertDialog` naming the customer), and the discount panel.
+
+### Discount request `/quotes/{id}/discount` and the options
+- Three steps with a `ProgressTracker`: **1 ลูกค้าให้อะไรกลับมา** first — six give-get cards (checkbox + one line why;
+  a chosen card spans the row and opens its one field), at least one required, then the % asked; **2** reason (radio
+  cards) and, for a cheaper competitor, their file (`evidence` upload) and a like-for-like spec form; **3** review in
+  words with "what happens next". Errors inline and in a live callout.
+- The playbook's discount cards sit beside the form on a desktop (sticky) and above it, collapsed, on a phone.
+- A waiting request says "รอ getpack ตอบ" with what will happen — no time promised (P4 has no desk yet).
+- **Options** are plain lines "ลูกค้าได้ส่วนลด 4% · คุณได้ ฿607.20" (API figures only), the net before VAT, the rate (vs
+  the usual one), the conditions line and the deadline; ordered by `position` so the full-rate option is first and
+  primary. Choosing asks first; a **co-fund** option's dialog states the amount and the rate change and keeps Confirm
+  disabled until "ฉันยอมรับค่าคอม ฿… สำหรับดีลนี้" is ticked; one `Idempotency-Key` per decision. No cost, margin or
+  share-of-profit anywhere.
+
+### คู่มือการขาย `/playbook`
+- Reached from the sidebar, the tablet rail and the profile menu (the phone keeps four tabs). Search as you type over
+  titles, bodies and replies; situations as toggle buttons (`aria-pressed`); a live count. Cards render the API's
+  Markdown (paragraphs, lists, a scrollable table region) as elements — never injected HTML — and each suggested
+  reply has "คัดลอก" and "ส่งทาง LINE".
+
+### CSV import `/leads/import`
+- File pick or paste, consent tick, the template (header + one obviously fake row, BOM) beside it with every column
+  explained; the dry run as `PortalTable` with each row's problems in words and a "only rows with problems" switch;
+  commit with `Idempotency-Key`; a done state with the counts and the way back.
+
+### ค่าคอม — forecast `/commissions?view=forecast`
+- A second view beside the entries (same `ViewTabs`): the total still to come on the primary tint with the system's
+  payment rule in words (no "5th"), a payout-profile callout when it is not ready, then per order: status chip,
+  expected commission with its base and rate, "ภายใน {date}" or "ยังไม่มีกำหนด", and what it waits for in words.
+
+### Storefront `/q/{token}`
+- A factory's quotation link renders as before; a store quotation an agent sent goes through `/q/{token}/open`, which
+  sets `pk_agent` exactly as `/a/{code}` (same name, lifetime, flags) and opens the quote in the configurator
+  (`?share=`). Signing up then claims the code (existing `AgentLinkClaim`).
+
+### Notifications
+- Two more fieldsets in the matrix: ถึงเวลาติดตามลูกค้า (no quiet-hours times in the copy — they are a setting) and
+  ลูกค้าเปิดดูใบเสนอราคา.
