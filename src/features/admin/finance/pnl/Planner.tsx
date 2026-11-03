@@ -26,6 +26,7 @@ import { usePnlFormat } from "./format";
 import { PnlGridView } from "./Grid";
 import { OverrideDialog } from "./OverrideDialog";
 import { SourcesSheet } from "./SourcesSheet";
+import { MonthCards } from "./MonthCards";
 import { PnlCharts, SummaryStrip } from "./Summary";
 import { VarianceGridView } from "./VarianceGrid";
 import { CopyPlanDialog, CreatePlanDialog, LockPlanDialog } from "./PlanDialogs";
@@ -152,7 +153,7 @@ function PlannerBody() {
         description={t("description")}
         actions={
           canManage ? (
-            <Button iconStart="plus" onClick={() => setDialog("create")}>
+            <Button iconStart="plus" className="hidden md:inline-flex" onClick={() => setDialog("create")}>
               {t("header.create")}
             </Button>
           ) : undefined
@@ -225,30 +226,38 @@ function PlannerBody() {
       ) : (
         <>
           <PlanNotices plan={plan} canManage={canManage} />
+          {grid.data ? <SummaryStrip grid={grid.data} /> : null}
           {grid.data ? (
-            <>
-              <SummaryStrip grid={grid.data} />
+            <div className="hidden md:block">
               <PnlCharts grid={grid.data} variance={variance ? varianceQuery.data : undefined} />
-            </>
+            </div>
           ) : null}
-          {variance ? (
-            varianceQuery.isError ? (
-              <QueryError error={varianceQuery.error} onRetry={() => void varianceQuery.refetch()} />
-            ) : varianceQuery.data ? (
-              <VarianceGridView variance={varianceQuery.data} canNote={canManage} />
+          {/* Tablet and up: the grid, scrolling sideways inside its own frame. A phone gets the month cards. */}
+          <div className="hidden min-w-0 md:block">
+            {variance ? (
+              varianceQuery.isError ? (
+                <QueryError error={varianceQuery.error} onRetry={() => void varianceQuery.refetch()} />
+              ) : varianceQuery.data ? (
+                <VarianceGridView variance={varianceQuery.data} canNote={canManage} />
+              ) : (
+                <Skeleton className="h-[32rem] w-full" />
+              )
+            ) : grid.data ? (
+              <PnlGridView
+                grid={grid.data}
+                canEdit={canManage && grid.data.plan.status === "draft"}
+                onDrill={(line, cell) => setDrill({ line, cell })}
+                onOverride={(line, cell) => setOverride({ line, cell })}
+              />
             ) : (
               <Skeleton className="h-[32rem] w-full" />
-            )
-          ) : grid.data ? (
-            <PnlGridView
-              grid={grid.data}
-              canEdit={canManage && grid.data.plan.status === "draft"}
-              onDrill={(line, cell) => setDrill({ line, cell })}
-              onOverride={(line, cell) => setOverride({ line, cell })}
-            />
-          ) : (
-            <Skeleton className="h-[32rem] w-full" />
-          )}
+            )}
+          </div>
+          {grid.data ? (
+            <div className="md:hidden">
+              <MonthCards grid={grid.data} variance={variance ? varianceQuery.data : undefined} />
+            </div>
+          ) : null}
         </>
       )}
 
@@ -391,51 +400,48 @@ function PlanToolbar({
   };
 
   return (
-    <section
-      aria-label={t("label")}
-      className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 lg:flex-row lg:items-end lg:justify-between"
-    >
-      <div className="flex min-w-0 flex-col gap-3">
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1.5 text-sm font-medium">
-            {t("year")}
+    <section aria-label={t("label")} className="border-border bg-surface rounded-card flex flex-col border">
+      <div className="flex flex-wrap items-end gap-3 p-4">
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
+          {t("year")}
+          <NativeSelect
+            className="w-32"
+            value={String(year)}
+            onValueChange={(value) => onYear(Number(value))}
+            options={years.map((y) => ({ value: String(y), label: t("yearOption", { year: format.year(y) }) }))}
+          />
+        </label>
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium" aria-hidden>
+            {t("scenario")}
+          </span>
+          <SegmentedControl
+            label={t("scenario")}
+            value={scenario}
+            onValueChange={onScenario}
+            options={PNL_SCENARIOS.map((value) => ({ value, label: t(`scenarios.${value}`) }))}
+          />
+        </div>
+        {plans.length > 0 && current ? (
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
+            {t("plan")}
             <NativeSelect
-              className="w-32"
-              value={String(year)}
-              onValueChange={(value) => onYear(Number(value))}
-              options={years.map((y) => ({ value: String(y), label: t("yearOption", { year: format.year(y) }) }))}
+              className="max-w-80 min-w-56"
+              value={current.id}
+              onValueChange={onPlan}
+              options={plans.map((p) => ({
+                value: p.id,
+                label: t(p.status === "locked" ? "planOptionLocked" : "planOption", {
+                  name: p.name,
+                  version: p.version,
+                }),
+              }))}
             />
           </label>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium" aria-hidden>
-              {t("scenario")}
-            </span>
-            <SegmentedControl
-              label={t("scenario")}
-              value={scenario}
-              onValueChange={onScenario}
-              options={PNL_SCENARIOS.map((value) => ({ value, label: t(`scenarios.${value}`) }))}
-            />
-          </div>
-          {plans.length > 0 && current ? (
-            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
-              {t("plan")}
-              <NativeSelect
-                className="max-w-80 min-w-56"
-                value={current.id}
-                onValueChange={onPlan}
-                options={plans.map((p) => ({
-                  value: p.id,
-                  label: t(p.status === "locked" ? "planOptionLocked" : "planOption", {
-                    name: p.name,
-                    version: p.version,
-                  }),
-                }))}
-              />
-            </label>
-          ) : null}
-        </div>
-        {current ? (
+        ) : null}
+      </div>
+      {current ? (
+        <div className="border-border flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t px-4 py-3">
           <p className="text-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <StatusBadge
               meta={PNL_PLAN_STATUS[current.status]}
@@ -451,68 +457,66 @@ function PlanToolbar({
             <span aria-hidden>·</span>
             <span>{t("owner", { name: current.owner.displayName })}</span>
           </p>
-        ) : null}
-      </div>
-
-      {current ? (
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          <span className="me-2 flex">
-            <Switch label={t("variance")} checked={variance} onCheckedChange={(checked) => onVariance(checked)} />
-          </span>
-          {canManage && draft ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              iconStart="refresh"
-              loading={busy === "recompute"}
-              onClick={recompute}
-            >
-              {t("recompute")}
-            </Button>
-          ) : null}
-          {canManage ? (
-            <Button variant="secondary" size="sm" iconStart="copy" onClick={onCopy}>
-              {t("copy")}
-            </Button>
-          ) : null}
-          {canExport ? (
-            <DropdownMenu
-              label={t("export")}
-              heading={<span className="text-muted text-xs">{t("exportHint")}</span>}
-              trigger={
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  iconStart="download"
-                  iconEnd="chevron-down"
-                  loading={busy === "export"}
-                >
-                  {t("export")}
-                </Button>
-              }
-              items={[
-                {
-                  id: "xlsx",
-                  label: t("exportXlsx"),
-                  icon: "spreadsheet",
-                  onSelect: () => void exportAs("xlsx", "plan"),
-                },
-                { id: "pdf", label: t("exportPdf"), icon: "document", onSelect: () => void exportAs("pdf", "plan") },
-                {
-                  id: "variance",
-                  label: t("exportVariance"),
-                  icon: "columns",
-                  separatorBefore: true,
-                  onSelect: () => void exportAs("xlsx", "variance"),
-                },
-              ]}
-            />
-          ) : null}
-          {canManage && draft ? (
-            <Button size="sm" iconStart="lock" onClick={onLock}>
-              {t("lock")}
-            </Button>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="me-2 flex">
+              <Switch label={t("variance")} checked={variance} onCheckedChange={(checked) => onVariance(checked)} />
+            </span>
+            {canManage && draft ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                iconStart="refresh"
+                className="hidden md:inline-flex"
+                loading={busy === "recompute"}
+                onClick={recompute}
+              >
+                {t("recompute")}
+              </Button>
+            ) : null}
+            {canManage ? (
+              <Button variant="secondary" size="sm" iconStart="copy" className="hidden md:inline-flex" onClick={onCopy}>
+                {t("copy")}
+              </Button>
+            ) : null}
+            {canExport ? (
+              <DropdownMenu
+                label={t("export")}
+                heading={<span className="text-muted text-xs">{t("exportHint")}</span>}
+                trigger={
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    iconStart="download"
+                    iconEnd="chevron-down"
+                    loading={busy === "export"}
+                  >
+                    {t("export")}
+                  </Button>
+                }
+                items={[
+                  {
+                    id: "xlsx",
+                    label: t("exportXlsx"),
+                    icon: "spreadsheet",
+                    onSelect: () => void exportAs("xlsx", "plan"),
+                  },
+                  { id: "pdf", label: t("exportPdf"), icon: "document", onSelect: () => void exportAs("pdf", "plan") },
+                  {
+                    id: "variance",
+                    label: t("exportVariance"),
+                    icon: "columns",
+                    separatorBefore: true,
+                    onSelect: () => void exportAs("xlsx", "variance"),
+                  },
+                ]}
+              />
+            ) : null}
+            {canManage && draft ? (
+              <Button size="sm" iconStart="lock" className="hidden md:inline-flex" onClick={onLock}>
+                {t("lock")}
+              </Button>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </section>

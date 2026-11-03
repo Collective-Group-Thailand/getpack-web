@@ -45,7 +45,6 @@ export function SummaryStrip({ grid }: { grid: PnlGrid }) {
       value: tip("contribution", format.thb(s.contributionAfterCommission)),
       hint: t("contributionHint", { pct: format.percent(s.contributionAfterCommissionPct) }),
     },
-    { key: "ebitda", label: t("ebitda"), value: tip("ebitda", format.thb(s.ebitda)) },
     {
       key: "netProfit",
       label: netProfitLine ? format.label(netProfitLine) : t("netProfit"),
@@ -53,6 +52,7 @@ export function SummaryStrip({ grid }: { grid: PnlGrid }) {
       hint: s.citSmeApplied ? t("citSme") : t("citStandard"),
       tone: s.netProfit?.startsWith("-") ? "danger" : undefined,
     },
+    { key: "ebitda", label: t("ebitda"), value: tip("ebitda", format.thb(s.ebitda)) },
     {
       key: "ccc",
       label: t("ccc"),

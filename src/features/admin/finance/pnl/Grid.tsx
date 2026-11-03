@@ -199,8 +199,8 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
   return (
     <section aria-labelledby={titleId} className="border-border bg-surface rounded-card flex min-w-0 flex-col border">
       <header className="border-border flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b px-4 py-3">
-        <h2 id={titleId} className="text-base font-semibold">
-          {t("label", { name: grid.plan.name })}
+        <h2 className="text-base font-semibold">
+          <span id={titleId}>{t("label", { name: grid.plan.name })}</span>
           <span className="text-muted ms-2 text-sm font-normal">{t("unit")}</span>
         </h2>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
@@ -288,7 +288,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
                       className={cn(
                         "bg-surface border-border sticky left-0 z-10 border-e px-4 py-2 text-start font-normal outline-none",
                         "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:ring-inset",
-                        row.subtotal && "border-border-strong border-t font-semibold",
+                        row.subtotal && "border-t-border-strong border-t font-semibold",
                         line.line.key === "net_profit" && "bg-surface-subtle border-t-2",
                         row.detail && "ps-8",
                       )}
@@ -393,7 +393,7 @@ function cell_({
     "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:ring-inset",
     forecast && "bg-bg-subtle",
     edge && "border-border-strong border-s border-dashed",
-    subtotal && "border-border-strong border-t",
+    subtotal && "border-t-border-strong border-t",
     netProfit && "border-t-2",
     editing && "z-20 p-0",
   );
