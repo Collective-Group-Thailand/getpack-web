@@ -24,6 +24,7 @@ import { toast } from "@/ui/components/Toast";
 import { adminBrowserApis, download, problemMessage, QueryError, useCan } from "../../console";
 import { usePnlFormat } from "./format";
 import { PnlGridView } from "./Grid";
+import { OverrideDialog } from "./OverrideDialog";
 import { SourcesSheet } from "./SourcesSheet";
 import { CopyPlanDialog, CreatePlanDialog, LockPlanDialog } from "./PlanDialogs";
 import {
@@ -63,6 +64,7 @@ function PlannerBody() {
   const format = usePnlFormat();
   const [dialog, setDialog] = useState<"create" | "copy" | "lock" | null>(null);
   const [drill, setDrill] = useState<{ line: PnlGridLine; cell: PnlCell } | null>(null);
+  const [override, setOverride] = useState<{ line: PnlGridLine; cell: PnlCell } | null>(null);
 
   const plans = useQuery({
     queryKey: pnlKeys.plans(),
@@ -215,6 +217,7 @@ function PlannerBody() {
               grid={grid.data}
               canEdit={canManage && grid.data.plan.status === "draft"}
               onDrill={(line, cell) => setDrill({ line, cell })}
+              onOverride={(line, cell) => setOverride({ line, cell })}
             />
           ) : (
             <Skeleton className="h-[32rem] w-full" />
@@ -222,6 +225,9 @@ function PlannerBody() {
         </>
       )}
 
+      {override && plan ? (
+        <OverrideDialog planId={plan.id} line={override.line} cell={override.cell} onClose={() => setOverride(null)} />
+      ) : null}
       {drill && plan ? (
         <SourcesSheet planId={plan.id} line={drill.line.line} cell={drill.cell} onClose={() => setDrill(null)} />
       ) : null}
