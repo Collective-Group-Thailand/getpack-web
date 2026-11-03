@@ -27,6 +27,7 @@ import { PnlGridView } from "./Grid";
 import { OverrideDialog } from "./OverrideDialog";
 import { SourcesSheet } from "./SourcesSheet";
 import { PnlCharts, SummaryStrip } from "./Summary";
+import { VarianceGridView } from "./VarianceGrid";
 import { CopyPlanDialog, CreatePlanDialog, LockPlanDialog } from "./PlanDialogs";
 import {
   PNL_SCENARIOS,
@@ -230,7 +231,15 @@ function PlannerBody() {
               <PnlCharts grid={grid.data} variance={variance ? varianceQuery.data : undefined} />
             </>
           ) : null}
-          {grid.data ? (
+          {variance ? (
+            varianceQuery.isError ? (
+              <QueryError error={varianceQuery.error} onRetry={() => void varianceQuery.refetch()} />
+            ) : varianceQuery.data ? (
+              <VarianceGridView variance={varianceQuery.data} canNote={canManage} />
+            ) : (
+              <Skeleton className="h-[32rem] w-full" />
+            )
+          ) : grid.data ? (
             <PnlGridView
               grid={grid.data}
               canEdit={canManage && grid.data.plan.status === "draft"}
