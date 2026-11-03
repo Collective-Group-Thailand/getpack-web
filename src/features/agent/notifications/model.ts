@@ -9,6 +9,8 @@ export type Channel = Schemas["PartnerNotificationChannel"];
 export const EVENTS: readonly Event[] = [
   "lead_converted",
   "lead_protection_expiring",
+  "follow_up_due",
+  "quote_opened",
   "commission_earned",
   "statement_ready",
   "payout_paid",
