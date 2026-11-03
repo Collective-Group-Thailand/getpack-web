@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { SALES_INBOUND_STATUS } from "@/domain/status";
+import { SALES_INBOUND_SOURCE, SALES_INBOUND_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
+import { LeadScore } from "@/features/shared/sales/LeadScore";
 import { displayPhone, toE164 } from "@/features/shared/sales/phone";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
@@ -19,6 +20,7 @@ import { Input, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
 
 import {
   adminBrowserApis,
@@ -105,16 +107,46 @@ export function Inbox({ initial }: { initial: InitialPage<SalesInbound> | null }
       ),
     },
     {
+      // D-471: sortable — the API orders by score (unscored last); the reasons open from the chip.
+      id: "score",
+      header: t("columns.score"),
+      sortable: true,
+      cell: (row) => (
+        <LeadScore score={row.score} reasons={row.scoreReasons} scoredAt={row.scoredAt} name={row.contactName} />
+      ),
+    },
+    {
       id: "source",
       header: t("columns.source"),
-      cell: (row) => (
-        <div className="flex flex-col text-sm">
-          <span className="whitespace-nowrap">{t(`sources.${row.source}`)}</span>
-          {row.sourceRef ? (
-            <span className="text-muted text-xs whitespace-nowrap tabular-nums">{row.sourceRef}</span>
-          ) : null}
-        </div>
-      ),
+      cell: (row) => {
+        const source = SALES_INBOUND_SOURCE[row.source];
+        return (
+          <div className="flex min-w-0 items-start gap-2 text-sm">
+            <span
+              aria-hidden="true"
+              className="bg-surface-subtle text-muted rounded-control mt-0.5 inline-flex size-7 shrink-0 items-center justify-center"
+            >
+              <Icon name={source.icon} size={15} />
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <span className="whitespace-nowrap">{tStatus(source.labelKey)}</span>
+              {row.sourceRef ? (
+                <span className="text-muted truncate text-xs whitespace-nowrap tabular-nums">{row.sourceRef}</span>
+              ) : null}
+              {row.signalCount > 1 ? (
+                <span className="text-muted text-xs whitespace-nowrap">{t("signals", { count: row.signalCount })}</span>
+              ) : null}
+              {/* PDPA basis of a captured signal: the person agreed to hear from getpack (D-144, D-471). */}
+              {row.consentBasis === "marketing_consent" ? (
+                <span className="text-muted inline-flex items-center gap-1 text-xs whitespace-nowrap">
+                  <Icon name="shield-check" size={12} aria-hidden="true" />
+                  {t("consentMarketing")}
+                </span>
+              ) : null}
+            </span>
+          </div>
+        );
+      },
     },
     {
       id: "status",
@@ -227,6 +259,13 @@ export function Inbox({ initial }: { initial: InitialPage<SalesInbound> | null }
       })),
     },
     { id: "breached", label: t("sla"), kind: "select", options: [{ value: "true", label: t("breachedOnly") }] },
+    {
+      // D-471: reading presets for a long list — the score itself and its rules are the API's.
+      id: "minScore",
+      label: t("minScore"),
+      kind: "select",
+      options: ["80", "60", "40"].map((score) => ({ value: score, label: t("minScoreOption", { score }) })),
+    },
     ...(manage
       ? [
           {

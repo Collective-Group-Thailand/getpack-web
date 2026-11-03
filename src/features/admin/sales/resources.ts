@@ -29,6 +29,8 @@ export const INBOUND_STATUSES = [
 export const INBOUND_SOURCES = [
   "contact_form",
   "rfq",
+  "studio_idle",
+  "dieline_download",
   "line_chat",
   "manual",
 ] as const satisfies readonly Schemas["SalesInboundSource"][];
@@ -86,7 +88,7 @@ export const inboundList = defineList<SalesInbound>({
     (await contract.GET("/v1/admin/sales/inbound", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.contactName,
-  defaults: { filterKeys: ["status", "source", "assigneeId", "unassigned", "breached"] },
+  defaults: { filterKeys: ["status", "source", "assigneeId", "unassigned", "breached", "minScore"] },
   staleTime: STALE_TIME.live,
 });
 

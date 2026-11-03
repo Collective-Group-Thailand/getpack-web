@@ -66,7 +66,8 @@
     "export": "Export CSV",
     "exported": "File downloaded",
     "import": "Import CSV",
-    "importPhone": "Import leads from a CSV file"
+    "importPhone": "Import leads from a CSV file",
+    "scoreColumn": "Score"
   },
   "filters": {
     "search": "Search leads",
@@ -81,7 +82,8 @@
       "nextFollowUpAt": "Soonest follow-up",
       "protectedUntil": "Protection ending soonest",
       "expectedValue": "Highest expected value",
-      "createdAt": "Recently registered"
+      "createdAt": "Recently registered",
+      "score": "Highest score first"
     },
     "layout": "List layout",
     "layoutList": "Table",
@@ -748,5 +750,29 @@
     "emptyTitle": "No commission to come yet",
     "emptyBody": "When your customers order, each order appears here with the date the money should reach you",
     "emptyAction": "Go to leads"
+  },
+  "score": {
+    "label": "Score {score} out of 100",
+    "labelFor": "{name}’s score: {score} out of 100",
+    "openReasons": "{label} — show why",
+    "notYet": "Not scored yet",
+    "reasonsTitle": "Why {score} points",
+    "outOf": "out of 100",
+    "topReasons": "Main reasons",
+    "noReasons": "No signal has added to the score yet",
+    "points": "{sign}{abs}",
+    "footnote": "Worked out from the rules the sales manager sets — a way to decide who to contact first.",
+    "scoredAt": "· updated {at}",
+    "column": "Score",
+    "reasons": {
+      "source": "Came through a buying channel",
+      "company_email_domain": "Company e-mail domain",
+      "free_email_domain": "Free webmail (not a company domain)",
+      "tax_id_present": "Tax ID on record",
+      "quantity_band": "Large quantity",
+      "value_band": "High expected value",
+      "recency": "Recent contact or activity",
+      "repeat_signals": "Came back several times"
+    }
   }
 }

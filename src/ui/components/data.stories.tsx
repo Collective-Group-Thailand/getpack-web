@@ -13,6 +13,7 @@ import { JsonView } from "./JsonView";
 import { Meter } from "./Meter";
 import { PageHeader, Toolbar } from "./PageHeader";
 import { Pagination } from "./Pagination";
+import { ScoreChip } from "./ScoreChip";
 import { SearchInput } from "./SearchInput";
 import { SlaTimer } from "./SlaTimer";
 import { Stat } from "./Stat";
@@ -238,3 +239,17 @@ function PickerDemo() {
 }
 
 export const Pickers: Story = { render: () => <PickerDemo /> };
+
+/** D-471 lead score chips: a plain label (an agent's own lead) and the interactive trigger staff open for reasons. */
+export const ScoreChips: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-3">
+      <ScoreChip value={86} tone="success" label="คะแนน 86 จาก 100" />
+      <ScoreChip value={52} tone="info" label="คะแนน 52 จาก 100" />
+      <ScoreChip value={18} tone="neutral" label="คะแนน 18 จาก 100" />
+      <ScoreChip value={null} label="ยังไม่มีคะแนน" />
+      <ScoreChip value={72} tone="success" label="คะแนน 72 จาก 100 — ดูเหตุผล" interactive />
+      <ScoreChip value={72} tone="success" label="คะแนน 72 จาก 100" size="sm" />
+    </div>
+  ),
+};

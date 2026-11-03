@@ -40,7 +40,15 @@ const VIEWS = [
   { key: "closed", view: "closed" },
 ] as const satisfies readonly { key: string; view: LeadView }[];
 const STAGES = new Set<LeadStage>(["new", "contacted", "quoted", "negotiating", "won", "lost"]);
-const SORTS = new Set<LeadSort>(["createdAt", "updatedAt", "nextFollowUpAt", "protectedUntil", "expectedValue"]);
+const SORTS = new Set<LeadSort>([
+  "createdAt",
+  "updatedAt",
+  "nextFollowUpAt",
+  "protectedUntil",
+  "expectedValue",
+  // D-471: the agent's own leads by score (the score only — the reasons stay with getpack staff).
+  "score",
+]);
 
 /**
  * ลูกค้ามุ่งหวัง (D-468, PROMPT P3 Web 1): the pipeline in four views. A phone shows cards (filters in a bottom
@@ -75,7 +83,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
 
   const hrefWith = (changes: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    const merged = { view: tab.key === "all" ? undefined : tab.key, stage, q, sort: sort === "updatedAt" ? undefined : sort, order: order === "desc" ? undefined : order, layout: board ? "board" : undefined, ...changes };
+    const merged = {
+      view: tab.key === "all" ? undefined : tab.key,
+      stage,
+      q,
+      sort: sort === "updatedAt" ? undefined : sort,
+      order: order === "desc" ? undefined : order,
+      layout: board ? "board" : undefined,
+      ...changes,
+    };
     for (const [key, value] of Object.entries(merged)) if (value) params.set(key, value);
     const query = params.toString();
     return query ? `/leads?${query}` : "/leads";
@@ -83,7 +99,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   const sortHref = (key: LeadSort) =>
     hrefWith({
       sort: key === "updatedAt" && sort !== key ? undefined : key,
-      order: sort === key ? (order === "asc" ? "desc" : "asc") : key === "expectedValue" || key === "updatedAt" ? undefined : "asc",
+      order:
+        sort === key
+          ? order === "asc"
+            ? "desc"
+            : "asc"
+          : key === "expectedValue" || key === "updatedAt" || key === "score"
+            ? undefined
+            : "asc",
       cursor: undefined,
     });
   const filtered = Boolean(stage || q);
@@ -157,6 +180,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
               sort={sort}
               order={order}
               sortHrefs={{
+                score: sortHref("score"),
                 nextFollowUpAt: sortHref("nextFollowUpAt"),
                 protectedUntil: sortHref("protectedUntil"),
                 expectedValue: sortHref("expectedValue"),

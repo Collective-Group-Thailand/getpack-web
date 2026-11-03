@@ -405,7 +405,6 @@
   "dieline": {
     "title": "Free dieline download",
     "body": "The dieline at your sizes as PDF, DXF or SVG — free, no watermark, to design on yourself or hand to a designer",
-    "signIn": "Sign in to download for free",
     "material": "Material class",
     "basis": "Sizes are",
     "bases": {
@@ -459,7 +458,12 @@
         "2": "Sizes are in millimetres — in Figma, check the scale before placing artwork.",
         "3": "Good for previews and mock-ups; use the PDF for print."
       }
-    }
+    },
+    "firstFree": "Your first download needs no sign-in.",
+    "nextSignIn": "Next time, sign in first — downloads stay free.",
+    "sheetTitle": "Keep downloading for free",
+    "sheetSubtitle": "Sign in once and the file you picked downloads straight away. No charge.",
+    "continuing": "Continuing your download…"
   },
   "request": {
     "ctaTitle": "Can't find the box you need?",

@@ -11,6 +11,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { bangkokTime, daysUntil, isDueToday, isPast } from "./dates";
+import { LeadScore } from "./LeadScore";
 import { StageMenu } from "./StageMenu";
 import { LEAD_SURFACES, type LeadSurface } from "./surface";
 
@@ -124,7 +125,17 @@ export function LeadCard({
             </p>
           ) : null}
         </div>
-        <StatusChip map={AGENT_LEAD_STAGE} value={lead.stage} />
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <StatusChip map={AGENT_LEAD_STAGE} value={lead.stage} />
+          {/* D-471: the reasons are for staff; the agent's own lead shows its score only. */}
+          <LeadScore
+            score={lead.score}
+            reasons={surface === "admin" && "scoreReasons" in lead ? lead.scoreReasons : undefined}
+            scoredAt={"scoredAt" in lead ? lead.scoredAt : null}
+            name={lead.contactName}
+            size="sm"
+          />
+        </div>
       </div>
       <dl className="grid grid-cols-1 gap-1.5 text-sm">
         <div className="flex items-center gap-2">

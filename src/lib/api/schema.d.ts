@@ -15171,9 +15171,9 @@ export interface paths {
         };
         /**
          * List the inbound sales enquiries
-         * @description Soonest first-response due first, with the SLA flag; by status, source, rep, unassigned, breached or text. A rep sees only the enquiries assigned to them (D-469).
+         * @description Soonest first-response due first (or by score / newest, D-471), with the SLA flag, the lead score and its top 3 reasons; by status, source (incl. the D-471 capture sources studio_idle and dieline_download), rep, unassigned, breached, minimum score or text. A rep sees only the enquiries assigned to them (D-469).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         get: operations["admin.salesInbound.list"];
         put?: never;
@@ -15181,7 +15181,7 @@ export interface paths {
          * Enter a sales enquiry by hand
          * @description A phone call, a walk-in or a referral (source `manual`), with a phone or e-mail. A rep’s own entry is assigned to them; a manager may name a rep, else `sales.assignment_mode` applies. Due in `sales.first_response_hours` working hours (P-05, D-469).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         post: operations["admin.salesInbound.create"];
         delete?: never;
@@ -15201,7 +15201,7 @@ export interface paths {
          * Get a sales enquiry
          * @description With its rep, lead and SLA (D-469).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         get: operations["admin.salesInbound.get"];
         put?: never;
@@ -15225,7 +15225,7 @@ export interface paths {
          * Assign or reassign an enquiry
          * @description To a rep (`repUserId`), or round robin when omitted. Reassignment needs a reason (audited, kept in the assignment history). The lead is registered for the rep’s employee agent with the programme’s rules; a contact that cannot be a lead keeps the assignment with `leadRefusal` (D-469, D-417, D-440).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         post: operations["admin.salesInbound.assign"];
         delete?: never;
@@ -15247,7 +15247,7 @@ export interface paths {
          * Work an enquiry as the rep’s lead
          * @description Closes the enquiry as `converted_to_lead`; it needs the lead registered for the rep at assignment (`agents.lead_unavailable` when the contact cannot be a lead — one neutral reason, D-440) (D-469).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         post: operations["admin.salesInbound.convert"];
         delete?: never;
@@ -15269,7 +15269,7 @@ export interface paths {
          * Disqualify an enquiry
          * @description Closed with a reason (not a buyer, duplicate, no response, out of scope, spam, other) (D-469).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         post: operations["admin.salesInbound.disqualify"];
         delete?: never;
@@ -15291,7 +15291,7 @@ export interface paths {
          * Record the first response to an enquiry
          * @description The rep answered: status `contacted`, the first-response time is kept for the SLA % (P-05, D-469).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         post: operations["admin.salesInbound.markContacted"];
         delete?: never;
@@ -15313,7 +15313,7 @@ export interface paths {
          * Assign several enquiries
          * @description Each to the named rep, or round robin one by one when no rep is named (the rep with the fewest open enquiries below `sales.max_open_per_rep`, then the least recently assigned). Closed, unknown or unassignable ones are listed in `skipped`; moving one from another rep needs a reason (audited) (D-469).
          *
-         *     Implements: D-469, D-458, D-440.
+         *     Implements: D-469, D-458, D-440, D-471.
          */
         post: operations["admin.salesInbound.bulkAssign"];
         delete?: never;
@@ -15333,7 +15333,7 @@ export interface paths {
          * List the sales pipeline
          * @description A rep sees their own leads; a manager every rep’s (filter `agentId`) or, read-only, freelance agents’ (`agentKind=freelance`). Same views, filters, sort and cursor as the agent zone (D-469, D-468).
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         get: operations["admin.salesLeads.list"];
         put?: never;
@@ -15341,7 +15341,7 @@ export interface paths {
          * Register a lead for a rep
          * @description For my own employee agent, or (managers) a rep’s with `agentId`. The agent programme’s rules apply: consent, the open-leads limit, protection and one neutral refusal `agents.lead_unavailable` (an existing customer, another agent’s protected lead or registered deal — D-417, D-440). Starts at stage `new`.
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         post: operations["admin.salesLeads.create"];
         delete?: never;
@@ -15361,7 +15361,7 @@ export interface paths {
          * Get a lead of the sales pipeline
          * @description With its pipeline fields, agent and protection; `ETag` for `update` (D-469).
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         get: operations["admin.salesLeads.get"];
         put?: never;
@@ -15373,7 +15373,7 @@ export interface paths {
          * Edit a lead of the sales pipeline
          * @description Any subset of the fields (`If-Match` required); contact keys only while registered, through the same neutral check. Only company reps’ leads change here (`sales.lead_read_only`); a manager editing a rep’s lead is audited (D-469, D-468).
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         patch: operations["admin.salesLeads.update"];
         trace?: never;
@@ -15391,7 +15391,7 @@ export interface paths {
          * Move a lead to another stage
          * @description new, contacted, quoted, negotiating or lost (with a reason); `won` only by the system on the first payment (PLAN A-06). `lost` releases the protection. Same rules as the agent zone (D-469, D-468).
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         post: operations["admin.salesLeads.changeStage"];
         delete?: never;
@@ -15411,7 +15411,7 @@ export interface paths {
          * Read a lead’s timeline
          * @description Newest first, cursor paged; `author` `agent` = the lead’s own rep / agent, `getpack` = other staff, `system` = automatic entries (D-469, D-468).
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         get: operations["admin.salesLeads.listActivities"];
         put?: never;
@@ -15419,7 +15419,7 @@ export interface paths {
          * Log a contact with a lead
          * @description A call, LINE chat, visit, e-mail or note in the lead’s timeline (append-only), optionally with the next follow-up; the first one moves a new lead to `contacted` (D-469, D-468).
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         post: operations["admin.salesLeads.addActivity"];
         delete?: never;
@@ -15627,7 +15627,7 @@ export interface paths {
          * List the quotations sent from the pipeline
          * @description A rep’s own (managers: every rep’s, filter `agentId`), newest first, by lead or status (D-469, D-468).
          *
-         *     Implements: D-469, D-468, D-417, D-440.
+         *     Implements: D-469, D-468, D-417, D-440, D-471.
          */
         get: operations["admin.salesQuotes.list"];
         put?: never;
@@ -15635,7 +15635,7 @@ export interface paths {
          * Send a quotation to a lead of the pipeline
          * @description Prices the configuration on the store path (D-441), saves it as getpack’s quotation and shares it (`shareUrl` `/q/{token}` carries the rep’s agent code). The lead moves to `quoted`; a big quote registers its deal (D-468). The price is never changed here (D-469).
          *
-         *     Implements: D-469, D-468, D-417, D-440, D-441.
+         *     Implements: D-469, D-468, D-417, D-440, D-471, D-441.
          */
         post: operations["admin.salesQuotes.create"];
         delete?: never;
@@ -15655,7 +15655,7 @@ export interface paths {
          * Read the discount rounds of a quotation
          * @description Every round, oldest first, with the options offered (price and the rep’s commission). No cost or margin (D-469, D-470).
          *
-         *     Implements: D-469, D-468, D-417, D-440, D-470.
+         *     Implements: D-469, D-468, D-417, D-440, D-471, D-470.
          */
         get: operations["admin.salesQuotes.discountRequests"];
         put?: never;
@@ -15663,7 +15663,7 @@ export interface paths {
          * Ask for a better price on a quotation
          * @description The agent zone’s give-get request (D-468, PLAN A-10) for a rep’s quotation: what the customer gives in return, the reason and competitor evidence; one open round per quotation. It goes to the discount approval desk (D-470) — a rep never approves their own request (D-469).
          *
-         *     Implements: D-469, D-468, D-417, D-440, D-470.
+         *     Implements: D-469, D-468, D-417, D-440, D-471, D-470.
          *
          *     **Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
          */
@@ -28421,7 +28421,7 @@ export interface paths {
          * Get one of my leads
          * @description With its pipeline fields and protection; `ETag` for `update` (D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         get: operations["store.agentLeads.get"];
         put?: never;
@@ -28433,7 +28433,7 @@ export interface paths {
          * Edit one of my leads
          * @description Any subset of the fields (`If-Match` required). Phone, e-mail and tax id change only while the lead is registered and go through the same neutral check as a new lead. A new follow-up time re-arms the reminder (D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         patch: operations["store.agentLeads.update"];
         trace?: never;
@@ -28451,7 +28451,7 @@ export interface paths {
          * Move a lead to another stage
          * @description new, contacted, quoted, negotiating or lost (with a reason). `won` is set only by the system when the converted customer first pays. `lost` releases the protection at once; won and lost are final (`agents.lead_stage_final`). The move is written to the timeline (D-468, PLAN A-06).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         post: operations["store.agentLeads.changeStage"];
         delete?: never;
@@ -28493,7 +28493,7 @@ export interface paths {
          * Read a lead’s timeline
          * @description Newest first: my calls, LINE chats, visits, e-mails and notes, quotes sent, stage changes and system entries (signed up, quote opened / accepted, deal registered, won) — cursor paged (D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         get: operations["store.agentLeads.listActivities"];
         put?: never;
@@ -28501,7 +28501,7 @@ export interface paths {
          * Log a contact with a lead
          * @description A call, LINE chat, visit, e-mail or note in the lead’s timeline (append-only), optionally with the next follow-up; the first one moves a new lead to `contacted` (D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         post: operations["store.agentLeads.addActivity"];
         delete?: never;
@@ -28523,7 +28523,7 @@ export interface paths {
          * Check whether a contact can be my lead
          * @description Before registering (on blur of phone, e-mail or tax id): `available`, or one neutral reason — `own_lead` (my own protected lead, with its id) or `unavailable` (cannot be registered). Never says whether a customer, another agent or a registered deal holds it (D-440, D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         post: operations["store.agentLeads.check"];
         delete?: never;
@@ -28545,7 +28545,7 @@ export interface paths {
          * Read a business card photo
          * @description OCR (Thai + English) of a card photo uploaded with purpose `agent_card_scan`: name, organisation, phone, e-mail, tax id, LINE id and website with a confidence each, and every line read. Nothing is saved — review the fields and register the lead with source `card_scan`. The photo is deleted after `agents.card_scan_retention_days` (7) (D-468, PDPA).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          *
          *     **Files:** upload first — `store.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
          */
@@ -28567,7 +28567,7 @@ export interface paths {
          * Export my leads as CSV
          * @description All my customer leads as a UTF-8 CSV behind a 5-minute link; cells that could run as a spreadsheet formula are neutralised, Thai mobile numbers are written locally (0812345678). Audited as an export (D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         get: operations["store.agentLeads.export"];
         put?: never;
@@ -28591,7 +28591,7 @@ export interface paths {
          * Check a CSV of leads (dry run)
          * @description Parses up to 500 rows and puts each through the same checks as a new lead (fields, the neutral duplicate check, the open-leads limit) — nothing is created. The result is kept 24 h for `importCommit`; its contact data is dropped afterwards (PDPA). Requires the agent’s confirmation that every lead agreed to be contacted (D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         post: operations["store.agentLeads.importPreview"];
         delete?: never;
@@ -28613,7 +28613,7 @@ export interface paths {
          * Create the leads of a checked CSV
          * @description Creates the rows of a dry run that had no errors, each checked again now (a contact taken since is skipped with its error). Leads get source `csv_import`. Only row numbers, errors and the created lead ids are kept afterwards (D-468).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         post: operations["store.agentLeads.importCommit"];
         delete?: never;
@@ -28631,9 +28631,9 @@ export interface paths {
         };
         /**
          * List my lead pipeline
-         * @description My customer leads with stage, value, next follow-up and protection; views for the agent zone tabs (open, follow-up today, protection ending, closed), filters by stage, source, due and text; sorted with a cursor (D-468).
+         * @description My customer leads with stage, value, next follow-up and protection; views for the agent zone tabs (open, follow-up today, protection ending, closed), filters by stage, source, due, minimum score and text; sorted with a cursor (D-468). Each lead carries its score 0–100 only (D-471: the reasons stay with getpack staff).
          *
-         *     Implements: D-417, D-440, D-468.
+         *     Implements: D-417, D-440, D-468, D-471.
          */
         get: operations["store.agentLeads.list"];
         put?: never;
@@ -31966,6 +31966,28 @@ export interface paths {
          *     Implements: D-302, D-271, D-270, D-203, D-182.
          */
         post: operations["store.dielines.download"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/dielines/downloads/free": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Download a free dieline without signing in (first download)
+         * @description D-471: the first dieline download needs no sign-in. The same drawing, rules and size ranges as `store.dielines.download`, for a browser identified by `deviceId` (a random id kept in a first-party cookie; the API stores only its SHA-256). A browser may take `dielines.anonymous_free_downloads` (1) such downloads; the next answers 401 `dielines.sign_in_required` — the web then asks for a free sign-in (Google, Apple, LINE or phone OTP) and continues with `store.dielines.download`. The download is free either way: never a payment and never a plan gate (D-271). `nextNeedsSignIn` says whether the next one needs the sign-in. Throttled per client IP (429).
+         *
+         *     Implements: D-471, D-302, D-271, D-270, D-203, D-182.
+         */
+        post: operations["store.dielines.downloadFree"];
         delete?: never;
         options?: never;
         head?: never;
@@ -37418,6 +37440,18 @@ export interface components {
              * @example 2026-12-15T10:00:00+07:00
              */
             protectedUntil: string;
+            /**
+             * @description D-471 lead score 0–100 (null until scored). The score only: the reasons are for getpack staff
+             * @example 62
+             */
+            score: number | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-18T10:00:00+07:00
+             */
+            scoredAt: string | null;
+            /** @description D-471 the top 3 reasons of the score (staff only) */
+            scoreReasons: components["schemas"]["SalesScoreReasonDto"][];
             /** @example manual */
             source: components["schemas"]["AgentLeadSource"];
             /**
@@ -41688,6 +41722,11 @@ export interface components {
              * @example 2026-12-15T10:00:00+07:00
              */
             protectedUntil: string;
+            /**
+             * @description D-471 lead score 0–100 (null until scored). The score only: the reasons are for getpack staff
+             * @example 62
+             */
+            score: number | null;
             /** @example manual */
             source: components["schemas"]["AgentLeadSource"];
             /**
@@ -41796,7 +41835,7 @@ export interface components {
         /** @enum {string} */
         AgentLeadLostReason: "price" | "lead_time" | "no_need" | "competitor" | "no_response" | "other";
         /** @enum {string} */
-        AgentLeadSort: "createdAt" | "updatedAt" | "nextFollowUpAt" | "protectedUntil" | "expectedValue";
+        AgentLeadSort: "createdAt" | "updatedAt" | "nextFollowUpAt" | "protectedUntil" | "expectedValue" | "score";
         /** @enum {string} */
         AgentLeadSource: "manual" | "card_scan" | "csv_import" | "link" | "staff";
         /**
@@ -53936,9 +53975,14 @@ export interface components {
             measurementBasis: components["schemas"]["MeasurementBasis"];
             /** @example application/pdf */
             mimeType: string;
+            /**
+             * @description D-471: the next download from this browser needs a free sign-in (downloads without sign-in only; always false when signed in). Never a payment.
+             * @example false
+             */
+            nextNeedsSignIn: boolean;
             quantities: components["schemas"]["DielineQuantitiesDto"];
             /**
-             * @description Downloads left today (Bangkok day) for a customer; null for staff (not limited)
+             * @description Downloads left today (Bangkok day) for a customer; null for staff (not limited) and for a download without sign-in
              * @example 19
              */
             remainingToday: number | null;
@@ -54495,6 +54539,49 @@ export interface components {
         /** @enum {string} */
         DocumentType: "qt" | "iv" | "tr" | "rc" | "cn" | "dn" | "po" | "gr" | "bs" | "pv" | "wt" | "jv" | "order_group" | "job" | "claim" | "shipment" | "rfq" | "support_ticket" | "rfq_basket";
         DownloadDielineDto: {
+            /**
+             * @description `ai` is the designer PDF delivered as an Illustrator file (.ai) — same drawing, same layers and swatches
+             * @example pdf
+             */
+            format: components["schemas"]["DielineDownloadFormat"];
+            /**
+             * @description Height (depth), mm, in the basis given; 0 for a flat item
+             * @example 100
+             */
+            heightMm: number;
+            /**
+             * @description Length, mm, in the basis given
+             * @example 100
+             */
+            lengthMm: number;
+            /**
+             * @description A material class of the style’s size ranges (`store.styles.get` → `sizeRanges[].materialClass`)
+             * @example paperboard
+             */
+            materialClass: string;
+            /**
+             * @description Basis of the sizes (D-182), default internal. Outside or over-crease sizes are converted to inside sizes with the reference caliper of the material class before drawing
+             * @example internal
+             */
+            measurementBasis?: components["schemas"]["MeasurementBasis"];
+            /**
+             * @description A style variant code
+             * @example PK-TE-01-K7QD
+             */
+            variantCode: string;
+            /**
+             * @description Width, mm, in the basis given
+             * @example 100
+             */
+            widthMm: number;
+        };
+        DownloadDielineFreeDto: {
+            /**
+             * Format: uuid
+             * @description A random id the web keeps for this browser in a first-party cookie (its BFF sets it); the API keeps only its SHA-256 to count the free downloads without sign-in (PDPA: pseudonymous, never logged)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d702
+             */
+            deviceId: string;
             /**
              * @description `ai` is the designer PDF delivered as an Illustrator file (.ai) — same drawing, same layers and swatches
              * @example pdf
@@ -79212,6 +79299,11 @@ export interface components {
             /** @example quoted */
             stage: components["schemas"]["SalesFunnelStage"];
         };
+        /**
+         * @description D-471 why getpack may contact the person (PDPA): `enquiry` (they asked), `staff_entry` (entered with their agreement), `marketing_consent` (a captured signal; their latest marketing consent was granted)
+         * @enum {string}
+         */
+        SalesInboundConsentBasis: "enquiry" | "staff_entry" | "marketing_consent";
         /** @enum {string} */
         SalesInboundDisqualifyReason: "not_a_buyer" | "duplicate" | "no_response" | "out_of_scope" | "spam" | "other";
         SalesInboundDto: {
@@ -79221,6 +79313,11 @@ export interface components {
              */
             assignedAt: string | null;
             assignee: components["schemas"]["UserRefDto"] | null;
+            /**
+             * @description D-471 why getpack may contact the person (PDPA): `enquiry` (they asked), `staff_entry` (entered with their agreement), `marketing_consent` (a captured signal; their latest marketing consent was granted)
+             * @example enquiry
+             */
+            consentBasis: components["schemas"]["SalesInboundConsentBasis"];
             /** @example null */
             contactEmail: string | null;
             /** @example คุณวิภา รักษ์ดี */
@@ -79232,6 +79329,18 @@ export interface components {
              * @example 2026-11-03T10:00:00+07:00
              */
             createdAt: string;
+            /**
+             * Format: uuid
+             * @description D-471 the signed-in customer the item came from (captured signals, RFQs, signed-in contacts)
+             * @example null
+             */
+            customerId: string | null;
+            /**
+             * Format: uuid
+             * @description D-471 the saved studio design not ordered (`studio_idle`)
+             * @example null
+             */
+            designId: string | null;
             /** @example null */
             disqualifiedReason: components["schemas"]["SalesInboundDisqualifyReason"] | null;
             /**
@@ -79250,6 +79359,11 @@ export interface components {
              */
             id: string;
             /**
+             * Format: date-time
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            lastSignalAt: string | null;
+            /**
              * Format: uuid
              * @description The lead registered for the rep (open it with admin.salesLeads.get)
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a6006
@@ -79265,6 +79379,23 @@ export interface components {
             /** @example บริษัท ขนมดี จำกัด */
             organisationName: string | null;
             /**
+             * @description D-471 lead score 0–100 by `sales.scoring_rules` (null until scored)
+             * @example 55
+             */
+            score: number | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            scoredAt: string | null;
+            /** @description D-471 the top 3 reasons of the score, largest first */
+            scoreReasons: components["schemas"]["SalesScoreReasonDto"][];
+            /**
+             * @description D-471 signals behind the item (repeat dieline downloads refresh one open item)
+             * @example 1
+             */
+            signalCount: number;
+            /**
              * @description Past the first-response due time without an answer (or was)
              * @example false
              */
@@ -79274,10 +79405,13 @@ export interface components {
              * @example null
              */
             slaBreachedAt: string | null;
-            /** @example contact_form */
+            /**
+             * @description `contact_form` / `rfq` (the person asked), `manual` (staff), `line_chat` (deferred), D-471 capture: `studio_idle` "ออกแบบแล้วยังไม่สั่ง" (a saved studio design not ordered) and `dieline_download` (a free dieline downloaded by a signed-in non-customer)
+             * @example contact_form
+             */
             source: components["schemas"]["SalesInboundSource"];
             /**
-             * @description Ticket no. or RFQ code
+             * @description Ticket no., RFQ code or the dieline’s style code
              * @example CS-2611-00042
              */
             sourceRef: string | null;
@@ -79306,7 +79440,12 @@ export interface components {
          */
         SalesInboundLeadRefusal: "unavailable" | "too_many_leads";
         /** @enum {string} */
-        SalesInboundSource: "contact_form" | "rfq" | "line_chat" | "manual";
+        SalesInboundSort: "due" | "score" | "createdAt";
+        /**
+         * @description `contact_form` / `rfq` (the person asked), `manual` (staff), `line_chat` (deferred), D-471 capture: `studio_idle` "ออกแบบแล้วยังไม่สั่ง" (a saved studio design not ordered) and `dieline_download` (a free dieline downloaded by a signed-in non-customer)
+         * @enum {string}
+         */
+        SalesInboundSource: "contact_form" | "rfq" | "line_chat" | "manual" | "studio_idle" | "dieline_download";
         /** @enum {string} */
         SalesInboundStatus: "new" | "assigned" | "contacted" | "converted_to_lead" | "disqualified";
         SalesKindFiguresDto: {
@@ -79473,6 +79612,17 @@ export interface components {
              */
             sessionConversionPct: string | null;
             totals: components["schemas"]["SalesPointDto"];
+        };
+        /** @enum {string} */
+        SalesScoreReason: "source" | "company_email_domain" | "free_email_domain" | "tax_id_present" | "quantity_band" | "value_band" | "recency" | "repeat_signals";
+        SalesScoreReasonDto: {
+            /**
+             * @description Points the reason added (negative: taken off)
+             * @example 15
+             */
+            points: number;
+            /** @example company_email_domain */
+            reason: components["schemas"]["SalesScoreReason"];
         };
         SalesSourceFiguresDto: {
             /**
@@ -93768,6 +93918,22 @@ export interface operations {
                      *           "organisationName": "ร้านกาแฟบ้านสวน",
                      *           "phone": "+66890001234",
                      *           "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *           "score": 62,
+                     *           "scoreReasons": [
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "company_email_domain"
+                     *             },
+                     *             {
+                     *               "points": 10,
+                     *               "reason": "recency"
+                     *             },
+                     *             {
+                     *               "points": 5,
+                     *               "reason": "value_band"
+                     *             }
+                     *           ],
+                     *           "scoredAt": "2026-10-18T10:00:00+07:00",
                      *           "source": "manual",
                      *           "stage": "contacted",
                      *           "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -93903,6 +94069,22 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         },
+                     *         {
+                     *           "points": 10,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 5,
+                     *           "reason": "value_band"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-10-18T10:00:00+07:00",
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -154651,6 +154833,7 @@ export interface operations {
                      *       "materialClass": "paperboard",
                      *       "measurementBasis": "internal",
                      *       "mimeType": "application/pdf",
+                     *       "nextNeedsSignIn": false,
                      *       "quantities": {
                      *         "blankAreaMm2": 31845.2,
                      *         "blankHeightMm": 187.2,
@@ -203860,13 +204043,15 @@ export interface operations {
                 assigneeId?: string;
                 /** @description Only those past (true) or within (false) the first-response SLA */
                 breached?: boolean;
+                /** @description D-471: items scored at least this (0–100); unscored items are left out */
+                minScore?: number;
                 order?: components["schemas"]["SortOrder"];
                 page?: number;
                 perPage?: number;
                 /** @description Free-text search */
                 q?: string;
-                /** @description Sort field; each endpoint validates it against its own allow-list. */
-                sort?: string;
+                /** @description `due` soonest first-response due first (P4 default; `order` ignored) · `score` (D-471, unscored last) · `createdAt` — these two follow `order` (default descending) */
+                sort?: components["schemas"]["SalesInboundSort"];
                 source?: components["schemas"]["SalesInboundSource"];
                 /** @description One or more statuses, comma-separated */
                 status?: components["schemas"]["SalesInboundStatus"][];
@@ -203901,18 +204086,39 @@ export interface operations {
                      *             "displayName": "สมหญิง ขายดี",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *           },
+                     *           "consentBasis": "enquiry",
                      *           "contactEmail": null,
                      *           "contactName": "คุณวิภา รักษ์ดี",
                      *           "contactPhone": "+66890002222",
                      *           "createdAt": "2026-11-03T10:00:00+07:00",
+                     *           "customerId": null,
+                     *           "designId": null,
                      *           "disqualifiedReason": null,
                      *           "firstRespondedAt": null,
                      *           "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *           "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *           "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *           "leadRefusal": null,
                      *           "need": "business · กล่องขนม · qty 5000",
                      *           "organisationName": "บริษัท ขนมดี จำกัด",
+                     *           "score": 55,
+                     *           "scoreReasons": [
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "source"
+                     *             },
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "recency"
+                     *             },
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "company_email_domain"
+                     *             }
+                     *           ],
+                     *           "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *           "signalCount": 1,
                      *           "slaBreached": false,
                      *           "slaBreachedAt": null,
                      *           "source": "contact_form",
@@ -204021,18 +204227,39 @@ export interface operations {
                      *         "displayName": "สมหญิง ขายดี",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *       },
+                     *       "consentBasis": "enquiry",
                      *       "contactEmail": null,
                      *       "contactName": "คุณวิภา รักษ์ดี",
                      *       "contactPhone": "+66890002222",
                      *       "createdAt": "2026-11-03T10:00:00+07:00",
+                     *       "customerId": null,
+                     *       "designId": null,
                      *       "disqualifiedReason": null,
                      *       "firstRespondedAt": null,
                      *       "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *       "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *       "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *       "leadRefusal": null,
                      *       "need": "business · กล่องขนม · qty 5000",
                      *       "organisationName": "บริษัท ขนมดี จำกัด",
+                     *       "score": 55,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "source"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *       "signalCount": 1,
                      *       "slaBreached": false,
                      *       "slaBreachedAt": null,
                      *       "source": "contact_form",
@@ -204139,18 +204366,39 @@ export interface operations {
                      *         "displayName": "สมหญิง ขายดี",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *       },
+                     *       "consentBasis": "enquiry",
                      *       "contactEmail": null,
                      *       "contactName": "คุณวิภา รักษ์ดี",
                      *       "contactPhone": "+66890002222",
                      *       "createdAt": "2026-11-03T10:00:00+07:00",
+                     *       "customerId": null,
+                     *       "designId": null,
                      *       "disqualifiedReason": null,
                      *       "firstRespondedAt": null,
                      *       "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *       "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *       "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *       "leadRefusal": null,
                      *       "need": "business · กล่องขนม · qty 5000",
                      *       "organisationName": "บริษัท ขนมดี จำกัด",
+                     *       "score": 55,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "source"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *       "signalCount": 1,
                      *       "slaBreached": false,
                      *       "slaBreachedAt": null,
                      *       "source": "contact_form",
@@ -204261,18 +204509,39 @@ export interface operations {
                      *         "displayName": "สมหญิง ขายดี",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *       },
+                     *       "consentBasis": "enquiry",
                      *       "contactEmail": null,
                      *       "contactName": "คุณวิภา รักษ์ดี",
                      *       "contactPhone": "+66890002222",
                      *       "createdAt": "2026-11-03T10:00:00+07:00",
+                     *       "customerId": null,
+                     *       "designId": null,
                      *       "disqualifiedReason": null,
                      *       "firstRespondedAt": null,
                      *       "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *       "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *       "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *       "leadRefusal": null,
                      *       "need": "business · กล่องขนม · qty 5000",
                      *       "organisationName": "บริษัท ขนมดี จำกัด",
+                     *       "score": 55,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "source"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *       "signalCount": 1,
                      *       "slaBreached": false,
                      *       "slaBreachedAt": null,
                      *       "source": "contact_form",
@@ -204399,18 +204668,39 @@ export interface operations {
                      *         "displayName": "สมหญิง ขายดี",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *       },
+                     *       "consentBasis": "enquiry",
                      *       "contactEmail": null,
                      *       "contactName": "คุณวิภา รักษ์ดี",
                      *       "contactPhone": "+66890002222",
                      *       "createdAt": "2026-11-03T10:00:00+07:00",
+                     *       "customerId": null,
+                     *       "designId": null,
                      *       "disqualifiedReason": null,
                      *       "firstRespondedAt": null,
                      *       "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *       "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *       "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *       "leadRefusal": null,
                      *       "need": "business · กล่องขนม · qty 5000",
                      *       "organisationName": "บริษัท ขนมดี จำกัด",
+                     *       "score": 55,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "source"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *       "signalCount": 1,
                      *       "slaBreached": false,
                      *       "slaBreachedAt": null,
                      *       "source": "contact_form",
@@ -204531,18 +204821,39 @@ export interface operations {
                      *         "displayName": "สมหญิง ขายดี",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *       },
+                     *       "consentBasis": "enquiry",
                      *       "contactEmail": null,
                      *       "contactName": "คุณวิภา รักษ์ดี",
                      *       "contactPhone": "+66890002222",
                      *       "createdAt": "2026-11-03T10:00:00+07:00",
+                     *       "customerId": null,
+                     *       "designId": null,
                      *       "disqualifiedReason": "out_of_scope",
                      *       "firstRespondedAt": null,
                      *       "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *       "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *       "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *       "leadRefusal": null,
                      *       "need": "business · กล่องขนม · qty 5000",
                      *       "organisationName": "บริษัท ขนมดี จำกัด",
+                     *       "score": 55,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "source"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *       "signalCount": 1,
                      *       "slaBreached": false,
                      *       "slaBreachedAt": null,
                      *       "source": "contact_form",
@@ -204673,18 +204984,39 @@ export interface operations {
                      *         "displayName": "สมหญิง ขายดี",
                      *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *       },
+                     *       "consentBasis": "enquiry",
                      *       "contactEmail": null,
                      *       "contactName": "คุณวิภา รักษ์ดี",
                      *       "contactPhone": "+66890002222",
                      *       "createdAt": "2026-11-03T10:00:00+07:00",
+                     *       "customerId": null,
+                     *       "designId": null,
                      *       "disqualifiedReason": null,
                      *       "firstRespondedAt": "2026-11-03T11:20:00+07:00",
                      *       "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *       "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *       "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *       "leadRefusal": null,
                      *       "need": "business · กล่องขนม · qty 5000",
                      *       "organisationName": "บริษัท ขนมดี จำกัด",
+                     *       "score": 55,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "source"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *       "signalCount": 1,
                      *       "slaBreached": false,
                      *       "slaBreachedAt": null,
                      *       "source": "contact_form",
@@ -204815,18 +205147,39 @@ export interface operations {
                      *             "displayName": "สมหญิง ขายดี",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7001"
                      *           },
+                     *           "consentBasis": "enquiry",
                      *           "contactEmail": null,
                      *           "contactName": "คุณวิภา รักษ์ดี",
                      *           "contactPhone": "+66890002222",
                      *           "createdAt": "2026-11-03T10:00:00+07:00",
+                     *           "customerId": null,
+                     *           "designId": null,
                      *           "disqualifiedReason": null,
                      *           "firstRespondedAt": null,
                      *           "firstResponseDueAt": "2026-11-03T14:00:00+07:00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a7002",
+                     *           "lastSignalAt": "2026-11-03T10:00:00+07:00",
                      *           "leadId": "0192f3a0-7c1e-7d2a-9b1f-0000000a6006",
                      *           "leadRefusal": null,
                      *           "need": "business · กล่องขนม · qty 5000",
                      *           "organisationName": "บริษัท ขนมดี จำกัด",
+                     *           "score": 55,
+                     *           "scoreReasons": [
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "source"
+                     *             },
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "recency"
+                     *             },
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "company_email_domain"
+                     *             }
+                     *           ],
+                     *           "scoredAt": "2026-11-03T10:00:00+07:00",
+                     *           "signalCount": 1,
                      *           "slaBreached": false,
                      *           "slaBreachedAt": null,
                      *           "source": "contact_form",
@@ -204916,6 +205269,8 @@ export interface operations {
                 /** @description `today`: follow-up due by the end of today (Bangkok, overdue included) · `overdue`: before now */
                 due?: components["schemas"]["AgentLeadDue"];
                 limit?: number;
+                /** @description D-471: leads scored at least this (0–100); unscored leads are left out */
+                minScore?: number;
                 order?: components["schemas"]["SortOrder"];
                 /** @description Name, organisation, phone, e-mail, tax id or LINE id */
                 q?: string;
@@ -204975,6 +205330,22 @@ export interface operations {
                      *           "organisationName": "ร้านกาแฟบ้านสวน",
                      *           "phone": "+66890001234",
                      *           "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *           "score": 62,
+                     *           "scoreReasons": [
+                     *             {
+                     *               "points": 15,
+                     *               "reason": "company_email_domain"
+                     *             },
+                     *             {
+                     *               "points": 10,
+                     *               "reason": "recency"
+                     *             },
+                     *             {
+                     *               "points": 5,
+                     *               "reason": "value_band"
+                     *             }
+                     *           ],
+                     *           "scoredAt": "2026-10-18T10:00:00+07:00",
                      *           "source": "manual",
                      *           "stage": "contacted",
                      *           "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -205106,6 +205477,22 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         },
+                     *         {
+                     *           "points": 10,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 5,
+                     *           "reason": "value_band"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-10-18T10:00:00+07:00",
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -205258,6 +205645,22 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         },
+                     *         {
+                     *           "points": 10,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 5,
+                     *           "reason": "value_band"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-10-18T10:00:00+07:00",
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -205396,6 +205799,22 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         },
+                     *         {
+                     *           "points": 10,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 5,
+                     *           "reason": "value_band"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-10-18T10:00:00+07:00",
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -205571,6 +205990,22 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
+                     *       "scoreReasons": [
+                     *         {
+                     *           "points": 15,
+                     *           "reason": "company_email_domain"
+                     *         },
+                     *         {
+                     *           "points": 10,
+                     *           "reason": "recency"
+                     *         },
+                     *         {
+                     *           "points": 5,
+                     *           "reason": "value_band"
+                     *         }
+                     *       ],
+                     *       "scoredAt": "2026-10-18T10:00:00+07:00",
                      *       "source": "manual",
                      *       "stage": "negotiating",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -302954,6 +303389,7 @@ export interface operations {
                      *           "organisationName": "ร้านกาแฟบ้านสวน",
                      *           "phone": "+66890001234",
                      *           "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *           "score": 62,
                      *           "source": "manual",
                      *           "stage": "contacted",
                      *           "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -303078,6 +303514,7 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -303211,6 +303648,7 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -303340,6 +303778,7 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -303506,6 +303945,7 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
                      *       "source": "manual",
                      *       "stage": "negotiating",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -303648,6 +304088,7 @@ export interface operations {
                      *       "organisationName": "ร้านกาแฟบ้านสวน",
                      *       "phone": "+66890001234",
                      *       "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *       "score": 62,
                      *       "source": "manual",
                      *       "stage": "contacted",
                      *       "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -304613,6 +305054,8 @@ export interface operations {
                 /** @description `today`: follow-up due by the end of today (Bangkok, overdue included) · `overdue`: before now */
                 due?: components["schemas"]["AgentLeadDue"];
                 limit?: number;
+                /** @description D-471: leads scored at least this (0–100); unscored leads are left out */
+                minScore?: number;
                 order?: components["schemas"]["SortOrder"];
                 /** @description Name, organisation, phone, e-mail, tax id or LINE id */
                 q?: string;
@@ -304663,6 +305106,7 @@ export interface operations {
                      *           "organisationName": "ร้านกาแฟบ้านสวน",
                      *           "phone": "+66890001234",
                      *           "protectedUntil": "2026-12-15T10:00:00+07:00",
+                     *           "score": 62,
                      *           "source": "manual",
                      *           "stage": "contacted",
                      *           "stageChangedAt": "2026-10-18T09:30:00+07:00",
@@ -327995,6 +328439,7 @@ export interface operations {
                      *       "materialClass": "paperboard",
                      *       "measurementBasis": "internal",
                      *       "mimeType": "application/pdf",
+                     *       "nextNeedsSignIn": false,
                      *       "quantities": {
                      *         "blankAreaMm2": 31845.2,
                      *         "blankHeightMm": 187.2,
@@ -328068,6 +328513,160 @@ export interface operations {
                 };
             };
             /** @description Problem: `dielines.rate_limited`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `drawing.engine_unavailable` */
+            501: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.dielines.downloadFree": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DownloadDielineFreeDto"];
+            };
+        };
+        responses: {
+            /** @description The download */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cached": false,
+                     *       "createdAt": "2026-10-03T14:10:00+07:00",
+                     *       "drawn": {
+                     *         "heightMm": 120,
+                     *         "lengthMm": 60,
+                     *         "widthMm": 40
+                     *       },
+                     *       "engineVersion": "fake-dieline@0",
+                     *       "entered": {
+                     *         "heightMm": 120,
+                     *         "lengthMm": 60,
+                     *         "widthMm": 40
+                     *       },
+                     *       "expiresAt": "2026-10-03T14:15:00+07:00",
+                     *       "fileName": "PK-TE-01-K7QD-60x40x120-paperboard.pdf",
+                     *       "format": "pdf",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d701",
+                     *       "materialClass": "paperboard",
+                     *       "measurementBasis": "internal",
+                     *       "mimeType": "application/pdf",
+                     *       "nextNeedsSignIn": true,
+                     *       "quantities": {
+                     *         "blankAreaMm2": 31845.2,
+                     *         "blankHeightMm": 187.2,
+                     *         "blankWidthMm": 231.4,
+                     *         "creaseMm": 902.3,
+                     *         "cutMm": 1412.6,
+                     *         "cutoutAreaMm2": 0,
+                     *         "glueOutlineMm": 240,
+                     *         "halfCutMm": 0,
+                     *         "perforationMm": 0,
+                     *         "pieces": 1
+                     *       },
+                     *       "remainingToday": null,
+                     *       "sizeBytes": 18234,
+                     *       "url": "https://files.example.invalid/signed",
+                     *       "variantCode": "PK-TE-01-K7QD",
+                     *       "violations": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DielineDownloadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated`, `dielines.sign_in_required` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `styles.variant_not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `dielines.material_class_not_offered`, `dielines.not_drawable`, `dielines.size_out_of_range`, `specs.basis_not_accepted`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
             429: {
                 headers: {
                     "Retry-After": components["headers"]["RetryAfter"];

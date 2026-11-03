@@ -41,6 +41,7 @@ import {
   setExternalLeadResolver,
   thaiConditionsDate,
 } from "../store/agent-leads";
+import { mockAgentLeadScore, mockLeadScore } from "../lead-score";
 import { PLAYBOOK_SEED } from "./playbook-seed";
 
 type Lead = Schemas["AdminAgentLeadDto"];
@@ -169,8 +170,17 @@ function staffLead(partial: Partial<Lead> & Pick<Lead, "id" | "contactName" | "a
     convertedCustomerId: null,
     convertedCompanyId: null,
     convertedFactoryId: null,
+    score: null,
+    scoreReasons: [],
+    scoredAt: null,
     ...partial,
   };
+}
+
+/** D-471: a lead as the API answers it — scored from its own fields, with the top reasons (staff only). */
+function scoredLead(lead: Lead): Lead {
+  const { score, reasons } = mockAgentLeadScore(lead);
+  return { ...lead, score, scoreReasons: reasons, scoredAt: lead.updatedAt };
 }
 
 const LEAD = {
@@ -302,10 +312,33 @@ function inbound(partial: Partial<Inbound> & Pick<Inbound, "id" | "contactName" 
     slaBreachedAt: null,
     disqualifiedReason: null,
     statusNote: null,
+    consentBasis: partial.source === "manual" ? "staff_entry" : "enquiry",
+    signalCount: 1,
+    lastSignalAt: created,
+    customerId: null,
+    designId: null,
+    score: null,
+    scoreReasons: [],
+    scoredAt: null,
     updatedAt: created,
     ...partial,
     createdAt: created,
   };
+}
+
+/** D-471: an item as the API answers it — scored at intake / refresh with its top reasons (the mock's stand-in). */
+function scoredInbound(row: Inbound): Inbound {
+  const quantity = Number(/([\d,]{3,})\s*(ใบ|ชิ้น)/.exec(row.need ?? "")?.[1]?.replace(/,/g, "") ?? 0) || null;
+  const { score, reasons } = mockLeadScore({
+    kind: "inbound",
+    source: row.source,
+    email: row.contactEmail,
+    taxIdPresent: /บริษัท|จำกัด/.test(row.organisationName ?? ""),
+    quantity,
+    lastAt: row.lastSignalAt ?? row.createdAt,
+    signals: row.signalCount,
+  });
+  return { ...row, score, scoreReasons: reasons, scoredAt: row.updatedAt };
 }
 
 function seedInbound(reps: RepRecord[]): Inbound[] {
@@ -404,7 +437,56 @@ function seedInbound(reps: RepRecord[]): Inbound[] {
       createdAt: bangkokIso(-3 * 24 * 60 - 20),
       firstResponseDueAt: bangkokIso(-3 * 24 * 60 + 220),
     }),
+    // D-471 captured signals (marketing consent granted; nobody attributed).
+    inbound({
+      id: "00000000-0000-4000-8000-0000000b9008",
+      source: "dieline_download",
+      sourceRef: "PK-TE-01-K7QD",
+      contactName: "คุณภูมิ ทดสอบ",
+      contactEmail: "phum@example.invalid",
+      organisationName: "บริษัท ชาออร์แกนิกตัวอย่าง จำกัด (ข้อมูลจำลอง)",
+      need: "dieline · PK-TE-01-K7QD · PK-TE-02-M4PA",
+      consentBasis: "marketing_consent",
+      customerId: "00000000-0000-4000-8000-0000000c0101",
+      signalCount: 3,
+      lastSignalAt: bangkokIso(-15),
+      createdAt: bangkokIso(-2 * 24 * 60),
+      firstResponseDueAt: bangkokIso(-2 * 24 * 60 + 240),
+      slaBreached: true,
+      slaBreachedAt: bangkokIso(-2 * 24 * 60 + 240),
+    }),
   ];
+}
+
+/** D-471: what the mock's studio idle job finds — one saved design not ordered, of a customer who agreed to hear. */
+const IDLE_DESIGN = {
+  designId: "00000000-0000-4000-8000-0000000c0201",
+  customerId: "00000000-0000-4000-8000-0000000c0102",
+  contactName: "คุณใบเตย ออกแบบเอง",
+  contactPhone: "+66830001010",
+  contactEmail: "baitoey@example.invalid",
+  organisationName: "บริษัท ขนมไทยตัวอย่าง จำกัด (ข้อมูลจำลอง)",
+  need: "“กล่องขนมเปี๊ยะ 6 ช่อง” · PK-TE-03-R2KD",
+};
+
+/** Job `sales.capture_studio_idle` as the mock runs it (POST …/mock-jobs/…): idempotent per design. */
+function runStudioIdleJob(): number {
+  if (inboundRows.some((row) => row.designId === IDLE_DESIGN.designId)) return 0;
+  const { designId, customerId, ...contact } = IDLE_DESIGN;
+  inboundRows.unshift(
+    inbound({
+      id: nextId("sinb"),
+      source: "studio_idle",
+      ...contact,
+      designId,
+      customerId,
+      consentBasis: "marketing_consent",
+      lastSignalAt: bangkokIso(-3 * 24 * 60 - 40),
+      createdAt: bangkokIso(),
+      firstResponseDueAt: bangkokIso(240),
+    }),
+  );
+  return 1;
 }
 
 /* ---------------------------------------------------------------------------------- approvals */
@@ -675,13 +757,17 @@ const addActivity = (leadId: string, entry: Omit<Activity, "id">) => {
 const repOfUser = (userId: string) => reps.find((rep) => rep.userId === userId);
 const myAgent = (who: StaffPersona) => repOfUser(who.id)?.agent ?? null;
 const freelanceLeads = (): Lead[] =>
-  agentLeads().map((lead) => ({
-    ...lead,
-    agent: FREELANCE_AGENT,
-    convertedCustomerId: lead.status === "converted" ? "00000000-0000-4000-8000-0000000c0001" : null,
-    convertedCompanyId: null,
-    convertedFactoryId: null,
-  }));
+  agentLeads().map((lead) =>
+    scoredLead({
+      ...lead,
+      agent: FREELANCE_AGENT,
+      convertedCustomerId: lead.status === "converted" ? "00000000-0000-4000-8000-0000000c0001" : null,
+      convertedCompanyId: null,
+      convertedFactoryId: null,
+      scoreReasons: [],
+      scoredAt: null,
+    }),
+  );
 const findLead = (id: unknown): Lead | undefined =>
   staffLeads.find((lead) => lead.id === id) ?? freelanceLeads().find((lead) => lead.id === id);
 /** A rep sees only their own employee agent's leads; a manager sees every lead. */
@@ -1167,22 +1253,44 @@ export const salesDeskHandlers = [
     const assigneeId = url.searchParams.get("assigneeId");
     const unassigned = url.searchParams.get("unassigned") === "true";
     const breached = url.searchParams.get("breached") === "true";
+    const minScore = url.searchParams.get("minScore");
+    const sort = url.searchParams.get("sort") ?? "due";
+    const desc = url.searchParams.get("order") !== "asc";
     const rows = inboundRows
+      .map(scoredInbound)
       .filter((row) => isManager(who) || row.assignee?.id === who.id)
       .filter((row) => !statuses.length || statuses.includes(row.status))
       .filter((row) => !source || row.source === source)
       .filter((row) => !assigneeId || row.assignee?.id === assigneeId)
       .filter((row) => !unassigned || row.assignee === null)
       .filter((row) => !breached || slaBreached(row))
+      .filter((row) => minScore === null || (row.score !== null && row.score >= Number(minScore)))
       .filter((row) => matchesQuery(q, row.contactName, row.organisationName, row.sourceRef, row.need))
       .map(withSla)
-      .sort((a, b) => Date.parse(a.firstResponseDueAt) - Date.parse(b.firstResponseDueAt));
+      .sort((a, b) =>
+        sort === "score"
+          ? ((a.score ?? -1) - (b.score ?? -1)) * (desc ? -1 : 1) ||
+            Date.parse(a.firstResponseDueAt) - Date.parse(b.firstResponseDueAt)
+          : sort === "createdAt"
+            ? (Date.parse(a.createdAt) - Date.parse(b.createdAt)) * (desc ? -1 : 1)
+            : Date.parse(a.firstResponseDueAt) - Date.parse(b.firstResponseDueAt),
+      );
     return HttpResponse.json(
       paginate(rows, {
         page: Number(url.searchParams.get("page") ?? 1),
         perPage: Number(url.searchParams.get("perPage") ?? 25),
       }),
     );
+  }),
+
+  /**
+   * Mock-only (D-471): runs the job `sales.capture_studio_idle` now, so a journey can see a saved design that was not
+   * ordered arrive in the pool. Reached through the admin BFF like any admin path; a sales manager only.
+   */
+  http.post("*/v1/admin/mock-jobs/sales.capture_studio_idle", ({ request }) => {
+    const who = pipeline(staffPersonaOf(request));
+    if (!who || !isManager(who)) return forbidden();
+    return HttpResponse.json({ captured: runStudioIdleJob() });
   }),
 
   http.post("*/v1/admin/sales/inbound", async ({ request }) => {
@@ -1298,6 +1406,7 @@ export const salesDeskHandlers = [
     const agentId = url.searchParams.get("agentId");
     const view = url.searchParams.get("view") ?? "open";
     const stage = url.searchParams.get("stage");
+    const minScore = url.searchParams.get("minScore");
     const q = url.searchParams.get("q") ?? undefined;
     const source = (kind === "freelance" ? freelanceLeads() : staffLeads)
       .filter((lead) => visible(who, lead))
@@ -1312,12 +1421,14 @@ export const salesDeskHandlers = [
               : !["won", "lost"].includes(lead.stage),
       )
       .filter((lead) => !stage || lead.stage === stage)
-      .filter((lead) => matchesQuery(q, lead.contactName, lead.organisationName, lead.phone, lead.email));
+      .filter((lead) => matchesQuery(q, lead.contactName, lead.organisationName, lead.phone, lead.email))
+      .map(scoredLead)
+      .filter((lead) => minScore === null || (lead.score !== null && lead.score >= Number(minScore)));
     const sort = url.searchParams.get("sort") ?? "updatedAt";
     const order = url.searchParams.get("order") === "asc" ? 1 : -1;
     const key = (lead: Lead) => {
       const value = (lead as Record<string, unknown>)[sort];
-      return sort === "expectedValue" ? Number(value ?? -1) : Date.parse(String(value ?? "")) || 0;
+      return sort === "expectedValue" || sort === "score" ? Number(value ?? -1) : Date.parse(String(value ?? "")) || 0;
     };
     source.sort((a, b) => (key(a) - key(b)) * order);
     return HttpResponse.json({ data: source, meta: { nextCursor: null } });
@@ -1345,7 +1456,7 @@ export const salesDeskHandlers = [
     });
     staffLeads.unshift(lead);
     activities.set(lead.id, seedActivities(lead));
-    return HttpResponse.json(lead, { status: 201 });
+    return HttpResponse.json(scoredLead(lead), { status: 201 });
   }),
 
   http.get("*/v1/admin/sales/leads/:leadId/activities", ({ request, params }) => {
@@ -1414,7 +1525,7 @@ export const salesDeskHandlers = [
       lead.lostNote = body.note ?? null;
       lead.status = "withdrawn";
     }
-    return HttpResponse.json(lead);
+    return HttpResponse.json(scoredLead(lead));
   }),
 
   http.get("*/v1/admin/sales/leads/:leadId", ({ request, params }) => {
@@ -1422,7 +1533,7 @@ export const salesDeskHandlers = [
     if (!who) return forbidden();
     const lead = findLead(params.leadId);
     if (!lead || !visible(who, lead)) return notFound("ลูกค้ามุ่งหวัง");
-    return HttpResponse.json(lead, { headers: { ETag: leadEtag(lead) } });
+    return HttpResponse.json(scoredLead(lead), { headers: { ETag: leadEtag(lead) } });
   }),
 
   http.patch("*/v1/admin/sales/leads/:leadId", async ({ request, params }) => {
@@ -1438,7 +1549,7 @@ export const salesDeskHandlers = [
     if (!match) return problem(428, "concurrency.precondition_required", "ต้องส่ง If-Match");
     if (match !== leadEtag(lead)) return problem(412, "concurrency.stale", "ข้อมูลเปลี่ยนแล้ว");
     Object.assign(lead, (await request.json()) as Schemas["UpdateAgentLeadDto"], { updatedAt: bangkokIso() });
-    return HttpResponse.json(lead, { headers: { ETag: leadEtag(lead) } });
+    return HttpResponse.json(scoredLead(lead), { headers: { ETag: leadEtag(lead) } });
   }),
 
   /* quotes */
@@ -2171,7 +2282,7 @@ const slaBreached = (row: Inbound) =>
   row.slaBreachedAt !== null ||
   (row.firstRespondedAt === null && Date.parse(row.firstResponseDueAt) < Date.now()) ||
   (row.firstRespondedAt !== null && Date.parse(row.firstRespondedAt) > Date.parse(row.firstResponseDueAt));
-const withSla = (row: Inbound): Inbound => ({ ...row, slaBreached: slaBreached(row) });
+const withSla = (row: Inbound): Inbound => ({ ...scoredInbound(row), slaBreached: slaBreached(row) });
 
 /** Assignment (D-469): round robin when no rep is named; moving from another rep needs a reason. */
 function assign(who: StaffPersona, row: Inbound, repUserId?: string, reason?: string): Inbound | Response {

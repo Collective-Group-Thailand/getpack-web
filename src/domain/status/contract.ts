@@ -389,6 +389,7 @@ export type ReorderSuggestionStatus = Schemas["ReorderSuggestionStatus"];
 
 // D-469 / D-470: the company sales desk.
 export type SalesInboundStatus = Schemas["SalesInboundStatus"];
+export type SalesInboundSource = Schemas["SalesInboundSource"];
 export type SalesDiscountApprovalStatus = Schemas["SalesDiscountApprovalStatus"];
 export type SalesAuthorityColour = Schemas["SalesAuthorityColour"];
 export type SalesFloorCheck = Schemas["SalesFloorCheck"];

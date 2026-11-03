@@ -1158,5 +1158,13 @@
     "confirmed": "Factory confirmed",
     "expired": "Expired",
     "released": "Released"
+  },
+  "salesSource": {
+    "contact_form": "Contact form",
+    "rfq": "Quote request",
+    "line_chat": "LINE chat",
+    "manual": "Added by the team",
+    "studio_idle": "Designed, not ordered",
+    "dieline_download": "Dieline download"
   }
 }
