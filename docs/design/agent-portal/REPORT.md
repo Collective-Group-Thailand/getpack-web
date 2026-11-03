@@ -68,3 +68,26 @@
   - Push/LINE deep links for agent events are null until P3 routes settle
 - Screenshots: `docs/design/agent-portal/screenshots/P2/` (overview, leads, commissions, statements, payout, tax, notifications, profile, sign-in; phone 390 + desktop 1440; overview tablet 768)
 
+## P3 — Lead management for agents · PASS
+- Branches `feat/agent-p3-leads` · merge SHAs: api `07462222`, web `ef7e802d`
+- Delivered
+  - API: pipeline stages (won set by the system on first payment, lost releases protection), append-only timeline, follow-up reminders outside quiet hours (setting), neutral duplicate check, CSV export/import (dry run → commit, 500 rows, Idempotency-Key); quote on behalf through the store pricing path, shared `/q/{token}` carrying the agent code, opened/accepted in the timeline; discount requests with give-get + competitor evidence (one round per version unless give-get changes), options with the agent's commission (full rate first, co-fund only after the agent accepts, spiff allowed); deal registration (auto ≥ ฿500,000 commission base, 90 days, rate lock used by commission accrual); playbook cards v1 published from PLAYBOOK.md; business-card scan (OCR port: Tesseract CLI tha+eng / fake; photo purged after 7 days); commission forecast per order
+  - Web (agent zone): pipeline views (ทั้งหมด · ต้องติดตามวันนี้ · ใกล้หมดสิทธิ์ · ปิดแล้ว) as phone cards / tablet 2 columns / desktop table + board, "ย้ายไปขั้น…" menu (drag optional); new lead FAB/N with duplicate check, card scan review, offline drafts queue (IndexedDB + service worker, "รอส่ง"); lead detail with sticky actions and timeline; agent-mode quote flow + quotes list; 3-step discount request with playbook beside; deal badges; คู่มือการขาย page; CSV import; forecast view; storefront `/q/{token}` sets the agent cookie
+- Decisions recorded: D-468 (both repos)
+- Gate results
+  - API: typecheck ✔ · lint ✔ · unit 1,745 ✔ · prettier ✔ · contract:build (no drift, 1,514 paths) + Spectral ✔ · 5 migrations with down.sql, full rollback + redeploy ✔ · seed idempotent ✔ · confidentiality spec over every P3 operation ✔ · OCR tried on real Tesseract 5.3.4 ✔ · e2e SKIPPED-DOCKER (agents-p3 e2e written)
+  - Web: lint ✔ · typecheck ✔ · unit 1,907 ✔ · gen:api:check ✔ · tokens:check ✔ · build ✔ · e2e P3 10/10, P0–P3 + zones 55/55 ✔ · no horizontal scroll 360–1920 on all P3 pages ✔ · Lighthouse `/leads` mobile a11y 100 · best practices 100 · perf 81 (VM) → CI to confirm ≥90 · visual snapshots not added
+  - Wording/confidentiality (no cost/margin/factory in agent surfaces) ✔ · Anuphan, light ✔ · commits Superball, no trailers ✔
+- Assumptions taken
+  - Forecast dates follow D-466 §5 (summary on the 1st, paid within paymentTermsDays of approval), not "the 5th"
+  - Agent quotes belong to getpack until the lead converts, then pass to the customer; standard rate = first-order rate until the customer's first commissioned order
+  - An accepted discount option locks one rate for first and repeat orders of that quote and wins over a deal-registration lock
+  - Playbook v1 published (PLAN §7 owner-agreed); rep/manager-only cards hidden from agents; English copy empty
+  - Quote on behalf uses an agent-zone flow on the same pricing contract instead of the storefront configurator (keeps studio/cart/analytics out of the agent zone)
+  - Duplicate/lead refusals collapsed to one neutral `agents.lead_unavailable` (D-440)
+- Open questions
+  - Card-scan photo retention 7 days is a proposed value for the PDPA owner
+  - Staff-side discount options, applying an accepted discount to a new quotation and the PDF conditions line → P4
+  - Web commits 3–9 of the branch don't build alone (items 1–2 landed after them); the merged head builds
+- Screenshots: `docs/design/agent-portal/screenshots/P3/` (leads, lead detail, new lead, card scan, quote create/list/detail, discount steps + options, playbook, forecast, import; phone 390 + desktop 1440, tablet 768)
+
