@@ -3078,7 +3078,7 @@
     "lockDialog": {
       "title": "Lock “{name}”?",
       "description": "Once locked, figures cannot change and the plan becomes the baseline for actuals. To adjust later, copy it to a new plan.",
-      "emptyManual": "{count, plural, one {# cell} other {# cells}} to enter by hand {count, plural, one {is} other {are}} still empty — empty counts as zero",
+      "emptyManual": "Still empty: {count, plural, one {# cell} other {# cells}} to enter by hand — empty counts as zero",
       "confirm": "Lock plan",
       "cancel": "Cancel",
       "locked": "Plan locked",
@@ -3176,8 +3176,10 @@
       "keysReadOnly": "Arrows move · Shift+Enter shows sources",
       "cellName": "{line} · {month}",
       "systemBeside": "System {value}",
-      "unit_days": "(days)",
-      "unit_percent": "(%)"
+      "units": {
+        "days": "(days)",
+        "percent": "(%)"
+      }
     },
     "edit": {
       "value": "{line}, {month}",

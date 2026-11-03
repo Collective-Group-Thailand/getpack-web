@@ -3176,8 +3176,10 @@
       "keysReadOnly": "ลูกศรเลื่อนช่อง · Shift+Enter ดูรายการที่มา",
       "cellName": "{line} · {month}",
       "systemBeside": "ระบบ {value}",
-      "unit_days": "(วัน)",
-      "unit_percent": "(%)"
+      "units": {
+        "days": "(วัน)",
+        "percent": "(%)"
+      }
     },
     "edit": {
       "value": "ค่า {line} เดือน {month}",

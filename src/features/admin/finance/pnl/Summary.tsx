@@ -70,9 +70,18 @@ export function SummaryStrip({ grid }: { grid: PnlGrid }) {
       <h2 id="pnl-summary" className="sr-only">
         {t("label")}
       </h2>
-      <dl className="divide-border [&>div]:bg-surface bg-border rounded-card grid grid-cols-2 gap-px overflow-hidden sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7">
-        {items.map((item) => (
-          <div key={item.key} className="flex min-w-0 flex-col gap-1 px-4 py-3" data-summary={item.key}>
+      {/* Four headline figures over three supporting ones: a 12-column grid fills both rows with no hole. */}
+      <dl className="bg-border rounded-card grid grid-cols-2 gap-px overflow-hidden lg:grid-cols-12">
+        {items.map((item, at) => (
+          <div
+            key={item.key}
+            className={cn(
+              "bg-surface flex min-w-0 flex-col gap-1 px-4 py-3",
+              at < 4 ? "lg:col-span-3" : "lg:col-span-4",
+              at === items.length - 1 && "col-span-2 lg:col-span-4",
+            )}
+            data-summary={item.key}
+          >
             <dt className="text-muted text-xs leading-snug">{item.label}</dt>
             <dd className={cn("text-lg font-semibold tabular-nums", item.tone === "danger" && "text-danger")}>
               {item.value}

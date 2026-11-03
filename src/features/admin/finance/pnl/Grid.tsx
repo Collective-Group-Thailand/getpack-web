@@ -309,7 +309,14 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
                             line={line.line}
                             cell={cell}
                             month={months[c]}
-                            onDrill={onDrill ? () => onDrill(line, cell) : undefined}
+                            onDrill={
+                              onDrill
+                                ? () => {
+                                    closeTooltips();
+                                    onDrill(line, cell);
+                                  }
+                                : undefined
+                            }
                           />
                         }
                       >
@@ -371,6 +378,9 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
     </section>
   );
 }
+
+/** Closes the open tooltip (Radix dismisses its layers on Escape) before a sheet takes over the screen. */
+const closeTooltips = () => document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
 
 const toneOf = (mode: PnlCell["mode"]) =>
   mode === "manual" ? "primary" : mode === "override" ? "warning" : ("neutral" as const);
@@ -482,7 +492,7 @@ export function LineLabel({ line }: { line: Pick<PnlGridLine, "line"> }) {
     <span className="flex items-center gap-2">
       <span className="min-w-0">{format.label(line.line)}</span>
       {line.line.unit !== "money" ? (
-        <span className="text-muted text-xs font-normal">{t(`unit_${line.line.unit}`)}</span>
+        <span className="text-muted text-xs font-normal">{t(`units.${line.line.unit}`)}</span>
       ) : null}
     </span>
   );
