@@ -134,3 +134,23 @@
   - Pricing-page scoring needs its own consent purpose; LINE chat source still deferred
 - Screenshots: `docs/design/agent-portal/screenshots/P5/` (sign-in sheet 390/1440, admin inbox popover 1440/1024, agent leads 390/1440)
 
+## P6 — Management P&L planner · PASS
+- Branches `feat/agent-p6-pnl` · merge SHAs: api `4830e6b4`, web `518d028d`
+- Delivered
+  - API: plans (base/best/worst/custom, draft → locked with a frozen snapshot and DB trigger), cells auto/calculated/manual/override (note on first manual entry, reason on override, auto value kept), line catalogue as an effective-dated setting seeded from PNL-LINES.md with GL mapping, actuals from the posted ledger (open periods flagged), forecast from pipeline × stage probability + repeat run rate, trailing ratios/averages, depreciation schedules, CIT estimate with the SME table, memo lines (credit cost, bad debt, EBITDA, commission ÷ GM, DSO, DPO, CCC, break-even), variance + notes, drill-down to source records, watermarked XLSX/PDF export, access log; `pnl.read` c_level/vp/director/finance_manager/superadmin, `pnl.manage`/`pnl.export` c_level/finance_manager/superadmin
+  - Web `/admin/finance/pnl`: header (plan picker, scenario tabs, status, plan-vs-actual toggle, recompute, lock, export), grouped collapsible grid with sticky column/header, ARIA grid keyboard navigation and inline edit, source marks by shape + label, tooltips on every line and cell (definition, formula, source + drill-down sheet, as-of, who/why), override reason dialog showing both values, summary strip + revenue / net profit charts, variance view with notes, tablet scroll inside the grid, phone summary + read-only month cards
+- Decisions recorded: D-472 (both repos)
+- Gate results
+  - API: typecheck ✔ · lint ✔ · unit 1,892 ✔ (golden P&L, tooltip coverage with PNL-LINES drift check, route RBAC) · prettier ✔ · contract:build (no drift) + Spectral ✔ · migration rolled back and redeployed ✔ · seed idempotent ✔ · service smoke tests on local Postgres ✔ · export not run (needs S3 + Chromium) · e2e SKIPPED-DOCKER
+  - Web: lint ✔ · typecheck ✔ · unit 1,953 ✔ · gen:api:check ✔ · tokens:check ✔ · build ✔ · e2e P6 8/8 + P0–P5 + zones 68/68 ✔ · no page scroll 768–1920 ✔ · RBAC: VP read-only (grid aria-readonly, POST 403), sales roles 403 page + BFF 403 ✔ · visual baselines SKIPPED (stories added)
+  - Commits Superball, no trailers ✔
+- Assumptions taken
+  - Fiscal year = calendar year; pipeline spread evenly over 3 months (leads have no close date); stage probabilities 10/20/40/60 % (proposed)
+  - CIT estimated on cumulative profit; SME bands only after the accountant enters paid-up capital (20 % until then)
+  - Credit cost at company level from the cash conversion cycle; DSO on receivables incl. VAT (conservative); other income left out of revenue
+  - Lock has no maker-checker (not in accounting-design §8) but is final and idempotent
+- Open questions
+  - Five lines unmapped in the chart of accounts (salaries, rent & utilities, software & cloud, professional fees, finance cost) → manual until mapped
+  - English tooltip texts empty; Director has no sidebar route to the planner (contract request `admin.menu-pnl`)
+- Screenshots: `docs/design/agent-portal/screenshots/P6/` (grid 1440/1920/1024, override, tooltip + drill-down, variance, locked, phone cards)
+
