@@ -338,7 +338,7 @@ function scoredInbound(row: Inbound): Inbound {
     lastAt: row.lastSignalAt ?? row.createdAt,
     signals: row.signalCount,
   });
-  return { ...row, score, scoreReasons: reasons, scoredAt: row.lastSignalAt ?? row.createdAt };
+  return { ...row, score, scoreReasons: reasons, scoredAt: row.updatedAt };
 }
 
 function seedInbound(reps: RepRecord[]): Inbound[] {

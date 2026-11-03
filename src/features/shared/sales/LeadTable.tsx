@@ -103,9 +103,9 @@ export function LeadTable({
               {t("stageColumn")}
             </th>
             {header("nextFollowUpAt", t("followUp"))}
-            {header("protectedUntil", t("protection"), false, "hidden xl:table-cell")}
+            {header("protectedUntil", t("protection"), false, "hidden 2xl:table-cell")}
             {header("expectedValue", t("expectedValue"), true)}
-            {header("updatedAt", t("updated"), false, "hidden xl:table-cell")}
+            {header("updatedAt", t("updated"), false, "hidden 2xl:table-cell")}
             <th scope="col" className="px-3 py-2.5 pe-4 text-end font-medium">
               <span className="sr-only">{t("actions")}</span>
             </th>
@@ -124,9 +124,9 @@ export function LeadTable({
                 {lead.organisationName ? (
                   <span className="text-muted block max-w-[22rem] truncate text-xs">{lead.organisationName}</span>
                 ) : null}
-                {/* Below 1280 px the extra and protection columns fold under the name. */}
+                {/* Below 1280 px the extra column, below 1536 px the protection, fold under the name (the score column, D-471, took the room). */}
                 {extraColumn ? <span className="mt-1 block xl:hidden">{extraColumn.cell(lead)}</span> : null}
-                <span className="mt-1 block text-xs xl:hidden">
+                <span className="mt-1 block text-xs 2xl:hidden">
                   <ProtectionText lead={lead} />
                 </span>
               </td>
@@ -147,13 +147,13 @@ export function LeadTable({
               <td className="px-3 py-3 xl:whitespace-nowrap">
                 <FollowUpText at={lead.nextFollowUpAt} />
               </td>
-              <td className="hidden px-3 py-3 whitespace-nowrap xl:table-cell">
+              <td className="hidden px-3 py-3 whitespace-nowrap 2xl:table-cell">
                 <ProtectionText lead={lead} />
               </td>
               <td className="px-3 py-3 text-end whitespace-nowrap tabular-nums">
                 {lead.expectedValue ? format.thb(lead.expectedValue) : <span className="text-muted">—</span>}
               </td>
-              <td className="text-muted hidden px-3 py-3 whitespace-nowrap xl:table-cell">
+              <td className="text-muted hidden px-3 py-3 whitespace-nowrap 2xl:table-cell">
                 {format.date(lead.updatedAt, { style: "dayMonth" })}
               </td>
               <td className="px-3 py-3 pe-4 text-end whitespace-nowrap">
