@@ -11,6 +11,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { FollowUpText, ProtectionText } from "./LeadCard";
+import { LeadScore } from "./LeadScore";
 import { StageMenu } from "./StageMenu";
 import { LEAD_SURFACES, type LeadSurface } from "./surface";
 
@@ -42,12 +43,22 @@ export function LeadTable({
   sort: SortKey;
   order: "asc" | "desc";
   /** For each sortable column, the URL that sorts by it (toggling the order when it is already the one). */
-  sortHrefs: Record<"nextFollowUpAt" | "protectedUntil" | "expectedValue" | "updatedAt", string>;
+  sortHrefs: Record<"nextFollowUpAt" | "protectedUntil" | "expectedValue" | "updatedAt", string> & {
+    /** D-471: the score column sorts when the surface passes a link for it. */
+    score?: string;
+  };
 }) {
   const t = useTranslations("agentSales.list");
   const format = useFormat();
   const header = (key: keyof typeof sortHrefs, label: string, numeric = false, className?: string) => {
     const active = sort === key;
+    const href = sortHrefs[key];
+    if (!href)
+      return (
+        <th scope="col" className={cn("px-3 py-2.5 font-medium", numeric ? "text-end" : "text-start", className)}>
+          {label}
+        </th>
+      );
     return (
       <th
         scope="col"
@@ -55,7 +66,7 @@ export function LeadTable({
         className={cn("px-3 py-2.5 font-medium", numeric ? "text-end" : "text-start", className)}
       >
         <Link
-          href={sortHrefs[key]}
+          href={href}
           className={cn(
             "focus-visible:ring-focus-ring hover:text-fg inline-flex min-h-8 items-center gap-1 rounded-sm outline-none focus-visible:ring-2",
             active && "text-fg",
@@ -87,6 +98,7 @@ export function LeadTable({
                 {extraColumn.header}
               </th>
             ) : null}
+            {header("score", t("scoreColumn"))}
             <th scope="col" className="px-3 py-2.5 text-start font-medium">
               {t("stageColumn")}
             </th>
@@ -119,6 +131,16 @@ export function LeadTable({
                 </span>
               </td>
               {extraColumn ? <td className="hidden px-3 py-3 xl:table-cell">{extraColumn.cell(lead)}</td> : null}
+              <td className="px-3 py-3 whitespace-nowrap">
+                {/* D-471: staff get the reasons behind the score; an agent sees the score of their own lead only. */}
+                <LeadScore
+                  score={lead.score}
+                  reasons={surface === "admin" && "scoreReasons" in lead ? lead.scoreReasons : undefined}
+                  scoredAt={"scoredAt" in lead ? lead.scoredAt : null}
+                  name={lead.contactName}
+                  size="sm"
+                />
+              </td>
               <td className="px-3 py-3 whitespace-nowrap">
                 <StatusChip map={AGENT_LEAD_STAGE} value={lead.stage} />
               </td>

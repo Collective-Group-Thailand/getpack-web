@@ -162,7 +162,10 @@
     },
     "emptyHintManager": "Assign inbound enquiries to reps; the leads are registered for them.",
     "emptyHintRep": "Convert an enquiry you were given and it appears here.",
-    "toInbox": "Go to the inbox"
+    "toInbox": "Go to the inbox",
+    "scoreLabel": "Score",
+    "scoreAny": "Any score",
+    "scoreFrom": "{score} and up"
   },
   "lead": {
     "pageTitle": "Lead",
