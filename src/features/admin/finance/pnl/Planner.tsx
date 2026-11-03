@@ -24,8 +24,17 @@ import { toast } from "@/ui/components/Toast";
 import { adminBrowserApis, download, problemMessage, QueryError, useCan } from "../../console";
 import { usePnlFormat } from "./format";
 import { PnlGridView } from "./Grid";
+import { SourcesSheet } from "./SourcesSheet";
 import { CopyPlanDialog, CreatePlanDialog, LockPlanDialog } from "./PlanDialogs";
-import { PNL_SCENARIOS, pnlKeys, type PnlGrid, type PnlPlan, type PnlScenario } from "./resources";
+import {
+  PNL_SCENARIOS,
+  pnlKeys,
+  type PnlCell,
+  type PnlGrid,
+  type PnlGridLine,
+  type PnlPlan,
+  type PnlScenario,
+} from "./resources";
 
 const thisYear = () => Number(new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 4));
 
@@ -53,6 +62,7 @@ function PlannerBody() {
   const canManage = useCan("pnl.manage");
   const format = usePnlFormat();
   const [dialog, setDialog] = useState<"create" | "copy" | "lock" | null>(null);
+  const [drill, setDrill] = useState<{ line: PnlGridLine; cell: PnlCell } | null>(null);
 
   const plans = useQuery({
     queryKey: pnlKeys.plans(),
@@ -201,13 +211,20 @@ function PlannerBody() {
         <>
           <PlanNotices plan={plan} canManage={canManage} />
           {grid.data ? (
-            <PnlGridView grid={grid.data} canEdit={canManage && grid.data.plan.status === "draft"} />
+            <PnlGridView
+              grid={grid.data}
+              canEdit={canManage && grid.data.plan.status === "draft"}
+              onDrill={(line, cell) => setDrill({ line, cell })}
+            />
           ) : (
             <Skeleton className="h-[32rem] w-full" />
           )}
         </>
       )}
 
+      {drill && plan ? (
+        <SourcesSheet planId={plan.id} line={drill.line.line} cell={drill.cell} onClose={() => setDrill(null)} />
+      ) : null}
       {canManage ? (
         <CreatePlanDialog
           open={dialog === "create"}

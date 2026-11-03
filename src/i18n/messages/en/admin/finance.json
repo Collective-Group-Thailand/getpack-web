@@ -3217,7 +3217,6 @@
       "by": "{name} · {at}",
       "autoValue": "System {value}",
       "drill": "Show source records",
-      "drillKey": "Shift+Enter",
       "noHowToFill": "From the fixed-asset depreciation schedule; nothing to enter",
       "notSet": "The bad-debt provision rate by credit grade is not set",
       "periodOpen": "This period is still open; the figure may change",
@@ -3246,7 +3245,12 @@
         "assets": "{count, plural, one {# asset} other {# assets}}",
         "citSme": "SME rate applied",
         "citStandard": "Standard rate {pct}"
-      }
+      },
+      "drillKeyHint": "(Shift+Enter)",
+      "formulaNoFill": "Calculated from other lines; nothing to enter",
+      "systemNoFill": "Calculated by the system from balances; nothing to enter",
+      "onlyRules": "rule {rules} only",
+      "excludeRules": "except rule {rules}"
     },
     "sources": {
       "title": "Source records",
@@ -3270,7 +3274,8 @@
       "more": "Show more",
       "failed": "Could not load the source records",
       "open": "Open {code}",
-      "companyRef": "Company {id}"
+      "companyRef": "Company {id}",
+      "accountCode": "Account {code}"
     },
     "variance": {
       "plan": "Plan",

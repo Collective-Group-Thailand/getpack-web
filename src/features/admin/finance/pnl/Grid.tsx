@@ -10,11 +10,13 @@ import { Button } from "@/ui/components/Button";
 import { CellMark } from "@/ui/components/CellMark";
 import { Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
+import { Tooltip } from "@/ui/components/Tooltip";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 import { useGridNavigation } from "@/ui/lib/useGridNavigation";
 
 import { adminBrowserApis, problemMessage } from "../../console";
+import { CellTipContent, LineTipContent } from "./CellTip";
 import { usePnlFormat } from "./format";
 import {
   PNL_GROUPS,
@@ -53,6 +55,8 @@ export interface PnlGridProps {
   canEdit: boolean;
   /** An auto or overridden cell was asked to change — the reason dialog (D-472 item 4). */
   onOverride?: (line: PnlGridLine, cell: PnlCell) => void;
+  /** The records behind a cell — from its tooltip, or Shift+Enter on it. */
+  onDrill?: (line: PnlGridLine, cell: PnlCell) => void;
 }
 
 /**
@@ -66,7 +70,7 @@ export interface PnlGridProps {
  * tinted ground behind a rule and say so in the header, and open periods read "ยังไม่ปิดงวด". The web prints the API's
  * strings — no total, formula or variance is worked out here.
  */
-export function PnlGridView({ grid, canEdit, onOverride }: PnlGridProps) {
+export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps) {
   const t = useTranslations("finance.pnl.grid");
   const tEdit = useTranslations("finance.pnl.edit");
   const tStatus = useTranslations("status");
@@ -134,6 +138,11 @@ export function PnlGridView({ grid, canEdit, onOverride }: PnlGridProps) {
       }
       const target = at(position.row, position.col);
       if (!target) return false;
+      if (event.key === "Enter" && event.shiftKey) {
+        if (!target.cell.drillable || !onDrill) return false;
+        onDrill(target.line, target.cell);
+        return true;
+      }
       if (event.key === "Enter" || event.key === "F2") return startEdit(target.line, target.cell);
       if (/^[0-9.-]$/.test(event.key) && !event.ctrlKey && !event.metaKey && !event.altKey)
         return target.cell.mode === "manual" ? startEdit(target.line, target.cell, event.key) : false;
@@ -268,71 +277,93 @@ export function PnlGridView({ grid, canEdit, onOverride }: PnlGridProps) {
                   data-line={line.line.key}
                   className={cn(row.subtotal && "font-semibold", line.line.key === "net_profit" && "text-base")}
                 >
-                  <th
-                    scope="row"
-                    role="rowheader"
-                    {...nav.cellProps(r, 0)}
-                    className={cn(
-                      "bg-surface border-border sticky left-0 z-10 border-e px-4 py-2 text-start font-normal outline-none",
-                      "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:ring-inset",
-                      row.subtotal && "border-border-strong border-t font-semibold",
-                      line.line.key === "net_profit" && "bg-surface-subtle border-t-2",
-                      row.detail && "ps-8",
-                    )}
+                  <Tooltip
+                    side="right"
+                    align="start"
+                    contentClassName="max-w-80"
+                    content={<LineTipContent line={line.line} />}
                   >
-                    <LineLabel line={line} />
-                  </th>
+                    <th
+                      scope="row"
+                      role="rowheader"
+                      {...nav.cellProps(r, 0)}
+                      className={cn(
+                        "bg-surface border-border sticky left-0 z-10 border-e px-4 py-2 text-start font-normal outline-none",
+                        "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:ring-inset",
+                        row.subtotal && "border-border-strong border-t font-semibold",
+                        line.line.key === "net_profit" && "bg-surface-subtle border-t-2",
+                        row.detail && "ps-8",
+                      )}
+                    >
+                      <LineLabel line={line} />
+                    </th>
+                  </Tooltip>
                   {line.cells.map((cell, c) => {
                     const position = { row: r, col: c + 1 };
                     const isEditing = editing?.lineKey === line.line.key && editing.month === cell.month;
                     return (
-                      <td
+                      <Tooltip
                         key={cell.month}
-                        role="gridcell"
-                        {...nav.cellProps(r, c + 1)}
-                        aria-readonly={!canEdit || !line.line.editable || undefined}
-                        data-mode={cell.mode}
-                        data-month={cell.month}
-                        onDoubleClick={() => startEdit(line, cell)}
-                        onClick={() => {
-                          if (!isEditing && cell.mode === "manual" && cell.value === null) startEdit(line, cell);
-                        }}
-                        className={cell_({
-                          forecast: months[c]?.kind === "forecast",
-                          edge: c === firstForecast,
-                          subtotal: row.subtotal,
-                          netProfit: line.line.key === "net_profit",
-                          editing: isEditing,
-                        })}
-                      >
-                        {isEditing && editing ? (
-                          <CellEditor
-                            editing={editing}
-                            label={t("cellName", { line: format.label(line.line), month: format.month(cell.month) })}
-                            howToFill={format.text(line.line.howToFill)}
-                            onChange={(patch) => setEditing({ ...editing, ...patch, error: null })}
-                            onSave={() => void save(line, cell, position)}
-                            onCancel={() => close(position)}
+                        open={isEditing ? false : undefined}
+                        contentClassName="max-w-80"
+                        content={
+                          <CellTipContent
+                            line={line.line}
+                            cell={cell}
+                            month={months[c]}
+                            onDrill={onDrill ? () => onDrill(line, cell) : undefined}
                           />
-                        ) : (
-                          <CellValue line={line} cell={cell} canEdit={canEdit} />
-                        )}
-                      </td>
+                        }
+                      >
+                        <td
+                          role="gridcell"
+                          {...nav.cellProps(r, c + 1)}
+                          aria-readonly={!canEdit || !line.line.editable || undefined}
+                          data-mode={cell.mode}
+                          data-month={cell.month}
+                          onDoubleClick={() => startEdit(line, cell)}
+                          onClick={() => {
+                            if (!isEditing && cell.mode === "manual" && cell.value === null) startEdit(line, cell);
+                          }}
+                          className={cell_({
+                            forecast: months[c]?.kind === "forecast",
+                            edge: c === firstForecast,
+                            subtotal: row.subtotal,
+                            netProfit: line.line.key === "net_profit",
+                            editing: isEditing,
+                          })}
+                        >
+                          {isEditing && editing ? (
+                            <CellEditor
+                              editing={editing}
+                              label={t("cellName", { line: format.label(line.line), month: format.month(cell.month) })}
+                              howToFill={format.text(line.line.howToFill)}
+                              onChange={(patch) => setEditing({ ...editing, ...patch, error: null })}
+                              onSave={() => void save(line, cell, position)}
+                              onCancel={() => close(position)}
+                            />
+                          ) : (
+                            <CellValue line={line} cell={cell} canEdit={canEdit} />
+                          )}
+                        </td>
+                      </Tooltip>
                     );
                   })}
-                  <td
-                    role="gridcell"
-                    {...nav.cellProps(r, months.length + 1)}
-                    aria-readonly
-                    className={cn(
-                      "bg-surface-subtle border-border-strong border-s px-3 py-2 text-end font-medium whitespace-nowrap outline-none",
-                      "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:ring-inset",
-                      row.subtotal && "border-t",
-                      line.line.key === "net_profit" && "border-t-2",
-                    )}
-                  >
-                    {format.value(line.line, line.total)}
-                  </td>
+                  <Tooltip side="left" contentClassName="max-w-80" content={<LineTipContent line={line.line} />}>
+                    <td
+                      role="gridcell"
+                      {...nav.cellProps(r, months.length + 1)}
+                      aria-readonly
+                      className={cn(
+                        "bg-surface-subtle border-border-strong border-s px-3 py-2 text-end font-medium whitespace-nowrap outline-none",
+                        "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:ring-inset",
+                        row.subtotal && "border-t",
+                        line.line.key === "net_profit" && "border-t-2",
+                      )}
+                    >
+                      {format.value(line.line, line.total)}
+                    </td>
+                  </Tooltip>
                 </tr>
               );
             })}

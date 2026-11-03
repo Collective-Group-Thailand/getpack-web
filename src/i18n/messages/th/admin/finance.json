@@ -3217,7 +3217,6 @@
       "by": "{name} · {at}",
       "autoValue": "ค่าระบบ {value}",
       "drill": "ดูรายการที่มา",
-      "drillKey": "Shift+Enter",
       "noHowToFill": "มาจากตารางค่าเสื่อมของสินทรัพย์ถาวร ไม่ต้องกรอกเอง",
       "notSet": "ยังไม่ได้ตั้งอัตราสำรองหนี้สูญตามระดับเครดิต",
       "periodOpen": "งวดนี้ยังไม่ปิด ตัวเลขอาจเปลี่ยน",
@@ -3246,7 +3245,12 @@
         "assets": "สินทรัพย์ {count, plural, other {# รายการ}}",
         "citSme": "ใช้อัตรา SME",
         "citStandard": "อัตราปกติ {pct}"
-      }
+      },
+      "drillKeyHint": "(Shift+Enter)",
+      "formulaNoFill": "คำนวณจากบรรทัดอื่น ไม่ต้องกรอก",
+      "systemNoFill": "ระบบคำนวณจากยอดคงเหลือ ไม่ต้องกรอก",
+      "onlyRules": "เฉพาะกฎ {rules}",
+      "excludeRules": "ยกเว้นกฎ {rules}"
     },
     "sources": {
       "title": "รายการที่มา",
@@ -3270,7 +3274,8 @@
       "more": "แสดงเพิ่ม",
       "failed": "โหลดรายการที่มาไม่สำเร็จ",
       "open": "เปิด {code}",
-      "companyRef": "บริษัท {id}"
+      "companyRef": "บริษัท {id}",
+      "accountCode": "บัญชี {code}"
     },
     "variance": {
       "plan": "แผน",
