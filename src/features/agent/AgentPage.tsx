@@ -102,7 +102,7 @@ export async function AgentPager({
     <LinkPagination
       page={page}
       pages={pages}
-      hrefFor={(target) => (target === 1 ? path : `${path}?page=${target}`)}
+      hrefFor={(target) => (target === 1 ? path : `${path}${path.includes("?") ? "&" : "?"}page=${target}`)}
       linkAs={Link}
       labels={{ nav: t("nav"), previous: t("previous"), next: t("next"), page: (n) => t("page", { page: n }) }}
     />

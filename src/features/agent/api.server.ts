@@ -119,3 +119,127 @@ export async function getMyApplication(): Promise<AgentApplication | null> {
     throw error;
   }
 }
+
+/* ------------------------------------------------------------------------------- Phase 3 (D-468) */
+
+export type PipelineLead = Schemas["AgentLeadDto"];
+export type LeadActivity = Schemas["AgentLeadActivityDto"];
+export type AgentQuote = Schemas["AgentQuoteDto"];
+export type DiscountRequest = Schemas["AgentDiscountRequestDto"];
+export type PlaybookCard = Schemas["AgentPlaybookCardDto"];
+export type PlaybookContext = Schemas["AgentPlaybookContext"];
+export type CommissionForecast = Schemas["AgentCommissionForecastDto"];
+export type LeadView = Schemas["AgentLeadView"];
+export type LeadSort = Schemas["AgentLeadSort"];
+export type LeadStage = Schemas["AgentLeadStage"];
+
+export interface PipelineQuery {
+  view?: LeadView;
+  stage?: LeadStage;
+  q?: string;
+  sort?: LeadSort;
+  order?: "asc" | "desc";
+  cursor?: string;
+  limit?: number;
+}
+
+/** The pipeline (`store.agentLeads.list`): one view, filters, a cursor. */
+export async function getPipeline(query: PipelineQuery): Promise<{ data: PipelineLead[]; nextCursor: string | null }> {
+  const { data } = await (await api()).GET("/v1/store/agent/leads/pipeline", {
+    params: {
+      query: {
+        ...(query.view ? { view: query.view } : {}),
+        ...(query.stage ? { stage: [query.stage] } : {}),
+        ...(query.q ? { q: query.q } : {}),
+        ...(query.sort ? { sort: query.sort } : {}),
+        ...(query.order ? { order: query.order } : {}),
+        ...(query.cursor ? { cursor: query.cursor } : {}),
+        limit: query.limit ?? 50,
+      },
+    },
+  });
+  return { data: data?.data ?? [], nextCursor: data?.meta.nextCursor ?? null };
+}
+
+/** One lead with the ETag an edit needs (`store.agentLeads.get`); `null` when it is not mine. */
+export async function getLead(leadId: string): Promise<{ lead: PipelineLead; etag: string | null } | null> {
+  try {
+    const { data, response } = await (
+      await api()
+    ).GET("/v1/store/agent/leads/{leadId}", { params: { path: { leadId } } });
+    return data ? { lead: data, etag: response.headers.get("ETag") } : null;
+  } catch (error) {
+    if (isApiError(error) && (error.status === 404 || error.status === 422)) return null;
+    throw error;
+  }
+}
+
+/** The lead's timeline, newest first (`store.agentLeads.listActivities`). */
+export async function getLeadActivities(leadId: string): Promise<LeadActivity[]> {
+  const { data } = await (
+    await api()
+  ).GET("/v1/store/agent/leads/{leadId}/activities", { params: { path: { leadId }, query: { limit: 100 } } });
+  return data?.data ?? [];
+}
+
+/** My quotes on behalf (`store.agentQuotes.list`), of one lead or all. */
+export async function getAgentQuotes(
+  query: { leadId?: string; status?: AgentQuote["status"]; page?: number } = {},
+): Promise<Page<AgentQuote>> {
+  const { data } = await (await api()).GET("/v1/store/agent/quotes", {
+    params: {
+      query: {
+        ...(query.leadId ? { leadId: query.leadId } : {}),
+        ...(query.status ? { status: query.status } : {}),
+        page: query.page ?? 1,
+        perPage: 25,
+      },
+    },
+  });
+  return data!;
+}
+
+export async function getAgentQuote(agentQuoteId: string): Promise<AgentQuote | null> {
+  try {
+    const { data } = await (
+      await api()
+    ).GET("/v1/store/agent/quotes/{agentQuoteId}", { params: { path: { agentQuoteId } } });
+    return data ?? null;
+  } catch (error) {
+    if (isApiError(error) && (error.status === 404 || error.status === 422)) return null;
+    throw error;
+  }
+}
+
+/** Every round of a quote's discount requests, oldest first (`store.agentQuotes.discountRequests`). */
+export async function getDiscountRequests(agentQuoteId: string): Promise<DiscountRequest[]> {
+  const { data } = await (
+    await api()
+  ).GET("/v1/store/agent/quotes/{agentQuoteId}/discount-requests", { params: { path: { agentQuoteId } } });
+  return data ?? [];
+}
+
+/** The published playbook cards for the agent, for one context or all (`store.agentPlaybook.get`). */
+export async function getPlaybook(context?: PlaybookContext): Promise<PlaybookCard[]> {
+  const { data } = await (
+    await api()
+  ).GET("/v1/store/agent/playbook", { params: { query: context ? { context } : {} } });
+  return data?.data ?? [];
+}
+
+/** Expected commission per order with its expected payable date (`store.agentCommissions.forecast`, F47). */
+export async function getForecast(): Promise<CommissionForecast> {
+  const { data } = await (await api()).GET("/v1/store/agent/commissions/forecast");
+  return data!;
+}
+
+export type QuotableProduct = Schemas["StoreProductCardDto"];
+
+/**
+ * The products an agent can price on a lead's behalf (D-468 §2: instant products only — the same public catalogue
+ * getpack.co shows, read through the agent zone's allow-list).
+ */
+export async function getQuotableProducts(): Promise<QuotableProduct[]> {
+  const { data } = await (await api()).GET("/v1/store/catalog/products", { params: { query: { perPage: 60 } } });
+  return (data?.data ?? []).filter((product) => product.availability === "instant");
+}

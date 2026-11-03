@@ -375,5 +375,14 @@ export type AgentPlanVersionStatus = Schemas["AgentPlanVersionStatus"];
 /** A factory brought in by an agent (D-419). **Source: contract** (v0.65.0). */
 export type AgentFactoryLinkStatus = Schemas["AgentFactoryLinkStatus"];
 
+/** Where a lead stands in the agent's pipeline (D-468). **Source: contract**. */
+export type AgentLeadStage = Schemas["AgentLeadStage"];
+/** An agent's quote on behalf of a lead (D-468). **Source: contract**. */
+export type AgentQuoteStatus = Schemas["AgentQuoteStatus"];
+/** A discount request round (D-468). **Source: contract**. */
+export type AgentDiscountRequestStatus = Schemas["AgentDiscountRequestStatus"];
+/** One order in the commission forecast (D-468, F47). **Source: contract**. */
+export type AgentForecastStatus = Schemas["AgentForecastStatus"];
+
 /** A reorder suggestion in the CS queue (D-288). **Source: contract** (v0.66.0). */
 export type ReorderSuggestionStatus = Schemas["ReorderSuggestionStatus"];

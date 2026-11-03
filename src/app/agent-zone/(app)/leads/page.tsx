@@ -1,110 +1,182 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { RegisterLead, WithdrawLead } from "@/features/agent/leads/LeadActions";
-import { PortalTable } from "@/ui/components/PortalTable";
-import { AgentPage, AgentPager, pageOf } from "@/features/agent/AgentPage";
-import { getMyLeads } from "@/features/agent/api.server";
+import { AgentPage } from "@/features/agent/AgentPage";
+import { getPipeline, type LeadSort, type LeadStage, type LeadView } from "@/features/agent/api.server";
 import { requireActiveAgent } from "@/features/agent/context.server";
+import { PendingDrafts } from "@/features/agent/drafts/PendingDrafts";
+import { ExportLeads } from "@/features/agent/pipeline/ExportLeads";
+import { LeadBoard } from "@/features/agent/pipeline/LeadBoard";
+import { LeadCard } from "@/features/agent/pipeline/LeadCard";
+import { LeadFilters } from "@/features/agent/pipeline/LeadFilters";
+import { LeadTable } from "@/features/agent/pipeline/LeadTable";
+import { NewLead } from "@/features/agent/pipeline/NewLead";
+import { PipelineEmpty } from "@/features/agent/pipeline/PipelineEmpty";
 import { zoneOrigin } from "@/lib/zones/origin.server";
-import { getFormat } from "@/features/shared/format/server";
-import Link from "next/link";
 import { Button } from "@/ui/components/Button";
-import { EmptyState } from "@/ui/components/EmptyState";
-import { AGENT_LEAD_STATUS } from "@/domain/status";
-import { StatusChip } from "@/features/shared/status/StatusChip";
+import { ViewTabs } from "@/ui/components/ViewTabs";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("agentZone.titles");
   return { title: t("leads") };
 }
 
+type Search = {
+  view?: string;
+  stage?: string;
+  q?: string;
+  sort?: string;
+  order?: string;
+  cursor?: string;
+  layout?: string;
+};
+
+/** The list's four views (D-468 §1): ทั้งหมด = the open pipeline; closed ones have their own view. */
+const VIEWS = [
+  { key: "all", view: "open" },
+  { key: "today", view: "follow_up_today" },
+  { key: "ending", view: "protection_ending" },
+  { key: "closed", view: "closed" },
+] as const satisfies readonly { key: string; view: LeadView }[];
+const STAGES = new Set<LeadStage>(["new", "contacted", "quoted", "negotiating", "won", "lost"]);
+const SORTS = new Set<LeadSort>(["createdAt", "updatedAt", "nextFollowUpAt", "protectedUntil", "expectedValue"]);
+
 /**
- * Prospects the agent registered (D-417, D-419): protected from other agents until their date, linked
- * when they sign up or apply as a company (customer leads only, D-464).
+ * ลูกค้ามุ่งหวัง (D-468, PROMPT P3 Web 1): the pipeline in four views. A phone shows cards (filters in a bottom
+ * sheet), a tablet two columns of cards, a desktop a sortable table — or a board by stage — with export and import.
+ * Every card and row carries "ย้ายไปขั้น…"; leads kept on the device while offline sit above the list as "รอส่ง".
  */
-export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<Search> }) {
   const { agent, programme } = await requireActiveAgent();
-  const page = pageOf((await searchParams).page);
-  const [t, tz, tt, format, list, storefront] = await Promise.all([
-    getTranslations("agent.leads"),
+  const search = await searchParams;
+  const tab = VIEWS.find((candidate) => candidate.key === search.view) ?? VIEWS[0];
+  const stage = STAGES.has(search.stage as LeadStage) ? (search.stage as LeadStage) : undefined;
+  const sort = SORTS.has(search.sort as LeadSort) ? (search.sort as LeadSort) : "updatedAt";
+  const order = search.order === "asc" ? "asc" : "desc";
+  const q = search.q?.trim().slice(0, 100) || undefined;
+  const board = search.layout === "board" && tab.view !== "closed";
+  const [t, tz, list, storefront] = await Promise.all([
+    getTranslations("agentSales.list"),
     getTranslations("agentZone.titles"),
-    getTranslations("agent.table"),
-    getFormat(),
-    getMyLeads(page),
+    getPipeline({
+      view: tab.view,
+      stage,
+      q,
+      sort,
+      order,
+      cursor: board ? undefined : search.cursor,
+      limit: board ? 100 : 50,
+    }),
     zoneOrigin("customer"),
   ]);
+  const active = agent.status === "active";
   const partnerPageUrl = `${storefront}/partner-with-us`;
+
+  const hrefWith = (changes: Record<string, string | undefined>) => {
+    const params = new URLSearchParams();
+    const merged = { view: tab.key === "all" ? undefined : tab.key, stage, q, sort: sort === "updatedAt" ? undefined : sort, order: order === "desc" ? undefined : order, layout: board ? "board" : undefined, ...changes };
+    for (const [key, value] of Object.entries(merged)) if (value) params.set(key, value);
+    const query = params.toString();
+    return query ? `/leads?${query}` : "/leads";
+  };
+  const sortHref = (key: LeadSort) =>
+    hrefWith({
+      sort: key === "updatedAt" && sort !== key ? undefined : key,
+      order: sort === key ? (order === "asc" ? "desc" : "asc") : key === "expectedValue" || key === "updatedAt" ? undefined : "asc",
+      cursor: undefined,
+    });
+  const filtered = Boolean(stage || q);
+
   return (
     <AgentPage
       title={tz("leads")}
       intro={t("intro", { days: programme.leadProtectionDays })}
       actions={
-        agent.status === "active" ? (
-          <RegisterLead protectionDays={programme.leadProtectionDays} partnerPageUrl={partnerPageUrl} fab />
-        ) : null
+        <>
+          <ExportLeads />
+          <Button asChild variant="secondary" iconStart="upload" className="max-sm:hidden">
+            <Link href="/leads/import">{t("import")}</Link>
+          </Button>
+          {active ? <NewLead protectionDays={programme.leadProtectionDays} partnerPageUrl={partnerPageUrl} /> : null}
+        </>
       }
     >
-      {list.data.length === 0 ? (
-        <EmptyState
-          icon="user-plus"
-          title={t("empty")}
-          description={t("emptyHint")}
-          action={
-            agent.status === "active" ? (
-              <RegisterLead protectionDays={programme.leadProtectionDays} partnerPageUrl={partnerPageUrl} />
-            ) : (
-              <Button asChild variant="secondary">
-                <Link href="/">{t("emptyAction")}</Link>
-              </Button>
-            )
-          }
-        />
-      ) : (
-        <PortalTable
-          caption={tz("leads")}
-          columns={[
-            { key: "lead", label: tt("lead"), className: "md:w-[30%]" },
-            { key: "kind", label: tt("kind"), className: "md:whitespace-nowrap" },
-            { key: "contact", label: tt("contact") },
-            { key: "protection", label: tt("protection"), className: "md:whitespace-nowrap" },
-            { key: "status", label: tt("status"), className: "md:whitespace-nowrap" },
-            { key: "actions", label: tt("actions"), srOnly: true, className: "text-end md:w-px md:whitespace-nowrap" },
-          ]}
-          rows={list.data.map((lead) => ({
-            id: lead.id,
-            phoneSubtitle: lead.organisationName,
-            cells: {
-              lead: (
-                <span className="block min-w-0">
-                  <span className="block font-semibold">{lead.contactName}</span>
-                  {lead.organisationName ? (
-                    <span className="text-muted hidden text-xs font-normal md:block">{lead.organisationName}</span>
-                  ) : null}
-                </span>
-              ),
-              kind: t(`kinds.${lead.kind}`),
-              contact: (
-                <span className="text-sm break-all tabular-nums">
-                  {[lead.phone, lead.email, lead.taxId].filter(Boolean).join(" · ")}
-                </span>
-              ),
-              protection: (
-                <span className="text-sm">
-                  {lead.status === "registered"
-                    ? t("protectedUntil", { date: format.date(lead.protectedUntil) })
-                    : lead.status === "converted"
-                      ? t("convertedAt", { date: format.date(lead.convertedAt) })
-                      : (lead.closedReason ?? "—")}
-                </span>
-              ),
-              status: <StatusChip map={AGENT_LEAD_STATUS} value={lead.status} />,
-              actions: lead.status === "registered" ? <WithdrawLead leadId={lead.id} name={lead.contactName} /> : null,
-            },
+      <div className="flex flex-col gap-4">
+        <ViewTabs
+          label={t("views")}
+          current={tab.key}
+          items={VIEWS.map((view) => ({
+            key: view.key,
+            href: view.key === "all" ? "/leads" : `/leads?view=${view.key}`,
+            label: t(`viewLabels.${view.key}`),
           }))}
         />
+        <LeadFilters boardAvailable={tab.view !== "closed"} />
+      </div>
+
+      <PendingDrafts />
+
+      {list.data.length === 0 ? (
+        <PipelineEmpty
+          view={tab.key}
+          filtered={filtered}
+          clearHref={hrefWith({ stage: undefined, q: undefined })}
+          action={
+            active && tab.key === "all" && !filtered ? (
+              <NewLead protectionDays={programme.leadProtectionDays} partnerPageUrl={partnerPageUrl} fab={false} />
+            ) : null
+          }
+        />
+      ) : board ? (
+        <>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:hidden">
+            {list.data.map((lead) => (
+              <li key={lead.id}>
+                <LeadCard lead={lead} />
+              </li>
+            ))}
+          </ul>
+          <div className="hidden lg:block">
+            <LeadBoard leads={list.data} />
+          </div>
+        </>
+      ) : (
+        <>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:hidden" aria-label={t("listLabel")}>
+            {list.data.map((lead) => (
+              <li key={lead.id}>
+                <LeadCard lead={lead} />
+              </li>
+            ))}
+          </ul>
+          <div className="hidden lg:block">
+            <LeadTable
+              leads={list.data}
+              caption={t("tableCaption", { view: t(`viewLabels.${tab.key}`) })}
+              sort={sort}
+              order={order}
+              sortHrefs={{
+                nextFollowUpAt: sortHref("nextFollowUpAt"),
+                protectedUntil: sortHref("protectedUntil"),
+                expectedValue: sortHref("expectedValue"),
+                updatedAt: sortHref("updatedAt"),
+              }}
+            />
+          </div>
+        </>
       )}
-      <AgentPager page={page} total={list.meta.total} perPage={list.meta.perPage} path="/leads" />
+
+      {list.nextCursor && !board ? (
+        <div className="flex justify-center">
+          <Button asChild variant="secondary" iconStart="chevron-down">
+            <Link href={hrefWith({ cursor: list.nextCursor })}>{t("more")}</Link>
+          </Button>
+        </div>
+      ) : null}
+      <Button asChild variant="link" className="self-start sm:hidden">
+        <Link href="/leads/import">{t("importPhone")}</Link>
+      </Button>
     </AgentPage>
   );
 }

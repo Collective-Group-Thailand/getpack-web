@@ -91,6 +91,7 @@ const NAMESPACES = [
   "partnerLedger",
   "docBranding",
   "agentZone",
+  "agentSales",
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -208,7 +209,7 @@ export const ZONE_NAMESPACES = {
    * getpack Agent (D-467): its own shell, sign-in and settings (`agentZone`), and the programme's copy the moved
    * agent pages already used (`agent`, shared with the storefront's landing and application).
    */
-  agent: ["common", "auth", "status", "problems", "agent", "agentZone"],
+  agent: ["common", "auth", "status", "problems", "agent", "agentZone", "agentSales"],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
 type Loader = () => Promise<{ default: Record<string, unknown> }>;
@@ -287,6 +288,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     partnerLedger: () => import("./th/partner/ledger.json"),
     docBranding: () => import("./th/common/document-branding.json"),
     agentZone: () => import("./th/agent/zone.json"),
+    agentSales: () => import("./th/agent/sales.json"),
   },
   en: {
     common: () => import("./en/common/common.json"),
@@ -361,6 +363,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     partnerLedger: () => import("./en/partner/ledger.json"),
     docBranding: () => import("./en/common/document-branding.json"),
     agentZone: () => import("./en/agent/zone.json"),
+    agentSales: () => import("./en/agent/sales.json"),
   },
 };
 
