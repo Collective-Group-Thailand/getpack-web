@@ -254,7 +254,7 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
           {canReports ? <History leadId={a.lead.id} /> : null}
         </div>
 
-        <aside className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-20">
+        <aside className="order-first flex min-w-0 flex-col gap-4 xl:sticky xl:top-20 xl:order-none">
           {decidable ? (
             <DecisionPanel approval={a} onDone={refresh} />
           ) : (

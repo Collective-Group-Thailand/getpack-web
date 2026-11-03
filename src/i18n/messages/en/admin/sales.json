@@ -30,7 +30,8 @@
       "status": "Status",
       "assignee": "Owner",
       "sla": "First response",
-      "actions": "Actions"
+      "actions": "Actions",
+      "statusOwner": "Status and owner"
     },
     "sources": {
       "contact_form": "Contact form",
@@ -125,7 +126,8 @@
       "phoneInvalid": "Phone number not valid, e.g. 0812345678",
       "done": "{name} added",
       "failed": "Could not add"
-    }
+    },
+    "ownerLine": "Owner: {name}"
   },
   "pipeline": {
     "title": "Leads",
@@ -339,7 +341,7 @@
     "all": "All",
     "search": "Search customer, quote number or agent code",
     "columns": {
-      "quote": "Customer and quote",
+      "quote": "Customer, quote and requester",
       "agent": "Asked by",
       "pct": "Discount asked",
       "level": "Decided at",
@@ -365,7 +367,9 @@
     "awaitingMe": "Waiting for me",
     "empty": "No requests in this view",
     "emptyHint": "Discount requests from quotes arrive here by themselves.",
-    "toQuotes": "Go to quotes"
+    "toQuotes": "Go to quotes",
+    "askedBy": "Asked by {name} ({code}) · {kind}",
+    "askedAt": "Asked {at}"
   },
   "approval": {
     "pageTitle": "Discount request",
@@ -526,7 +530,7 @@
     "template": "Payment schedule",
     "templateNone": "As requested",
     "depositPct": "Deposit (%)",
-    "ratePct": "Option commission (%)",
+    "ratePct": "Commission (%)",
     "ratePctHint": "Lower = co-fund, higher = spiff",
     "level": "Level needed:",
     "levels": {
@@ -769,7 +773,11 @@
       },
       "ofClosed": "{lost} of {closed}",
       "legend": "Share:",
-      "legendSteps": ["10–24%", "25–39%", "40%+"],
+      "legendSteps": [
+        "10–24%",
+        "25–39%",
+        "40%+"
+      ],
       "empty": "No closed deals in this range",
       "toDashboard": "Go to the team dashboard"
     },

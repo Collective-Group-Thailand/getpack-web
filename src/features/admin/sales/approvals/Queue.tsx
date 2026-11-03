@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { SALES_AUTHORITY_LEVEL, SALES_DISCOUNT_APPROVAL_STATUS } from "@/domain/status";
-import { useFormat, When } from "@/features/shared/format";
+import { useFormat } from "@/features/shared/format";
 import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 import { SlaTimer } from "@/ui/components/SlaTimer";
@@ -35,24 +35,15 @@ export function ApprovalsQueue({ initial }: { initial: InitialPage<ApprovalSumma
       id: "quote",
       header: t("columns.quote"),
       cell: (row) => (
-        <div className="flex max-w-[20rem] min-w-0 flex-col">
+        <div className="flex max-w-[22rem] min-w-0 flex-col">
           <Link href={`/sales/approvals/${row.id}`} className="text-primary truncate font-medium hover:underline">
             {row.lead.organisationName ?? row.lead.contactName}
           </Link>
           <span className="text-muted text-xs tabular-nums">
             {row.quote.quoteCode ?? "—"} · {t("round", { round: row.round })}
           </span>
-        </div>
-      ),
-    },
-    {
-      id: "agent",
-      header: t("columns.agent"),
-      cell: (row) => (
-        <div className="flex min-w-0 flex-col">
-          <span className="max-w-[12rem] truncate text-sm">{row.agent.legalName}</span>
-          <span className="text-muted text-xs tabular-nums">
-            {row.agent.code} · {t(`kinds.${row.agent.kind}`)}
+          <span className="text-muted truncate text-xs">
+            {t("askedBy", { name: row.agent.legalName, code: row.agent.code, kind: t(`kinds.${row.agent.kind}`) })}
           </span>
         </div>
       ),
@@ -100,6 +91,9 @@ export function ApprovalsQueue({ initial }: { initial: InitialPage<ApprovalSumma
               absolute={t("dueAt", { at: format.dateTime(row.dueAt) })}
             />
             {row.escalatedAt ? <span className="text-danger text-xs">{t("escalated")}</span> : null}
+            <span className="text-muted text-xs">
+              {t("askedAt", { at: format.dateTime(row.createdAt, { style: "dayMonth" }) })}
+            </span>
           </div>
         ) : (
           <span className="text-muted text-xs">
@@ -113,7 +107,6 @@ export function ApprovalsQueue({ initial }: { initial: InitialPage<ApprovalSumma
       header: t("columns.status"),
       cell: (row) => <StatusChip map={SALES_DISCOUNT_APPROVAL_STATUS} value={row.status} />,
     },
-    { id: "createdAt", header: t("columns.created"), cell: (row) => <When at={row.createdAt} /> },
   ];
   const filters: FilterDef[] = [
     {

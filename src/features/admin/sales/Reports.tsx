@@ -412,7 +412,7 @@ export function PostDealReport() {
           <section className="border-border bg-surface rounded-card flex flex-col gap-3 border p-4 sm:p-5">
             <h2 className="text-base font-semibold">{t("dealsTitle")}</h2>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[52rem] text-sm">
+              <table className="w-full min-w-[38rem] text-sm">
                 <caption className="sr-only">{t("dealsTitle")}</caption>
                 <thead className="text-muted text-xs">
                   <tr className="border-border border-b">
@@ -432,7 +432,7 @@ export function PostDealReport() {
                 <tbody>
                   {d.deals.map((deal) => (
                     <tr key={deal.approvalId} className="border-border border-b last:border-0">
-                      <th scope="row" className="py-2.5 pe-3 text-start font-normal">
+                      <th scope="row" className="max-w-[24rem] py-2.5 pe-3 text-start font-normal">
                         <span className="block font-medium">{deal.customerName}</span>
                         <span className="text-muted block text-xs tabular-nums">
                           {t("dealLine", {

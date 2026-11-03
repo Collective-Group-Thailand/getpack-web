@@ -83,7 +83,7 @@ export function LeadTable({
               {t("lead")}
             </th>
             {extraColumn ? (
-              <th scope="col" className="px-3 py-2.5 text-start font-medium">
+              <th scope="col" className="hidden px-3 py-2.5 text-start font-medium xl:table-cell">
                 {extraColumn.header}
               </th>
             ) : null}
@@ -112,12 +112,13 @@ export function LeadTable({
                 {lead.organisationName ? (
                   <span className="text-muted block max-w-[22rem] truncate text-xs">{lead.organisationName}</span>
                 ) : null}
-                {/* Below 1280 px the protection column folds under the name. */}
+                {/* Below 1280 px the extra and protection columns fold under the name. */}
+                {extraColumn ? <span className="mt-1 block xl:hidden">{extraColumn.cell(lead)}</span> : null}
                 <span className="mt-1 block text-xs xl:hidden">
                   <ProtectionText lead={lead} />
                 </span>
               </td>
-              {extraColumn ? <td className="px-3 py-3">{extraColumn.cell(lead)}</td> : null}
+              {extraColumn ? <td className="hidden px-3 py-3 xl:table-cell">{extraColumn.cell(lead)}</td> : null}
               <td className="px-3 py-3 whitespace-nowrap">
                 <StatusChip map={AGENT_LEAD_STAGE} value={lead.stage} />
               </td>

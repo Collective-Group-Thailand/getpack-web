@@ -85,28 +85,22 @@ export function Inbox({ initial }: { initial: InitialPage<SalesInbound> | null }
       id: "contact",
       header: t("columns.contact"),
       cell: (row) => (
-        <div className="flex max-w-[22rem] min-w-0 flex-col">
+        <div className="flex max-w-[20rem] min-w-0 flex-col">
           <span className="truncate font-semibold">{row.contactName}</span>
           {row.organisationName ? <span className="text-muted truncate text-xs">{row.organisationName}</span> : null}
           {row.need ? <span className="text-muted line-clamp-1 text-xs">{row.need}</span> : null}
-        </div>
-      ),
-    },
-    {
-      id: "reach",
-      header: t("columns.reach"),
-      cell: (row) => (
-        <div className="flex flex-col text-xs">
-          {row.contactPhone ? (
-            <a href={`tel:${row.contactPhone}`} className="text-link tabular-nums hover:underline">
-              {displayPhone(row.contactPhone)}
-            </a>
-          ) : null}
-          {row.contactEmail ? (
-            <a href={`mailto:${row.contactEmail}`} className="text-link max-w-48 truncate hover:underline">
-              {row.contactEmail}
-            </a>
-          ) : null}
+          <span className="mt-0.5 flex flex-wrap gap-x-3 text-xs">
+            {row.contactPhone ? (
+              <a href={`tel:${row.contactPhone}`} className="text-link whitespace-nowrap tabular-nums hover:underline">
+                {displayPhone(row.contactPhone)}
+              </a>
+            ) : null}
+            {row.contactEmail ? (
+              <a href={`mailto:${row.contactEmail}`} className="text-link max-w-56 truncate hover:underline">
+                {row.contactEmail}
+              </a>
+            ) : null}
+          </span>
         </div>
       ),
     },
@@ -115,33 +109,30 @@ export function Inbox({ initial }: { initial: InitialPage<SalesInbound> | null }
       header: t("columns.source"),
       cell: (row) => (
         <div className="flex flex-col text-sm">
-          <span>{t(`sources.${row.source}`)}</span>
-          {row.sourceRef ? <span className="text-muted text-xs tabular-nums">{row.sourceRef}</span> : null}
-        </div>
-      ),
-    },
-    {
-      id: "status",
-      header: t("columns.status"),
-      cell: (row) => (
-        <div className="flex flex-col items-start gap-1">
-          <StatusChip map={SALES_INBOUND_STATUS} value={row.status} />
-          {row.leadRefusal ? <span className="text-warning-subtle-fg text-xs">{t("leadRefused")}</span> : null}
-          {row.disqualifiedReason ? (
-            <span className="text-muted text-xs">{t(`disqualify.reasons.${row.disqualifiedReason}`)}</span>
+          <span className="whitespace-nowrap">{t(`sources.${row.source}`)}</span>
+          {row.sourceRef ? (
+            <span className="text-muted text-xs whitespace-nowrap tabular-nums">{row.sourceRef}</span>
           ) : null}
         </div>
       ),
     },
     {
-      id: "assignee",
-      header: t("columns.assignee"),
-      cell: (row) =>
-        row.assignee ? (
-          <span className="text-sm">{row.assignee.displayName}</span>
-        ) : (
-          <span className="text-warning-subtle-fg text-sm font-medium">{t("unassigned")}</span>
-        ),
+      id: "status",
+      header: t("columns.statusOwner"),
+      cell: (row) => (
+        <div className="flex max-w-[16rem] flex-col items-start gap-1">
+          <StatusChip map={SALES_INBOUND_STATUS} value={row.status} />
+          {row.leadRefusal ? <span className="text-warning-subtle-fg text-xs">{t("leadRefused")}</span> : null}
+          {row.disqualifiedReason ? (
+            <span className="text-muted text-xs">{t(`disqualify.reasons.${row.disqualifiedReason}`)}</span>
+          ) : null}
+          {row.assignee ? (
+            <span className="text-xs">{t("ownerLine", { name: row.assignee.displayName })}</span>
+          ) : (
+            <span className="text-warning-subtle-fg text-xs font-medium">{t("unassigned")}</span>
+          )}
+        </div>
+      ),
     },
     {
       id: "sla",
