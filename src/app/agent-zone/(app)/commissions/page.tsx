@@ -4,7 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { PortalTable } from "@/ui/components/PortalTable";
 import { SummaryCards } from "@/ui/components/SummaryCards";
 import { AgentPage, AgentPager, pageOf } from "@/features/agent/AgentPage";
-import { getMyCommissions } from "@/features/agent/api.server";
+import { getForecast, getMyCommissions } from "@/features/agent/api.server";
+import { Forecast } from "@/features/agent/forecast/Forecast";
+import { ViewTabs } from "@/ui/components/ViewTabs";
 import { requireActiveAgent } from "@/features/agent/context.server";
 import { getFormat } from "@/features/shared/format/server";
 import Link from "next/link";
@@ -22,17 +24,30 @@ export async function generateMetadata(): Promise<Metadata> {
  * Every commission entry (D-418, D-419): an order's commission waits for its claim window and payment,
  * then is earned and goes on the month's statement; refunds come back as negative entries.
  */
-export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string; view?: string }> }) {
   const { agent } = await requireActiveAgent();
-  const page = pageOf((await searchParams).page);
+  const search = await searchParams;
+  const page = pageOf(search.page);
+  const forecastView = search.view === "forecast";
   const [t, tt, tHome, tz, format, list] = await Promise.all([
     getTranslations("agent.commissions"),
     getTranslations("agent.table"),
     getTranslations("agent.home"),
     getTranslations("agentZone.titles"),
     getFormat(),
-    getMyCommissions(page),
+    forecastView ? null : getMyCommissions(page),
   ]);
+  const tViews = await getTranslations("agentSales.forecast");
+  const views = (
+    <ViewTabs
+      label={tViews("views")}
+      current={forecastView ? "forecast" : "entries"}
+      items={[
+        { key: "entries", href: "/commissions", label: tViews("entries") },
+        { key: "forecast", href: "/commissions?view=forecast", label: tViews("forecast") },
+      ]}
+    />
+  );
   return (
     <AgentPage
       title={tz("commissions")}
@@ -72,7 +87,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
           { key: "paid", label: tHome("paidThisYear"), value: format.thb(agent.totals.paidThisYear), icon: "wallet" },
         ]}
       />
-      {list.data.length === 0 ? (
+      {views}
+      {forecastView ? (
+        <Forecast forecast={await getForecast()} />
+      ) : !list ? null : list.data.length === 0 ? (
         <EmptyState
           icon="coins"
           title={t("empty")}
@@ -138,7 +156,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
           }))}
         />
       )}
-      <AgentPager page={page} total={list.meta.total} perPage={list.meta.perPage} path="/commissions" />
+      {list ? <AgentPager page={page} total={list.meta.total} perPage={list.meta.perPage} path="/commissions" /> : null}
     </AgentPage>
   );
 }
