@@ -37,13 +37,13 @@ export function LeadTable({
 }) {
   const t = useTranslations("agentSales.list");
   const format = useFormat();
-  const header = (key: keyof typeof sortHrefs, label: string, numeric = false) => {
+  const header = (key: keyof typeof sortHrefs, label: string, numeric = false, className?: string) => {
     const active = sort === key;
     return (
       <th
         scope="col"
         aria-sort={active ? (order === "asc" ? "ascending" : "descending") : undefined}
-        className={cn("px-3 py-2.5 font-medium", numeric ? "text-end" : "text-start")}
+        className={cn("px-3 py-2.5 font-medium", numeric ? "text-end" : "text-start", className)}
       >
         <Link
           href={sortHrefs[key]}
@@ -65,7 +65,7 @@ export function LeadTable({
     );
   };
   return (
-    <div className="border-border bg-surface rounded-card overflow-x-auto border">
+    <div className="border-border bg-surface rounded-card relative overflow-x-auto border">
       <table className="w-full border-collapse text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-surface-subtle text-muted text-xs">
@@ -77,9 +77,9 @@ export function LeadTable({
               {t("stageColumn")}
             </th>
             {header("nextFollowUpAt", t("followUp"))}
-            {header("protectedUntil", t("protection"))}
+            {header("protectedUntil", t("protection"), false, "hidden xl:table-cell")}
             {header("expectedValue", t("expectedValue"), true)}
-            {header("updatedAt", t("updated"))}
+            {header("updatedAt", t("updated"), false, "hidden xl:table-cell")}
             <th scope="col" className="px-3 py-2.5 pe-4 text-end font-medium">
               <span className="sr-only">{t("actions")}</span>
             </th>
@@ -98,20 +98,26 @@ export function LeadTable({
                 {lead.organisationName ? (
                   <span className="text-muted block max-w-[22rem] truncate text-xs">{lead.organisationName}</span>
                 ) : null}
+                {/* Below 1280 px the protection column folds under the name. */}
+                <span className="mt-1 block text-xs xl:hidden">
+                  <ProtectionText lead={lead} />
+                </span>
               </td>
               <td className="px-3 py-3 whitespace-nowrap">
                 <StatusChip map={AGENT_LEAD_STAGE} value={lead.stage} />
               </td>
-              <td className="px-3 py-3 whitespace-nowrap">
+              <td className="px-3 py-3 xl:whitespace-nowrap">
                 <FollowUpText at={lead.nextFollowUpAt} />
               </td>
-              <td className="px-3 py-3 whitespace-nowrap">
+              <td className="hidden px-3 py-3 whitespace-nowrap xl:table-cell">
                 <ProtectionText lead={lead} />
               </td>
               <td className="px-3 py-3 text-end whitespace-nowrap tabular-nums">
                 {lead.expectedValue ? format.thb(lead.expectedValue) : <span className="text-muted">—</span>}
               </td>
-              <td className="text-muted px-3 py-3 whitespace-nowrap">{format.date(lead.updatedAt, { style: "dayMonth" })}</td>
+              <td className="text-muted hidden px-3 py-3 whitespace-nowrap xl:table-cell">
+                {format.date(lead.updatedAt, { style: "dayMonth" })}
+              </td>
               <td className="px-3 py-3 pe-4 text-end whitespace-nowrap">
                 <StageMenu leadId={lead.id} name={lead.contactName} stage={lead.stage} />
               </td>

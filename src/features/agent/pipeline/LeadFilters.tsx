@@ -80,9 +80,6 @@ export function LeadFilters({ boardAvailable }: { boardAvailable: boolean }) {
             className="[&_input]:min-h-11 sm:[&_input]:min-h-0"
           />
         </Field>
-        <Button type="submit" variant="secondary" className="min-h-11 sm:hidden">
-          {t("searchAction")}
-        </Button>
         <Button
           type="button"
           variant="secondary"

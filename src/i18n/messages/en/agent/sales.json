@@ -71,7 +71,6 @@
   "filters": {
     "search": "Search leads",
     "searchPlaceholder": "Name, shop, phone, e-mail or LINE",
-    "searchAction": "Search",
     "clear": "Clear search",
     "filters": "Filters",
     "stage": "Stage",
@@ -431,7 +430,8 @@
     "withdrawTitle": "Withdraw this quote?",
     "withdrawBody": "The link sent to {name} stops working at once. This cannot be undone.",
     "withdrawConfirm": "Withdraw quote",
-    "withdrawn": "Quote withdrawn"
+    "withdrawn": "Quote withdrawn",
+    "manage": "Manage this quote"
   },
   "discount": {
     "title": "Discount",

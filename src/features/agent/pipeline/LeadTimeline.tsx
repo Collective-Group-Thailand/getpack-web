@@ -11,7 +11,7 @@ type Activity = Schemas["AgentLeadActivityDto"];
 
 const KIND_ICON: Record<Activity["kind"], IconName> = {
   call: "phone",
-  line: "line",
+  line: "chat",
   visit: "map-pin",
   email: "mail",
   note: "edit",

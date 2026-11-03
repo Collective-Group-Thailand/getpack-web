@@ -71,7 +71,7 @@ export default async function Page({ params }: { params: Promise<{ leadId: strin
   const rows = [
     { key: "phone", icon: "phone" as const, value: lead.phone ? displayPhone(lead.phone) : null, href: lead.phone ? `tel:${lead.phone}` : null },
     { key: "email", icon: "mail" as const, value: lead.email, href: lead.email ? `mailto:${lead.email}` : null },
-    { key: "lineId", icon: "line" as const, value: lead.lineId, href: null },
+    { key: "lineId", icon: "chat" as const, value: lead.lineId, href: null },
     { key: "taxId", icon: "building" as const, value: lead.taxId, href: null },
     { key: "industry", icon: "tag" as const, value: lead.industry, href: null },
   ];
@@ -241,7 +241,7 @@ export default async function Page({ params }: { params: Promise<{ leadId: strin
             {playbook.slice(0, 1).map((card) => (
               <PlaybookCard key={card.id} card={card} compact />
             ))}
-            <Link href="/playbook" className="text-link -mt-3 self-start text-sm underline-offset-2 hover:underline">
+            <Link href="/playbook" className="text-primary -mt-3 self-start text-sm font-medium underline underline-offset-2">
               {t("allPlaybook")}
             </Link>
           </div>

@@ -84,10 +84,10 @@ export function PlaybookLibrary({ cards }: { cards: Card[] }) {
       {shown.length === 0 ? (
         <EmptyState icon="search" title={t("noMatch")} description={t("noMatchBody")} />
       ) : (
-        <ul className="grid gap-4 lg:grid-cols-2">
+        <ul className="grid items-start gap-4 lg:grid-cols-2">
           {shown.map((card) => (
             <li key={card.id}>
-              <PlaybookCard card={card} headingLevel={2} className="h-full" />
+              <PlaybookCard card={card} headingLevel={2} />
             </li>
           ))}
         </ul>

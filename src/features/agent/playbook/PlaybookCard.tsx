@@ -154,7 +154,7 @@ export function PlaybookCard({
                       <Button size="sm" variant="secondary" iconStart="copy" className="min-h-11 sm:min-h-8" onClick={() => void copy(text)}>
                         {t("copy")}
                       </Button>
-                      <Button asChild size="sm" variant="secondary" iconStart="line" className="min-h-11 sm:min-h-8">
+                      <Button asChild size="sm" variant="secondary" iconStart="chat" className="min-h-11 sm:min-h-8">
                         <a href={lineShareUrl(text)} target="_blank" rel="noopener noreferrer">
                           {t("sendLine")}
                         </a>

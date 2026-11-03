@@ -394,20 +394,19 @@ export function NewQuoteFlow({ lead, products }: { lead: Lead; products: Product
                       }
                     }}
                   >
-                    <Field
-                      label={t("customQuantity")}
-                      hint={t("quantityRange", {
-                        min: format.number(configurator.quantity.min ?? 1),
-                        max: configurator.quantity.max ? format.number(configurator.quantity.max) : "—",
-                      })}
-                      className="min-w-0 flex-1 sm:max-w-48"
-                    >
+                    <Field label={t("customQuantity")} className="min-w-0 flex-1 sm:max-w-48">
                       <Input inputMode="numeric" value={custom} onChange={(event) => setCustom(event.target.value.replace(/[^0-9]/g, ""))} />
                     </Field>
                     <Button type="submit" variant="secondary" className="min-h-11 sm:min-h-0" disabled={!custom || quantities.length >= MAX_QUANTITIES}>
                       {t("addQuantity")}
                     </Button>
                   </form>
+                  <p className="text-muted mt-1 text-xs">
+                    {t("quantityRange", {
+                      min: format.number(configurator.quantity.min ?? 1),
+                      max: configurator.quantity.max ? format.number(configurator.quantity.max) : "—",
+                    })}
+                  </p>
                 </Section>
                 <Section id="delivery" wide={wide} open={openSection === "delivery"} onToggle={() => setOpenSection((cur) => (cur === "delivery" ? "" : "delivery"))} title={t("delivery")} summary={postcode || t("noPostcode")}>
                   <Field label={t("postcode")} hint={t("postcodeHint")} error={postcodeOk ? undefined : t("postcodeInvalid")}>

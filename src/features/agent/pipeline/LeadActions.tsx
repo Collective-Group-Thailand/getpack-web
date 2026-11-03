@@ -27,7 +27,7 @@ type Lead = Schemas["AgentLeadDto"];
 type EntryKind = Schemas["AgentLeadActivityEntryKind"];
 const KINDS: readonly { kind: EntryKind; icon: IconName }[] = [
   { kind: "call", icon: "phone" },
-  { kind: "line", icon: "line" },
+  { kind: "line", icon: "chat" },
   { kind: "visit", icon: "map-pin" },
   { kind: "email", icon: "mail" },
   { kind: "note", icon: "edit" },
@@ -95,7 +95,7 @@ export function LeadActionBar({ lead, closed }: { lead: Lead; closed: boolean })
             <a href={tel}>{t("call")}</a>
           </Button>
         ) : null}
-        <Button asChild variant="secondary" iconStart="line">
+        <Button asChild variant="secondary" iconStart="chat">
           <a href={line} target="_blank" rel="noopener noreferrer">
             {t("line")}
           </a>
@@ -113,7 +113,7 @@ export function LeadActionBar({ lead, closed }: { lead: Lead; closed: boolean })
       </div>
       <MobileActionBar className={cn("grid gap-1 px-2 py-1.5 pe-[max(0.5rem,env(safe-area-inset-right))] ps-[max(0.5rem,env(safe-area-inset-left))] sm:hidden", closed ? "grid-cols-2" : "grid-cols-4")}>
         {phoneAction({ icon: "phone", label: t("call"), href: tel })}
-        {phoneAction({ icon: "line", label: t("line"), href: line, external: true })}
+        {phoneAction({ icon: "chat", label: t("line"), href: line, external: true })}
         {closed ? null : phoneAction({ icon: "send", label: t("sendQuoteShort"), href: quoteHref })}
         {closed ? null : phoneAction({ icon: "edit", label: t("logShort"), onClick: () => setLog(true) })}
       </MobileActionBar>

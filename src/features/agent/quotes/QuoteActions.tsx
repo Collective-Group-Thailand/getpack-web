@@ -43,7 +43,11 @@ export function QuoteActions({ quote }: { quote: AgentQuote }) {
   const path = { params: { path: { agentQuoteId: quote.id } } };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <section aria-labelledby="quote-manage" className="border-border bg-surface rounded-card flex flex-col gap-3 border p-4 sm:p-5">
+      <h2 id="quote-manage" className="font-semibold">
+        {t("manage")}
+      </h2>
+      <div className="flex flex-wrap gap-2">
       {quote.dealRegistration ? null : (
         <Button
           variant="secondary"
@@ -83,6 +87,7 @@ export function QuoteActions({ quote }: { quote: AgentQuote }) {
           )
         }
       />
-    </div>
+      </div>
+    </section>
   );
 }
