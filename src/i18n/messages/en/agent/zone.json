@@ -16,7 +16,8 @@
       "sell": "Selling",
       "earn": "Earnings",
       "account": "Account"
-    }
+    },
+    "playbook": "Sales playbook"
   },
   "shell": {
     "home": "getpack Agent overview",
@@ -128,6 +129,14 @@
         "title": "A lead's hold is ending",
         "body": "7 days and 1 day before a lead is no longer held for you"
       },
+      "follow_up_due": {
+        "title": "Time to follow up",
+        "body": "At the date and time you set; never at night — it waits until the morning"
+      },
+      "quote_opened": {
+        "title": "A customer opened your quote",
+        "body": "The first time a customer opens a quote link you sent"
+      },
       "commission_earned": {
         "title": "Commission earned",
         "body": "When an order's commission is ready for the monthly statement"
@@ -238,6 +247,7 @@
   "titles": {
     "leads": "Leads",
     "commissions": "Commission",
-    "statements": "Statements and 50 Tawi"
+    "statements": "Statements and 50 Tawi",
+    "playbook": "Sales playbook"
   }
 }

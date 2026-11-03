@@ -16,7 +16,8 @@ export type AgentNavKey =
   | "payout"
   | "tax"
   | "notifications"
-  | "profile";
+  | "profile"
+  | "playbook";
 
 export interface AgentNavItem {
   key: AgentNavKey;
@@ -39,6 +40,7 @@ export const RAIL_ITEMS: readonly AgentNavItem[] = [
   ...TAB_ITEMS,
   item("customers", "users"),
   item("statements", "receipt"),
+  item("playbook", "article"),
 ];
 
 /** The desktop sidebar, in groups. */
@@ -50,6 +52,7 @@ export const SIDEBAR_GROUPS: readonly { key: "sell" | "earn" | "account"; items:
       item("leads", "user-plus"),
       item("customers", "users"),
       item("quotes", "document"),
+      item("playbook", "article"),
     ],
   },
   { key: "earn", items: [item("commissions", "coins"), item("statements", "receipt")] },
@@ -66,6 +69,8 @@ export const SIDEBAR_GROUPS: readonly { key: "sell" | "earn" | "account"; items:
 
 /** The profile menu in the header. */
 export const PROFILE_MENU: readonly AgentNavItem[] = [
+  // คู่มือการขาย sits here on a phone and a tablet (no fifth tab, D-468); the sidebar has it too.
+  item("playbook", "article"),
   item("profile", "user"),
   item("payout", "wallet"),
   item("tax", "calculator"),

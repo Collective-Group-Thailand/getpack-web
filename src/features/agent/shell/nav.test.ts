@@ -11,7 +11,7 @@ describe("getpack Agent navigation (D-467)", () => {
   it("reaches every page from the sidebar, and the account pages from the profile menu", () => {
     const sidebar = SIDEBAR_GROUPS.flatMap((group) => group.items.map((item) => item.key));
     for (const key of RAIL_ITEMS.map((item) => item.key)) expect(sidebar).toContain(key);
-    expect(PROFILE_MENU.map((item) => item.key)).toEqual(["profile", "payout", "tax", "notifications"]);
+    expect(PROFILE_MENU.map((item) => item.key)).toEqual(["playbook", "profile", "payout", "tax", "notifications"]);
   });
 
   it("marks the current page, the home tab only at /", () => {
