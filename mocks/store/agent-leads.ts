@@ -267,7 +267,11 @@ function seedActivities(): Map<string, Activity[]> {
     activity(LEAD_IDS.wira, { kind: "line", occurredAt: bangkokAt(-7, 19), body: "ขอสเปกกล่องของฝากชุดปีใหม่" }),
   ]);
   add(LEAD_IDS.chujai, [
-    activity(LEAD_IDS.chujai, { kind: "call", occurredAt: bangkokAt(-6, 16), body: "ยังไม่สะดวกคุย ให้โทรกลับต้นเดือน" }),
+    activity(LEAD_IDS.chujai, {
+      kind: "call",
+      occurredAt: bangkokAt(-6, 16),
+      body: "ยังไม่สะดวกคุย ให้โทรกลับต้นเดือน",
+    }),
   ]);
   add(LEAD_IDS.somsak, [
     activity(LEAD_IDS.somsak, { kind: "line", occurredAt: bangkokAt(-2, 9), body: "ส่งรูปกล่องเดิมมาให้ดู" }),
@@ -335,14 +339,17 @@ const STAGE_ORDER: Stage[] = ["new", "contacted", "quoted", "negotiating"];
 function moveForward(row: Lead, to: Stage, event: Schemas["AgentLeadSystemEvent"] | null) {
   if (row.stage === "won" || row.stage === "lost") return;
   if (STAGE_ORDER.indexOf(to) <= STAGE_ORDER.indexOf(row.stage)) return;
-  addActivity(row.id, activity(row.id, {
-    kind: "stage_change",
-    author: "system",
-    event,
-    fromStage: row.stage,
-    toStage: to,
-    occurredAt: bangkokIso(),
-  }));
+  addActivity(
+    row.id,
+    activity(row.id, {
+      kind: "stage_change",
+      author: "system",
+      event,
+      fromStage: row.stage,
+      toStage: to,
+      occurredAt: bangkokIso(),
+    }),
+  );
   row.stage = to;
   row.stageChangedAt = bangkokIso();
   touch(row);
@@ -384,21 +391,34 @@ const isOpen = (row: Lead) => ["registered", "converted"].includes(row.status) &
 
 function filterLeads(url: URL): Lead[] {
   const view = url.searchParams.get("view");
-  const stages = url.searchParams.getAll("stage").flatMap((value) => value.split(",")).filter(Boolean);
+  const stages = url.searchParams
+    .getAll("stage")
+    .flatMap((value) => value.split(","))
+    .filter(Boolean);
   const source = url.searchParams.get("source");
   const due = url.searchParams.get("due");
   const q = url.searchParams.get("q")?.trim().toLowerCase();
   const now = Date.now();
   return leads.filter((row) => {
     if (view === "open" && !isOpen(row)) return false;
-    if (view === "follow_up_today" && !(isOpen(row) && row.nextFollowUpAt && Date.parse(row.nextFollowUpAt) <= endOfTodayMs()))
+    if (
+      view === "follow_up_today" &&
+      !(isOpen(row) && row.nextFollowUpAt && Date.parse(row.nextFollowUpAt) <= endOfTodayMs())
+    )
       return false;
     if (
       view === "protection_ending" &&
-      !(row.status === "registered" && Date.parse(row.protectedUntil) > now && Date.parse(row.protectedUntil) <= now + 7 * 86_400_000)
+      !(
+        row.status === "registered" &&
+        Date.parse(row.protectedUntil) > now &&
+        Date.parse(row.protectedUntil) <= now + 7 * 86_400_000
+      )
     )
       return false;
-    if (view === "closed" && !(["won", "lost"].includes(row.stage) || ["expired", "withdrawn", "rejected"].includes(row.status)))
+    if (
+      view === "closed" &&
+      !(["won", "lost"].includes(row.stage) || ["expired", "withdrawn", "rejected"].includes(row.status))
+    )
       return false;
     if (stages.length && !stages.includes(row.stage)) return false;
     if (source && row.source !== source) return false;
@@ -482,7 +502,7 @@ function ensureSeeded() {
         ratePct: rate.toFixed(2),
         standardRatePct: "5.00",
         commissionAmount: (Math.round(after * rate) / 100).toFixed(2),
-        conditionsTh: `ราคานี้สำหรับ ${quote.quantity.toLocaleString("th-TH")} ใบ · มัดจำ 50% · ชำระภายใน 7 วัน · สั่งภายใน ${bangkokAt(6, 0).slice(0, 10)}`,
+        conditionsTh: `ราคานี้สำหรับ ${quote.quantity.toLocaleString("th-TH")} ใบ · มัดจำ 50% · ชำระภายใน 7 วัน · สั่งภายใน ${thaiDate(bangkokAt(6, 0))}`,
         conditionsEn: `For ${quote.quantity} pcs · 50% deposit · paid within 7 days · order by ${bangkokAt(6, 0).slice(0, 10)}`,
         validUntil: bangkokAt(6, 23, 59),
         acceptedAt: null,
@@ -506,7 +526,14 @@ function ensureSeeded() {
         leadTimeFlexDays: null,
         specChange: null,
         competitorFile: null,
-        competitorSpec: { boardGrade: "อาร์ตการ์ด 300 แกรม", printColours: 4, printSides: 1, quantity: 1000, price: "11500.00", vatIncluded: false },
+        competitorSpec: {
+          boardGrade: "อาร์ตการ์ด 300 แกรม",
+          printColours: 4,
+          printSides: 1,
+          quantity: 1000,
+          price: "11500.00",
+          vatIncluded: false,
+        },
         decisionNote: null,
         createdAt: bangkokAt(-1, 15),
         decidedAt: bangkokAt(-1, 17),
@@ -527,7 +554,10 @@ function createQuote(
   const product = productOfId(raw.catalogProductId as string | undefined);
   if (!product) return problem(404, "http.not_found", "ไม่พบสินค้านี้");
   const quantity = raw.quantities?.[0];
-  if (!quantity) return problem(422, "validation.failed", "ระบุจำนวน", [{ path: "configuration.quantities", code: "required", message: "ระบุจำนวน" }]);
+  if (!quantity)
+    return problem(422, "validation.failed", "ระบุจำนวน", [
+      { path: "configuration.quantities", code: "required", message: "ระบุจำนวน" },
+    ]);
   const inputs = inputsOf(productTypeCode, { ...raw, quantities: [quantity] });
   if (inputs instanceof Response) return inputs;
   const quote = buildQuote(
@@ -539,7 +569,10 @@ function createQuote(
   if (quote instanceof Response) return quote;
   quotesOf(QUOTE_PERSONA).unshift(quote);
   const row = leads.find((candidate) => candidate.id === leadId)!;
-  const token = Array.from({ length: 43 }, (_, i) => "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"[(i * 7 + seq) % 56]).join("");
+  const token = Array.from(
+    { length: 43 },
+    (_, i) => "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"[(i * 7 + seq) % 56],
+  ).join("");
   seq += 1;
   const sentAt = daysAgo ? bangkokAt(-daysAgo, 11) : bangkokIso();
   const record = {
@@ -571,7 +604,8 @@ function toAgentQuote(record: (typeof agentQuotes)[number], request: Request): A
   const quote = findQuote(record.quoteId);
   const saved = quote ? toSavedQuote(quote) : null;
   const expired = saved?.status === "expired";
-  const status = record.status === "withdrawn" || record.status === "accepted" ? record.status : expired ? "expired" : record.status;
+  const status =
+    record.status === "withdrawn" || record.status === "accepted" ? record.status : expired ? "expired" : record.status;
   const { quoteId: _q, token, ...rest } = record;
   void _q;
   return {
@@ -610,7 +644,7 @@ const PLAYBOOK: Schemas["AgentPlaybookCardDto"][] = [
     "pricing-principle",
     ["all"],
     "ราคาเดียวกันสำหรับทุกคน ส่วนลดต้องแลกด้วยเงื่อนไข",
-    "ราคาบนเว็บ getpack เป็นราคาที่ลูกค้าทุกรายเห็นเท่ากัน ถ้าลูกค้าต้องการราคาที่ถูกกว่านี้ ให้ถามก่อนว่า \"ถ้าเราปรับราคาให้ คุณลูกค้าสะดวกปรับเงื่อนไขไหนได้บ้าง\"\n\nค่าคอมของคุณคิดจากราคาขายจริง การรักษาราคาไว้จึงเป็นประโยชน์กับคุณโดยตรง",
+    'ราคาบนเว็บ getpack เป็นราคาที่ลูกค้าทุกรายเห็นเท่ากัน ถ้าลูกค้าต้องการราคาที่ถูกกว่านี้ ให้ถามก่อนว่า "ถ้าเราปรับราคาให้ คุณลูกค้าสะดวกปรับเงื่อนไขไหนได้บ้าง"\n\nค่าคอมของคุณคิดจากราคาขายจริง การรักษาราคาไว้จึงเป็นประโยชน์กับคุณโดยตรง',
   ),
   card(
     "give-get-menu",
@@ -634,7 +668,9 @@ const PLAYBOOK: Schemas["AgentPlaybookCardDto"][] = [
     ["discount_request"],
     "เจรจาได้รอบเดียวต่อใบเสนอราคา",
     "ระบบรับคำขอส่วนลดได้ 1 รอบต่อใบเสนอราคา ถ้าลูกค้ากลับมาขอเพิ่มเพราะเจ้าอื่นลดอีก เราไม่ลดตาม นอกจากเงื่อนไขจะเปลี่ยนจริง",
-    ["ราคานี้เป็นราคาที่ดีที่สุดของเราสำหรับเงื่อนไขนี้แล้วค่ะ/ครับ ถ้าอยากได้ราคาดีขึ้นอีก เราปรับได้ถ้าเพิ่มจำนวนหรือทำเป็นสัญญารายงวด"],
+    [
+      "ราคานี้เป็นราคาที่ดีที่สุดของเราสำหรับเงื่อนไขนี้แล้วค่ะ/ครับ ถ้าอยากได้ราคาดีขึ้นอีก เราปรับได้ถ้าเพิ่มจำนวนหรือทำเป็นสัญญารายงวด",
+    ],
   ),
   card(
     "short-validity",
@@ -681,18 +717,85 @@ function forecast(): Schemas["AgentCommissionForecastDto"] {
   const plus = (date: string, days: number) =>
     new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
   const items: Schemas["AgentForecastItemDto"][] = [
-    { orderCode: "OR-2611-00071", status: "in_progress", isFirstOrder: true, expectedBase: "42000.00", ratePct: "5", expectedCommission: "2100.00", earnableOn: null, statementOn: null, expectedPayableOn: null, waitingFor: "completion" },
-    { orderCode: "OR-2610-00058", status: "pending", isFirstOrder: false, expectedBase: "15500.00", ratePct: "3", expectedCommission: "465.00", earnableOn: plus(today, 4), statementOn: firstOfNext, expectedPayableOn: plus(firstOfNext, 15), waitingFor: "claim_window" },
-    { orderCode: "OR-2610-00044", status: "pending", isFirstOrder: true, expectedBase: "12000.00", ratePct: "5", expectedCommission: "600.00", earnableOn: null, statementOn: null, expectedPayableOn: null, waitingFor: "payment" },
-    { orderCode: "OR-2610-00031", status: "earned", isFirstOrder: true, expectedBase: "16610.00", ratePct: "5", expectedCommission: "830.50", earnableOn: plus(today, -6), statementOn: firstOfNext, expectedPayableOn: plus(firstOfNext, 15), waitingFor: "statement" },
-    { orderCode: "OR-2609-00012", status: "paid", isFirstOrder: true, expectedBase: "84000.00", ratePct: "5", expectedCommission: "4200.00", earnableOn: plus(today, -40), statementOn: plus(today, -33), expectedPayableOn: plus(today, -20), waitingFor: null },
+    {
+      orderCode: "OR-2611-00071",
+      status: "in_progress",
+      isFirstOrder: true,
+      expectedBase: "42000.00",
+      ratePct: "5",
+      expectedCommission: "2100.00",
+      earnableOn: null,
+      statementOn: null,
+      expectedPayableOn: null,
+      waitingFor: "completion",
+    },
+    {
+      orderCode: "OR-2610-00058",
+      status: "pending",
+      isFirstOrder: false,
+      expectedBase: "15500.00",
+      ratePct: "3",
+      expectedCommission: "465.00",
+      earnableOn: plus(today, 4),
+      statementOn: firstOfNext,
+      expectedPayableOn: plus(firstOfNext, 15),
+      waitingFor: "claim_window",
+    },
+    {
+      orderCode: "OR-2610-00044",
+      status: "pending",
+      isFirstOrder: true,
+      expectedBase: "12000.00",
+      ratePct: "5",
+      expectedCommission: "600.00",
+      earnableOn: null,
+      statementOn: null,
+      expectedPayableOn: null,
+      waitingFor: "payment",
+    },
+    {
+      orderCode: "OR-2610-00031",
+      status: "earned",
+      isFirstOrder: true,
+      expectedBase: "16610.00",
+      ratePct: "5",
+      expectedCommission: "830.50",
+      earnableOn: plus(today, -6),
+      statementOn: firstOfNext,
+      expectedPayableOn: plus(firstOfNext, 15),
+      waitingFor: "statement",
+    },
+    {
+      orderCode: "OR-2609-00012",
+      status: "paid",
+      isFirstOrder: true,
+      expectedBase: "84000.00",
+      ratePct: "5",
+      expectedCommission: "4200.00",
+      earnableOn: plus(today, -40),
+      statementOn: plus(today, -33),
+      expectedPayableOn: plus(today, -20),
+      waitingFor: null,
+    },
   ];
   return { asOf: bangkokIso(), paymentTermsDays: 15, payoutProfileReady: false, totalExpected: "3995.50", items };
 }
 
 /* -------------------------------------------------------------------------------------- import */
 
-const IMPORT_HEADERS = ["contact_name", "organisation_name", "phone", "email", "tax_id", "line_id", "industry", "tags", "expected_value", "next_follow_up_at", "note"];
+const IMPORT_HEADERS = [
+  "contact_name",
+  "organisation_name",
+  "phone",
+  "email",
+  "tax_id",
+  "line_id",
+  "industry",
+  "tags",
+  "expected_value",
+  "next_follow_up_at",
+  "note",
+];
 const THAI_ALIASES: Record<string, string> = {
   ชื่อผู้ติดต่อ: "contact_name",
   ชื่อร้านหรือบริษัท: "organisation_name",
@@ -735,14 +838,19 @@ function parseCsv(text: string): string[][] {
   return rows.filter((cells) => cells.some((value) => value.trim()));
 }
 
-function previewImport(csv: string): Schemas["AgentLeadImportDto"] & { pending: Lead[] } | Response {
+function previewImport(csv: string): (Schemas["AgentLeadImportDto"] & { pending: Lead[] }) | Response {
   const rows = parseCsv(csv);
-  if (rows.length === 0) return problem(422, "validation.failed", "ไฟล์ว่าง", [{ path: "csv", code: "empty", message: "empty" }]);
+  if (rows.length === 0)
+    return problem(422, "validation.failed", "ไฟล์ว่าง", [{ path: "csv", code: "empty", message: "empty" }]);
   const header = rows[0]!.map((name) => THAI_ALIASES[name.trim()] ?? name.trim().toLowerCase());
   if (!header.includes("contact_name"))
-    return problem(422, "validation.failed", "ไม่พบหัวคอลัมน์ contact_name", [{ path: "csv", code: "header", message: "header" }]);
+    return problem(422, "validation.failed", "ไม่พบหัวคอลัมน์ contact_name", [
+      { path: "csv", code: "header", message: "header" },
+    ]);
   if (rows.length - 1 > 500)
-    return problem(422, "validation.failed", "เกิน 500 แถว", [{ path: "csv", code: "too_many_rows", message: "too_many_rows" }]);
+    return problem(422, "validation.failed", "เกิน 500 แถว", [
+      { path: "csv", code: "too_many_rows", message: "too_many_rows" },
+    ]);
   const pending: Lead[] = [];
   const seen = new Set<string>();
   const out = rows.slice(1).map((cells, index) => {
@@ -767,7 +875,8 @@ function previewImport(csv: string): Schemas["AgentLeadImportDto"] & { pending: 
     if (key) seen.add(key);
     if (errors.length === 0) {
       const check = availability({ phone: phoneRaw || null, email: email || null, taxId: taxId || null });
-      if (!check.available) errors.push({ field: phoneRaw ? "phone" : email ? "email" : "tax_id", code: check.reason! });
+      if (!check.available)
+        errors.push({ field: phoneRaw ? "phone" : email ? "email" : "tax_id", code: check.reason! });
     }
     const phone = phoneRaw && /^0\d{8,9}$/.test(phoneRaw) ? `+66${phoneRaw.slice(1)}` : null;
     if (errors.length === 0) {
@@ -781,7 +890,12 @@ function previewImport(csv: string): Schemas["AgentLeadImportDto"] & { pending: 
           taxId: taxId || null,
           lineId: value("line_id") || null,
           industry: value("industry") || null,
-          tags: value("tags") ? value("tags").split("|").map((tag) => tag.trim()).filter(Boolean) : [],
+          tags: value("tags")
+            ? value("tags")
+                .split("|")
+                .map((tag) => tag.trim())
+                .filter(Boolean)
+            : [],
           expectedValue: amount ? Number(amount).toFixed(2) : null,
           note: value("note") || null,
           source: "csv_import",
@@ -833,21 +947,30 @@ export const storeAgentLeadHandlers = [
     if (record.status === "sent") {
       record.status = "opened";
       record.openedAt = bangkokIso();
-      addActivity(record.lead.id, activity(record.lead.id, {
-        kind: "system",
-        author: "system",
-        event: "quote_opened",
-        agentQuoteId: record.id,
-        occurredAt: bangkokIso(),
-      }));
+      addActivity(
+        record.lead.id,
+        activity(record.lead.id, {
+          kind: "system",
+          author: "system",
+          event: "quote_opened",
+          agentQuoteId: record.id,
+          occurredAt: bangkokIso(),
+        }),
+      );
     }
-    return HttpResponse.json({ ...toSavedQuote(quote), agentCode: MOCK_AGENT_CODE } satisfies Schemas["SharedQuoteDto"]);
+    return HttpResponse.json({
+      ...toSavedQuote(quote),
+      agentCode: MOCK_AGENT_CODE,
+    } satisfies Schemas["SharedQuoteDto"]);
   }),
 
   // A customer claims the agent's code after signing in (D-417): a lead with the same phone or e-mail converts.
   http.post("*/v1/store/agent/claims", async ({ request }) => {
     const customer = customerOf(request);
-    const body = (await request.clone().json().catch(() => null)) as { code?: string } | null;
+    const body = (await request
+      .clone()
+      .json()
+      .catch(() => null)) as { code?: string } | null;
     if (!customer || body?.code !== MOCK_AGENT_CODE) return undefined;
     const match = leads.find(
       (row) =>
@@ -858,12 +981,15 @@ export const storeAgentLeadHandlers = [
       match.status = "converted";
       match.convertedAt = bangkokIso();
       touch(match);
-      addActivity(match.id, activity(match.id, {
-        kind: "system",
-        author: "system",
-        event: "converted",
-        occurredAt: bangkokIso(),
-      }));
+      addActivity(
+        match.id,
+        activity(match.id, {
+          kind: "system",
+          author: "system",
+          event: "converted",
+          occurredAt: bangkokIso(),
+        }),
+      );
       for (const record of agentQuotes.filter((row) => row.lead.id === match.id && row.status === "opened")) {
         record.status = "accepted";
         record.acceptedAt = bangkokIso();
@@ -918,7 +1044,23 @@ export const storeAgentLeadHandlers = [
 
   http.get("*/v1/store/agent/leads/export", ({ request }) => {
     if (!isAgent(request)) return undefined;
-    const cols = ["contact_name", "organisation_name", "phone", "email", "tax_id", "line_id", "industry", "tags", "stage", "source", "expected_value", "next_follow_up_at", "status", "protected_until", "created_at"];
+    const cols = [
+      "contact_name",
+      "organisation_name",
+      "phone",
+      "email",
+      "tax_id",
+      "line_id",
+      "industry",
+      "tags",
+      "stage",
+      "source",
+      "expected_value",
+      "next_follow_up_at",
+      "status",
+      "protected_until",
+      "created_at",
+    ];
     const safe = (value: string | null | undefined) => {
       const text = value ?? "";
       const guarded = /^[=+\-@]/.test(text) ? `'${text}` : text;
@@ -956,7 +1098,9 @@ export const storeAgentLeadHandlers = [
     if (!isAgent(request)) return undefined;
     const body = (await request.json()) as Schemas["PreviewAgentLeadImportDto"];
     if (!body.consentConfirmed)
-      return problem(422, "validation.failed", "ต้องยืนยันความยินยอม", [{ path: "consentConfirmed", code: "required", message: "required" }]);
+      return problem(422, "validation.failed", "ต้องยืนยันความยินยอม", [
+        { path: "consentConfirmed", code: "required", message: "required" },
+      ]);
     const result = previewImport(body.csv ?? "");
     if (result instanceof Response) return result;
     imports.set(result.id, result);
@@ -998,7 +1142,8 @@ export const storeAgentLeadHandlers = [
     const body = (await request.json()) as Schemas["RegisterAgentLeadDto"];
     const check = availability(body);
     if (check.reason === "own_lead") return problem(409, "agents.lead_duplicate", "ลงทะเบียนซ้ำ");
-    if (check.reason === "unavailable") return problem(409, "agents.lead_unavailable", "ลงทะเบียนผู้มุ่งหวังรายนี้ไม่ได้");
+    if (check.reason === "unavailable")
+      return problem(409, "agents.lead_unavailable", "ลงทะเบียนผู้มุ่งหวังรายนี้ไม่ได้");
     const row = lead({
       id: nextId("lead"),
       contactName: body.contactName,
@@ -1031,8 +1176,14 @@ export const storeAgentLeadHandlers = [
     if (!row) return notMine();
     const body = (await request.json()) as Schemas["AddAgentLeadActivityDto"];
     if (!body.body?.trim())
-      return problem(422, "validation.failed", "เขียนสิ่งที่คุยกัน", [{ path: "body", code: "required", message: "required" }]);
-    const entry = activity(row.id, { kind: body.kind, body: body.body.trim(), occurredAt: body.occurredAt ?? bangkokIso() });
+      return problem(422, "validation.failed", "เขียนสิ่งที่คุยกัน", [
+        { path: "body", code: "required", message: "required" },
+      ]);
+    const entry = activity(row.id, {
+      kind: body.kind,
+      body: body.body.trim(),
+      occurredAt: body.occurredAt ?? bangkokIso(),
+    });
     addActivity(row.id, entry);
     if (body.nextFollowUpAt !== undefined) row.nextFollowUpAt = body.nextFollowUpAt;
     if (row.stage === "new") moveForward(row, "contacted", null);
@@ -1045,17 +1196,23 @@ export const storeAgentLeadHandlers = [
     const row = findLead(params.leadId);
     if (!row) return notMine();
     const body = (await request.json()) as Schemas["ChangeAgentLeadStageDto"];
-    if (row.stage === "won" || row.stage === "lost") return problem(409, "agents.lead_stage_final", "ลูกค้ามุ่งหวังรายนี้ปิดแล้ว");
+    if (row.stage === "won" || row.stage === "lost")
+      return problem(409, "agents.lead_stage_final", "ลูกค้ามุ่งหวังรายนี้ปิดแล้ว");
     if (body.stage === "lost" && !body.lostReason)
-      return problem(422, "validation.failed", "เลือกเหตุผล", [{ path: "lostReason", code: "required", message: "required" }]);
-    addActivity(row.id, activity(row.id, {
-      kind: "stage_change",
-      fromStage: row.stage,
-      toStage: body.stage,
-      event: body.stage === "lost" ? "lost" : null,
-      body: body.note ?? null,
-      occurredAt: bangkokIso(),
-    }));
+      return problem(422, "validation.failed", "เลือกเหตุผล", [
+        { path: "lostReason", code: "required", message: "required" },
+      ]);
+    addActivity(
+      row.id,
+      activity(row.id, {
+        kind: "stage_change",
+        fromStage: row.stage,
+        toStage: body.stage,
+        event: body.stage === "lost" ? "lost" : null,
+        body: body.note ?? null,
+        occurredAt: bangkokIso(),
+      }),
+    );
     row.stage = body.stage;
     row.stageChangedAt = bangkokIso();
     if (body.stage === "lost") {
@@ -1092,7 +1249,8 @@ export const storeAgentLeadHandlers = [
         row.id,
       );
       if (check.reason === "own_lead") return problem(409, "agents.lead_duplicate", "ลงทะเบียนซ้ำ");
-      if (check.reason === "unavailable") return problem(409, "agents.lead_unavailable", "ลงทะเบียนผู้มุ่งหวังรายนี้ไม่ได้");
+      if (check.reason === "unavailable")
+        return problem(409, "agents.lead_unavailable", "ลงทะเบียนผู้มุ่งหวังรายนี้ไม่ได้");
     }
     Object.assign(row, body);
     touch(row);
@@ -1106,9 +1264,9 @@ export const storeAgentLeadHandlers = [
     const url = new URL(request.url);
     const leadId = url.searchParams.get("leadId");
     const status = url.searchParams.get("status");
-    const all = agentQuotes.map((row) => toAgentQuote(row, request)).filter(
-      (row) => (!leadId || row.lead.id === leadId) && (!status || row.status === status),
-    );
+    const all = agentQuotes
+      .map((row) => toAgentQuote(row, request))
+      .filter((row) => (!leadId || row.lead.id === leadId) && (!status || row.status === status));
     const page = Number(url.searchParams.get("page") ?? 1) || 1;
     const perPage = Math.min(Number(url.searchParams.get("perPage") ?? 25) || 25, 100);
     return HttpResponse.json({
@@ -1123,9 +1281,14 @@ export const storeAgentLeadHandlers = [
     const body = (await request.json()) as Schemas["CreateAgentQuoteDto"];
     const row = findLead(body.leadId);
     if (!row) return notMine();
-    if (row.stage === "won" || row.stage === "lost" || row.status !== "registered" && row.status !== "converted")
+    if (row.stage === "won" || row.stage === "lost" || (row.status !== "registered" && row.status !== "converted"))
       return problem(409, "agents.lead_closed", "ลูกค้ามุ่งหวังรายนี้ปิดแล้ว");
-    const created = createQuote(row.id, body.productTypeCode, body.configuration as Record<string, unknown>, body.deliveryPostcode);
+    const created = createQuote(
+      row.id,
+      body.productTypeCode,
+      body.configuration as Record<string, unknown>,
+      body.deliveryPostcode,
+    );
     if (created instanceof Response) return created;
     addActivity(row.id, activity(row.id, { kind: "quote_sent", agentQuoteId: created.id, occurredAt: bangkokIso() }));
     moveForward(row, "quoted", null);
@@ -1151,7 +1314,8 @@ export const storeAgentLeadHandlers = [
     ensureSeeded();
     const record = findAgentQuote(params.agentQuoteId);
     if (!record) return notMine();
-    if (record.status === "withdrawn" || record.status === "accepted") return problem(409, "agents.quote_closed", "ใบเสนอราคานี้ปิดแล้ว");
+    if (record.status === "withdrawn" || record.status === "accepted")
+      return problem(409, "agents.quote_closed", "ใบเสนอราคานี้ปิดแล้ว");
     record.token = `${record.token.slice(1)}${record.token[0]}`;
     record.sendCount += 1;
     record.sentAt = bangkokIso();
@@ -1166,12 +1330,15 @@ export const storeAgentLeadHandlers = [
     if (record.status === "withdrawn") return problem(409, "agents.quote_closed", "ใบเสนอราคานี้ปิดแล้ว");
     record.status = "withdrawn";
     record.withdrawnAt = bangkokIso();
-    addActivity(record.lead.id, activity(record.lead.id, {
-      kind: "system",
-      event: "quote_withdrawn",
-      agentQuoteId: record.id,
-      occurredAt: bangkokIso(),
-    }));
+    addActivity(
+      record.lead.id,
+      activity(record.lead.id, {
+        kind: "system",
+        event: "quote_withdrawn",
+        agentQuoteId: record.id,
+        occurredAt: bangkokIso(),
+      }),
+    );
     return HttpResponse.json(toAgentQuote(record, request));
   }),
 
@@ -1197,13 +1364,16 @@ export const storeAgentLeadHandlers = [
         row.protectedUntil = record.dealRegistration.protectedUntil;
         touch(row);
       }
-      addActivity(record.lead.id, activity(record.lead.id, {
-        kind: "system",
-        author: "system",
-        event: "deal_registered",
-        agentQuoteId: record.id,
-        occurredAt: bangkokIso(),
-      }));
+      addActivity(
+        record.lead.id,
+        activity(record.lead.id, {
+          kind: "system",
+          author: "system",
+          event: "deal_registered",
+          agentQuoteId: record.id,
+          occurredAt: bangkokIso(),
+        }),
+      );
     }
     return HttpResponse.json(toAgentQuote(record, request));
   }),
@@ -1221,16 +1391,35 @@ export const storeAgentLeadHandlers = [
     ensureSeeded();
     const record = findAgentQuote(params.agentQuoteId);
     if (!record) return notMine();
-    if (record.status === "withdrawn" || record.status === "accepted") return problem(409, "agents.quote_closed", "ใบเสนอราคานี้ปิดแล้ว");
+    if (record.status === "withdrawn" || record.status === "accepted")
+      return problem(409, "agents.quote_closed", "ใบเสนอราคานี้ปิดแล้ว");
     const body = (await request.json()) as Schemas["RequestAgentDiscountDto"];
     const rounds = discountRequests.get(record.id) ?? [];
-    if (rounds.some((round) => round.status === "open")) return problem(409, "quotes.discount_request_open", "มีคำขอที่รออยู่");
-    const giveGet = [body.quantityChange, body.commitment === "call_off" ? body.commitmentMonths : null, body.depositPct, body.cashWithinDays, body.leadTimeFlexDays, body.specChange];
+    if (rounds.some((round) => round.status === "open"))
+      return problem(409, "quotes.discount_request_open", "มีคำขอที่รออยู่");
+    const giveGet = [
+      body.quantityChange,
+      body.commitment === "call_off" ? body.commitmentMonths : null,
+      body.depositPct,
+      body.cashWithinDays,
+      body.leadTimeFlexDays,
+      body.specChange,
+    ];
     if (!giveGet.some((value) => value !== undefined && value !== null && value !== ""))
-      return problem(422, "validation.failed", "เลือกสิ่งที่ลูกค้าให้กลับมาอย่างน้อยหนึ่งอย่าง", [{ path: "quantityChange", code: "give_get_required", message: "give_get_required" }]);
+      return problem(422, "validation.failed", "เลือกสิ่งที่ลูกค้าให้กลับมาอย่างน้อยหนึ่งอย่าง", [
+        { path: "quantityChange", code: "give_get_required", message: "give_get_required" },
+      ]);
     const last = rounds.at(-1);
     const hash = (r: Partial<DiscountRequest>) =>
-      JSON.stringify([r.quantityChange ?? null, r.commitment ?? "one_off", r.commitmentMonths ?? null, r.depositPct ?? null, r.cashWithinDays ?? null, r.leadTimeFlexDays ?? null, r.specChange ?? null]);
+      JSON.stringify([
+        r.quantityChange ?? null,
+        r.commitment ?? "one_off",
+        r.commitmentMonths ?? null,
+        r.depositPct ?? null,
+        r.cashWithinDays ?? null,
+        r.leadTimeFlexDays ?? null,
+        r.specChange ?? null,
+      ]);
     if (last && hash(last) === hash(body as Partial<DiscountRequest>))
       return problem(409, "quotes.discount_round_limit", "ขอรอบใหม่ได้เมื่อเงื่อนไขเปลี่ยน");
     const quote = findQuote(record.quoteId)!;
@@ -1264,31 +1453,45 @@ export const storeAgentLeadHandlers = [
     return HttpResponse.json(created, { status: 201 });
   }),
 
-  http.post("*/v1/store/agent/quotes/:agentQuoteId/discount-options/:optionId/actions/accept", ({ request, params }) => {
-    if (!isAgent(request)) return undefined;
-    ensureSeeded();
-    const key = request.headers.get("idempotency-key");
-    if (!key) return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
-    if (idempotency.has(key)) return HttpResponse.json(idempotency.get(key) as object);
-    const record = findAgentQuote(params.agentQuoteId);
-    if (!record) return notMine();
-    const round = (discountRequests.get(record.id) ?? []).find((r) => r.options.some((o) => o.id === params.optionId));
-    const option = round?.options.find((o) => o.id === params.optionId);
-    if (!round || !option || round.status !== "offered" || option.status !== "offered" || Date.parse(option.validUntil) < Date.now())
-      return problem(409, "agents.discount_option_unavailable", "ตัวเลือกนี้ใช้ไม่ได้แล้ว");
-    round.status = "accepted";
-    for (const other of round.options) other.status = other.id === option.id ? "accepted" : "lapsed";
-    option.acceptedAt = bangkokIso();
-    addActivity(record.lead.id, activity(record.lead.id, {
-      kind: "system",
-      author: "system",
-      event: "discount_option_accepted",
-      agentQuoteId: record.id,
-      occurredAt: bangkokIso(),
-    }));
-    idempotency.set(key, round);
-    return HttpResponse.json(round);
-  }),
+  http.post(
+    "*/v1/store/agent/quotes/:agentQuoteId/discount-options/:optionId/actions/accept",
+    ({ request, params }) => {
+      if (!isAgent(request)) return undefined;
+      ensureSeeded();
+      const key = request.headers.get("idempotency-key");
+      if (!key) return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
+      if (idempotency.has(key)) return HttpResponse.json(idempotency.get(key) as object);
+      const record = findAgentQuote(params.agentQuoteId);
+      if (!record) return notMine();
+      const round = (discountRequests.get(record.id) ?? []).find((r) =>
+        r.options.some((o) => o.id === params.optionId),
+      );
+      const option = round?.options.find((o) => o.id === params.optionId);
+      if (
+        !round ||
+        !option ||
+        round.status !== "offered" ||
+        option.status !== "offered" ||
+        Date.parse(option.validUntil) < Date.now()
+      )
+        return problem(409, "agents.discount_option_unavailable", "ตัวเลือกนี้ใช้ไม่ได้แล้ว");
+      round.status = "accepted";
+      for (const other of round.options) other.status = other.id === option.id ? "accepted" : "lapsed";
+      option.acceptedAt = bangkokIso();
+      addActivity(
+        record.lead.id,
+        activity(record.lead.id, {
+          kind: "system",
+          author: "system",
+          event: "discount_option_accepted",
+          agentQuoteId: record.id,
+          occurredAt: bangkokIso(),
+        }),
+      );
+      idempotency.set(key, round);
+      return HttpResponse.json(round);
+    },
+  ),
 
   http.get("*/v1/store/agent/quotes/:agentQuoteId", ({ request, params }) => {
     if (!isAgent(request)) return undefined;
@@ -1300,7 +1503,9 @@ export const storeAgentLeadHandlers = [
   http.get("*/v1/store/agent/playbook", ({ request }) => {
     if (!isAgent(request)) return undefined;
     const context = new URL(request.url).searchParams.get("context");
-    const data = context ? PLAYBOOK.filter((item) => item.contexts.includes(context) || item.contexts.includes("all")) : PLAYBOOK;
+    const data = context
+      ? PLAYBOOK.filter((item) => item.contexts.includes(context) || item.contexts.includes("all"))
+      : PLAYBOOK;
     return HttpResponse.json({ data } satisfies Schemas["AgentPlaybookDto"]);
   }),
 
@@ -1312,3 +1517,9 @@ export const storeAgentLeadHandlers = [
 
 export type { StoreQuote };
 export { IMPORT_HEADERS };
+
+/** The API prints the conditions date as d/m/BE (e.g. 25/10/2569); the mock does the same. */
+function thaiDate(iso: string): string {
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  return `${d}/${m}/${y + 543}`;
+}
