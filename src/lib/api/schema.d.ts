@@ -10053,6 +10053,288 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/finance/pnl/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the P&L lines with their tooltips
+         * @description Every line in display order with its group, unit, whether it is calculated or entered, and the tooltip fields `definition`, `formula`, `source`, `howToFill` (lines a person may enter) and `glAccounts` from the setting `pnl.line_catalogue` in force (D-472). A line without accounts is filled by hand.
+         *
+         *     Implements: D-472.
+         */
+        get: operations["admin.pnl.listLines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List P&L plans
+         * @description Plans by fiscal year, scenario and status, newest year first (deleted drafts excluded) (D-472).
+         *
+         *     Implements: D-472.
+         */
+        get: operations["admin.pnl.listPlans"];
+        put?: never;
+        /**
+         * Create a P&L plan
+         * @description A draft for a calendar year and scenario, filled at once from the system: actual months from the posted ledger, forecast months from the pipeline, run rate, trailing ratios / averages and the fixed-asset register; lines without system data are left for manual entry. The same name, year and scenario takes the next version (D-472).
+         *
+         *     Implements: D-472.
+         */
+        post: operations["admin.pnl.createPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a P&L plan
+         * @description The plan with its `ETag` (also in `etag`) for update, recompute, lock and delete (D-472).
+         *
+         *     Implements: D-472.
+         */
+        get: operations["admin.pnl.getPlan"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft plan
+         * @description Soft delete of a draft (audited); a locked plan is never deleted (`pnl.plan_locked`) (D-472).
+         *
+         *     Implements: D-472.
+         */
+        delete: operations["admin.pnl.deletePlan"];
+        options?: never;
+        head?: never;
+        /**
+         * Rename a draft plan or change its note
+         * @description Drafts only (`pnl.plan_locked`); a new name takes its next free version (D-472).
+         *
+         *     Implements: D-472.
+         */
+        patch: operations["admin.pnl.updatePlan"];
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/actions/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copy a plan to a scenario
+         * @description Any plan (draft or locked) becomes a new draft of the chosen scenario — the next version of that name — with its manual and override values and notes, then refreshed from the system (D-472).
+         *
+         *     Implements: D-472.
+         */
+        post: operations["admin.pnl.copyPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/actions/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Lock a plan for plan vs actual
+         * @description Final: the plan and its cells are frozen by the database (a revision is a copy) and the SHA-256 of its cells is kept. `If-Match` makes sure the plan locked is the one seen; never computed → `pnl.not_computed`. No maker-checker: a management plan is neither money-moving nor configuration (accounting-design §8) (D-472).
+         *
+         *     Implements: D-472.
+         */
+        post: operations["admin.pnl.lockPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/actions/recompute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh a draft plan from the system
+         * @description Recomputes every auto value from the ledger, pipeline, commissions and fixed assets as of now; manual and override values are kept (a manual value whose line gained system data becomes an override with its note as the reason) (D-472).
+         *
+         *     Implements: D-472.
+         */
+        post: operations["admin.pnl.recompute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/cells/{lineKey}/{month}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Enter or override a cell
+         * @description `If-Match` = the cell’s `etag`. A line without system data takes a manual value (a note is required on the first entry, `pnl.note_required`); changing a value the system computed is an override that keeps the auto value beside it and needs a reason every time (`pnl.reason_required`); `value: null` (or the auto value) returns to auto. Formula and memo lines are read-only (`pnl.line_read_only`), locked plans too (`pnl.plan_locked`). The plan’s formulas are recomputed; audited with before / after (D-472).
+         *
+         *     Implements: D-472.
+         */
+        put: operations["admin.pnl.updateCell"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/cells/{lineKey}/{month}/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Drill down from a cell to its source records
+         * @description Paged ids and links only: posted journal lines of the mapped accounts (with source document and order) for actual months and trailing windows, open leads (weighted) behind forecast revenue and commission, fixed assets behind forecast depreciation, commission records (`kind=commission`) for the commission lines. Formula cells have none. No contact data (D-472).
+         *
+         *     Implements: D-472.
+         */
+        get: operations["admin.pnl.listCellSources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export a plan as XLSX or PDF
+         * @description Finance Manager and C-Level only (`pnl.export`): the grid (or plan vs actual) with manual / override marks and notes, watermarked with the viewer’s name and the time on every page / sheet, behind a 5-minute link; logged in the access log and audited as an export (D-472).
+         *
+         *     Implements: D-472.
+         */
+        post: operations["admin.pnl.exportPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/grid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the P&L grid of a plan
+         * @description Lines × months with each cell’s value, mode (auto · calculated · manual · override), auto value beside an override, source and its inputs, note / reason, who changed it, as-of time, `periodOpen` ("ยังไม่ปิดงวด") and its `etag`; the year column; the memo band (not in the total); the summary strip (net revenue, gross margin %, contribution after commission, EBITDA, net profit, cash conversion cycle, break-even revenue). Every view is written to the access log (D-472, D-444 pattern).
+         *
+         *     Implements: D-472, D-444.
+         */
+        get: operations["admin.pnl.getGrid"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/variance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Plan vs actual
+         * @description Per line and month: the plan value (frozen once locked), the actual as of now (posted ledger; formulas from actual lines, using the plan value of a line without an actual source — flagged `includes_plan_values`), variance amount and %, Finance’s note; totals over the actual months. Every view is logged (D-472).
+         *
+         *     Implements: D-472.
+         */
+        get: operations["admin.pnl.getVariance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/finance/pnl/plans/{planId}/variance-notes/{lineKey}/{month}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Explain a variance
+         * @description Finance’s note on a line and month of plan vs actual; allowed on locked plans (cells stay frozen); audited (D-472).
+         *
+         *     Implements: D-472.
+         */
+        put: operations["admin.pnl.setVarianceNote"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/financial-reports/balance-sheet": {
         parameters: {
             query?: never;
@@ -48664,6 +48946,17 @@ export interface components {
             /** @description Each basis; null where a caliper is needed and unknown */
             sizes: components["schemas"]["BasisSizesDto"];
         };
+        CopyPnlPlanDto: {
+            /**
+             * @description Defaults to the source plan’s name
+             * @example แผนปี 2027
+             */
+            name?: string;
+            /** @example กรณียอดขายลด 20 % */
+            note?: string | null;
+            /** @example worst */
+            scenario: components["schemas"]["PnlScenario"];
+        };
         CorrectedBuyerDto: {
             /** @example 123 ถนนตัวอย่าง แขวงตัวอย่าง เขตตัวอย่าง กรุงเทพมหานคร 10110 */
             address: string | null;
@@ -50793,6 +51086,16 @@ export interface components {
             titleEn?: string | null;
             /** @example เมนูแลกเปลี่ยน: ให้ส่วนลด เมื่อได้อะไรกลับมา */
             titleTh?: string;
+        };
+        CreatePnlPlanDto: {
+            /** @example 2027 */
+            fiscalYear: number;
+            /** @example แผนปี 2027 */
+            name: string;
+            /** @example ตามเป้าที่ประชุมผู้บริหาร */
+            note?: string | null;
+            /** @example base */
+            scenario: components["schemas"]["PnlScenario"];
         };
         CreatePriceProposalDto: {
             /** @example Paper prices from October */
@@ -63551,6 +63854,12 @@ export interface components {
              */
             to: string;
         };
+        ExportPnlPlanDto: {
+            /** @example xlsx */
+            format: components["schemas"]["PnlExportFormat"];
+            /** @default plan */
+            view: components["schemas"]["PnlExportView"];
+        };
         FaceAnchorDto: {
             /**
              * @description A face of the 3D box (with `u`, `v`)
@@ -72061,6 +72370,419 @@ export interface components {
             netProfit: string;
             /** @example 10000.00 */
             revenue: string;
+        };
+        /**
+         * @description `ledger` posted figures · `calculated` from actual lines · `includes_plan_values` a formula that used the plan value of a line with no actual source · `none` no actual source · `not_yet` a future month
+         * @enum {string}
+         */
+        PnlActualBasis: "ledger" | "calculated" | "includes_plan_values" | "none" | "not_yet";
+        PnlCellDto: {
+            /**
+             * Format: date-time
+             * @description ข้อมูลถึง
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            asOf: string | null;
+            /**
+             * @description The system’s value, shown beside an override; null: no system data
+             * @example 1000000.00
+             */
+            autoValue: string | null;
+            /**
+             * @description Has source records (listCellSources)
+             * @example true
+             */
+            drillable: boolean;
+            /**
+             * @description Send as If-Match to updateCell
+             * @example "q2b0m8vP1nKk7yYt3tU9Zw"
+             */
+            etag: string;
+            /**
+             * @description ระบบ (auto) · คำนวณ (calculated) · กรอกเอง (manual) · แก้ทับ (override)
+             * @example auto
+             */
+            mode: components["schemas"]["PnlCellMode"];
+            /** @example 2027-01 */
+            month: string;
+            /**
+             * @description Manual note or override reason
+             * @example null
+             */
+            note: string | null;
+            /** @example false */
+            periodOpen: boolean;
+            /** @example gl */
+            source: components["schemas"]["PnlCellSource"];
+            /**
+             * @description Inputs behind the auto value (accounts, window, ratios, counts) for the tooltip
+             * @example {
+             *       "accounts": [
+             *         "4110",
+             *         "4120"
+             *       ],
+             *       "lines": 42
+             *     }
+             */
+            sourceRef: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            updatedAt: string | null;
+            /** @description Who entered or overrode the value */
+            updatedBy: components["schemas"]["UserRefDto"] | null;
+            /**
+             * @description THB, days or percent per the line’s unit
+             * @example 1000000.00
+             */
+            value: string | null;
+        };
+        /**
+         * @description ระบบ (auto) · คำนวณ (calculated) · กรอกเอง (manual) · แก้ทับ (override)
+         * @enum {string}
+         */
+        PnlCellMode: "auto" | "calculated" | "manual" | "override";
+        /** @enum {string} */
+        PnlCellSource: "gl" | "pipeline_run_rate" | "trailing_ratio" | "trailing_average" | "commission_rates" | "fixed_assets" | "balances" | "formula" | "none";
+        /** @enum {string} */
+        PnlExportFormat: "xlsx" | "pdf";
+        /** @enum {string} */
+        PnlExportView: "plan" | "variance";
+        PnlGlAccountDto: {
+            /** @example 4110 */
+            code: string;
+            /**
+             * @description Journal lines of these posting rules are left out
+             * @example []
+             */
+            excludeRules: string[];
+            /** @example Sales — made-to-order packaging */
+            nameEn: string | null;
+            /**
+             * @description null: not in the chart
+             * @example รายได้ — บรรจุภัณฑ์สั่งผลิต
+             */
+            nameTh: string | null;
+            /**
+             * @description Only journal lines of these posting rules
+             * @example []
+             */
+            onlyRules: string[];
+        };
+        PnlGridDto: {
+            /** @example THB */
+            currency: string;
+            lines: components["schemas"]["PnlGridLineDto"][];
+            months: components["schemas"]["PnlMonthDto"][];
+            plan: components["schemas"]["PnlPlanDto"];
+            /** @description Year figures of the summary strip */
+            summary: components["schemas"]["PnlSummaryDto"];
+        };
+        PnlGridLineDto: {
+            cells: components["schemas"]["PnlCellDto"][];
+            line: components["schemas"]["PnlLineDto"];
+            /**
+             * @description Year column: money summed; ratios / days recomputed on the year; bad debt = the last month
+             * @example 12000000.00
+             */
+            total: string | null;
+        };
+        /**
+         * @description `source`: from the system or entered; `formula`: calculated from other lines (read-only)
+         * @enum {string}
+         */
+        PnlLineCalc: "source" | "formula";
+        PnlLineCatalogueDto: {
+            /**
+             * Format: date-time
+             * @description The catalogue version in force since
+             * @example 2026-11-03T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            lines: components["schemas"]["PnlLineDto"][];
+        };
+        PnlLineDto: {
+            /**
+             * @description `source`: from the system or entered; `formula`: calculated from other lines (read-only)
+             * @example source
+             */
+            calc: components["schemas"]["PnlLineCalc"];
+            /** @description Tooltip: what the line is */
+            definition: components["schemas"]["LocalisedTextDto"];
+            /**
+             * @description A person may enter (manual) or override (auto) its cells
+             * @example true
+             */
+            editable: boolean;
+            /** @description Tooltip: how it is calculated */
+            formula: components["schemas"]["LocalisedTextDto"];
+            glAccounts: components["schemas"]["PnlGlAccountDto"][];
+            /** @example revenue */
+            group: components["schemas"]["PnlLineGroup"];
+            /** @description Tooltip for an empty manual cell (lines a person may enter) */
+            howToFill: components["schemas"]["LocalisedTextDto"] | null;
+            /**
+             * @description Part of the P&L; memo lines are not
+             * @example true
+             */
+            inTotal: boolean;
+            /** @example revenue_goods */
+            key: components["schemas"]["PnlLineKey"];
+            /** @example Revenue — goods */
+            labelEn: string;
+            /** @example รายได้จากการขายสินค้า */
+            labelTh: string;
+            /**
+             * @description Has GL accounts; an editable line without them is filled by hand
+             * @example false
+             */
+            mapped: boolean;
+            /** @description Tooltip: where the system takes it from */
+            source: components["schemas"]["LocalisedTextDto"];
+            /** @example money */
+            unit: components["schemas"]["PnlLineUnit"];
+        };
+        /** @enum {string} */
+        PnlLineGroup: "revenue" | "cost_of_sales" | "gross_margin" | "selling_expenses" | "admin_expenses" | "operating_profit" | "finance_and_tax" | "net_profit" | "memo";
+        /** @enum {string} */
+        PnlLineKey: "revenue_goods" | "revenue_shipping" | "discounts" | "net_revenue" | "factory_cost" | "shipping_cost" | "payment_fees" | "gross_margin" | "agent_commission" | "employee_commission" | "marketing" | "salaries" | "rent_utilities" | "software_cloud" | "professional_fees" | "depreciation" | "other_opex" | "ebit" | "finance_cost" | "cit_estimate" | "net_profit" | "memo_credit_cost" | "memo_bad_debt" | "memo_ebitda" | "memo_commission_ratio" | "memo_dso" | "memo_dpo" | "memo_ccc" | "memo_break_even";
+        /** @enum {string} */
+        PnlLineUnit: "money" | "percent" | "days";
+        PnlMonthDto: {
+            /** @example actual */
+            kind: components["schemas"]["PnlMonthKind"];
+            /** @example 2027-01 */
+            month: string;
+            /**
+             * @description Actual month whose period is not closed yet: show "ยังไม่ปิดงวด"
+             * @example false
+             */
+            periodOpen: boolean;
+            /** @example closed */
+            periodStatus: components["schemas"]["PeriodStatus"] | null;
+        };
+        /** @enum {string} */
+        PnlMonthKind: "actual" | "forecast";
+        PnlPlanDto: {
+            /**
+             * Format: date-time
+             * @description Last refresh from the system (null: never computed)
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            computedAt: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            copiedFromId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-03T09:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Send as If-Match to update, recompute, lock, delete
+             * @example "pXH2c5mJ3Lr0v1QkTqv2xQ"
+             */
+            etag: string;
+            /**
+             * @description Calendar year (months Jan–Dec, Asia/Bangkok)
+             * @example 2027
+             */
+            fiscalYear: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a0472
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            lockedAt: string | null;
+            lockedBy: components["schemas"]["UserRefDto"] | null;
+            /** @example แผนปี 2027 */
+            name: string;
+            /** @example null */
+            note: string | null;
+            owner: components["schemas"]["UserRefDto"];
+            /** @example base */
+            scenario: components["schemas"]["PnlScenario"];
+            /**
+             * @description SHA-256 (hex) of the cells at lock
+             * @example null
+             */
+            snapshotSha256: string | null;
+            /** @example draft */
+            status: components["schemas"]["PnlPlanStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            updatedAt: string;
+            /**
+             * @description Next version of the same name, year and scenario on copy
+             * @example 1
+             */
+            version: number;
+        };
+        /** @enum {string} */
+        PnlPlanStatus: "draft" | "locked";
+        /** @enum {string} */
+        PnlScenario: "base" | "best" | "worst" | "custom";
+        PnlSourceItemDto: {
+            /** @example 4110 */
+            accountCode: string | null;
+            /**
+             * @description THB on the line’s side (weighted for leads)
+             * @example 107000.00
+             */
+            amount: string | null;
+            /**
+             * @description Human key (entry no, asset no…)
+             * @example JE202701-000012
+             */
+            code: string | null;
+            /**
+             * Format: date
+             * @example 2027-01-15
+             */
+            date: string | null;
+            /** @example ขายสินค้า TR2701-00012 */
+            description: string | null;
+            /**
+             * Format: uuid
+             * @description gl_line: journal entry id · commission · lead · fixed_asset: their id · customer_run_rate: null
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000000e1
+             */
+            id: string | null;
+            /** @example gl_line */
+            kind: components["schemas"]["PnlSourceKind"];
+            /** @example null */
+            orderCode: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            orderId: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            sourceDocumentId: string | null;
+            /** @example TR2701-00012 */
+            sourceDocumentNo: string | null;
+            /** @example customer_document */
+            sourceDocumentType: string | null;
+        };
+        /** @enum {string} */
+        PnlSourceKind: "gl_line" | "commission" | "lead" | "fixed_asset" | "customer_run_rate";
+        PnlSummaryDto: {
+            /** @example 8400000.00 */
+            breakEvenRevenue: string | null;
+            /**
+             * @description Days
+             * @example 10.67
+             */
+            cashConversionDays: string | null;
+            /**
+             * @description The CIT estimate used the SME bands
+             * @example false
+             */
+            citSmeApplied: boolean;
+            /**
+             * @description “กำไรหลังหักค่าคอม”
+             * @example 2500000.00
+             */
+            contributionAfterCommission: string | null;
+            /** @example 20.83 */
+            contributionAfterCommissionPct: string | null;
+            /** @example 900000.00 */
+            ebitda: string | null;
+            /**
+             * @description Editable cells without a value (กรอกค่า)
+             * @example 24
+             */
+            emptyManualCells: number;
+            /** @example 3000000.00 */
+            grossMargin: string | null;
+            /**
+             * @description Percent of net revenue
+             * @example 25.00
+             */
+            grossMarginPct: string | null;
+            /** @example 700000.00 */
+            netProfit: string | null;
+            /** @example 12000000.00 */
+            netRevenue: string | null;
+        };
+        PnlVarianceCellDto: {
+            /** @example 1100000.00 */
+            actual: string | null;
+            /**
+             * @description `ledger` posted figures · `calculated` from actual lines · `includes_plan_values` a formula that used the plan value of a line with no actual source · `none` no actual source · `not_yet` a future month
+             * @example ledger
+             */
+            actualBasis: components["schemas"]["PnlActualBasis"];
+            /** @example 2027-01 */
+            month: string;
+            /** @example ลูกค้ารายใหญ่สั่งเร็วกว่าแผน */
+            note: string | null;
+            noteBy: components["schemas"]["UserRefDto"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            noteUpdatedAt: string | null;
+            /**
+             * @description The locked (or current) plan value
+             * @example 1000000.00
+             */
+            plan: string | null;
+            /**
+             * @description actual − plan
+             * @example 100000.00
+             */
+            variance: string | null;
+            /**
+             * @description variance ÷ |plan| × 100; null when plan is 0
+             * @example 10.00
+             */
+            variancePct: string | null;
+        };
+        PnlVarianceDto: {
+            /**
+             * Format: date-time
+             * @description Actuals as of
+             * @example 2026-11-03T10:00:00+07:00
+             */
+            asOf: string;
+            /** @example THB */
+            currency: string;
+            lines: components["schemas"]["PnlVarianceLineDto"][];
+            months: components["schemas"]["PnlMonthDto"][];
+            plan: components["schemas"]["PnlPlanDto"];
+        };
+        PnlVarianceLineDto: {
+            cells: components["schemas"]["PnlVarianceCellDto"][];
+            line: components["schemas"]["PnlLineDto"];
+            /**
+             * @description Actual of the actual months
+             * @example 3100000.00
+             */
+            totalActual: string | null;
+            /**
+             * @description Plan of the actual months
+             * @example 3000000.00
+             */
+            totalPlan: string | null;
+            /** @example 100000.00 */
+            totalVariance: string | null;
+            /** @example 3.33 */
+            totalVariancePct: string | null;
         };
         PodItemDto: {
             /**
@@ -81053,6 +81775,10 @@ export interface components {
             retentionPct: number;
             /** @example 30 */
             retentionReleaseDays: number;
+        };
+        SetPnlVarianceNoteDto: {
+            /** @example ลูกค้ารายใหญ่สั่งเร็วกว่าแผน */
+            note: string;
         };
         SetPreferencesDto: {
             items: components["schemas"]["NotificationPreferenceDto"][];
@@ -90283,6 +91009,24 @@ export interface components {
             titleEn?: string | null;
             /** @example เมนูแลกเปลี่ยน: ให้ส่วนลด เมื่อได้อะไรกลับมา */
             titleTh?: string;
+        };
+        UpdatePnlCellDto: {
+            /**
+             * @description Required (≥ 3 characters) on the first manual entry and on every override
+             * @example พนักงาน 5 คน × 50,000
+             */
+            note?: string | null;
+            /**
+             * @description THB, ≤ 2 places; null reverts an override to the auto value or clears a manual value
+             * @example 250000.00
+             */
+            value: string | null;
+        };
+        UpdatePnlPlanDto: {
+            /** @example แผนปี 2027 (ปรับ) */
+            name?: string;
+            /** @example ปรับตามยอดไตรมาส 1 */
+            note?: string | null;
         };
         UpdatePreferencesDto: {
             /**
@@ -166820,6 +167564,2373 @@ export interface operations {
                 };
             };
             /** @description Problem: `file.too_large`, `file.type_not_allowed`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.listLines": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Line catalogue */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "effectiveFrom": "2026-11-03T00:00:00+07:00",
+                     *       "lines": [
+                     *         {
+                     *           "calc": "source",
+                     *           "definition": {
+                     *             "en": null,
+                     *             "th": "มูลค่าสินค้าที่ออกใบกำกับภาษีแล้วในเดือนนั้น ก่อนหักส่วนลด"
+                     *           },
+                     *           "editable": true,
+                     *           "formula": {
+                     *             "en": null,
+                     *             "th": "Σ ยอดสินค้าก่อน VAT ตามใบกำกับ"
+                     *           },
+                     *           "glAccounts": [
+                     *             {
+                     *               "code": "4110",
+                     *               "excludeRules": [],
+                     *               "nameEn": "Sales — made-to-order packaging",
+                     *               "nameTh": "รายได้ — บรรจุภัณฑ์สั่งผลิต",
+                     *               "onlyRules": []
+                     *             }
+                     *           ],
+                     *           "group": "revenue",
+                     *           "howToFill": {
+                     *             "en": null,
+                     *             "th": "ใส่ยอดขายที่คาดไว้ ระบุว่ามาจากเป้าหรือดีลไหน"
+                     *           },
+                     *           "inTotal": true,
+                     *           "key": "revenue_goods",
+                     *           "labelEn": "Revenue — goods",
+                     *           "labelTh": "รายได้จากการขายสินค้า",
+                     *           "mapped": true,
+                     *           "source": {
+                     *             "en": null,
+                     *             "th": "GL รายได้ขายสินค้า; forecast = pipeline × ความน่าจะเป็นตามขั้น + ยอดสั่งซ้ำเฉลี่ย 3 เดือน"
+                     *           },
+                     *           "unit": "money"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlLineCatalogueDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.listPlans": {
+        parameters: {
+            query?: {
+                fiscalYear?: number;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                scenario?: components["schemas"]["PnlScenario"];
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["PnlPlanStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "computedAt": "2026-11-03T10:00:00+07:00",
+                     *           "copiedFromId": null,
+                     *           "createdAt": "2026-11-03T09:00:00+07:00",
+                     *           "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *           "fiscalYear": 2027,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *           "lockedAt": null,
+                     *           "lockedBy": null,
+                     *           "name": "แผนปี 2027",
+                     *           "note": null,
+                     *           "owner": {
+                     *             "displayName": "การเงิน ทดสอบ",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *           },
+                     *           "scenario": "base",
+                     *           "snapshotSha256": null,
+                     *           "status": "draft",
+                     *           "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["PnlPlanDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.createPlan": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePnlPlanDto"];
+            };
+        };
+        responses: {
+            /** @description Plan */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "computedAt": "2026-11-03T10:00:00+07:00",
+                     *       "copiedFromId": null,
+                     *       "createdAt": "2026-11-03T09:00:00+07:00",
+                     *       "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *       "fiscalYear": 2027,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *       "lockedAt": null,
+                     *       "lockedBy": null,
+                     *       "name": "แผนปี 2027",
+                     *       "note": null,
+                     *       "owner": {
+                     *         "displayName": "การเงิน ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *       },
+                     *       "scenario": "base",
+                     *       "snapshotSha256": null,
+                     *       "status": "draft",
+                     *       "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlPlanDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.getPlan": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plan */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "computedAt": "2026-11-03T10:00:00+07:00",
+                     *       "copiedFromId": null,
+                     *       "createdAt": "2026-11-03T09:00:00+07:00",
+                     *       "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *       "fiscalYear": 2027,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *       "lockedAt": null,
+                     *       "lockedBy": null,
+                     *       "name": "แผนปี 2027",
+                     *       "note": null,
+                     *       "owner": {
+                     *         "displayName": "การเงิน ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *       },
+                     *       "scenario": "base",
+                     *       "snapshotSha256": null,
+                     *       "status": "draft",
+                     *       "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlPlanDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.deletePlan": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pnl.plan_locked` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.updatePlan": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePnlPlanDto"];
+            };
+        };
+        responses: {
+            /** @description Plan */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "computedAt": "2026-11-03T10:00:00+07:00",
+                     *       "copiedFromId": null,
+                     *       "createdAt": "2026-11-03T09:00:00+07:00",
+                     *       "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *       "fiscalYear": 2027,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *       "lockedAt": null,
+                     *       "lockedBy": null,
+                     *       "name": "แผนปี 2027",
+                     *       "note": null,
+                     *       "owner": {
+                     *         "displayName": "การเงิน ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *       },
+                     *       "scenario": "base",
+                     *       "snapshotSha256": null,
+                     *       "status": "draft",
+                     *       "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlPlanDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pnl.plan_locked` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.copyPlan": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopyPnlPlanDto"];
+            };
+        };
+        responses: {
+            /** @description The new draft */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "computedAt": "2026-11-03T10:00:00+07:00",
+                     *       "copiedFromId": null,
+                     *       "createdAt": "2026-11-03T09:00:00+07:00",
+                     *       "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *       "fiscalYear": 2027,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *       "lockedAt": null,
+                     *       "lockedBy": null,
+                     *       "name": "แผนปี 2027",
+                     *       "note": null,
+                     *       "owner": {
+                     *         "displayName": "การเงิน ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *       },
+                     *       "scenario": "worst",
+                     *       "snapshotSha256": null,
+                     *       "status": "draft",
+                     *       "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlPlanDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.lockPlan": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Locked plan */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "computedAt": "2026-11-03T10:00:00+07:00",
+                     *       "copiedFromId": null,
+                     *       "createdAt": "2026-11-03T09:00:00+07:00",
+                     *       "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *       "fiscalYear": 2027,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *       "lockedAt": "2026-12-28T10:00:00+07:00",
+                     *       "lockedBy": {
+                     *         "displayName": "การเงิน ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *       },
+                     *       "name": "แผนปี 2027",
+                     *       "note": null,
+                     *       "owner": {
+                     *         "displayName": "การเงิน ทดสอบ",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *       },
+                     *       "scenario": "base",
+                     *       "snapshotSha256": "9f2c0d1e7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d",
+                     *       "status": "locked",
+                     *       "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlPlanDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `pnl.not_computed`, `pnl.plan_locked` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.recompute": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Grid */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "currency": "THB",
+                     *       "lines": [
+                     *         {
+                     *           "cells": [
+                     *             {
+                     *               "asOf": "2026-11-03T10:00:00+07:00",
+                     *               "autoValue": "1000000.00",
+                     *               "drillable": true,
+                     *               "etag": "\"q2b0m8vP1nKk7yYt3tU9Zw\"",
+                     *               "mode": "auto",
+                     *               "month": "2027-01",
+                     *               "note": null,
+                     *               "periodOpen": false,
+                     *               "source": "gl",
+                     *               "sourceRef": {
+                     *                 "accounts": [
+                     *                   "4110",
+                     *                   "4120"
+                     *                 ],
+                     *                 "lines": 42
+                     *               },
+                     *               "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *               "updatedBy": null,
+                     *               "value": "1000000.00"
+                     *             }
+                     *           ],
+                     *           "line": {
+                     *             "calc": "source",
+                     *             "definition": {
+                     *               "en": null,
+                     *               "th": "มูลค่าสินค้าที่ออกใบกำกับภาษีแล้วในเดือนนั้น ก่อนหักส่วนลด"
+                     *             },
+                     *             "editable": true,
+                     *             "formula": {
+                     *               "en": null,
+                     *               "th": "Σ ยอดสินค้าก่อน VAT ตามใบกำกับ"
+                     *             },
+                     *             "glAccounts": [
+                     *               {
+                     *                 "code": "4110",
+                     *                 "excludeRules": [],
+                     *                 "nameEn": "Sales — made-to-order packaging",
+                     *                 "nameTh": "รายได้ — บรรจุภัณฑ์สั่งผลิต",
+                     *                 "onlyRules": []
+                     *               }
+                     *             ],
+                     *             "group": "revenue",
+                     *             "howToFill": {
+                     *               "en": null,
+                     *               "th": "ใส่ยอดขายที่คาดไว้ ระบุว่ามาจากเป้าหรือดีลไหน"
+                     *             },
+                     *             "inTotal": true,
+                     *             "key": "revenue_goods",
+                     *             "labelEn": "Revenue — goods",
+                     *             "labelTh": "รายได้จากการขายสินค้า",
+                     *             "mapped": true,
+                     *             "source": {
+                     *               "en": null,
+                     *               "th": "GL รายได้ขายสินค้า; forecast = pipeline × ความน่าจะเป็นตามขั้น + ยอดสั่งซ้ำเฉลี่ย 3 เดือน"
+                     *             },
+                     *             "unit": "money"
+                     *           },
+                     *           "total": "12000000.00"
+                     *         }
+                     *       ],
+                     *       "months": [
+                     *         {
+                     *           "kind": "actual",
+                     *           "month": "2027-01",
+                     *           "periodOpen": false,
+                     *           "periodStatus": "closed"
+                     *         }
+                     *       ],
+                     *       "plan": {
+                     *         "computedAt": "2026-11-03T10:00:00+07:00",
+                     *         "copiedFromId": null,
+                     *         "createdAt": "2026-11-03T09:00:00+07:00",
+                     *         "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *         "fiscalYear": 2027,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *         "lockedAt": null,
+                     *         "lockedBy": null,
+                     *         "name": "แผนปี 2027",
+                     *         "note": null,
+                     *         "owner": {
+                     *           "displayName": "การเงิน ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *         },
+                     *         "scenario": "base",
+                     *         "snapshotSha256": null,
+                     *         "status": "draft",
+                     *         "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *         "version": 1
+                     *       },
+                     *       "summary": {
+                     *         "breakEvenRevenue": "8400000.00",
+                     *         "cashConversionDays": "10.67",
+                     *         "citSmeApplied": false,
+                     *         "contributionAfterCommission": "2500000.00",
+                     *         "contributionAfterCommissionPct": "20.83",
+                     *         "ebitda": "900000.00",
+                     *         "emptyManualCells": 24,
+                     *         "grossMargin": "3000000.00",
+                     *         "grossMarginPct": "25.00",
+                     *         "netProfit": "700000.00",
+                     *         "netRevenue": "12000000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlGridDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pnl.plan_locked` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.updateCell": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                /** @description A `PnlLineKey` */
+                lineKey: string;
+                /** @description `YYYY-MM` of the plan year */
+                month: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePnlCellDto"];
+            };
+        };
+        responses: {
+            /** @description The plan’s grid after the edit */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "currency": "THB",
+                     *       "lines": [
+                     *         {
+                     *           "cells": [
+                     *             {
+                     *               "asOf": "2026-11-03T10:00:00+07:00",
+                     *               "autoValue": "1000000.00",
+                     *               "drillable": true,
+                     *               "etag": "\"q2b0m8vP1nKk7yYt3tU9Zw\"",
+                     *               "mode": "auto",
+                     *               "month": "2027-01",
+                     *               "note": null,
+                     *               "periodOpen": false,
+                     *               "source": "gl",
+                     *               "sourceRef": {
+                     *                 "accounts": [
+                     *                   "4110",
+                     *                   "4120"
+                     *                 ],
+                     *                 "lines": 42
+                     *               },
+                     *               "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *               "updatedBy": null,
+                     *               "value": "1000000.00"
+                     *             }
+                     *           ],
+                     *           "line": {
+                     *             "calc": "source",
+                     *             "definition": {
+                     *               "en": null,
+                     *               "th": "มูลค่าสินค้าที่ออกใบกำกับภาษีแล้วในเดือนนั้น ก่อนหักส่วนลด"
+                     *             },
+                     *             "editable": true,
+                     *             "formula": {
+                     *               "en": null,
+                     *               "th": "Σ ยอดสินค้าก่อน VAT ตามใบกำกับ"
+                     *             },
+                     *             "glAccounts": [
+                     *               {
+                     *                 "code": "4110",
+                     *                 "excludeRules": [],
+                     *                 "nameEn": "Sales — made-to-order packaging",
+                     *                 "nameTh": "รายได้ — บรรจุภัณฑ์สั่งผลิต",
+                     *                 "onlyRules": []
+                     *               }
+                     *             ],
+                     *             "group": "revenue",
+                     *             "howToFill": {
+                     *               "en": null,
+                     *               "th": "ใส่ยอดขายที่คาดไว้ ระบุว่ามาจากเป้าหรือดีลไหน"
+                     *             },
+                     *             "inTotal": true,
+                     *             "key": "revenue_goods",
+                     *             "labelEn": "Revenue — goods",
+                     *             "labelTh": "รายได้จากการขายสินค้า",
+                     *             "mapped": true,
+                     *             "source": {
+                     *               "en": null,
+                     *               "th": "GL รายได้ขายสินค้า; forecast = pipeline × ความน่าจะเป็นตามขั้น + ยอดสั่งซ้ำเฉลี่ย 3 เดือน"
+                     *             },
+                     *             "unit": "money"
+                     *           },
+                     *           "total": "12000000.00"
+                     *         }
+                     *       ],
+                     *       "months": [
+                     *         {
+                     *           "kind": "actual",
+                     *           "month": "2027-01",
+                     *           "periodOpen": false,
+                     *           "periodStatus": "closed"
+                     *         }
+                     *       ],
+                     *       "plan": {
+                     *         "computedAt": "2026-11-03T10:00:00+07:00",
+                     *         "copiedFromId": null,
+                     *         "createdAt": "2026-11-03T09:00:00+07:00",
+                     *         "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *         "fiscalYear": 2027,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *         "lockedAt": null,
+                     *         "lockedBy": null,
+                     *         "name": "แผนปี 2027",
+                     *         "note": null,
+                     *         "owner": {
+                     *           "displayName": "การเงิน ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *         },
+                     *         "scenario": "base",
+                     *         "snapshotSha256": null,
+                     *         "status": "draft",
+                     *         "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *         "version": 1
+                     *       },
+                     *       "summary": {
+                     *         "breakEvenRevenue": "8400000.00",
+                     *         "cashConversionDays": "10.67",
+                     *         "citSmeApplied": false,
+                     *         "contributionAfterCommission": "2500000.00",
+                     *         "contributionAfterCommissionPct": "20.83",
+                     *         "ebitda": "900000.00",
+                     *         "emptyManualCells": 24,
+                     *         "grossMargin": "3000000.00",
+                     *         "grossMarginPct": "25.00",
+                     *         "netProfit": "700000.00",
+                     *         "netRevenue": "12000000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlGridDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pnl.plan_locked` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pnl.line_read_only`, `pnl.note_required`, `pnl.reason_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.listCellSources": {
+        parameters: {
+            query?: {
+                /** @description Another view of the same cell where it has one: `commission` (commission records earned in the month) for the commission lines; default: the cell’s own source */
+                kind?: components["schemas"]["PnlSourceKind"];
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description A `PnlLineKey` */
+                lineKey: string;
+                /** @description `YYYY-MM` of the plan year */
+                month: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "accountCode": "4110",
+                     *           "amount": "107000.00",
+                     *           "code": "JE202701-000012",
+                     *           "date": "2027-01-15",
+                     *           "description": "ขายสินค้า TR2701-00012",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000000e1",
+                     *           "kind": "gl_line",
+                     *           "orderCode": null,
+                     *           "orderId": null,
+                     *           "sourceDocumentId": null,
+                     *           "sourceDocumentNo": "TR2701-00012",
+                     *           "sourceDocumentType": "customer_document"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["PnlSourceItemDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.exportPlan": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportPnlPlanDto"];
+            };
+        };
+        responses: {
+            /** @description Download link */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-11-03T10:05:00+07:00",
+                     *       "url": "https://getpack-files.s3.example.com/…"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadUrlDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.getGrid": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Grid */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "currency": "THB",
+                     *       "lines": [
+                     *         {
+                     *           "cells": [
+                     *             {
+                     *               "asOf": "2026-11-03T10:00:00+07:00",
+                     *               "autoValue": "1000000.00",
+                     *               "drillable": true,
+                     *               "etag": "\"q2b0m8vP1nKk7yYt3tU9Zw\"",
+                     *               "mode": "auto",
+                     *               "month": "2027-01",
+                     *               "note": null,
+                     *               "periodOpen": false,
+                     *               "source": "gl",
+                     *               "sourceRef": {
+                     *                 "accounts": [
+                     *                   "4110",
+                     *                   "4120"
+                     *                 ],
+                     *                 "lines": 42
+                     *               },
+                     *               "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *               "updatedBy": null,
+                     *               "value": "1000000.00"
+                     *             }
+                     *           ],
+                     *           "line": {
+                     *             "calc": "source",
+                     *             "definition": {
+                     *               "en": null,
+                     *               "th": "มูลค่าสินค้าที่ออกใบกำกับภาษีแล้วในเดือนนั้น ก่อนหักส่วนลด"
+                     *             },
+                     *             "editable": true,
+                     *             "formula": {
+                     *               "en": null,
+                     *               "th": "Σ ยอดสินค้าก่อน VAT ตามใบกำกับ"
+                     *             },
+                     *             "glAccounts": [
+                     *               {
+                     *                 "code": "4110",
+                     *                 "excludeRules": [],
+                     *                 "nameEn": "Sales — made-to-order packaging",
+                     *                 "nameTh": "รายได้ — บรรจุภัณฑ์สั่งผลิต",
+                     *                 "onlyRules": []
+                     *               }
+                     *             ],
+                     *             "group": "revenue",
+                     *             "howToFill": {
+                     *               "en": null,
+                     *               "th": "ใส่ยอดขายที่คาดไว้ ระบุว่ามาจากเป้าหรือดีลไหน"
+                     *             },
+                     *             "inTotal": true,
+                     *             "key": "revenue_goods",
+                     *             "labelEn": "Revenue — goods",
+                     *             "labelTh": "รายได้จากการขายสินค้า",
+                     *             "mapped": true,
+                     *             "source": {
+                     *               "en": null,
+                     *               "th": "GL รายได้ขายสินค้า; forecast = pipeline × ความน่าจะเป็นตามขั้น + ยอดสั่งซ้ำเฉลี่ย 3 เดือน"
+                     *             },
+                     *             "unit": "money"
+                     *           },
+                     *           "total": "12000000.00"
+                     *         }
+                     *       ],
+                     *       "months": [
+                     *         {
+                     *           "kind": "actual",
+                     *           "month": "2027-01",
+                     *           "periodOpen": false,
+                     *           "periodStatus": "closed"
+                     *         }
+                     *       ],
+                     *       "plan": {
+                     *         "computedAt": "2026-11-03T10:00:00+07:00",
+                     *         "copiedFromId": null,
+                     *         "createdAt": "2026-11-03T09:00:00+07:00",
+                     *         "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *         "fiscalYear": 2027,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *         "lockedAt": null,
+                     *         "lockedBy": null,
+                     *         "name": "แผนปี 2027",
+                     *         "note": null,
+                     *         "owner": {
+                     *           "displayName": "การเงิน ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *         },
+                     *         "scenario": "base",
+                     *         "snapshotSha256": null,
+                     *         "status": "draft",
+                     *         "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *         "version": 1
+                     *       },
+                     *       "summary": {
+                     *         "breakEvenRevenue": "8400000.00",
+                     *         "cashConversionDays": "10.67",
+                     *         "citSmeApplied": false,
+                     *         "contributionAfterCommission": "2500000.00",
+                     *         "contributionAfterCommissionPct": "20.83",
+                     *         "ebitda": "900000.00",
+                     *         "emptyManualCells": 24,
+                     *         "grossMargin": "3000000.00",
+                     *         "grossMarginPct": "25.00",
+                     *         "netProfit": "700000.00",
+                     *         "netRevenue": "12000000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlGridDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.getVariance": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plan vs actual */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2027-02-03T10:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "lines": [
+                     *         {
+                     *           "cells": [
+                     *             {
+                     *               "actual": "1100000.00",
+                     *               "actualBasis": "ledger",
+                     *               "month": "2027-01",
+                     *               "note": "ลูกค้ารายใหญ่สั่งเร็วกว่าแผน",
+                     *               "noteBy": {
+                     *                 "displayName": "การเงิน ทดสอบ",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *               },
+                     *               "noteUpdatedAt": "2027-02-03T11:00:00+07:00",
+                     *               "plan": "1000000.00",
+                     *               "variance": "100000.00",
+                     *               "variancePct": "10.00"
+                     *             }
+                     *           ],
+                     *           "line": {
+                     *             "calc": "source",
+                     *             "definition": {
+                     *               "en": null,
+                     *               "th": "มูลค่าสินค้าที่ออกใบกำกับภาษีแล้วในเดือนนั้น ก่อนหักส่วนลด"
+                     *             },
+                     *             "editable": true,
+                     *             "formula": {
+                     *               "en": null,
+                     *               "th": "Σ ยอดสินค้าก่อน VAT ตามใบกำกับ"
+                     *             },
+                     *             "glAccounts": [
+                     *               {
+                     *                 "code": "4110",
+                     *                 "excludeRules": [],
+                     *                 "nameEn": "Sales — made-to-order packaging",
+                     *                 "nameTh": "รายได้ — บรรจุภัณฑ์สั่งผลิต",
+                     *                 "onlyRules": []
+                     *               }
+                     *             ],
+                     *             "group": "revenue",
+                     *             "howToFill": {
+                     *               "en": null,
+                     *               "th": "ใส่ยอดขายที่คาดไว้ ระบุว่ามาจากเป้าหรือดีลไหน"
+                     *             },
+                     *             "inTotal": true,
+                     *             "key": "revenue_goods",
+                     *             "labelEn": "Revenue — goods",
+                     *             "labelTh": "รายได้จากการขายสินค้า",
+                     *             "mapped": true,
+                     *             "source": {
+                     *               "en": null,
+                     *               "th": "GL รายได้ขายสินค้า; forecast = pipeline × ความน่าจะเป็นตามขั้น + ยอดสั่งซ้ำเฉลี่ย 3 เดือน"
+                     *             },
+                     *             "unit": "money"
+                     *           },
+                     *           "totalActual": "1100000.00",
+                     *           "totalPlan": "1000000.00",
+                     *           "totalVariance": "100000.00",
+                     *           "totalVariancePct": "10.00"
+                     *         }
+                     *       ],
+                     *       "months": [
+                     *         {
+                     *           "kind": "actual",
+                     *           "month": "2027-01",
+                     *           "periodOpen": false,
+                     *           "periodStatus": "closed"
+                     *         }
+                     *       ],
+                     *       "plan": {
+                     *         "computedAt": "2026-11-03T10:00:00+07:00",
+                     *         "copiedFromId": null,
+                     *         "createdAt": "2026-11-03T09:00:00+07:00",
+                     *         "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *         "fiscalYear": 2027,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *         "lockedAt": "2026-12-28T10:00:00+07:00",
+                     *         "lockedBy": {
+                     *           "displayName": "การเงิน ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *         },
+                     *         "name": "แผนปี 2027",
+                     *         "note": null,
+                     *         "owner": {
+                     *           "displayName": "การเงิน ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *         },
+                     *         "scenario": "base",
+                     *         "snapshotSha256": null,
+                     *         "status": "locked",
+                     *         "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *         "version": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlVarianceDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.pnl.setVarianceNote": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description A `PnlLineKey` */
+                lineKey: string;
+                /** @description `YYYY-MM` of the plan year */
+                month: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPnlVarianceNoteDto"];
+            };
+        };
+        responses: {
+            /** @description Plan vs actual */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2027-02-03T10:00:00+07:00",
+                     *       "currency": "THB",
+                     *       "lines": [
+                     *         {
+                     *           "cells": [
+                     *             {
+                     *               "actual": "1100000.00",
+                     *               "actualBasis": "ledger",
+                     *               "month": "2027-01",
+                     *               "note": "ลูกค้ารายใหญ่สั่งเร็วกว่าแผน",
+                     *               "noteBy": {
+                     *                 "displayName": "การเงิน ทดสอบ",
+                     *                 "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *               },
+                     *               "noteUpdatedAt": "2027-02-03T11:00:00+07:00",
+                     *               "plan": "1000000.00",
+                     *               "variance": "100000.00",
+                     *               "variancePct": "10.00"
+                     *             }
+                     *           ],
+                     *           "line": {
+                     *             "calc": "source",
+                     *             "definition": {
+                     *               "en": null,
+                     *               "th": "มูลค่าสินค้าที่ออกใบกำกับภาษีแล้วในเดือนนั้น ก่อนหักส่วนลด"
+                     *             },
+                     *             "editable": true,
+                     *             "formula": {
+                     *               "en": null,
+                     *               "th": "Σ ยอดสินค้าก่อน VAT ตามใบกำกับ"
+                     *             },
+                     *             "glAccounts": [
+                     *               {
+                     *                 "code": "4110",
+                     *                 "excludeRules": [],
+                     *                 "nameEn": "Sales — made-to-order packaging",
+                     *                 "nameTh": "รายได้ — บรรจุภัณฑ์สั่งผลิต",
+                     *                 "onlyRules": []
+                     *               }
+                     *             ],
+                     *             "group": "revenue",
+                     *             "howToFill": {
+                     *               "en": null,
+                     *               "th": "ใส่ยอดขายที่คาดไว้ ระบุว่ามาจากเป้าหรือดีลไหน"
+                     *             },
+                     *             "inTotal": true,
+                     *             "key": "revenue_goods",
+                     *             "labelEn": "Revenue — goods",
+                     *             "labelTh": "รายได้จากการขายสินค้า",
+                     *             "mapped": true,
+                     *             "source": {
+                     *               "en": null,
+                     *               "th": "GL รายได้ขายสินค้า; forecast = pipeline × ความน่าจะเป็นตามขั้น + ยอดสั่งซ้ำเฉลี่ย 3 เดือน"
+                     *             },
+                     *             "unit": "money"
+                     *           },
+                     *           "totalActual": "1100000.00",
+                     *           "totalPlan": "1000000.00",
+                     *           "totalVariance": "100000.00",
+                     *           "totalVariancePct": "10.00"
+                     *         }
+                     *       ],
+                     *       "months": [
+                     *         {
+                     *           "kind": "actual",
+                     *           "month": "2027-01",
+                     *           "periodOpen": false,
+                     *           "periodStatus": "closed"
+                     *         }
+                     *       ],
+                     *       "plan": {
+                     *         "computedAt": "2026-11-03T10:00:00+07:00",
+                     *         "copiedFromId": null,
+                     *         "createdAt": "2026-11-03T09:00:00+07:00",
+                     *         "etag": "\"pXH2c5mJ3Lr0v1QkTqv2xQ\"",
+                     *         "fiscalYear": 2027,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a0472",
+                     *         "lockedAt": "2026-12-28T10:00:00+07:00",
+                     *         "lockedBy": {
+                     *           "displayName": "การเงิน ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *         },
+                     *         "name": "แผนปี 2027",
+                     *         "note": null,
+                     *         "owner": {
+                     *           "displayName": "การเงิน ทดสอบ",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"
+                     *         },
+                     *         "scenario": "base",
+                     *         "snapshotSha256": null,
+                     *         "status": "locked",
+                     *         "updatedAt": "2026-11-03T10:00:00+07:00",
+                     *         "version": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PnlVarianceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

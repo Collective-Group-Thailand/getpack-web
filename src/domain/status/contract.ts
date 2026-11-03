@@ -396,3 +396,9 @@ export type SalesFloorCheck = Schemas["SalesFloorCheck"];
 export type PlaybookCardStatus = Schemas["TemplateVersionStatus"];
 export type SalesNegotiationOutcome = Schemas["SalesNegotiationOutcome"];
 export type SalesFactoryPriceLockStatus = Schemas["SalesFactoryPriceLockStatus"];
+
+// D-472: the management P&L planner.
+export type PnlPlanStatus = Schemas["PnlPlanStatus"];
+export type PnlCellMode = Schemas["PnlCellMode"];
+export type PnlMonthKind = Schemas["PnlMonthKind"];
+export type PnlActualBasis = Schemas["PnlActualBasis"];

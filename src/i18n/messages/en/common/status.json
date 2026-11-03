@@ -1166,5 +1166,30 @@
     "manual": "Added by the team",
     "studio_idle": "Designed, not ordered",
     "dieline_download": "Dieline download"
+  },
+  "pnlPlan": {
+    "draft": "Draft",
+    "locked": "Locked"
+  },
+  "pnlCell": {
+    "auto": "System",
+    "autoHint": "From system data — the posted ledger for actual months, the forecast rules for months ahead",
+    "calculated": "Calculated",
+    "calculatedHint": "Worked out from other lines by formula; not editable",
+    "manual": "Entered",
+    "manualHint": "No system data — entered by a person with a note on its source",
+    "override": "Override",
+    "overrideHint": "A person replaced the system value with a reason; the system value is kept beside it"
+  },
+  "pnlMonth": {
+    "actual": "Actual",
+    "forecast": "Forecast"
+  },
+  "pnlActual": {
+    "ledger": "From the posted ledger",
+    "calculated": "Calculated from actuals",
+    "includes_plan_values": "Includes values entered in the plan",
+    "none": "No actual data in the system",
+    "not_yet": "Period not reached yet"
   }
 }

@@ -18,6 +18,7 @@ import { marketingContractHandlers, marketingHandlers } from "./marketing";
 import { orderHandlers } from "./orders";
 import { partnerHandlers } from "./partners";
 import { platformHandlers } from "./platform";
+import { pnlHandlers } from "./pnl";
 import { designContractHandlers, prepressHandlers } from "./prepress";
 import { productionHandlers } from "./production";
 import { rfqHandlers } from "./rfq";
@@ -48,6 +49,7 @@ export const adminHandlers = [
   ...marketingHandlers,
   ...companyHandlers,
   ...financeHandlers,
+  ...pnlHandlers,
   ...loyaltyHandlers,
   ...shipmentHandlers,
   ...logisticsHandlers,
