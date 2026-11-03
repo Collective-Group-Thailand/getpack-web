@@ -287,3 +287,111 @@ no dark surface, no illustration; the empty states teach with the product's own 
 ### Notifications
 - Two more fieldsets in the matrix: ถึงเวลาติดตามลูกค้า (no quiet-hours times in the copy — they are a setting) and
   ลูกค้าเปิดดูใบเสนอราคา.
+
+## P4 — company sales desk and discount approvals (D-469, D-470)
+
+Admin zone, desktop-first and usable at 1024 (inbox and pipeline also at 768). Rules applied per screen in the pack's
+priority order: accessibility → touch → performance → layout → typography → motion → forms → navigation; the dataviz
+method for every chart (form first, colour last, one measure per chart, thin marks, hover and focus on every mark,
+figures for a screen reader). Copy in the new admin namespace `sales` (th/en, `src/i18n/messages/*/admin/sales.json`);
+the agent zone's `agentSales` is loaded in the admin zone too, because the lead components are shared. Statuses from
+seven new maps in `src/domain/status/sales.ts` (inbound, approval, authority colour, floor check, playbook card,
+negotiation outcome, price lock) — icon + words + tone, never colour alone. Anuphan only, light surfaces only, Lucide
+only (two registry additions: `briefcase` for the menu, `desktop` for the preview frame). No "กำไรสุทธิ" anywhere: the
+bottom line is "กำไรหลังหักค่าคอม".
+
+### Shared lead components (`src/features/shared/sales`)
+- The P3 pipeline pieces moved out of the agent zone (stage menu, lost dialog, card, table, board, timeline, playbook
+  card, markdown, dates, phone) and take a `surface` (`agent` | `admin`) that binds the change-stage endpoint and the
+  links; the agent zone keeps re-exports at the old paths, so its pages did not change. Same stage rules, same
+  "ย้ายไปขั้น…" menu (WCAG 2.5.7), drag only as a desktop enhancement; a freelance agent's lead on the desk is
+  read-only (no menu, no drag).
+
+### Section nav "ฝ่ายขาย"
+- The API's menu entry `sales` (any pipeline permission) opens `/sales`. The desk's pages are a `SectionNav` (in the
+  sidebar on a desk, a scrolling line on narrow screens), each item offered only to who holds its permission.
+
+### งานเข้า `/sales` (inbound pool)
+- `ResourceList` with status `QueueTabs` (counts from the list itself), soonest first response first. The SLA column
+  is `SlaTimer` (text + icon, danger when breached; the API's `slaBreached`, never a client threshold); answered rows
+  say "ตอบแล้ว / ตอบเกินเวลา" with the time. Breached open rows take the danger row tone, new ones warning.
+- Bulk assign (managers only) from the selection bar; one dialog for one or many: "ให้ระบบเลือก (เวียนตามคิว)" first
+  and pre-selected, then each rep as a radio card with their open load and agent code; unavailable reps disabled with
+  the reason. Moving an enquiry from another rep shows a required reason field (the API's rule, said before sending).
+- Row actions in one menu button (named "การทำงานของ {name}"): assign / reassign, contacted (optional note), convert
+  (disabled with the neutral reason when the contact cannot be a lead — D-440), disqualify (reason radio cards). The
+  rep's view is the same list the API scopes; manager-only actions are hidden with `useCan`.
+- Manual entry: visible labels, `autocomplete` name / tel-national / email / organization, `inputmode`, phone
+  normalised to E.164 before sending; at least one way to reach is said inline.
+
+### ลูกค้ามุ่งหวัง `/sales/pipeline`, lead `/sales/leads/{id}`
+- Views as `ViewTabs` links (ทั้งหมด · ต้องติดตามวันนี้ · ใกล้หมดสิทธิ์ · ปิดแล้ว); managers add "พนักงานขาย / ตัวแทนอิสระ"
+  and a rep filter (links, so back and share work); table ↔ board toggle from 1024. Below 1024 the shared cards in two
+  columns. The manager's table gains a "ผู้ดูแล" column through the shared table's `extraColumn`.
+- Lead page: header with stage chip, organisation and who works it; actions log a contact, stage menu, new quote. The
+  quote list shows each quote's latest discount round (status chip, asked % and round), the approval link and the
+  options offered in words; "ขอส่วนลด" asks give-get first (at least one), then the percentage and reason. The timeline
+  is the shared one. Managers get a link to the customer's negotiation history.
+- New quote: the rep starts from a spec the desk already priced (radio cards: product, spec words, the code and when it
+  was quoted) and sets quantity and postcode — the staff zone has no configurator a rep may open (contract request
+  `admin.salesQuotes.products`).
+
+### ภาพรวมทีม `/sales/dashboard`
+- Filters in one row above everything they scope: range (30/90/180 days), period (เดือน/สัปดาห์), seller kind; CSV at
+  the end of the row (export endpoint, 5-minute link). A refetch keeps the frame at 60 % opacity — no skeleton jump.
+- KPI row of five stat tiles (proportional figures, no tabular-nums at display size): leads, won, win rate (with "ได้ ·
+  ไม่ได้" under it), open value, first-response SLA (with a meter, success ≥ 90 % else warning — the meter is
+  reinforcement; the figure and words carry it).
+- One measure per chart: the funnel as ranked horizontal bars (ordinal stages, one hue), drop-off as words beside each
+  step; won per period and new leads per period as two column charts (the brief's "win rate trend" needs a per-period
+  rate the API does not send — asked; the web never divides the counts); leads by source (ranked bars, won and rate in
+  the readout); median days per stage (grey bars — context, not the story); reps as a table (the honest form for five
+  measures per person); reps vs freelance as two side-by-side tiles. New `src/ui` primitives `BarList` and
+  `ColumnChart` (`DataBars.tsx`): ≤ 24 px marks, 4 px rounded data end, hairline grid, the latest period in the brand
+  colour and earlier ones in its tint (emphasis), each mark a hover and focus target with its readout, named for a
+  screen reader.
+
+### อนุมัติส่วนลด `/sales/approvals`, `/sales/approvals/{id}`
+- Queue: pending first by due time with the SLA timer and "ส่งต่อระดับถัดไปแล้ว", the asked % (explained figure), the
+  authority chip, the deciding level ("เลื่อนขึ้นหนึ่งระดับ" when negotiation-heavy raised it), round, status. No cost or
+  margin figure in a summary.
+- Detail: a header strip (quote + validity, customer + negotiation-heavy, seller + kind + who asked, deal
+  registration); "สิ่งที่ขอ" with the give-get as chips in words; the competitor comparison as a table — getpack and the
+  competitor side by side, line for line, "ไม่ตรงกัน" marked in words.
+- Waterfall drawn from the payload's `visibility`, nothing hidden client-side: `full` = `BridgeChart` (new `src/ui`
+  primitive): a vertical bridge read top to bottom like a P&L, totals on zero, changes hanging from the running total,
+  deductions grey and increases a light brand tint with the sign always printed, the bottom line "กำไรหลังหักค่าคอม" in the
+  brand colour and bold, the margin floor as a dashed line through every row (geometry from the parsed numbers; every
+  number shown is the API's string), "ยังไม่ได้ตั้งค่า" notes on unset fees and provisions, the viewer's name repeated
+  faintly behind the drawing, and a table toggle (always read by a screen reader); each row is one hover and focus
+  target with definition, formula, source and as-of time. `margin_pct` = four figure tiles and two bars against the
+  dashed floor with the floor-check chip. `authority` = the colour chip with its words only.
+- Simulator: five fields (discount, credit days, payment schedule when the role may read templates, deposit, option
+  rate), debounced 400 ms, `aria-live` result with the level needed and a compact waterfall in the caller's tier.
+- Decision panel (sticky on wide screens, primary tint): the options builder — option 1 "ค่าคอมปกติ" fixed and
+  pre-filled with the asked %, up to two co-fund / spiff rows with the rate rule as a hint — then อนุมัติ (primary),
+  เสนอกลับ, ไม่อนุมัติ (danger text). A confirm dialog says what the seller will see; reject and counter need a note;
+  a self-approval reason appears only when the viewer asked; one `Idempotency-Key` per decision. Export only with
+  `discount_approvals.export`.
+- View log `/sales/approvals/views` (auditor): when, who, quote (linked), tier in words, purpose.
+
+### คู่มือการขาย `/sales/playbook`, `/sales/playbook/{id}`
+- List with status tabs and "รอเผยแพร่" for submitted drafts. Editor and live preview side by side from 1280 (stacked
+  below): the preview is the agent zone's own `PlaybookCard` in a phone frame (360 px) or a desktop frame, switched by
+  a segmented control; it updates as you type. Contexts and audience as checkboxes, suggested replies as a list (≤ 10),
+  a change note; the three steps (บันทึก → ส่งตรวจ → อีกคนเผยแพร่) are written above the buttons, and the publish
+  button says why it is disabled ("ผู้เขียนหรือผู้ส่งตรวจเผยแพร่เองไม่ได้ ต้องให้ฝ่ายการตลาดหรือผู้จัดการฝ่ายขายอีกคน
+  เผยแพร่"). Versions listed with status and change note.
+
+### รายงาน
+- ประวัติการต่อรอง: quick picks of the desk's recent customers, the rule for "ต่อรองราคาสูง" in words, the flag as a
+  warning callout, rounds per quote with outcome chips, lost reasons and the last competitor.
+- แพ้เพราะราคา: product class × quantity band as a table; cells shaded in one hue by share in three steps with a legend,
+  the count under each percentage — the shade never carries the meaning alone.
+- ทบทวนหลังปิดดีล: group by approver / seller / customer (segmented); approved vs actual side by side per cell; the full
+  tier adds the amounts — the page draws the variant the API sent.
+
+### Every number explains itself
+- `FigureTip` (new `src/ui` primitive) wraps a figure in a focusable span with a dotted underline; the tooltip (hover
+  and focus, Escape closes) holds the definition and formula from `sales.figures.*`, the source (with the record's link
+  where there is one) and the as-of time. Chart rows carry the same text in their readout.
