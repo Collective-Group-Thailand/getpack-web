@@ -82,7 +82,8 @@
       "nextFollowUpAt": "Soonest follow-up",
       "protectedUntil": "Protection ending soonest",
       "expectedValue": "Highest expected value",
-      "createdAt": "Recently registered"
+      "createdAt": "Recently registered",
+      "score": "Highest score first"
     },
     "layout": "List layout",
     "layoutList": "Table",

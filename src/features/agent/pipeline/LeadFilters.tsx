@@ -17,7 +17,9 @@ import { Sheet } from "@/ui/components/Sheet";
 type Stage = Schemas["AgentLeadStage"];
 type Sort = Schemas["AgentLeadSort"];
 const STAGES: readonly Stage[] = ["new", "contacted", "quoted", "negotiating", "won", "lost"];
-const SORTS: readonly Sort[] = ["updatedAt", "nextFollowUpAt", "protectedUntil", "expectedValue", "createdAt"];
+const SORTS: readonly Sort[] = ["updatedAt", "nextFollowUpAt", "score", "protectedUntil", "expectedValue", "createdAt"];
+/** Sorts that read best largest / newest first (no `order` in the URL); the others go soonest first. */
+const DESCENDING: readonly Sort[] = ["expectedValue", "updatedAt", "createdAt", "score"];
 
 /**
  * The list's search and filters. A phone gets one "ตัวกรอง" button that opens a bottom sheet (thumb zone, the
@@ -109,7 +111,10 @@ export function LeadFilters({ boardAvailable }: { boardAvailable: boolean }) {
             value={sort}
             options={sortOptions}
             onValueChange={(value) =>
-              go({ sort: value === "updatedAt" ? null : value, order: value === "expectedValue" || value === "updatedAt" || value === "createdAt" ? null : "asc" })
+              go({
+                sort: value === "updatedAt" ? null : value,
+                order: DESCENDING.includes(value as Sort) ? null : "asc",
+              })
             }
           />
         </Field>
@@ -154,7 +159,7 @@ export function LeadFilters({ boardAvailable }: { boardAvailable: boolean }) {
                 go({
                   stage: draftStage === "all" ? null : draftStage,
                   sort: draftSort === "updatedAt" ? null : draftSort,
-                  order: ["expectedValue", "updatedAt", "createdAt"].includes(draftSort) ? null : "asc",
+                  order: DESCENDING.includes(draftSort) ? null : "asc",
                 });
               }}
             >

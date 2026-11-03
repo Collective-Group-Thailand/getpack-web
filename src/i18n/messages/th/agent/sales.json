@@ -82,7 +82,8 @@
       "nextFollowUpAt": "วันติดตามที่ใกล้สุด",
       "protectedUntil": "ใกล้หมดการคุ้มครอง",
       "expectedValue": "มูลค่าที่คาดสูงสุด",
-      "createdAt": "ลงทะเบียนล่าสุด"
+      "createdAt": "ลงทะเบียนล่าสุด",
+      "score": "คะแนนสูงก่อน"
     },
     "layout": "รูปแบบรายการ",
     "layoutList": "ตาราง",
