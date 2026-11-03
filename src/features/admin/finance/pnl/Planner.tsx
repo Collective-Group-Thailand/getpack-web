@@ -26,6 +26,7 @@ import { usePnlFormat } from "./format";
 import { PnlGridView } from "./Grid";
 import { OverrideDialog } from "./OverrideDialog";
 import { SourcesSheet } from "./SourcesSheet";
+import { PnlCharts, SummaryStrip } from "./Summary";
 import { CopyPlanDialog, CreatePlanDialog, LockPlanDialog } from "./PlanDialogs";
 import {
   PNL_SCENARIOS,
@@ -98,6 +99,17 @@ function PlannerBody() {
         })
       ).data!,
     enabled: Boolean(plan),
+  });
+
+  const varianceQuery = useQuery({
+    queryKey: pnlKeys.variance(plan?.id ?? "none"),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/finance/pnl/plans/{planId}/variance", {
+          params: { path: { planId: plan!.id } },
+        })
+      ).data!,
+    enabled: Boolean(plan) && variance,
   });
 
   const navigate = (next: { plan?: string; year?: number; scenario?: PnlScenario; view?: string | null }) => {
@@ -212,6 +224,12 @@ function PlannerBody() {
       ) : (
         <>
           <PlanNotices plan={plan} canManage={canManage} />
+          {grid.data ? (
+            <>
+              <SummaryStrip grid={grid.data} />
+              <PnlCharts grid={grid.data} variance={variance ? varianceQuery.data : undefined} />
+            </>
+          ) : null}
           {grid.data ? (
             <PnlGridView
               grid={grid.data}

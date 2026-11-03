@@ -276,12 +276,10 @@ export const CellMarks: Story = {
 function KeyboardGridDemo() {
   const rows = ["รายได้", "ต้นทุน", "กำไร"];
   const cols = ["ม.ค.", "ก.พ.", "มี.ค."];
-  const { containerRef, cellProps } = useGridNavigation({ rows: rows.length, cols: cols.length + 1 });
+  const { gridRef, cellProps } = useGridNavigation({ rows: rows.length, cols: cols.length + 1 });
   return (
     <table
-      ref={(node) => {
-        containerRef.current = node;
-      }}
+      ref={gridRef}
       role="grid"
       aria-label="ตารางตัวอย่าง (ข้อมูลจำลอง)"
       className="border-border text-sm tabular-nums [&_td]:border [&_td]:px-3 [&_td]:py-1.5 [&_th]:border [&_th]:px-3 [&_th]:py-1.5"

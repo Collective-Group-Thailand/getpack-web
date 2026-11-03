@@ -127,7 +127,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
     return true;
   };
 
-  const nav = useGridNavigation({
+  const { gridRef, cellProps, focusCell } = useGridNavigation({
     rows: rows.length,
     cols,
     onCellKey: (position, event) => {
@@ -160,7 +160,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
 
   const close = (focus: { row: number; col: number } | null) => {
     setEditing(null);
-    if (focus) requestAnimationFrame(() => nav.focusCell(focus));
+    if (focus) requestAnimationFrame(() => focusCell(focus));
   };
 
   const save = async (line: PnlGridLine, cell: PnlCell, position: { row: number; col: number }) => {
@@ -226,9 +226,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
         data-testid="pnl-grid-scroll"
       >
         <table
-          ref={(node) => {
-            nav.containerRef.current = node;
-          }}
+          ref={gridRef}
           role="grid"
           aria-labelledby={titleId}
           aria-describedby={`${titleId}-keys`}
@@ -266,7 +264,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
                     memo={r === memoStart}
                     colSpan={cols}
                     onToggle={() => toggle(row.group)}
-                    cellProps={nav.cellProps(r, 0, true)}
+                    cellProps={cellProps(r, 0, true)}
                   />
                 );
               const { line } = row;
@@ -286,7 +284,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
                     <th
                       scope="row"
                       role="rowheader"
-                      {...nav.cellProps(r, 0)}
+                      {...cellProps(r, 0)}
                       className={cn(
                         "bg-surface border-border sticky left-0 z-10 border-e px-4 py-2 text-start font-normal outline-none",
                         "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:ring-inset",
@@ -317,7 +315,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
                       >
                         <td
                           role="gridcell"
-                          {...nav.cellProps(r, c + 1)}
+                          {...cellProps(r, c + 1)}
                           aria-readonly={!canEdit || !line.line.editable || undefined}
                           data-mode={cell.mode}
                           data-month={cell.month}
@@ -352,7 +350,7 @@ export function PnlGridView({ grid, canEdit, onOverride, onDrill }: PnlGridProps
                   <Tooltip side="left" contentClassName="max-w-80" content={<LineTipContent line={line.line} />}>
                     <td
                       role="gridcell"
-                      {...nav.cellProps(r, months.length + 1)}
+                      {...cellProps(r, months.length + 1)}
                       aria-readonly
                       className={cn(
                         "bg-surface-subtle border-border-strong border-s px-3 py-2 text-end font-medium whitespace-nowrap outline-none",
@@ -402,7 +400,7 @@ function cell_({
 }
 
 /** A month's header: the month, then actual or forecast in words with its shape, and "ยังไม่ปิดงวด" for an open period. */
-function MonthHeader({ month, forecastEdge }: { month: PnlMonth; forecastEdge: boolean }) {
+export function MonthHeader({ month, forecastEdge }: { month: PnlMonth; forecastEdge: boolean }) {
   const t = useTranslations("finance.pnl.grid");
   const tStatus = useTranslations("status");
   const format = usePnlFormat();
@@ -428,7 +426,7 @@ function MonthHeader({ month, forecastEdge }: { month: PnlMonth; forecastEdge: b
 }
 
 /** A band's header: its name with a disclosure, the only cell of its row. */
-function GroupRow({
+export function GroupRow({
   group,
   expanded,
   memo,
@@ -477,7 +475,7 @@ function GroupRow({
 }
 
 /** A line's name in the first column; the tax estimate always says "ประมาณการ". */
-function LineLabel({ line }: { line: PnlGridLine }) {
+export function LineLabel({ line }: { line: Pick<PnlGridLine, "line"> }) {
   const t = useTranslations("finance.pnl.grid");
   const format = usePnlFormat();
   return (

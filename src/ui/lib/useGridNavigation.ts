@@ -24,7 +24,7 @@ export interface GridNavigationOptions {
  * The keyboard model of an ARIA data grid (WAI-ARIA APG "Data Grid"): one tab stop (roving `tabIndex`), arrows move
  * one cell, Home / End go to the row's ends, Ctrl+Home / Ctrl+End to the grid's corners, PageUp / PageDown move a
  * page of rows. Everything else is handed to `onCellKey` — editing is the caller's (Enter / F2 to edit, Escape to
- * cancel). Cells are found by `data-grid-row` / `data-grid-col` inside the element `containerRef` points at, so the
+ * cancel). Cells are found by `data-grid-row` / `data-grid-col` inside the element `gridRef` is attached to, so the
  * markup stays a real `<table role="grid">`.
  */
 export function useGridNavigation({ rows, cols, pageSize = 8, onCellKey }: GridNavigationOptions) {
@@ -96,5 +96,10 @@ export function useGridNavigation({ rows, cols, pageSize = 8, onCellKey }: GridN
     },
   });
 
-  return { containerRef, active: current, focusCell, cellProps };
+  /** A callback ref for the grid element. */
+  const gridRef = useCallback((node: HTMLElement | null) => {
+    containerRef.current = node;
+  }, []);
+
+  return { gridRef, active: current, focusCell, cellProps };
 }

@@ -3131,7 +3131,9 @@
         }
       },
       "source": "This plan's P&L",
-      "asOf": "As of"
+      "asOf": "As of",
+      "formulaLabel": "Formula",
+      "sourceLabel": "Source"
     },
     "chart": {
       "revenueTitle": "Net revenue by month",

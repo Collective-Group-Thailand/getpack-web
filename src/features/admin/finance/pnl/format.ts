@@ -39,6 +39,8 @@ export function usePnlFormat() {
     /** The plan year as the reader counts it: Buddhist era in Thai, as legacy showed it. */
     year: (year: number) => String(locale === "th" ? year + 543 : year),
     date: (value: string | null | undefined) => format.date(value),
+    /** An axis tick: 2.4M, 2.4 ล้าน. */
+    compact: (value: number) => format.number(value, { notation: "compact", maximumFractionDigits: 1 }),
     dateTime: (value: string | null | undefined) => format.dateTime(value),
     label: (line: Pick<PnlLine, "labelTh" | "labelEn">) => (locale === "th" ? line.labelTh : line.labelEn),
     /** A catalogue text; English falls back to Thai until Finance writes it (recorded in DESIGN-NOTES P6). */
