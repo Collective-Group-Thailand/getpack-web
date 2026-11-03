@@ -70,6 +70,7 @@ export function RegisterLead({
           taxId: form.taxId || null,
           note: form.note.trim() || null,
           consentConfirmed: consent,
+          source: "manual",
         },
       });
       toast.success(t("registered", { days: protectionDays }));
