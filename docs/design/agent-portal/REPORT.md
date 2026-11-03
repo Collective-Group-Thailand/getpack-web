@@ -91,3 +91,25 @@
   - Web commits 3–9 of the branch don't build alone (items 1–2 landed after them); the merged head builds
 - Screenshots: `docs/design/agent-portal/screenshots/P3/` (leads, lead detail, new lead, card scan, quote create/list/detail, discount steps + options, playbook, forecast, import; phone 390 + desktop 1440, tablet 768)
 
+## P4 — Sales desk, discount approval and playbook (admin) · PASS
+- Branches `feat/agent-p4-sales-desk` · merge SHAs: api `10ecc5f2`, web `a28f88f4`
+- Delivered
+  - API: staff pipeline for employee agents (`sales.pipeline.self` role sales_rep / `.manage`); inbound pool from contact form and non-customer RFQs + manual, first-response SLA (working hours), manual or round-robin assignment with capacity, SLA breach alerts; dashboard + CSV; discount approval desk (authority rep ≤3 % / manager ≤8 % with floor / C-Level above, negotiation-heavy one level up, SLA + escalation, cost-unknown refusal, snapshot hash → stale, price lock request for big deals), waterfall per quote/option with field-level tiers (rep authority chip / manager margin % / full for C-Level, VP, Director, Finance Manager, Superadmin), view log, finance-only export, simulator; accepted option → discounted quotation + checkout memo + PDF conditions line; negotiation history + lost-to-price; playbook admin with maker-checker; credit cost estimate; post-deal review
+  - Web (admin "ฝ่ายขาย"): inbox with SLA timers and bulk/round-robin assign, pipeline table + board (non-drag stage menu), lead page on components shared with the agent zone, sales quotes, dashboard (funnel with drop-off, SLA %, sources, reps, freelance vs employee), approvals queue + detail with the bridge chart, floor line and viewer watermark, live simulator, options builder (full-rate option locked first), decide, view log; playbook admin with phone/desktop preview; negotiation, lost-to-price and post-deal reports; every figure explained by tooltip
+- Decisions recorded: D-469, D-470 (both repos)
+- Gate results
+  - API: typecheck ✔ · lint ✔ · unit 1,778 ✔ (golden credit cost ฿6,642 + ฿4,757 = ฿11,399 = 1.06 %, deposit case ฿0; forbidden-field absence per role) · prettier ✔ · contract:build (no drift) + Spectral ✔ · 3 migrations rolled back and redeployed ✔ · seed idempotent ✔ · e2e SKIPPED-DOCKER (sales-p4 e2e written)
+  - Web: lint ✔ · typecheck ✔ · unit 1,907 ✔ · gen:api:check ✔ · tokens:check ✔ · build ✔ · e2e P4 8/8 + P0–P3 + zones 55/55 ✔ · no page scroll at 1024–1920 (inbox/pipeline also 768) ✔ · field RBAC from the received BFF JSON: rep payload `visibility: authority` with no cost/margin keys, manager `margin_pct` only, C-Level full, export only for Finance Manager, view log written ✔ · visual snapshots SKIPPED (no Storybook build here; stories added) · Lighthouse n/a (admin only)
+  - Wording ("กำไรหลังหักค่าคอม", never "กำไรสุทธิ"; agent-visible playbook refuses cost/margin/factory words) ✔ · commits Superball, no trailers ✔
+- Assumptions taken
+  - Working hours for SLA = every day 09:00–18:00 (`calendar.business_hours`); product class = product category
+  - Top-level discounts decided by C-Level (and Superadmin) only; VP/Director see the full waterfall but don't decide
+  - Credit cost: day 0 = job acceptance (checkout); receipts net of VAT; each factory leg rounded half-up to baht
+  - Non-customer RFQ = customer with no order group and no agent link
+  - Dashboard draws won and new leads per period instead of a computed win-rate trend (web does no division of business figures)
+- Open questions
+  - Unset by design (no decision): bad-debt provision %, approval amount caps
+  - LINE OA chats have no sales tag yet → not in the inbound pool; factory confirmation of price locks in the partner zone not built (locks stay `requested`)
+  - Contract requests filed: win-rate per period, products for rep quotes, playbook card actors, deal registration in approval header, menu entry for finance/auditor
+- Screenshots: `docs/design/agent-portal/screenshots/P4/` (1440 + 1024 per screen; approval detail full tier also 1280 and 1920)
+
