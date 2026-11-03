@@ -10,6 +10,7 @@ import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
+import { mockAgentLeadScore } from "../lead-score";
 import { bangkokIso, mockId, problem } from "../support";
 import { customerOf } from "./customers";
 import {
@@ -50,7 +51,7 @@ const nextId = (namespace: string) => mockId(namespace, (seq += 1));
 
 function lead(partial: Partial<Lead> & Pick<Lead, "id" | "contactName">): Lead {
   const now = bangkokIso();
-  return {
+  const row: Lead = {
     kind: "customer",
     organisationName: null,
     phone: null,
@@ -74,8 +75,11 @@ function lead(partial: Partial<Lead> & Pick<Lead, "id" | "contactName">): Lead {
     tags: [],
     wonAt: null,
     updatedAt: now,
+    score: null,
     ...partial,
   };
+  // D-471: the agent sees the score of their own leads only (no reasons); the mock scores like the API.
+  return partial.score !== undefined ? row : { ...row, score: mockAgentLeadScore(row).score };
 }
 
 const LEAD_IDS = {
@@ -328,6 +332,8 @@ const etagOf = (id: string) => `W/"${id}.${versions.get(id) ?? 1}"`;
 const touch = (row: Lead) => {
   versions.set(row.id, (versions.get(row.id) ?? 1) + 1);
   row.updatedAt = bangkokIso();
+  // D-471: the API rescores a lead when it changes (lead events).
+  row.score = mockAgentLeadScore(row).score;
 };
 const addActivity = (leadId: string, entry: Activity) => {
   const list = activities.get(leadId) ?? [];
@@ -397,6 +403,7 @@ function filterLeads(url: URL): Lead[] {
     .filter(Boolean);
   const source = url.searchParams.get("source");
   const due = url.searchParams.get("due");
+  const minScore = url.searchParams.get("minScore");
   const q = url.searchParams.get("q")?.trim().toLowerCase();
   const now = Date.now();
   return leads.filter((row) => {
@@ -424,6 +431,7 @@ function filterLeads(url: URL): Lead[] {
     if (source && row.source !== source) return false;
     if (due === "today" && !(row.nextFollowUpAt && Date.parse(row.nextFollowUpAt) <= endOfTodayMs())) return false;
     if (due === "overdue" && !(row.nextFollowUpAt && Date.parse(row.nextFollowUpAt) < now)) return false;
+    if (minScore !== null && (row.score === null || row.score < Number(minScore))) return false;
     if (q) {
       const hay = [row.contactName, row.organisationName, row.phone, row.email, row.taxId, row.lineId]
         .filter(Boolean)
@@ -445,7 +453,7 @@ function sortLeads(rows: Lead[], sort: string | null, order: string | null): Lea
     if (left === right) return 0;
     if (left === null) return 1;
     if (right === null) return -1;
-    if (key === "expectedValue") return (Number(left) - Number(right)) * direction;
+    if (key === "expectedValue" || key === "score") return (Number(left) - Number(right)) * direction;
     return String(left).localeCompare(String(right)) * direction;
   });
 }

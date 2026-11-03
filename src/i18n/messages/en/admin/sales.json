@@ -19,7 +19,7 @@
   },
   "inbox": {
     "title": "Sales inbox",
-    "description": "Purchase enquiries from the contact form, quote requests from people who have not ordered yet, and entries the team added — soonest first response first.",
+    "description": "Purchase enquiries from the contact form, quote requests from people who have not ordered yet, people who saved a design but haven’t ordered, dieline downloads (only from people who agreed to hear from us) and entries the team added — soonest first response first, or by score.",
     "statusesLabel": "Enquiry status",
     "all": "All",
     "search": "Search name, company, reference or need",
@@ -31,13 +31,16 @@
       "assignee": "Owner",
       "sla": "First response",
       "actions": "Actions",
-      "statusOwner": "Status and owner"
+      "statusOwner": "Status and owner",
+      "score": "Score"
     },
     "sources": {
       "contact_form": "Contact form",
       "rfq": "Quote request",
       "line_chat": "LINE chat",
-      "manual": "Added by the team"
+      "manual": "Added by the team",
+      "studio_idle": "Designed, not ordered",
+      "dieline_download": "Dieline download"
     },
     "leadRefused": "Cannot be registered as a lead",
     "leadRefusedHint": "This contact cannot be registered as a lead; keep in touch as usual.",
@@ -127,7 +130,11 @@
       "done": "{name} added",
       "failed": "Could not add"
     },
-    "ownerLine": "Owner: {name}"
+    "ownerLine": "Owner: {name}",
+    "minScore": "Minimum score",
+    "minScoreOption": "{score} and up",
+    "signals": "Back {count} times",
+    "consentMarketing": "Agreed to hear from us"
   },
   "pipeline": {
     "title": "Leads",
@@ -773,11 +780,7 @@
       },
       "ofClosed": "{lost} of {closed}",
       "legend": "Share:",
-      "legendSteps": [
-        "10–24%",
-        "25–39%",
-        "40%+"
-      ],
+      "legendSteps": ["10–24%", "25–39%", "40%+"],
       "empty": "No closed deals in this range",
       "toDashboard": "Go to the team dashboard"
     },

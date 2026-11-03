@@ -5,9 +5,11 @@ import type {
   SalesDiscountApprovalStatus,
   SalesFactoryPriceLockStatus,
   SalesFloorCheck,
+  SalesInboundSource,
   SalesInboundStatus,
   SalesNegotiationOutcome,
 } from "./contract";
+import type { StatusTone } from "./types";
 
 /** A sales enquiry in the inbound pool (D-469): new → assigned → contacted → converted to a lead, or disqualified. */
 export const SALES_INBOUND_STATUS = defineStatusMap<SalesInboundStatus>({
@@ -65,3 +67,27 @@ export const SALES_PRICE_LOCK_STATUS = defineStatusMap<SalesFactoryPriceLockStat
   expired: { tone: "neutral", icon: "clock", labelKey: "salesPriceLock.expired" },
   released: { tone: "neutral", icon: "undo", labelKey: "salesPriceLock.released" },
 });
+
+/**
+ * Where an inbound sales item came from (D-469, D-471): what the person did, so a rep knows how warm the contact is
+ * before reading the need. The icon carries it in the list; the words say it to a screen reader and in the filter.
+ */
+export const SALES_INBOUND_SOURCE = defineStatusMap<SalesInboundSource>({
+  contact_form: { tone: "info", icon: "mail", labelKey: "salesSource.contact_form" },
+  rfq: { tone: "primary", icon: "calculator", labelKey: "salesSource.rfq" },
+  line_chat: { tone: "success", icon: "line", labelKey: "salesSource.line_chat" },
+  manual: { tone: "neutral", icon: "edit", labelKey: "salesSource.manual" },
+  studio_idle: { tone: "warning", icon: "pen-tool", labelKey: "salesSource.studio_idle" },
+  dieline_download: { tone: "neutral", icon: "download", labelKey: "salesSource.dieline_download" },
+});
+
+/**
+ * The tone of a lead score chip (D-471). Presentation only — the score and its rules are the API's
+ * (`sales.scoring_rules`); the chip shades the number by thirds of the 0–100 scale so a long list scans at a glance,
+ * and never names a band ("hot", "cold"), which would be a business judgement the rules do not make.
+ */
+export function leadScoreTone(score: number): StatusTone {
+  if (score >= 67) return "success";
+  if (score >= 34) return "info";
+  return "neutral";
+}

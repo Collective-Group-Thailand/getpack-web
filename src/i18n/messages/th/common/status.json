@@ -1158,5 +1158,13 @@
     "confirmed": "โรงงานยืนยันแล้ว",
     "expired": "หมดอายุ",
     "released": "ปล่อยแล้ว"
+  },
+  "salesSource": {
+    "contact_form": "แบบฟอร์มติดต่อ",
+    "rfq": "ขอใบเสนอราคา",
+    "line_chat": "แชต LINE",
+    "manual": "ทีมเพิ่มเอง",
+    "studio_idle": "ออกแบบแล้วยังไม่สั่ง",
+    "dieline_download": "ดาวน์โหลดแบบแผ่นคลี่"
   }
 }

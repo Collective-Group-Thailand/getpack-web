@@ -242,7 +242,8 @@
     "material_class_not_offered": "This style is not offered in that material class",
     "not_drawable": "This style cannot be drawn as a dieline",
     "size_out_of_range": "These sizes are outside the style's range",
-    "rate_limited": "Too many downloads — wait a moment and try again"
+    "rate_limited": "Too many downloads — wait a moment and try again",
+    "sign_in_required": "Sign in to keep downloading — it’s free"
   },
   "discount_memos": {
     "not_usable": "Memo cannot be used",
