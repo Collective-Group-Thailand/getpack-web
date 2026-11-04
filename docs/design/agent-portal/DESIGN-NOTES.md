@@ -539,3 +539,84 @@ charts; getpack tokens, Anuphan and the existing admin console patterns win ever
   profit and net profit (bold), the count of manual cells still empty; with the switch on, actual over plan. Forecast
   cards sit on the subtle ground. Create / recompute / copy / lock and the charts are not drawn below 768 px; a line says
   editing is for a tablet or a computer.
+
+## P7 — QA, pilot switch and launch readiness
+
+### Responsive QA (`e2e/agent-portal-p7-responsive.spec.ts`)
+- Every route the pack added — `/agent` (th, en), `/agent/apply`, all getpack Agent pages (home, leads list and board,
+  a lead, import, quotes, a quote and its discount request, new quote, commissions and forecast, statements and one
+  statement, customers, payout, tax, playbook, notifications, profile, sign-in, hand-off, offline), the admin sales
+  desk (inbox, pipeline list and board, a lead, quotes, dashboard, approvals list / detail / views, playbook list and
+  card, the three reports), the agents' waiting list and the P&L planner — at 360, 375, 393, 768, 1024, 1280, 1440
+  and 1920, with four checks in one pass (`e2e/helpers/responsive.ts`):
+  1. the page never scrolls sideways;
+  2. no visible element reaches past the viewport's sides unless a container that scrolls sideways holds it (a
+     page-level wrapper does not count) — a clipping container cuts the element's visible part to its own box, which
+     must be on screen (a truncated name inside a card is fine, a button half off-screen is not);
+  3. a fixed bar along the bottom pads itself by `env(safe-area-inset-bottom)` (found through the stylesheet rules
+     that match it or its children, since desktop Chromium computes the inset to 0) and, scrolled to the end, the
+     last piece of content sits above it;
+  4. no h1 / h2 is clipped (`scrollWidth > clientWidth`).
+- The checks were proved on purpose-made faults (a 900 px block, a clipped title, a tab bar with its padding and the
+  page's bottom space removed) before the run.
+- **Findings fixed:** the landing's worked-examples table cut its third money column at 360 px (th and en, inside the
+  card's clip) → below 640 px each example is a row of two labelled figures; the table is kept from 640 px. A
+  `heading-order` miss (h1 → h3) on `/agent/apply` and `/payout` found by Lighthouse → `FormSection` takes
+  `headingLevel` (src/ui) and the two forms use h2.
+- Admin desks at phone widths: they hold together (no page scroll, cards instead of tables, section tabs scroll inside
+  their strip, actions reachable); they remain desktop tools by design.
+
+### Real-device pass (Safari iOS, Chrome Android) — NOT PERFORMED here
+This workspace has no phones or device cloud; nothing below has been done. Checklist for the owner / QA on UAT
+(`agent.<uat-host>` and the storefront), one iPhone (iOS 17+, Safari, with a notch / Dynamic Island) and one Android
+phone (Chrome, gesture navigation):
+1. `/agent` portrait and landscape: hero, examples as rows, calculator keyboard (`inputMode=decimal` shows the
+   number pad), the waiting-list form (phone keyboard on the mobile field, e-mail keyboard on e-mail), consent text
+   readable without zoom, the thank-you message after sending.
+2. `/agent/apply` signed in as a pilot account: OTP autofill from SMS (iOS "From Messages"), the agreement sheet
+   scrolls and its button stays above the home indicator.
+3. getpack Agent: the tab bar sits above the home indicator / gesture bar (no overlap, no gap); the FAB clears the
+   tab bar; the lead detail's sticky bar (โทร · LINE · ใบเสนอราคา · บันทึก) clears it too; pull-to-refresh does not
+   fight the board's sideways scroll; landscape keeps the side insets (notch side).
+4. Text at the largest system font size (iOS Dynamic Type via Safari's page zoom 150 %, Android font scale 1.3): no
+   clipped headings or buttons on home, leads, quotes, commissions.
+5. VoiceOver (iOS) and TalkBack (Android) through the tab bar, a lead, the stage menu and the waiting-list form.
+6. Offline: airplane mode → the offline page; a new lead saved as "รอส่ง" and sent when back online.
+7. Admin sales desk on a phone (inbox, a lead, approvals): readable and the main action reachable.
+Record device, OS and browser versions and screenshots per step in the UAT sheet.
+
+### Lighthouse (mobile preset, local VM — indicative only)
+Lighthouse 12.6.1 CLI, mobile, simulated throttling, three runs, against a local production build in mock mode
+(`/tmp`-style runs; the same command before and after). The VM's CPU makes performance lower than CI or a phone would
+measure; accessibility, best practices and SEO are exact.
+
+| Page | Perf (runs) | A11y | BP | SEO | Notes |
+|---|---|---|---|---|---|
+| `/agent` before P7 changes | 79 · 75 · 77 | 100 | 100 | 100 | LCP = the h1 (2.8–4.1 s simulated); HTML 1,133 KB |
+| `/agent` after the message trim | 82 · 80 · 71 | 100 | 100 | 100 | HTML 1,017 KB (gzip 199 → 188 KB); TBT 238–462 ms |
+| `/en/agent` | 82 | 100 | 100 | 100 | |
+| getpack Agent `/` | 89 · 80 · 88 · 91 | 100 | 100 | n/a (noindex) | |
+| getpack Agent other pages | 86–96 | 100 | 100 | n/a | `/leads` 86–89, `/quotes/new` 86 |
+| `/agent/apply` (returning customer) | 77 | 98 → 100 | 96 | n/a (noindex) | heading order fixed |
+
+Tried on `/agent` and kept: the client message catalogue loses four server-only copy subtrees
+(`src/i18n/client-messages.ts`, guarded by a test) — the HTML is 10 % smaller; the change in score sits inside the
+VM's run-to-run spread, so no claim beyond the byte saving. Looked at and not changed: fonts are already preloaded by
+`next/font` (both Anuphan files at high priority before any script); there are no raster images on the page; the
+calculator's script is a few KB of the shared form primitives (lazy-loading it saves nothing measurable); the hero
+story's animations are compositor-only (opacity / transform). The remaining cost is parsing ~1 MB of HTML of which
+~0.8 MB is the storefront's client message catalogue — the follow-up is per-route client namespaces
+(docs/performance-budgets.md, Agent portal P7). CI's `pnpm lhci agent-landing agent-apply agent-zone` gives the
+reference numbers.
+
+### PWA install (iOS and Android) — manual, NOT PERFORMED here
+The e2e installability check stays (`agent-portal-p2.spec.ts`: manifest fields and icons, an active service worker
+at `/agent-sw.js`). Real installs need phones:
+- **Android / Chrome:** open `agent.<host>` signed in, visit twice → the install card appears (from the 2nd visit) →
+  "ติดตั้ง" → the system prompt → the icon on the home screen with the maskable icon cropped cleanly → opens
+  standalone (no URL bar), theme colour in the status bar, the tab bar above the gesture bar; airplane mode → the
+  offline page; a push test from Admin reaches the device and opens its deep link.
+- **iOS / Safari (16.4+):** Share → "Add to Home Screen" (the in-app iOS guide shows these steps) → the apple-touch
+  icon, name "getpack Agent" → opens standalone; safe areas on a notched phone; web push only after adding to the
+  home screen and allowing notifications in the app.
+- Record pass / fail with device and OS versions in the UAT sheet.

@@ -1,0 +1,32 @@
+{
+  "extends": "./shared.json",
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:3200/agent/apply"],
+      "numberOfRuns": 3,
+      "settings": {
+        "throttlingMethod": "simulate",
+        "extraHeaders": {
+          "Cookie": "pk_consent=a1m1; pk_at=seed.access.token.customer"
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": [
+          "warn",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 300100
+          }
+        ]
+      }
+    }
+  },
+  "$comment": "Agent portal P7 — /agent/apply signed in as the mock's returning customer (a customer not on the pilot list sees the waiting list there; the page is noindex, so no SEO assertion). The session is the mock's fixed token, as in partner.json. Performance is a warning like every field-type metric in this repo (lighthouse/shared.json: a shared runner cannot stand in for a p75 measurement honestly); the target is 0.9 (the agent portal <responsive> contract) and the measured numbers are in docs/design/agent-portal/DESIGN-NOTES.md (P7). Accessibility is the shared error at 1.0 — stricter than the contract's 0.95; every page measures 100. RATCHET: script size pinned just above the P7 measurement."
+}

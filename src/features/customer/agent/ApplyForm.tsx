@@ -182,7 +182,7 @@ export function ApplyForm({
         </Callout>
       ) : null}
 
-      <FormSection title={t("whoStep1")}>
+      <FormSection headingLevel={2} title={t("whoStep1")}>
         <SegmentedControl
           label={t("juristic")}
           value={juristic}
@@ -206,7 +206,7 @@ export function ApplyForm({
         </Field>
       </FormSection>
 
-      <FormSection title={t("contact")} description={t("contactIntro")}>
+      <FormSection headingLevel={2} title={t("contact")} description={t("contactIntro")}>
         <Field
           label={t("phone")}
           hint={phoneVerified ? t("otp.verified") : t("phoneHint")}
@@ -277,7 +277,7 @@ export function ApplyForm({
         </Field>
       </FormSection>
 
-      <FormSection title={t("aboutYou")}>
+      <FormSection headingLevel={2} title={t("aboutYou")}>
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium">
             {t("channels")} <span className="text-danger">*</span>
@@ -303,7 +303,11 @@ export function ApplyForm({
         </Field>
       </FormSection>
 
-      <FormSection title={t("agreement", { version: agreement.versionNo })} description={t("agreementIntro")}>
+      <FormSection
+        headingLevel={2}
+        title={t("agreement", { version: agreement.versionNo })}
+        description={t("agreementIntro")}
+      >
         <div>
           <Button type="button" variant="secondary" onClick={() => setReadOpen(true)}>
             {t("readAgreement")}

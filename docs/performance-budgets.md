@@ -456,3 +456,28 @@ five sets without per-URL figures in its annotations):
   with the PDP's sections loading on view.
 - Raised by the owner's decision for this repair (2026-10-31: "raise ratchets slightly"); targets unchanged.
 
+
+## Agent portal P7 — new URL sets for the programme and getpack Agent (2026-11-04)
+
+Three sets, all on Lighthouse's **mobile** preset (the agent portal's <responsive> contract asks for mobile
+performance ≥ 90 and accessibility ≥ 95 on every new route): `agent-landing` (`/agent`, `/en/agent`, anonymous,
+SEO an error at 1.0), `agent-apply` (`/agent/apply` signed in as the mock's returning customer) and `agent-zone`
+(13 getpack Agent pages on `agent.localhost`, signed in as the mock persona `agent` through its fixed token
+`pk_at=seed.access.token.customer.agent` — the way `partner.json` signs in the factory app). Performance is a
+**warning** at 0.9, like every field-type metric here; accessibility is the shared **error** at 1.0.
+
+Measured with the Lighthouse 12.6.1 CLI (mobile, simulated throttling) against a local production build in mock
+mode; script transfer without GTM (the build had a test GTM id; CI's has none):
+
+| Set | Heaviest page | Measured | Ratchet |
+|---|---|---|---|
+| agent-landing | `/agent` (`/en/agent` the same) | 293,118 | **293,600** |
+| agent-apply | `/agent/apply` | 299,605 | **300,100** |
+| agent-zone | `/leads` (`/quotes/new` 309,293; the rest 281–294 K) | 315,408 | **315,900** |
+
+The set's target is still the documented one for its route type (150 KB marketing, 180 KB PWA); the ratchets stop
+growth. **Where /agent's weight is:** the HTML, not the script — the storefront serialises its whole client message
+catalogue into every page's RSC payload (~1.1 MB of HTML on `/agent`, ~200 KB gzip). P7 keeps four server-only copy
+subtrees on the server (`src/i18n/client-messages.ts`: `/agent` HTML 1,133 KB → 1,017 KB, gzip 199 → 188 KB); the
+next lever is per-route client namespaces (a nested provider per route with only the namespaces its client
+components read), which touches every storefront page and is left as a follow-up.
