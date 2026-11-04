@@ -16,6 +16,7 @@ export function MarketingNav() {
         { href: "/marketing/loyalty", label: t("loyalty"), permission: "settings.read", exact: true },
         // Loyalty P2: liability, movement, breakage and retention (permission `loyalty.read`).
         { href: "/marketing/loyalty/analytics", label: t("analytics"), permission: "loyalty.read" },
+        { href: "/marketing/surveys", label: t("surveys"), permission: "promotions.read" },
       ]}
     />
   );

@@ -6,3 +6,4 @@ export { MarketingNav } from "./MarketingNav";
 export { PromotionEditor } from "./PromotionEditor";
 export { PromotionsList } from "./PromotionsList";
 export { ReferralsQueue } from "./ReferralsQueue";
+export { SurveysAdmin } from "./SurveysAdmin";

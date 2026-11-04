@@ -5,7 +5,8 @@
     "promotions": "Promotions",
     "referrals": "Referrals",
     "loyalty": "Loyalty",
-    "analytics": "Points analytics"
+    "analytics": "Points analytics",
+    "surveys": "Surveys"
   },
   "budget": {
     "text": "{spent} of {budget} spent · alert at {threshold}",
@@ -690,7 +691,12 @@
         "note": "In baht, converted at the point value (rounded down)",
         "signupBaht": "Sign-up (THB)",
         "lineLinkingBaht": "LINE linking (THB)",
-        "reviewBaht": "Review (THB)"
+        "reviewBaht": "Review (THB)",
+        "reviewPhotoBaht": "Photo in a review (THB)",
+        "firstSampleBaht": "First sample (THB)",
+        "surveyBaht": "Survey answered (THB)",
+        "showcaseConsentBaht": "Showcase consent (THB)",
+        "dataRefreshBaht": "Yearly data confirmation (THB)"
       },
       "loyalty_redemption_limits": {
         "title": "Redemption limits",
@@ -721,6 +727,31 @@
         "member": "Member",
         "silver": "Silver",
         "gold": "Gold"
+      },
+      "loyalty_data_refresh": {
+        "title": "Yearly data confirmation",
+        "note": "Points for confirming company details and addresses, at most once per cycle",
+        "monthsBetween": "Cycle (months)",
+        "reminderDaysBefore": "Reminder before the cycle ends (days)"
+      },
+      "loyalty_reorder_reminder": {
+        "title": "Reorder reminder",
+        "note": "Predicts the run-out date from order history, sends one message per cycle, and multiplies points on a reorder in the window",
+        "enabled": "Enabled",
+        "minOrders": "Minimum orders",
+        "floorDays": "Minimum cycle (days)",
+        "remindDaysBefore": "Remind before run-out (days)",
+        "bonusMultiplier": "Points multiplier",
+        "windowDays": "Multiplier window (days)"
+      },
+      "surveys_rules": {
+        "title": "In-app surveys",
+        "note": "Opens surveys after delivery and quarterly, one at a time",
+        "enabled": "Enabled",
+        "postDeliveryDelayDays": "Open after delivery (days)",
+        "minDaysBetweenSurveys": "Days between surveys",
+        "expiryDays": "Open for (days)",
+        "quarterlyActiveWithinDays": "Quarterly: customers who ordered within (days)"
       }
     }
   },
@@ -811,5 +842,55 @@
       "promotions": "Promotion results and agents' links",
       "export": "Export the points liability report (CSV)"
     }
+  },
+  "surveys": {
+    "title": "In-app surveys",
+    "description": "Post-delivery and quarterly question sets. One published set per trigger; customers see one survey at a time.",
+    "templates": "Question sets",
+    "templatesNote": "A published set cannot be edited; create a new version and publish it instead",
+    "empty": "No question sets yet",
+    "failed": "That did not work",
+    "columns": {
+      "title": "Question set",
+      "trigger": "Trigger",
+      "status": "Status",
+      "questions": "Questions",
+      "responses": "Responses",
+      "rate": "Response rate",
+      "actions": "Actions"
+    },
+    "triggers": {
+      "post_delivery": "After delivery",
+      "quarterly": "Quarterly"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "published": "Published",
+      "retired": "Retired"
+    },
+    "actions": {
+      "publish": {
+        "label": "Publish",
+        "done": "Published"
+      },
+      "retire": {
+        "label": "Retire",
+        "done": "Retired; open surveys can still be answered until they expire"
+      },
+      "new-version": {
+        "label": "New version",
+        "done": "New draft version created"
+      }
+    },
+    "results": {
+      "title": "Results",
+      "note": "Free text shows the customer's name masked; below 10 responses only counts are shown",
+      "completion": "{completed} of {opened} opened completed ({pct})",
+      "countsOnly": "counts only",
+      "answered": "{count, number} answers",
+      "outOf5": "out of 5",
+      "noText": "No text yet"
+    },
+    "codeVersion": "{code} · v{version}"
   }
 }
