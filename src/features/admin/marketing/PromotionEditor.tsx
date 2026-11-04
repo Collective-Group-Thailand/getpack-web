@@ -10,6 +10,8 @@ import { adminPromotionActions, type AdminLifecycleAction } from "@/domain/next-
 import { PROMOTION_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
+import { benefitV2FieldsOf, promotionP3Of } from "@/features/shared/loyalty-p3/read";
+import { BENEFIT_V2_KINDS, type BenefitV2Kind } from "@/lib/api/requests/admin-loyalty-p3";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -25,6 +27,7 @@ import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 import { ViewTabs } from "@/ui/components/ViewTabs";
+import { Icon } from "@/ui/icons";
 
 import {
   adminBrowserApis,
@@ -36,6 +39,8 @@ import {
   useProductTypes,
 } from "../console";
 import { DetailSkeleton } from "../console/DetailSkeleton";
+import { benefitV2Body, withSchemaVersion } from "./benefit-v2";
+import { CapacityDealNote } from "./CapacityDeals";
 import { CouponCodes } from "./CouponCodes";
 import { PromotionAudience } from "./PromotionAudience";
 import { PromotionBundle } from "./PromotionBundle";
@@ -44,7 +49,8 @@ import type { Promotion } from "./resources";
 import { bangkokDayOf, bangkokMidnight } from "./time";
 
 type Benefit = Schemas["PromotionBenefitDto"];
-type BenefitType = Schemas["PromotionBenefitType"];
+/** Loyalty P3 (D-497): the published kinds plus benefit v2's (CONTRACT-REQUEST admin.loyalty.p3-fields). */
+type BenefitType = Schemas["PromotionBenefitType"] | BenefitV2Kind;
 type Conditions = Schemas["PromotionConditionsDto"];
 
 const CHANNELS = ["web", "cs", "line", "b2b"] as const satisfies readonly Schemas["SalesChannel"][];
@@ -61,7 +67,10 @@ const BENEFITS = [
   "free_mockup",
   "points_multiplier",
   "bonus_points",
+  // Loyalty P3 (D-497): benefit schema v2 — applied by the checkout as money (sample, addon) or as perks.
+  ...BENEFIT_V2_KINDS,
 ] as const satisfies readonly BenefitType[];
+const isV2Kind = (type: BenefitType) => (BENEFIT_V2_KINDS as readonly string[]).includes(type);
 
 /**
  * What the form edits: the typed bodies of `admin.promotions.create` / `update`, with numbers still
@@ -96,6 +105,10 @@ type Draft = {
     multiplier: string;
     points: string;
     unitPrice: string;
+    /** v2 `free_rush`: working days saved (1–5). */
+    daysSaved: string;
+    /** v2 `free_addon`: the finish option's code (`spot_uv`). */
+    addonCode: string;
   };
   usageLimitTotal: string;
   usageLimitPerCustomer: string;
@@ -135,6 +148,8 @@ const blank = (campaignId: string | null): Draft => ({
     multiplier: "",
     points: "",
     unitPrice: "",
+    daysSaved: "",
+    addonCode: "",
   },
   usageLimitTotal: "",
   usageLimitPerCustomer: "",
@@ -147,6 +162,7 @@ const text = (value: string | number | null | undefined) =>
 function fromPromotion(item: Promotion): Draft {
   const { minOrderValue, minQuantity, channels, segments, productTypeCodes, firstOrderOnly, ...rest } = item.conditions;
   const benefit: Benefit = item.benefit;
+  const v2 = benefitV2FieldsOf(item.benefit);
   return {
     name: item.name,
     kind: item.kind,
@@ -166,7 +182,7 @@ function fromPromotion(item: Promotion): Draft {
       minQuantity: text(minQuantity),
     },
     benefit: {
-      type: benefit.type,
+      type: benefit.type as BenefitType,
       pct: text(benefit.pct),
       amount: text(benefit.amount),
       maxAmount: text(benefit.maxAmount),
@@ -178,6 +194,8 @@ function fromPromotion(item: Promotion): Draft {
       multiplier: text(benefit.multiplier),
       points: text(benefit.points),
       unitPrice: text(benefit.unitPrice),
+      daysSaved: text(v2.daysSaved),
+      addonCode: v2.addonCode ?? "",
     },
     usageLimitTotal: text(item.usageLimitTotal),
     usageLimitPerCustomer: text(item.usageLimitPerCustomer),
@@ -208,9 +226,15 @@ function conditionsBody(draft: Draft["conditions"]): Conditions {
   };
 }
 
-/** The benefit as `PromotionBenefitDto`: only the fields its type uses. */
+/**
+ * The benefit as `PromotionBenefitDto`: only the fields its type uses. A v2 kind (D-497) is sent in its v2 shape with
+ * `benefitSchemaVersion: 2` beside it (`withSchemaVersion`); the published type does not know it yet, hence the cast
+ * (CONTRACT-REQUEST admin.loyalty.p3-fields).
+ */
 function benefitBody(benefit: Draft["benefit"]): Benefit {
   const { type } = benefit;
+  const v2 = benefitV2Body(benefit);
+  if (v2) return v2 as unknown as Benefit;
   const decimal = (value: string) => (filled(value) ? value.trim() : null);
   switch (type) {
     case "percent":
@@ -239,7 +263,8 @@ function benefitBody(benefit: Draft["benefit"]): Benefit {
     case "bonus_points":
       return { type, ...optional("points", count(benefit.points)) };
     default:
-      return { type };
+      // The v2 kinds left the function above (`benefitV2Body`); what is left are v1's.
+      return { type: type as Schemas["PromotionBenefitType"] };
   }
 }
 
@@ -298,10 +323,14 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const setBenefit = (patch: Partial<Draft["benefit"]>) => set({ benefit: { ...form.benefit, ...patch } });
   const toggle = <T extends string>(values: readonly T[], value: T, on: boolean) =>
     on ? [...values, value] : values.filter((entry) => entry !== value);
-  const systemManaged = item?.kind === "referral";
+  // Loyalty P3: system promotions (reward.*, tier.free_shipping) are read-only like referral; a capacity deal keeps
+  // its benefit and conditions (the worker's) and only its display is edited — which restarts its approval (D-502).
+  const p3 = item ? promotionP3Of(item) : null;
+  const systemManaged = item?.kind === "referral" || p3?.origin === "system";
+  const capacityDeal = p3?.origin === "capacity_deal" ? p3.capacityDeal : null;
   // Loyalty P2 (D-494): a bundle's stack group is `bundle`, set from the bundle tab only.
   const bundleLocked = item ? (item.conditions.cartProductTypeCountGte ?? 0) >= 2 : false;
-  const editable = can("promotions.manage") && (!item || item.status !== "ended") && !systemManaged;
+  const editable = can("promotions.manage") && (!item || item.status !== "ended") && !systemManaged && !capacityDeal;
   const redeemed = (item?.usage.redemptions ?? 0) > 0;
   const actions = item && !systemManaged ? adminPromotionActions(item.status, can) : [];
   const wording = (next: AdminLifecycleAction) => (next.resumes ? "resume" : next.action);
@@ -327,12 +356,15 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
       };
       if (!promotionId) {
         const { data: created } = await adminBrowserApis().contract.POST("/v1/admin/promotions", {
-          body: {
-            ...common,
-            kind: form.kind,
-            campaignId: form.campaignId || null,
-            benefit: benefitBody(form.benefit),
-          },
+          body: withSchemaVersion(
+            {
+              ...common,
+              kind: form.kind,
+              campaignId: form.campaignId || null,
+              benefit: benefitBody(form.benefit),
+            },
+            form.benefit,
+          ),
         });
         toast.success(t("created"));
         void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "promotion") });
@@ -343,7 +375,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
       // Neither the kind nor the campaign can change; a redeemed benefit is not sent again.
       const { data: updated } = await adminBrowserApis().contract.PATCH("/v1/admin/promotions/{promotionId}", {
         params: { path: { promotionId }, header: { "If-Match": etag ?? "" } },
-        body: { ...common, ...(redeemed ? {} : { benefit: benefitBody(form.benefit) }) },
+        body: redeemed ? common : withSchemaVersion({ ...common, benefit: benefitBody(form.benefit) }, form.benefit),
       });
       queryClient.setQueryData(key, updated);
       setDraft(null);
@@ -409,7 +441,12 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
       case "bonus_points":
         return filled(benefit.points) ? format.number(Number(benefit.points)) : "";
       case "free_revision_rounds":
+      case "revision_round":
         return filled(benefit.rounds) ? format.number(Number(benefit.rounds)) : "";
+      case "free_rush":
+        return filled(benefit.daysSaved) ? t("v2.daysSavedFigure", { days: Number(benefit.daysSaved) }) : "";
+      case "free_addon":
+        return benefit.addonCode.trim();
       default:
         return "";
     }
@@ -464,6 +501,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
         />
       ) : null}
       {systemManaged ? <Callout tone="info" title={t("systemManaged")} /> : null}
+      {capacityDeal ? <CapacityDealNote deal={capacityDeal} /> : null}
 
       {/* Loyalty P1.5: how the promotion appears on the deals surface is its own tab. */}
       {item && !systemManaged ? (
@@ -779,7 +817,55 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
                     redeemed,
                   )
                 : null}
+              {/* Loyalty P3 (D-497): benefit v2. */}
+              {benefit.type === "free_addon" ? (
+                <Field label={t("v2.addonCode")} hint={t("v2.addonCodeHint")}>
+                  <Input
+                    value={benefit.addonCode}
+                    disabled={!editable || redeemed}
+                    className="font-mono"
+                    spellCheck={false}
+                    onChange={(event) => setBenefit({ addonCode: event.target.value.trim().toLowerCase() })}
+                  />
+                </Field>
+              ) : null}
+              {benefit.type === "free_shipping" || benefit.type === "free_sample" || benefit.type === "free_addon"
+                ? number(
+                    t("fields.maxAmount"),
+                    benefit.maxAmount,
+                    (maxAmount) => setBenefit({ maxAmount }),
+                    t("v2.capHint"),
+                    undefined,
+                    redeemed,
+                  )
+                : null}
+              {benefit.type === "free_rush"
+                ? number(
+                    t("v2.daysSaved"),
+                    benefit.daysSaved,
+                    (daysSaved) => setBenefit({ daysSaved }),
+                    t("v2.daysSavedHint"),
+                    undefined,
+                    redeemed,
+                  )
+                : null}
+              {benefit.type === "revision_round"
+                ? number(
+                    t("fields.rounds"),
+                    benefit.rounds,
+                    (rounds) => setBenefit({ rounds }),
+                    t("v2.roundsHint"),
+                    undefined,
+                    redeemed,
+                  )
+                : null}
             </div>
+            {isV2Kind(benefit.type) ? (
+              <p className="text-muted flex items-start gap-1.5 text-[0.8125rem]">
+                <Icon name="info" size={15} aria-hidden="true" className="mt-0.5 shrink-0" />
+                {t(`v2.notes.${benefit.type as BenefitV2Kind}`)}
+              </p>
+            ) : null}
             {benefit.type === "tiered" ? (
               <fieldset className="flex flex-col gap-2">
                 <legend className="mb-1 text-sm font-medium">{t("fields.tiers")}</legend>
