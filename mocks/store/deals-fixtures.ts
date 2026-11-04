@@ -345,3 +345,15 @@ export const NOT_YET: Record<string, { reason: string; reasonText: Text }> = {
   MATTEFREE: { reason: "min_quantity", reasonText: t("สั่งกล่องเพิ่มอีก 1,000 ใบ", "Add 1,000 more boxes") },
   WELCOME300: { reason: "first_order_only", reasonText: t("ใช้ได้เฉพาะคำสั่งซื้อแรก", "First order only") },
 };
+
+/** One fixture deal in a given state, for stories and tests (Thai, as the storefront's default). */
+export function fixtureDeal(slug: string, myStatus: DealMyStatus | null = "claimable", signedIn = true): Deal {
+  const fixture = DEAL_FIXTURES.find((entry) => entry.slug === slug);
+  if (!fixture) throw new Error(`no deal fixture ${slug}`);
+  const deal = toDeal(fixture, "th", { origin: "https://getpack.co", signedIn, saved: myStatus === "saved" });
+  return {
+    ...deal,
+    myStatus: signedIn ? myStatus : null,
+    notEligibleReason: myStatus === "not_eligible" ? (fixture.notEligibleReason ?? "other") : null,
+  };
+}
