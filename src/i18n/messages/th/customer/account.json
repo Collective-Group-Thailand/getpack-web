@@ -979,6 +979,7 @@
     "tierTag": "{tier} ขึ้นไป",
     "emptyTitle": "ยังไม่มีของให้แลกตอนนี้",
     "emptyBody": "แต้มของคุณยังอยู่ครบ ใช้เป็นส่วนลดตอนชำระเงินได้เสมอ",
+    "emptyAction": "ดูดีลที่ใช้ได้",
     "blocked": {
       "insufficient_points": "แต้มไม่พอ — ขาดอีก {missing} แต้ม",
       "tier": "สำหรับสมาชิก{tier}ขึ้นไป",
@@ -1095,7 +1096,7 @@
     }
   },
   "perks": {
-    "eyebrow": "ระดับสมาชิก",
+    "label": "ระดับสมาชิก",
     "multiplier": "แต้ม ×{value}",
     "progress": "ยอดซื้อ 12 เดือน {spend} จาก {needed} เพื่อเป็น{tier}",
     "progressLabel": "ความคืบหน้าสู่ระดับ{tier}",

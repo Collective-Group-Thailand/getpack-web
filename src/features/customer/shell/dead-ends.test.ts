@@ -9,6 +9,8 @@ import { describe, expect, it } from "vitest";
  */
 const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/shared/shell/NotificationBell.tsx": "inside the bell's popover; closing it is the next step",
+  // Loyalty P3: the catalogue sits right above the coupon list, and redeeming is the next step.
+  "src/features/customer/rewards/MyRewardCoupons.tsx": "under the reward catalogue; redeeming one fills the list",
 };
 
 const CUSTOMER = ["src/app/[[]locale]/**/*.tsx", "src/features/customer/**/*.tsx", "src/features/shared/**/*.tsx"];

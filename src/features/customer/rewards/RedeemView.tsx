@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
+import { Link } from "@/i18n/navigation";
 import { browserRequests } from "@/lib/api/requests/browser";
 import type { RewardItem, RewardList, RewardRedemption } from "@/lib/api/requests/store-loyalty-p3";
 import { Button } from "@/ui/components/Button";
@@ -98,7 +99,17 @@ export function RedeemView({ list: initialList, redemptions: initialRedemptions,
       </section>
 
       {list.items.length === 0 ? (
-        <EmptyState className="mt-8" icon="gift" title={t("emptyTitle")} description={t("emptyBody")} />
+        <EmptyState
+          className="mt-8"
+          icon="gift"
+          title={t("emptyTitle")}
+          description={t("emptyBody")}
+          action={
+            <Button asChild variant="secondary">
+              <Link href="/deals">{t("emptyAction")}</Link>
+            </Button>
+          }
+        />
       ) : (
         groupRewards(list.items).map(({ group, items }) => (
           <section key={group} aria-labelledby={`rewards-${group}`} className="mt-7 md:mt-9">

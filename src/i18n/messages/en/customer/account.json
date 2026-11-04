@@ -979,6 +979,7 @@
     "tierTag": "{tier} and up",
     "emptyTitle": "Nothing to redeem right now",
     "emptyBody": "Your points are all there, and you can always use them as a discount at checkout.",
+    "emptyAction": "See current deals",
     "blocked": {
       "insufficient_points": "Not enough points — {missing} more needed",
       "tier": "For {tier} members and up",
@@ -1095,7 +1096,7 @@
     }
   },
   "perks": {
-    "eyebrow": "Membership tier",
+    "label": "Membership tier",
     "multiplier": "×{value} points",
     "progress": "12-month spend {spend} of {needed} to reach {tier}",
     "progressLabel": "Progress to {tier}",

@@ -151,15 +151,14 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
       )}
     >
       <div className="px-4 py-[1.125rem] md:px-[1.375rem] md:py-5">
-        <p id="tier-perks" className="text-muted text-[0.78125rem] font-medium">
-          {t("eyebrow")}
-        </p>
-        <p className="mt-0.5 flex items-baseline gap-2.5">
+        {/* The tier name is the panel's figure and its heading; "ระดับสมาชิก" is said to screen readers only. */}
+        <h2 id="tier-perks" className="flex items-baseline gap-2.5">
+          <span className="sr-only">{t("label")} </span>
           <span className="text-[1.75rem] leading-tight font-semibold tracking-[-0.015em]">{tier}</span>
           <span className="text-muted text-sm tabular-nums">
             {t("multiplier", { value: shortMultiplier(points.multiplier) })}
           </span>
-        </p>
+        </h2>
         {progress ? (
           <>
             <Meter
@@ -184,7 +183,7 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
 
         {loyalty.activeMultipliers.length > 0 ? (
           <div className="border-border mt-5 border-t pt-4">
-            <p className="text-muted text-[0.78125rem] font-medium">{t("multipliersTitle")}</p>
+            <h3 className="text-[0.8125rem] font-semibold">{t("multipliersTitle")}</h3>
             <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
               {loyalty.activeMultipliers.map((item, at) => (
                 <li key={`${item.source}-${at}`} className="flex items-baseline gap-2.5 text-sm">
@@ -213,7 +212,7 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
       </div>
 
       <div className="border-border border-t px-4 py-[1.125rem] md:border-s md:border-t-0 md:px-[1.375rem] md:py-5">
-        <h2 className="text-[0.9375rem] font-semibold">{t("title")}</h2>
+        <h3 className="text-[0.9375rem] font-semibold">{t("title")}</h3>
         {loyalty.perks.length > 0 ? (
           <div className="mt-1.5">{perkRows(loyalty.perks, false)}</div>
         ) : (
@@ -221,9 +220,9 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
         )}
         {loyalty.nextTier && loyalty.nextTierPerks.length > 0 ? (
           <>
-            <p className="text-muted mt-[1.125rem] text-[0.8125rem] font-medium">
+            <h3 className="text-muted mt-[1.125rem] text-[0.8125rem] font-semibold">
               {t("nextTitle", { tier: tTier(loyalty.nextTier) })}
-            </p>
+            </h3>
             <div className="mt-0.5">{perkRows(loyalty.nextTierPerks, true)}</div>
           </>
         ) : null}
