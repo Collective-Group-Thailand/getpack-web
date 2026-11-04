@@ -151,7 +151,9 @@
     "companyCreditAvailable": "Credit available {amount}",
     "businessTitle": "Order as a company, pay on credit terms",
     "businessBody": "Open a free company account: one account for the team, tax invoices per branch, and a credit limit once you meet the terms",
-    "businessAction": "See company accounts"
+    "businessAction": "See company accounts",
+    "earnBanner": "Earn {points} more points",
+    "earnBannerNext": "Start with: {task}"
   },
   "quotes": {
     "title": "Saved quotations",
@@ -312,7 +314,99 @@
     "expiresAt": "Expires {date}",
     "gain": "+{points}",
     "loss": "{points}",
-    "emptyHistory": "No points history yet"
+    "emptyHistory": "No points history yet",
+    "earn": {
+      "title": "Earn points",
+      "summary": "{points} more points to earn · {done} of {total} done",
+      "summaryCapped": "{done} of {total} done",
+      "summaryCompact": "{points} more points",
+      "progress": "{done} of {total} done",
+      "next": "Next up",
+      "nextPoints": "+{points} points",
+      "rowPoints": "+{points}",
+      "statusTodo": "Not done yet",
+      "statusHeld": "Under review",
+      "statusDone": "Earned",
+      "heldNote": "Our team is checking the details",
+      "doneOn": "Earned {date}",
+      "cap": "Activities earn up to {cap} points per 12 months · {left} left",
+      "capReached": "You have earned the {cap}-point activity limit for these 12 months. You can still do the rest, but they earn no more points.",
+      "allDone": "All done",
+      "allDoneBody": "You earned {points} points from account activities",
+      "seeAll": "See all {count}",
+      "failed": "Couldn't load the list",
+      "retry": "Try again",
+      "loading": "Loading the list",
+      "awarded": "+{points} points — {task}",
+      "newTab": "(opens in a new tab)"
+    },
+    "tasks": {
+      "signup": {
+        "title": "Sign up",
+        "description": "Open a getpack account",
+        "action": "View account"
+      },
+      "line_link": {
+        "title": "Link your LINE account",
+        "description": "Sign in and get order updates on LINE",
+        "action": "Link account"
+      },
+      "google_link": {
+        "title": "Link your Google account",
+        "description": "Another way to sign in, with Google",
+        "action": "Link account"
+      },
+      "apple_link": {
+        "title": "Link your Apple account",
+        "description": "Another way to sign in, with Apple",
+        "action": "Link account"
+      },
+      "phone_verified": {
+        "title": "Verify your mobile number",
+        "description": "Confirm it is yours with a one-time code",
+        "action": "Verify number"
+      },
+      "profile_completed": {
+        "title": "Complete your account details",
+        "description": "Display name, business type and what you sell",
+        "action": "Add details"
+      },
+      "tax_profile": {
+        "title": "Add your tax details",
+        "description": "For full tax invoices in your business's name",
+        "action": "Add details"
+      },
+      "address": {
+        "title": "Add a delivery address",
+        "description": "Saved for checkout and shipping estimates",
+        "action": "Add address"
+      },
+      "brand_kit": {
+        "title": "Add your logo and brand colours",
+        "description": "Reuse them in every box you design",
+        "action": "Add logo"
+      },
+      "first_design": {
+        "title": "Save your first design",
+        "description": "Start from a box style in the studio, then save",
+        "action": "Start designing"
+      },
+      "team_invite": {
+        "title": "Invite your team",
+        "description": "Let purchasing or your designer work in the same account",
+        "action": "Invite team"
+      },
+      "packaging_profile": {
+        "title": "Tell us how you use packaging",
+        "description": "Monthly volume, product types and your busy months",
+        "action": "Add details"
+      },
+      "line_oa_friend": {
+        "title": "Add getpack on LINE",
+        "description": "Chat with our team and get news on LINE",
+        "action": "Add friend"
+      }
+    }
   },
   "referral": {
     "title": "Invite friends",
@@ -644,6 +738,72 @@
     "notifications": "Notifications",
     "privacy": "Privacy",
     "team": "Team & approvers",
-    "all": "All"
+    "all": "All",
+    "packagingProfile": "Packaging use"
+  },
+  "packagingProfile": {
+    "title": "Packaging use",
+    "intro": "Tell us roughly which boxes you use, how many and where they go. Our team prepares materials and offers that fit your business.",
+    "requiredMark": "required",
+    "volume": "About how many boxes do you use a month?",
+    "volumeHint": "All sizes and styles together; an estimate is fine",
+    "volumes": {
+      "lt_500": "Fewer than 500",
+      "500_2000": "500–2,000",
+      "2000_10000": "2,000–10,000",
+      "gt_10000": "More than 10,000"
+    },
+    "categories": "What do you pack?",
+    "multiHint": "Choose all that apply",
+    "categoryNames": {
+      "food": "Food",
+      "beverage": "Beverages",
+      "cosmetics": "Cosmetics and beauty",
+      "apparel": "Apparel and fashion",
+      "electronics": "Electronics",
+      "ecommerce": "Online selling",
+      "industrial": "Industrial goods",
+      "other": "Other"
+    },
+    "regions": "Where do you ship?",
+    "regionNames": {
+      "bangkok_metro": "Bangkok and vicinity",
+      "central": "Central",
+      "north": "North",
+      "northeast": "Northeast",
+      "east": "East",
+      "west": "West",
+      "south": "South"
+    },
+    "months": "Your busiest months (optional)",
+    "monthsHint": "Helps our team prepare materials before you order more",
+    "monthNames": {
+      "1": "Jan",
+      "2": "Feb",
+      "3": "Mar",
+      "4": "Apr",
+      "5": "May",
+      "6": "Jun",
+      "7": "Jul",
+      "8": "Aug",
+      "9": "Sep",
+      "10": "Oct",
+      "11": "Nov",
+      "12": "Dec"
+    },
+    "purposeTitle": "How we use this",
+    "purposeBody": "getpack uses this information internally to plan materials and production around demand, and to offer products and promotions that fit your business. It is never published and never passed to third parties.",
+    "purposeRights": "You can change it here at any time, or ask us to delete it on the <link>privacy page</link>.",
+    "purposeAck": "I understand how this information is used",
+    "volumeRequired": "Choose your monthly volume",
+    "categoriesRequired": "Choose at least one product type",
+    "regionsRequired": "Choose at least one region",
+    "purposeRequired": "Please confirm before saving",
+    "save": "Save",
+    "cancel": "Cancel",
+    "reward": "Earn {points} points when you first complete it",
+    "savedAt": "Last saved {date}",
+    "saved": "Saved",
+    "failed": "We could not save it. Your answers are still here — please try again."
   }
 }

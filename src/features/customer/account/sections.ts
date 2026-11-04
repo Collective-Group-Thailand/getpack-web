@@ -95,6 +95,7 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     group: "records",
     tabs: [
       { key: "addresses", href: "/account/addresses" },
+      { key: "packagingProfile", href: "/account/packaging-profile" },
       { key: "notifications", href: "/account/notifications" },
       { key: "privacy", href: "/account/privacy" },
     ],
