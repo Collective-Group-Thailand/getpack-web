@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คะแนนสะสม · ทำสิ่งนี้รับแต้ม — getpack (P1 prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* getpack light theme — values copied from src/ui/generated/tokens.css (:root, light). Semantic names only. */
+:root{
+  --bg: oklch(96.98% 0.0054 95.1);
+  --bg-subtle: oklch(94.85% 0.0067 97.35);
+  --surface: oklch(100% 0 0);
+  --border: oklch(90.94% 0.0097 93.58);
+  --border-strong: oklch(58.8% 0.022 72);
+  --fg: oklch(23.19% 0.0173 163.01);
+  --muted: oklch(43.79% 0.017 161.84);
+  --subtle: oklch(59.63% 0.013 161.81);
+  --primary: oklch(40.97% 0.0759 163.95);
+  --primary-hover: oklch(34.61% 0.0657 163.79);
+  --primary-fg: oklch(100% 0 0);
+  --primary-subtle: oklch(93.61% 0.0142 162.46);
+  --primary-subtle-fg: oklch(34.61% 0.0657 163.79);
+  --success: oklch(52.73% 0.1371 150.07);
+  --success-subtle: oklch(98.5% 0.009 150);
+  --warning: oklch(55.53% 0.1455 49);
+  --neutral-subtle: oklch(96.2% 0.0031 72);
+  --neutral-subtle-fg: oklch(42.8% 0.018 72);
+  --focus-ring: oklch(40.97% 0.0759 163.95);
+  --r-control: 10px; --r-card: 14px; --r-panel: 16px;
+  --shadow-card: 0 1px 2px rgb(30 27 24 / 0.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Anuphan',ui-sans-serif,system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+/* site + account frame (simplified from the real layout) */
+.site{background:var(--surface);border-bottom:1px solid var(--border)}
+.site-in{max-width:1180px;margin:0 auto;height:60px;display:flex;align-items:center;gap:28px;padding:0 20px}
+.brand{font-weight:600;font-size:19px;letter-spacing:-.01em}
+.site nav{display:flex;gap:22px;font-size:14px;color:var(--muted)}
+.site .me{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px}
+.avatar{width:30px;height:30px;border-radius:999px;background:var(--primary-subtle);color:var(--primary-subtle-fg);display:grid;place-items:center;font-size:13px;font-weight:600}
+.frame{max-width:1180px;margin:0 auto;padding:28px 20px 64px;display:grid;grid-template-columns:232px minmax(0,1fr);gap:32px}
+.side{align-self:start;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-panel);padding:14px 10px}
+.side h6{margin:12px 10px 4px;font-size:12px;font-weight:500;color:var(--subtle)}
+.side a{display:flex;justify-content:space-between;padding:8px 10px;border-radius:var(--r-control);font-size:14px;color:var(--muted)}
+.side a.on{background:var(--primary-subtle);color:var(--primary-subtle-fg);font-weight:600}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:22px;font-size:14px}
+.tabs a{white-space:nowrap;padding:10px 12px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a.on{color:var(--fg);font-weight:600;border-color:var(--primary)}
+h1{font-size:26px;line-height:1.3;font-weight:600;margin:0}
+.lede{color:var(--muted);font-size:14px;margin:4px 0 0}
+
+/* summary cards (existing SummaryCards look) */
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:16px 18px}
+.sc.hi{background:var(--primary-subtle);border-color:transparent}
+.sc .l{font-size:13px;color:var(--muted)}
+.sc .v{font-size:26px;font-weight:600;line-height:1.25;margin-top:6px}
+.sc.hi .v{font-weight:700;color:var(--primary-subtle-fg)}
+.sc .h{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+/* ── the earn card ─────────────────────────────────────────── */
+.earn{margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-panel);overflow:hidden;scroll-margin-top:80px}
+.earn-hd{padding:18px 22px 16px}
+.earn-hd .row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.earn-hd h2{font-size:17px;font-weight:600;margin:0}
+.earn-hd .meta{font-size:13.5px;color:var(--muted)}
+.earn-hd .meta b{color:var(--fg);font-weight:600}
+.bar{height:4px;border-radius:999px;background:var(--bg-subtle);margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--primary);border-radius:999px}
+
+.next{margin:0 22px 6px;background:var(--primary-subtle);border-radius:var(--r-card);padding:16px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 24px;align-items:center}
+.next .eyebrow{font-size:12.5px;font-weight:600;color:var(--primary-subtle-fg);letter-spacing:.01em}
+.next .t{font-size:16px;font-weight:600;margin-top:2px}
+.next .d{font-size:13.5px;color:var(--muted)}
+.next .act{display:flex;align-items:center;gap:16px;grid-row:1 / span 3;grid-column:2}
+.next .pts{font-size:17px;font-weight:600;color:var(--primary-subtle-fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 18px;border-radius:var(--r-control);background:var(--primary);color:var(--primary-fg);font-weight:600;font-size:14.5px;border:0;font-family:inherit;cursor:pointer}
+.btn:hover{background:var(--primary-hover)}
+.btn.sec{background:var(--surface);color:var(--fg);border:1px solid var(--border)}
+
+.list{list-style:none;margin:0;padding:6px 0 0}
+.list li+li{border-top:1px solid var(--border)}
+.task{display:grid;grid-template-columns:20px minmax(0,1fr) auto 16px;gap:14px;align-items:center;padding:13px 22px;min-height:64px}
+a.task{cursor:pointer}
+a.task:hover{background:var(--bg)}
+a.task:hover .chev{color:var(--fg)}
+.mark{width:16px;height:16px;justify-self:center}
+.mark.todo{border:1.5px solid var(--border-strong);border-radius:999px}
+.mark svg{display:block}
+.task .t{font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.task .d{font-size:13px;color:var(--muted);line-height:1.5}
+.task .p{font-size:14px;font-weight:600;text-align:right;min-width:64px}
+.chev{color:var(--subtle)}
+.chip{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;background:var(--neutral-subtle);color:var(--neutral-subtle-fg);font-size:12px;font-weight:500}
+.task.done .t{color:var(--muted);font-weight:400}
+.task.done .p{color:var(--subtle);font-weight:500}
+.task.held .p{color:var(--muted);font-weight:500}
+.foot{border-top:1px solid var(--border);padding:11px 22px 13px;font-size:12px;color:var(--muted)}
+
+.tier{margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:18px 20px;font-size:14px}
+.meter{height:8px;border-radius:var(--r-control);background:var(--neutral-subtle);overflow:hidden;margin-top:10px}
+.meter i{display:block;height:100%;width:38%;background:var(--primary);border-radius:var(--r-control)}
+.small{font-size:12.5px;color:var(--muted);margin-top:6px}
+.hist{margin-top:40px}
+.hist h2{font-size:18px;font-weight:600;margin:0 0 12px}
+.ph{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);height:148px}
+
+/* review states */
+.review{max-width:1180px;margin:0 auto;padding:8px 20px 80px}
+.review > h3{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 14px;padding-top:28px;border-top:1px dashed var(--border-strong)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.cap-k{font-size:12px;color:var(--subtle);margin:0 0 8px}
+.banner{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-panel);padding:14px 18px;min-height:56px}
+.banner:hover{border-color:var(--primary)}
+.banner .ic{width:32px;height:32px;border-radius:var(--r-control);background:var(--primary-subtle);color:var(--primary-subtle-fg);display:grid;place-items:center;flex:none}
+.banner .tx{flex:1;min-width:0;font-size:14.5px}
+.banner .tx b{font-weight:600}
+.banner .tx span{color:var(--muted)}
+.allDone{display:flex;align-items:center;gap:12px;padding:18px 22px}
+.allDone .ok{width:28px;height:28px;border-radius:999px;background:var(--success-subtle);color:var(--success);display:grid;place-items:center;flex:none}
+
+/* LIFF compact */
+.liff{max-width:390px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-panel);padding:14px}
+.earn.compact .earn-hd{padding:14px 16px 12px}
+.earn.compact .earn-hd h2{font-size:16px}
+.earn.compact .next{margin:0 16px 4px;grid-template-columns:1fr;padding:14px}
+.earn.compact .next .act{grid-row:auto;grid-column:auto;margin-top:10px;justify-content:space-between}
+.earn.compact .task{padding:11px 16px;grid-template-columns:20px minmax(0,1fr) auto 16px;gap:12px;min-height:52px}
+.earn.compact .task .d{display:none}
+.earn.compact .task.held .d,.earn.compact .task.done .d{display:block}
+.earn.compact .foot{padding:10px 16px 12px}
+
+@media (max-width: 900px){
+  .frame{grid-template-columns:minmax(0,1fr);padding:16px 16px 48px;gap:0}
+  .side,.site nav{display:none}
+  .site-in{padding:0 16px;height:56px}
+  .tabs{overflow-x:auto;margin:0 -16px 18px;padding:0 16px}
+  h1{font-size:22px}
+  .sum{grid-template-columns:1fr 1fr;gap:10px}
+  .sum .sc.hi{grid-column:1 / -1}
+  .sc{padding:14px}
+  .sc .v{font-size:22px}
+  .earn-hd{padding:16px 16px 14px}
+  .next{margin:0 16px 4px;grid-template-columns:1fr;padding:14px 16px}
+  .next .act{grid-row:auto;grid-column:auto;margin-top:10px;justify-content:space-between}
+  .next .btn{flex:1}
+  .task{padding:12px 16px;gap:12px;min-height:56px}
+  a.task .d{display:none}
+  .earn-hd .row{flex-direction:column;align-items:flex-start;gap:2px}
+  .foot{padding:11px 16px 13px}
+  .review{padding:8px 16px 60px}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="site"><div class="site-in">
+  <span class="brand">getpack</span>
+  <nav><a href="#">สินค้า</a><a href="#">แบบกล่อง</a><a href="#">ออกแบบ</a><a href="#">ดีล</a></nav>
+  <span class="me"><span class="avatar">ม</span><span class="num">1,250 คะแนน</span></span>
+</div></header>
+
+<div class="frame">
+  <aside class="side" aria-label="บัญชีของฉัน">
+    <a href="#">ภาพรวม</a>
+    <h6>ซื้อ</h6>
+    <a href="#">คำสั่งซื้อ</a><a href="#">ใบเสนอราคา</a><a href="#">งานออกแบบ</a><a href="#">สั่งซ้ำ</a>
+    <h6>เอกสารและบัญชี</h6>
+    <a href="#">เอกสาร</a><a href="#">ข้อความ</a>
+    <a href="#" class="on" aria-current="page">คะแนนและสิทธิพิเศษ</a>
+    <a href="#">ข้อมูลบัญชี</a>
+  </aside>
+
+  <main>
+    <nav class="tabs" aria-label="คะแนนและสิทธิพิเศษ">
+      <a class="on" href="#">คะแนนสะสม</a><a href="#">เครดิตร้านค้า</a><a href="#">ชวนเพื่อน</a>
+    </nav>
+    <h1>คะแนนสะสม</h1>
+    <p class="lede">ทุก ฿500 ที่ชำระ (ก่อน VAT ไม่รวมค่าส่ง) ได้ 1 คะแนน · 1 คะแนน = ฿2.50</p>
+
+    <div class="sum">
+      <div class="sc hi"><div class="l">คะแนนที่ใช้ได้</div><div class="v num">1,250</div><div class="h num">มูลค่า ฿3,125.00</div></div>
+      <div class="sc"><div class="l">รอเข้าบัญชี</div><div class="v num">48</div><div class="h">เข้าบัญชีเมื่อได้รับสินค้าและพ้นช่วงเคลม</div></div>
+      <div class="sc"><div class="l">ระดับสมาชิก</div><div class="v">สมาชิก</div><div class="h num">คะแนน x1 · ยอดซื้อ 12 เดือน ฿18,750.00</div></div>
+    </div>
+
+    <!-- EarnChecklist -->
+    <section class="earn" id="earn" aria-labelledby="earn-title">
+      <div class="earn-hd">
+        <div class="row">
+          <h2 id="earn-title">ทำสิ่งนี้รับแต้ม</h2>
+          <p class="meta num" style="margin:0">รับได้อีก <b>172 แต้ม</b> · ทำแล้ว 3 จาก 13</p>
+        </div>
+        <div class="bar" role="progressbar" aria-label="ทำแล้ว 3 จาก 13" aria-valuemin="0" aria-valuemax="13" aria-valuenow="3"><i style="width:23%"></i></div>
+      </div>
+
+      <div class="next">
+        <div class="eyebrow">แนะนำถัดไป</div>
+        <div class="t">เพิ่มข้อมูลผู้เสียภาษี</div>
+        <div class="d">ใช้ออกใบกำกับภาษีเต็มรูปในนามธุรกิจของคุณ</div>
+        <div class="act"><span class="pts num">+40 แต้ม</span><a class="btn" href="#">เพิ่มข้อมูล</a></div>
+      </div>
+
+      <ul class="list">
+        <li><a class="task" href="#">
+          <span class="mark todo" aria-hidden="true"></span>
+          <span><span class="t">กรอกข้อมูลการใช้บรรจุภัณฑ์<span class="sr">, ยังไม่ได้ทำ</span></span><span class="d">ปริมาณที่ใช้ต่อเดือน ประเภทสินค้า และช่วงที่ขายดี</span></span>
+          <span class="p num">+40</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </a></li>
+        <li><a class="task" href="#">
+          <span class="mark todo" aria-hidden="true"></span>
+          <span><span class="t">กรอกข้อมูลบัญชีให้ครบ<span class="sr">, ยังไม่ได้ทำ</span></span><span class="d">ชื่อที่แสดง ประเภทธุรกิจ และสินค้าที่ขาย</span></span>
+          <span class="p num">+20</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </a></li>
+        <li><a class="task" href="#">
+          <span class="mark todo" aria-hidden="true"></span>
+          <span><span class="t">เพิ่มโลโก้และสีของแบรนด์<span class="sr">, ยังไม่ได้ทำ</span></span><span class="d">เก็บไว้ใช้ซ้ำในงานออกแบบกล่องทุกชิ้น</span></span>
+          <span class="p num">+20</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </a></li>
+        <li><a class="task" href="#">
+          <span class="mark todo" aria-hidden="true"></span>
+          <span><span class="t">ชวนทีมเข้าบัญชีบริษัท<span class="sr">, ยังไม่ได้ทำ</span></span><span class="d">ให้ฝ่ายจัดซื้อหรือนักออกแบบทำงานในบัญชีเดียวกัน</span></span>
+          <span class="p num">+20</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </a></li>
+        <li><a class="task" href="#">
+          <span class="mark todo" aria-hidden="true"></span>
+          <span><span class="t">เชื่อมบัญชี Google<span class="sr">, ยังไม่ได้ทำ</span></span><span class="d">เข้าสู่ระบบด้วย Google ได้อีกทางหนึ่ง</span></span>
+          <span class="p num">+8</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </a></li>
+        <li><a class="task" href="#">
+          <span class="mark todo" aria-hidden="true"></span>
+          <span><span class="t">บันทึกงานออกแบบชิ้นแรก<span class="sr">, ยังไม่ได้ทำ</span></span><span class="d">เริ่มจากแบบกล่องในสตูดิโอ แล้วกดบันทึก</span></span>
+          <span class="p num">+8</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </a></li>
+        <li><a class="task" href="#">
+          <span class="mark todo" aria-hidden="true"></span>
+          <span><span class="t">เพิ่มเพื่อน LINE getpack<span class="sr">, ยังไม่ได้ทำ</span></span><span class="d">คุยกับทีมงานและรับข่าวสารใน LINE</span></span>
+          <span class="p num">+8</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </a></li>
+        <li><div class="task held">
+          <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg>
+          <span><span class="t">เพิ่มที่อยู่จัดส่ง <span class="chip">รอตรวจสอบ</span></span><span class="d">ทีมงานกำลังตรวจสอบข้อมูล</span></span>
+          <span class="p num">+8</span><span></span>
+        </div></li>
+        <li><div class="task done">
+          <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+          <span><span class="t">ยืนยันเบอร์มือถือ<span class="sr">, ได้รับแล้ว</span></span><span class="d">ได้รับแล้ว 2 พ.ย. 2569</span></span>
+          <span class="p num">+8</span><span></span>
+        </div></li>
+        <li><div class="task done">
+          <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+          <span><span class="t">เชื่อมบัญชี LINE<span class="sr">, ได้รับแล้ว</span></span><span class="d">ได้รับแล้ว 28 ต.ค. 2569</span></span>
+          <span class="p num">+8</span><span></span>
+        </div></li>
+        <li><div class="task done">
+          <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+          <span><span class="t">สมัครสมาชิก<span class="sr">, ได้รับแล้ว</span></span><span class="d">ได้รับแล้ว 28 ต.ค. 2569</span></span>
+          <span class="p num">+20</span><span></span>
+        </div></li>
+      </ul>
+      <p class="foot num" style="margin:0">แต้มจากกิจกรรมรวมได้สูงสุด 600 แต้มต่อ 12 เดือน · เหลือ 564 แต้ม</p>
+    </section>
+
+    <div class="tier">
+      <div>อีก ฿31,250.00 ถึงระดับซิลเวอร์</div>
+      <div class="meter" role="meter" aria-label="ความคืบหน้าสู่ระดับซิลเวอร์" aria-valuenow="38" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+      <p class="small" style="margin-bottom:0">ยอดซื้อ 12 เดือน ฿18,750.00 จาก ฿50,000.00 · นับเฉพาะคำสั่งซื้อที่ชำระและได้รับสินค้าแล้ว</p>
+    </div>
+
+    <section class="hist" aria-labelledby="h-hist">
+      <h2 id="h-hist">ประวัติคะแนน</h2>
+      <div class="ph" aria-hidden="true"></div>
+    </section>
+  </main>
+</div>
+
+<!-- Review states: not part of the page -->
+<div class="review" id="states">
+  <h3>สถานะอื่นสำหรับรีวิว — แบนเนอร์หน้า /account · LIFF แบบย่อ · ครบเพดาน · ทำครบแล้ว</h3>
+  <div class="grid2">
+    <div>
+      <p class="cap-k">/account — แบนเนอร์หนึ่งบรรทัด (ซ่อนเมื่อไม่เหลือแต้มให้รับ)</p>
+      <a class="banner" href="#earn">
+        <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 14.6 9l5.9.6-4.4 4 1.3 5.9L12 16.5 6.6 19.5 7.9 13.6l-4.4-4L9.4 9z"/></svg></span>
+        <span class="tx"><b class="num">รับแต้มเพิ่ม 172 แต้ม</b> <span>· เริ่มจากเพิ่มข้อมูลผู้เสียภาษี</span></span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+      </a>
+
+      <p class="cap-k" style="margin-top:28px">ครบเพดานแต้มจากกิจกรรม (capRemainingPoints = 0)</p>
+      <section class="earn" style="margin-top:0" aria-label="ทำสิ่งนี้รับแต้ม — ครบเพดาน">
+        <div class="earn-hd">
+          <div class="row"><h2>ทำสิ่งนี้รับแต้ม</h2><p class="meta num" style="margin:0">ทำแล้ว 11 จาก 13</p></div>
+          <div class="bar"><i style="width:85%"></i></div>
+        </div>
+        <ul class="list" style="padding:0">
+          <li><a class="task" href="#">
+            <span class="mark todo" aria-hidden="true"></span>
+            <span><span class="t">เชื่อมบัญชี Apple</span><span class="d">เข้าสู่ระบบด้วย Apple ได้อีกทางหนึ่ง</span></span>
+            <span class="p num" style="color:var(--subtle);font-weight:500">+8</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+          </a></li>
+        </ul>
+        <p class="foot num" style="margin:0">ได้แต้มจากกิจกรรมครบ 600 แต้มสำหรับ 12 เดือนนี้แล้ว รายการที่เหลือยังทำได้ แต่จะไม่ได้แต้มเพิ่ม</p>
+      </section>
+
+      <p class="cap-k" style="margin-top:28px">ทำครบทุกข้อแล้ว</p>
+      <section class="earn" style="margin-top:0" aria-label="ทำสิ่งนี้รับแต้ม — ครบแล้ว">
+        <div class="allDone">
+          <span class="ok"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+          <div><div style="font-weight:600;font-size:15px">ทำครบทุกข้อแล้ว</div><div style="font-size:13px;color:var(--muted)" class="num">ได้รับ 216 แต้มจากกิจกรรมในบัญชี</div></div>
+        </div>
+      </section>
+    </div>
+
+    <div>
+      <p class="cap-k">/liff/points — แบบย่อ (ไม่แสดงคำอธิบายของรายการที่ยังไม่ทำ)</p>
+      <div class="liff">
+        <section class="earn compact" style="margin-top:0" aria-label="ทำสิ่งนี้รับแต้ม (LINE)">
+          <div class="earn-hd">
+            <div class="row"><h2>ทำสิ่งนี้รับแต้ม</h2><p class="meta num" style="margin:0">อีก <b>172 แต้ม</b></p></div>
+            <div class="bar"><i style="width:23%"></i></div>
+          </div>
+          <div class="next">
+            <div class="eyebrow">แนะนำถัดไป</div>
+            <div class="t">เพิ่มข้อมูลผู้เสียภาษี</div>
+            <div class="d">ใช้ออกใบกำกับภาษีเต็มรูปในนามธุรกิจของคุณ</div>
+            <div class="act"><span class="pts num">+40 แต้ม</span><a class="btn" href="#">เพิ่มข้อมูล</a></div>
+          </div>
+          <ul class="list">
+            <li><a class="task" href="#"><span class="mark todo" aria-hidden="true"></span><span><span class="t">กรอกข้อมูลการใช้บรรจุภัณฑ์</span><span class="d"></span></span><span class="p num">+40</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a></li>
+            <li><a class="task" href="#"><span class="mark todo" aria-hidden="true"></span><span><span class="t">กรอกข้อมูลบัญชีให้ครบ</span><span class="d"></span></span><span class="p num">+20</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a></li>
+            <li><a class="task" href="#"><span class="mark todo" aria-hidden="true"></span><span><span class="t">เพิ่มโลโก้และสีของแบรนด์</span><span class="d"></span></span><span class="p num">+20</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a></li>
+            <li><div class="task held"><svg class="mark" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg><span><span class="t">เพิ่มที่อยู่จัดส่ง <span class="chip">รอตรวจสอบ</span></span><span class="d">ทีมงานกำลังตรวจสอบข้อมูล</span></span><span class="p num">+8</span><span></span></div></li>
+            <li><div class="task done"><svg class="mark" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span><span class="t">ยืนยันเบอร์มือถือ</span><span class="d">ได้รับแล้ว 2 พ.ย. 2569</span></span><span class="p num">+8</span><span></span></div></li>
+          </ul>
+          <a href="#" style="display:flex;justify-content:center;align-items:center;min-height:44px;border-top:1px solid var(--border);font-size:13.5px;font-weight:500;color:var(--primary)">ดูทั้งหมด 13 รายการ</a>
+          <p class="foot num" style="margin:0">แต้มจากกิจกรรมรวมได้สูงสุด 600 แต้มต่อ 12 เดือน · เหลือ 564 แต้ม</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
