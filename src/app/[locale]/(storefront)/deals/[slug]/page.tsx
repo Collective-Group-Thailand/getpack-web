@@ -91,7 +91,14 @@ export default async function DealPage({ params, searchParams }: { params: Param
 
       <div className="mt-2 grid gap-8 lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)] lg:gap-10">
         <div className="min-w-0">
-          <FeaturedDeal deal={deal} signedIn={signedIn} now={now} typeName={typeName} headingLevel="h1" />
+          <FeaturedDeal
+            deal={deal}
+            signedIn={signedIn}
+            now={now}
+            typeName={typeName}
+            typeNames={typeNames}
+            headingLevel="h1"
+          />
           <section aria-labelledby="deal-conditions" className="mt-8">
             <h2 id="deal-conditions" className="m-0 text-lg font-semibold">
               {t("conditions")}

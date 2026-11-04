@@ -11,6 +11,7 @@ import { Ticket } from "@/ui/components/Ticket";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
+import { dealP2Of } from "../loyalty-p2/read";
 import { daysLeft, dealState, stubValue, thbCompact, type DealState } from "./model";
 import type { Deal } from "./types";
 
@@ -39,6 +40,13 @@ export interface DealCardProps {
   signInHref?: string;
   walletHref?: string;
   headingLevel?: "h1" | "h2" | "h3";
+  /**
+   * Loyalty P2: why the deal is in "สำหรับคุณ", already worded by the surface ("สำหรับลูกค้าที่เคยสั่งกล่องลูกฟูก");
+   * null or absent shows no line. Never an internal attribute (inactivity, business type).
+   */
+  reasonText?: string | null;
+  /** Loyalty P2: opens the bundle sheet ("เพิ่มชุดนี้ลงตะกร้า") for a deal with a bundle. */
+  onAddBundle?: (deal: Deal) => void;
   className?: string;
 }
 
@@ -63,13 +71,23 @@ export function DealCard({
   signInHref = "/sign-in?next=/deals",
   walletHref = "/account/wallet",
   headingLevel = "h3",
+  reasonText = null,
+  onAddBundle,
   className,
 }: DealCardProps) {
   const t = useTranslations("deals.card");
   const format = useFormat();
   const state = stateOverride ?? dealState(deal, signedIn);
   const spent = state === "used";
-  const { value, word, figureText, cap } = useDealStub(deal.benefit);
+  const stub = useDealStub(deal.benefit);
+  // Loyalty P2: a bundle's stub is the API's estimated saving (ex-VAT), its body the pieces, its action the CTA.
+  const { bundle } = dealP2Of(deal);
+  const bundleSaving = bundle?.estimatedSaving ? thbCompact(bundle.estimatedSaving, format.locale) : null;
+  const value = stub.value;
+  const word = bundleSaving ? t("bundle.word") : stub.word;
+  const figureText = bundleSaving ?? stub.figureText;
+  const cap = bundleSaving ? t("bundle.exVat") : stub.cap;
+  const wordFigure = bundleSaving ? false : value.figure.kind === "word";
   const days = deal.endingSoon ? daysLeft(deal.endsAt, now) : null;
   const until = deal.endsAt ? t("until", { date: format.date(deal.endsAt) }) : t("noEnd");
   const condition = deal.conditions.map((entry) => `${entry.label} ${entry.value}`).join(" · ");
@@ -92,9 +110,44 @@ export function DealCard({
       </p>
     ) : null;
 
+  const why = reasonText ? (
+    <p className="text-primary-subtle-fg m-0 mt-0.5 flex items-start gap-1.5 text-[0.8125rem]">
+      <Icon name="users" size={14} aria-hidden="true" className="mt-[3px] shrink-0" />
+      {reasonText}
+    </p>
+  ) : null;
+  const pieces = bundle ? (
+    <ul className="m-0 mt-1.5 flex list-none flex-col p-0 text-[0.84375rem]">
+      {bundle.items.map((item) => (
+        <li
+          key={item.productTypeCode}
+          className="border-border flex justify-between gap-2.5 py-[3px] not-first:border-t not-first:border-dashed"
+        >
+          <span className="min-w-0 truncate">{item.productTypeName}</span>
+          <span className="text-muted shrink-0 tabular-nums">
+            {format.number(item.quantity)} {item.unit}
+          </span>
+        </li>
+      ))}
+    </ul>
+  ) : null;
+  const bundleAction = (solid: boolean, stretch: boolean) => (
+    <Button
+      variant={solid ? "primary" : "secondary"}
+      className={stretch ? "w-full" : undefined}
+      onClick={() => onAddBundle?.(deal)}
+    >
+      {t("bundle.add")}
+    </Button>
+  );
+
   if (variant === "compact") {
     const actionNode =
-      state === "claimable" ? (
+      bundle && state !== "used" && state !== "ineligible" ? (
+        <Button variant="secondary" className="h-11 min-w-16 px-3.5" onClick={() => onAddBundle?.(deal)}>
+          {t("bundle.addShort")}
+        </Button>
+      ) : state === "claimable" ? (
         <Button variant="secondary" className="h-11 min-w-16 px-3.5" loading={saving} onClick={() => onSave?.(deal)}>
           {t("saveShort")}
         </Button>
@@ -112,7 +165,10 @@ export function DealCard({
       ) : state === "automatic" ? (
         <span className="text-muted text-xs">{t("automaticShort")}</span>
       ) : null;
-    const meta = state === "ineligible" ? t(`reasons.${reasonKey(deal.notEligibleReason)}`) : condition;
+    const meta =
+      state === "ineligible"
+        ? t(`reasons.${reasonKey(deal.notEligibleReason)}`)
+        : (reasonText ?? (bundle ? bundle.items.map((item) => item.productTypeName).join(" + ") : condition));
     return (
       <div
         className={cn(
@@ -138,7 +194,7 @@ export function DealCard({
             />
           )
         ) : null}
-        <MiniStub word={word} figure={figureText} wordFigure={value.figure.kind === "word"} spent={spent} />
+        <MiniStub word={bundle ? t("bundle.short") : word} figure={figureText} wordFigure={wordFigure} spent={spent} />
         <div className="pointer-events-none relative min-w-0">
           <Heading className={cn("m-0 truncate text-[0.9375rem] leading-snug font-semibold", spent && "text-muted")}>
             {deal.headline}
@@ -181,7 +237,7 @@ export function DealCard({
               <span
                 className={cn(
                   "mt-2.5 font-bold tracking-[-0.045em] tabular-nums",
-                  value.figure.kind === "word" ? "text-[3rem] tracking-[-0.02em]" : "text-[5.25rem]",
+                  wordFigure ? "text-[3rem] tracking-[-0.02em]" : "text-[5.25rem]",
                 )}
               >
                 {figureText}
@@ -205,9 +261,11 @@ export function DealCard({
           <p className="text-muted m-0 mt-1.5 text-[0.90625rem]">
             {[deal.subline, condition].filter(Boolean).join(" · ")}
           </p>
+          {why}
           {reason}
+          {pieces}
           <div className="border-border mt-auto flex flex-wrap items-center gap-3 border-t pt-5">
-            {footer}
+            {bundle && !spent && state !== "ineligible" ? bundleAction(true, false) : footer}
             {href ? (
               <Link
                 href={href}
@@ -242,7 +300,7 @@ export function DealCard({
                 <span
                   className={cn(
                     "font-bold tabular-nums",
-                    value.figure.kind === "word" ? "text-[2.5rem]" : "text-[3.875rem] tracking-[-0.045em]",
+                    wordFigure ? "text-[2.5rem]" : "text-[3.875rem] tracking-[-0.045em]",
                   )}
                 >
                   {figureText}
@@ -260,8 +318,12 @@ export function DealCard({
             {deal.headline}
           </Heading>
           <p className="text-muted m-0 text-[0.84375rem]">{[deal.subline, condition].filter(Boolean).join(" · ")}</p>
+          {why}
           {reason}
-          <div className="mt-3.5 flex items-center gap-2.5">{footer}</div>
+          {pieces}
+          <div className="mt-3.5 flex items-center gap-2.5">
+            {bundle && !spent && state !== "ineligible" ? bundleAction(true, true) : footer}
+          </div>
         </Ticket>
       </article>
     );
@@ -284,9 +346,7 @@ export function DealCard({
               <span
                 className={cn(
                   "font-semibold",
-                  value.figure.kind === "word"
-                    ? "text-[1.875rem] tracking-[-0.01em]"
-                    : "text-[3.25rem] tracking-[-0.035em]",
+                  wordFigure ? "text-[1.875rem] tracking-[-0.01em]" : "text-[3.25rem] tracking-[-0.035em]",
                 )}
               >
                 {figureText}
@@ -309,9 +369,13 @@ export function DealCard({
           )}
         </Heading>
         {condition ? <p className={cn("m-0 text-[0.84375rem] leading-normal", "text-muted")}>{condition}</p> : null}
+        {why}
+        {pieces}
         {validity}
         {reason}
-        <div className="mt-auto flex min-h-14 items-center justify-between gap-2.5 pt-4">{footer}</div>
+        <div className="mt-auto flex min-h-14 items-center justify-between gap-2.5 pt-4">
+          {bundle && !spent && state !== "ineligible" ? bundleAction(false, true) : footer}
+        </div>
       </Ticket>
     </article>
   );

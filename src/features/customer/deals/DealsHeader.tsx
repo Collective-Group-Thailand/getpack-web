@@ -80,10 +80,11 @@ export async function DealTabs({
   type: string | null;
 }) {
   const t = await getTranslations("deals.tabs");
-  // "สำหรับคุณ" equals "ทั้งหมด" until P2's audiences, so it is offered to a signed-in customer only; "แลกด้วยแต้ม"
-  // has nothing in it until P3.
+  // Loyalty P2: "สำหรับคุณ" is real — the deals the caller matches; a guest's are the new-customer deals, with a
+  // sign-in prompt on the tab. A guest always sees it (it is how they learn the tab exists). "แลกด้วยแต้ม" has
+  // nothing in it until P3.
   const tabs = (["all", "for_you", "ending_soon", "points"] as const).filter(
-    (key) => key === "all" || key === current || (counts[key] > 0 && (key !== "for_you" || signedIn)),
+    (key) => key === "all" || key === current || counts[key] > 0 || (key === "for_you" && !signedIn),
   );
   const href = (key: string) => {
     const params = new URLSearchParams();
