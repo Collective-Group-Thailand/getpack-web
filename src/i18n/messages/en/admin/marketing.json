@@ -120,7 +120,21 @@
     "usageValue": "{count, plural, one {# use} other {# uses}} · {amount}",
     "createdBy": "Created by {name}",
     "reason": "Reason",
-    "reasonHint": "Recorded in the audit log"
+    "reasonHint": "Recorded in the audit log",
+    "agents": {
+      "title": "Agents' links",
+      "description": "Visitors from agents' deal links, and what followed their first visit within the agent cookie's window",
+      "empty": "No visits from agents' links yet",
+      "agent": "Agent",
+      "visitors": "Visitors",
+      "visits": "Visits",
+      "signups": "Sign-ups",
+      "customers": "Buying customers",
+      "orders": "Orders",
+      "gross": "Sales",
+      "discount": "Discount",
+      "redemptions": "Deal uses"
+    }
   },
   "promotions": {
     "title": "Promotions",
