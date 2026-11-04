@@ -109,7 +109,7 @@ export async function getLoyaltyTasks(): Promise<LoyaltyTasks | null> {
   }
 }
 
-/** My packaging profile (`store.loyalty.packagingProfile.get`); null fields until first saved, never a 404. */
+/** My packaging profile (`store.loyalty.getPackagingProfile`); null fields until first saved, never a 404. */
 export async function getPackagingProfile(): Promise<PackagingProfile> {
   return (await serverRequests("customer")).call("GET /v1/store/loyalty/packaging-profile");
 }

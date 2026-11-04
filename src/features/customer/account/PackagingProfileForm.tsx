@@ -35,7 +35,7 @@ const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 type MonthKey = `${(typeof MONTHS)[number]}`;
 
 /**
- * "ข้อมูลการใช้บรรจุภัณฑ์" (loyalty P1, `store.loyalty.packagingProfile.put`): monthly box volume, product types,
+ * "ข้อมูลการใช้บรรจุภัณฑ์" (loyalty P1, `store.loyalty.updatePackagingProfile`): monthly box volume, product types,
  * ship-to regions and busy months, under a PDPA purpose the customer acknowledges on every save. The first complete
  * save earns the packaging-profile reward once (the API decides); the toast names it, and the checklist's cache is
  * dropped so `/account/points` reads the new state rather than announcing it a second time.
