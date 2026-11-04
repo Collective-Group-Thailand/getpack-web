@@ -230,6 +230,119 @@
     "decisions": ["D-135", "D-131"]
   },
   {
+    "key": "loyalty.order_multipliers",
+    "valueType": "json",
+    "value": {
+      "paymentMethod": {
+        "multiplier": "1.20",
+        "methods": ["scb_qr", "scb_qr_cross_bank", "bank_transfer_slip"]
+      },
+      "maxCombined": "3.00",
+      "anniversary": {
+        "multiplier": "2.00"
+      },
+      "earlyPay": {
+        "multiplier": "1.20",
+        "minDaysBeforeDue": 1
+      },
+      "campaigns": {
+        "best": "single"
+      }
+    },
+    "description": "D-495 / D-499 order multipliers: QR or transfer, the combined cap, the anniversary month, early pay and the best admin campaign",
+    "decisions": ["D-495", "D-499"],
+    "ownerRole": "marketing"
+  },
+  {
+    "key": "loyalty.tier_perks",
+    "valueType": "json",
+    "value": {
+      "silver": {
+        "quarterly": [
+          {
+            "item": "free_shipping",
+            "qty": 1
+          }
+        ]
+      },
+      "gold": {
+        "freeShippingEveryOrder": true,
+        "prioritySupport": true,
+        "quarterly": []
+      },
+      "platinum": {
+        "freeShippingEveryOrder": true,
+        "prioritySupport": true,
+        "priorityProductionSlot": true,
+        "quarterly": [
+          {
+            "item": "free_rush",
+            "qty": 1
+          }
+        ]
+      },
+      "grantOnUpgrade": true
+    },
+    "description": "D-500 perks per tier: quarterly coupons from the reward catalogue, free shipping on every order, priority support and the production slot",
+    "decisions": ["D-500", "D-478"],
+    "ownerRole": "marketing"
+  },
+  {
+    "key": "loyalty.rewards",
+    "valueType": "json",
+    "value": {
+      "couponValidityDays": 90,
+      "cancelWindowDays": 7,
+      "maxOpenPerItem": 2,
+      "expiryReminderDaysBefore": 7
+    },
+    "description": "D-498 reward catalogue rules: coupon validity, the cancel window, open coupons per item and the expiry reminder",
+    "decisions": ["D-498", "D-479"],
+    "ownerRole": "marketing"
+  },
+  {
+    "key": "promotions.free_rush",
+    "valueType": "json",
+    "value": {
+      "daysSaved": 2
+    },
+    "description": "D-497 working days a free-rush perk saves when the production queue allows",
+    "decisions": ["D-497"],
+    "ownerRole": "partner_manager"
+  },
+  {
+    "key": "promotions.capacity_deal",
+    "valueType": "json",
+    "value": {
+      "enabled": true,
+      "minFreePct": 30,
+      "discountPct": 5,
+      "leadTimeDaysSaved": 3,
+      "horizonWeeks": 1,
+      "minWeeklyCapacityUnits": 1,
+      "validityDays": 7
+    },
+    "description": "D-502 capacity-driven deals: the free share that drafts a deal, its discount, the weeks ahead and how long it runs; published only after the Marketing approval capacity_deal_publish",
+    "decisions": ["D-502", "D-101"],
+    "ownerRole": "marketing"
+  },
+  {
+    "key": "b2b.credit_tier_uplift",
+    "valueType": "json",
+    "value": {
+      "enabled": false,
+      "factors": {
+        "gold": "1.50",
+        "platinum": "2.00"
+      },
+      "capAmount": "1000000.00",
+      "spendBasis": "company_12m"
+    },
+    "description": "D-501 credit-limit tier uplift: the factor per company tier over the approved base, the automatic cap and the spend basis",
+    "decisions": ["D-485", "D-501"],
+    "ownerRole": "finance_manager"
+  },
+  {
     "key": "referral.rules",
     "valueType": "json",
     "value": {

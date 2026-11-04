@@ -283,6 +283,77 @@ const promotions: PromotionRow[] = [
   ),
 ];
 
+/**
+ * Loyalty P3 (D-502): the capacity deal the worker drafted for next week — hidden, automatic and `draft` until its
+ * `capacity_deal_publish` approval (API-CHANGES-P3 deviation 2: an active automatic promotion would apply at checkout
+ * before Marketing approves). Marketing has already asked for publication (`request_publish`), so the request waits
+ * in the approvals inbox; approving activates the draft, rejecting ends it. Free capacity is the product type's,
+ * never a factory's.
+ */
+promotions.push({
+  ...promotion(
+    40,
+    "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5% (ข้อมูลจำลอง)",
+    "automatic",
+    "draft",
+    null,
+    { productTypeCodes: ["corrugated_rsc"] },
+    { type: "percent", pct: "5" },
+    [0, 0, 0],
+  ),
+  origin: "capacity_deal",
+  visibility: "hidden",
+  capacityDeal: {
+    weekStart: "2026-11-09",
+    productTypeCode: "corrugated_rsc",
+    freePct: "41.50",
+    approval: null,
+  },
+});
+
+/** `request_publish`: the Marketing user asking becomes the requester (and so cannot approve it, D-502). */
+function requestCapacityPublish(row: PromotionRow, requester: (typeof PERSONAS)[number]) {
+  const opened = openApproval({
+    policy: "capacity_deal_publish",
+    subjectType: "promotion",
+    subjectId: row.id,
+    requester,
+    pct: row.benefit.pct ?? null,
+    payload: {
+      promotion: row.name,
+      productTypeCode: row.capacityDeal!.productTypeCode,
+      weekStart: row.capacityDeal!.weekStart,
+      freePct: row.capacityDeal!.freePct,
+      discountPct: row.benefit.pct ?? null,
+    },
+  });
+  row.capacityDeal = { ...row.capacityDeal!, approval: { id: opened.id, status: "pending" } };
+  return opened;
+}
+for (const row of promotions.filter((candidate) => candidate.origin === "capacity_deal"))
+  requestCapacityPublish(
+    row,
+    PERSONAS.find((persona) => persona.key === "marketing")!,
+  );
+onApprovalDecided("capacity_deal_publish", (approval, outcome) => {
+  decideCapacityDeal(approval.id, outcome);
+});
+
+/** Loyalty P3: the capacity-deal drafts, for `admin.capacityDeals.list` (`./loyalty-p3.ts`). */
+export function capacityDealPromotions(): readonly PromotionRow[] {
+  return promotions.filter((row) => row.origin === "capacity_deal");
+}
+
+/** Loyalty P3: a capacity deal's approval decided in the inbox (`./loyalty-p3.ts`). */
+export function decideCapacityDeal(approvalId: string, status: "approved" | "rejected") {
+  const row = promotions.find((candidate) => candidate.capacityDeal?.approval?.id === approvalId);
+  if (!row?.capacityDeal?.approval) return false;
+  row.capacityDeal = { ...row.capacityDeal, approval: { ...row.capacityDeal.approval, status } };
+  // The approval activates the draft; a rejection ends it (API-CHANGES-P3 deviation 2).
+  row.status = status === "approved" ? "active" : "ended";
+  return true;
+}
+
 /** Words a public deal may not use (D-481, GLOBAL-RULES §1–§2): the API's publish guard, mirrored. */
 const BLOCKED_WORDS = /โรงงาน|factory|กำไร|margin|ทันที|นับถอยหลัง|countdown|flash sale/i;
 
@@ -311,6 +382,11 @@ function publishErrors(
   if (row.kind === "referral")
     errors.push({ path: "visibility", code: "system_managed", message: "system promotions stay hidden" });
   if (row.status !== "active") errors.push({ path: "status", code: "not_active", message: "activate it first" });
+  // Loyalty P3 (D-502): a capacity deal leaves `hidden` only after its `capacity_deal_publish` approval.
+  if (row.origin === "capacity_deal" && row.capacityDeal?.approval?.status !== "approved")
+    errors.push({ path: "visibility", code: "approval_required", message: "approve it in the approvals inbox first" });
+  if (row.origin === "system")
+    errors.push({ path: "visibility", code: "system_managed", message: "system promotions stay hidden" });
   if (!display.slug) errors.push({ path: "display.slug", code: "required", message: "a deal page needs a slug" });
   if (!display.headline?.th)
     errors.push({ path: "display.headline.th", code: "required", message: "a Thai headline is required" });
@@ -344,6 +420,24 @@ function conditionsV2Of(row: PromotionRow): boolean {
 }
 
 function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
+  const { origin, capacityDeal, ...stored } = row;
+  // Loyalty P3: benefit v2, origin and a capacity deal's week.
+  return Object.assign(toPromotionDtoV2(stored), {
+    benefitSchemaVersion:
+      BENEFIT_V2_TYPES.has(row.benefit.type as string) ||
+      (row.benefit.type === "free_shipping" && row.benefit.maxAmount !== undefined)
+        ? 2
+        : 1,
+    origin: origin ?? (stored.kind === "referral" ? "system" : "manual"),
+    capacityDeal: capacityDeal ?? null,
+  });
+}
+
+const BENEFIT_V2_TYPES = new Set<string>(["free_sample", "free_rush", "free_addon", "revision_round"]);
+
+function toPromotionDtoV2(
+  row: PromotionRow,
+): Omit<Schemas["PromotionDto"], "benefitSchemaVersion" | "origin" | "capacityDeal"> {
   const campaign = campaigns.find((candidate) => candidate.id === row.campaignId);
   // The spend is the discount given: what the promotion's own budget is measured against.
   return {
@@ -410,6 +504,20 @@ function benefitSummary(benefit: Schemas["PromotionBenefitDto"]): { th: string; 
     case "free_mockup":
       return { th: "ตัวอย่างฟรี", en: "Free mock-up" };
     default:
+      break;
+  }
+  // Loyalty P3 (D-497): benefit v2 kinds, in the API's words (API-CHANGES-P3 "Benefit summary texts").
+  const v2 = benefit as { type: string; daysSaved?: number; addonCode?: string; rounds?: number };
+  switch (v2.type) {
+    case "free_sample":
+      return { th: `ตัวอย่างฟรี${capTh}`, en: `Free sample${capEn}` };
+    case "free_rush":
+      return { th: "ผลิตด่วนฟรี (ตามคิว)", en: "Free rush production (subject to the queue)" };
+    case "free_addon":
+      return { th: `อัปเกรดงานพิมพ์ฟรี: ${v2.addonCode}${capTh}`, en: `Free print upgrade: ${v2.addonCode}${capEn}` };
+    case "revision_round":
+      return { th: `แก้แบบเพิ่มฟรี ${v2.rounds} รอบ`, en: `${v2.rounds} extra free revision rounds` };
+    default:
       return { th: "—", en: "—" };
   }
 }
@@ -425,6 +533,14 @@ function benefitProblem(benefit: Schemas["PromotionBenefitDto"] | undefined): Re
     points_multiplier: ["multiplier", "กรุณาระบุตัวคูณแต้ม"],
     bonus_points: ["points", "กรุณาระบุจำนวนแต้ม"],
   };
+  // Loyalty P3 (D-497): what a v2 kind must carry; `version_required` is the API's for a v1 save (not mocked).
+  const v2 = benefit as { type: string; daysSaved?: number; addonCode?: string; rounds?: number };
+  if (v2.type === "free_rush" && !(Number(v2.daysSaved) >= 1 && Number(v2.daysSaved) <= 5))
+    return invalid("benefit.daysSaved", "จำนวนวันที่เร็วขึ้น 1–5 วัน");
+  if (v2.type === "free_addon" && !/^[a-z0-9_]{2,40}$/.test(v2.addonCode ?? ""))
+    return invalid("benefit.addonCode", "กรุณาระบุรหัสตัวเลือกงานพิมพ์");
+  if (v2.type === "revision_round" && !(Number(v2.rounds) >= 1 && Number(v2.rounds) <= 3))
+    return invalid("benefit.rounds", "จำนวนรอบ 1–3");
   const need = needs[benefit.type];
   if (need && (benefit[need[0]] === undefined || benefit[need[0]] === ""))
     return invalid(`benefit.${need[0]}`, need[1]);
@@ -727,12 +843,16 @@ export const marketingContractHandlers = [
   http.get("*/v1/admin/promotions", ({ request }) => {
     if (!allowed(request, "promotions.read")) return forbidden();
     const url = new URL(request.url);
-    const [kind, status, campaignId] = ["kind", "status", "campaignId"].map((name) => url.searchParams.get(name));
+    const [kind, status, campaignId, origin] = ["kind", "status", "campaignId", "origin"].map((name) =>
+      url.searchParams.get(name),
+    );
     const q = url.searchParams.get("q") ?? undefined;
     const rows = promotions
       .filter((row) => !kind || row.kind === kind)
       .filter((row) => !status || row.status === status)
       .filter((row) => !campaignId || row.campaignId === campaignId)
+      // Loyalty P3: `?origin=`.
+      .filter((row) => !origin || (row.origin ?? "manual") === origin)
       .filter((row) => matchesQuery(q, row.name, campaignOf(row.campaignId)?.code))
       .sort((a, b) => a.priority - b.priority)
       .map(toPromotionDto);
@@ -868,6 +988,22 @@ export const marketingContractHandlers = [
     const row = promotionOf(params.promotionId);
     if (!row) return noPromotion();
     if (row.kind === "referral") return systemManaged();
+    // Loyalty P3 (D-502): a capacity deal goes to its approval; it is activated by the approval, never by hand.
+    if (params.action === "request_publish") {
+      if (row.origin !== "capacity_deal" || row.status !== "draft")
+        return problem(409, "promotions.invalid_transition", "ทำรายการนี้กับโปรโมชันในสถานะนี้ไม่ได้");
+      if (row.capacityDeal?.approval?.status !== "pending") requestCapacityPublish(row, staffPersonaOf(request)!);
+      touch(row);
+      return withEtag(toPromotionDto(row), etagOf(row));
+    }
+    if (
+      params.action === "activate" &&
+      row.origin === "capacity_deal" &&
+      row.capacityDeal?.approval?.status !== "approved"
+    )
+      return problem(422, "promotions.not_publishable", "ต้องได้รับอนุมัติก่อนเปิดใช้", [
+        { path: "status", code: "approval_required", message: "approve it in the approvals inbox first" },
+      ]);
     const next = nextPromotionStatus(row, String(params.action));
     if (!next) return problem(409, "promotions.invalid_transition", "ทำรายการนี้กับโปรโมชันในสถานะนี้ไม่ได้");
     if (params.action === "activate" && row.kind === "coupon" && !codes.some((code) => code.promotionId === row.id))

@@ -26,7 +26,8 @@
       "close": "Period close",
       "reports": "Financial reports",
       "audit": "Auditor",
-      "corrections": "Correction requests"
+      "corrections": "Correction requests",
+      "creditUplifts": "Credit uplifts"
     }
   },
   "common": {
@@ -3000,5 +3001,46 @@
     "failed": "Could not save",
     "decidedBy": "Decided by",
     "decidedAt": "Decided at"
+  },
+  "creditUplifts": {
+    "title": "Credit uplifts",
+    "description": "Credit limits raised by the company's membership tier: review them, request what is above the cap, and set the uplift per company.",
+    "listTitle": "Uplifts",
+    "listNote": "Each row is a limit version the job wrote, base against new.",
+    "filterLabel": "Show",
+    "filters": {
+      "all": "All",
+      "capped": "Above the cap"
+    },
+    "empty": "No uplifts yet",
+    "emptyBody": "The uplift is off, or no company has moved up a tier.",
+    "columns": {
+      "company": "Company",
+      "tier": "Tier",
+      "base": "Base",
+      "newLimit": "New limit",
+      "cap": "Cap",
+      "effective": "Effective",
+      "mode": "Uplift",
+      "actions": "Actions"
+    },
+    "tiers": {
+      "member": "Member",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "spend": "12-month spend {amount}",
+    "previous": "was {amount}",
+    "capped": "At the cap",
+    "target": "Tier target {amount}",
+    "notCapped": "Below",
+    "modes": {
+      "auto": "Automatic",
+      "frozen": "Frozen",
+      "off": "Off"
+    },
+    "pending": "Pending {amount}",
+    "requestFull": "Request the full limit"
   }
 }

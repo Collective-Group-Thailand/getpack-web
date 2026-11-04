@@ -24,7 +24,7 @@ type Setting = Schemas["SettingDto"];
 type Value = Setting extends { current: infer C } ? (C extends { value: infer V } ? V : never) : never;
 type Scalar = string | number | boolean | null;
 
-/** The settings this page is for, in reading order (D-130…D-136, D-154, D-490…D-493). */
+/** The settings this page is for, in reading order (D-130…D-136, D-154, D-490…D-493, D-497…D-502). */
 const KEYS = [
   "loyalty.earn_rate",
   "loyalty.point_value",
@@ -32,21 +32,58 @@ const KEYS = [
   "loyalty.activity_rewards",
   "loyalty.redemption_limits",
   "loyalty.points_expiry",
-  // Loyalty P2 (D-490…D-493): the flat ones are edited here; the nested ones (order multipliers, lifecycle bonuses,
-  // analytics windows) in Settings, where the version history is.
+  // Loyalty P2 (D-490…D-493). Lifecycle bonuses and analytics windows stay in Settings, where the version history is.
   "loyalty.data_refresh",
   "loyalty.reorder_reminder",
   "surveys.rules",
   "referral.rules",
   "campaigns.budget_alert_pct",
+  // Loyalty P3 (D-497…D-502): the reward catalogue's rules, tier perks, the order multipliers with the anniversary,
+  // early pay and campaign keys, free rush, capacity deals and the credit-limit tier uplift. Nested values are edited
+  // leaf by leaf: the shape (which tiers, how many quarterly coupons) stays as it is.
+  "loyalty.rewards",
+  "loyalty.tier_perks",
+  "loyalty.order_multipliers",
+  "promotions.free_rush",
+  "promotions.capacity_deal",
+  "b2b.credit_tier_uplift",
 ] as const;
 type Key = (typeof KEYS)[number];
 
 /** Fields that are words, not amounts: shown, never edited here. */
-const FIXED_FIELDS = new Set(["basis", "tier"]);
+const FIXED_FIELDS = new Set(["basis", "tier", "spendBasis", "best"]);
 
 const isRecord = (value: unknown): value is Record<string, Scalar> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+const isScalar = (value: unknown): value is Scalar => value === null || typeof value !== "object";
+
+/**
+ * A record setting as its leaves, by path (`factors.gold`, `platinum.quarterly.0.qty`); a flat record's paths are its
+ * field names. Arrays keep their length: entries are edited, never added or removed here.
+ */
+function leavesOf(value: unknown, prefix = ""): [string, Scalar][] {
+  if (isScalar(value)) return [[prefix, value]];
+  const entries: [string, unknown][] = Array.isArray(value)
+    ? value.map((entry, index) => [String(index), entry])
+    : Object.entries(value as Record<string, unknown>);
+  return entries.flatMap(([key, entry]) => leavesOf(entry, prefix ? `${prefix}.${key}` : key));
+}
+
+/** The value with each leaf replaced from the form (typed as it was), the shape unchanged. */
+function rebuilt(value: unknown, draft: Record<string, string>, prefix = ""): unknown {
+  if (isScalar(value)) {
+    const field = prefix.split(".").pop() ?? prefix;
+    return FIXED_FIELDS.has(field) ? value : typed(value, draft[prefix] ?? "");
+  }
+  if (Array.isArray(value))
+    return value.map((entry, index) => rebuilt(entry, draft, prefix ? `${prefix}.${index}` : String(index)));
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+      key,
+      rebuilt(entry, draft, prefix ? `${prefix}.${key}` : key),
+    ]),
+  );
+}
 
 /** Form text back to the type the value had: the backend validates the shape, the form keeps it. */
 function typed(original: Scalar, text: string): Scalar {
@@ -99,14 +136,30 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
   const [effectiveFrom, setEffectiveFrom] = useState("");
   const [reason, setReason] = useState("");
 
-  const label = (field: string) => tSetting(`${settingKey.replace(".", "_")}.${field}`);
-  const shown = (field: string, raw: Scalar) =>
-    raw === null ? "–" : FIXED_FIELDS.has(field) ? tSetting(`values.${String(raw)}`) : String(raw);
+  const scope = settingKey.replace(".", "_");
+  // A leaf's label: each named segment in words, an array entry as its number ("แพลทินัม · คูปองรายไตรมาส 1 · จำนวน").
+  const label = (path: string) =>
+    path
+      .split(".")
+      .map((segment) =>
+        /^\d+$/.test(segment)
+          ? String(Number(segment) + 1)
+          : tSetting.has(`${scope}.${segment}`)
+            ? tSetting(`${scope}.${segment}`)
+            : segment,
+      )
+      .join(" · ");
+  const shown = (path: string, raw: Scalar) => {
+    const field = path.split(".").pop() ?? path;
+    if (raw === null) return "–";
+    if (typeof raw === "boolean") return tSetting(`values.${String(raw)}`);
+    return FIXED_FIELDS.has(field) ? tSetting(`values.${String(raw)}`) : String(raw);
+  };
 
   const open = () => {
     if (Array.isArray(value))
       setRows(value.map((row) => Object.fromEntries(Object.entries(row).map(([k, v]) => [k, String(v)]))));
-    else if (isRecord(value)) setDraft(Object.fromEntries(Object.entries(value).map(([k, v]) => [k, String(v)])));
+    else if (isRecord(value)) setDraft(Object.fromEntries(leavesOf(value).map(([path, v]) => [path, String(v)])));
     else setDraft({ value: value === null ? "" : String(value) });
     setWhen("now");
     setEffectiveFrom("");
@@ -124,13 +177,7 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
           ]),
         ),
       ) as Value;
-    if (isRecord(value))
-      return Object.fromEntries(
-        Object.entries(value).map(([field, original]) => [
-          field,
-          FIXED_FIELDS.has(field) ? original : typed(original, draft[field] ?? ""),
-        ]),
-      ) as Value;
+    if (isRecord(value)) return rebuilt(value, draft) as Value;
     return typed(value as Scalar, draft.value ?? "") as Value;
   };
 
@@ -187,10 +234,10 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
         </table>
       ) : isRecord(value) ? (
         <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
-          {Object.entries(value).map(([field, raw]) => (
-            <div key={field}>
-              <dt className="text-muted text-xs">{label(field)}</dt>
-              <dd className="tabular-nums">{shown(field, raw)}</dd>
+          {leavesOf(value).map(([path, raw]) => (
+            <div key={path}>
+              <dt className="text-muted text-xs">{label(path)}</dt>
+              <dd className="tabular-nums">{shown(path, raw)}</dd>
             </div>
           ))}
         </dl>
@@ -271,16 +318,31 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
             </div>
           ) : isRecord(value) ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              {Object.entries(value).map(([field, raw]) => (
-                <Field key={field} label={label(field)}>
-                  <Input
-                    value={FIXED_FIELDS.has(field) ? shown(field, raw) : (draft[field] ?? "")}
-                    disabled={FIXED_FIELDS.has(field)}
-                    inputMode="decimal"
-                    onChange={(event) => setDraft({ ...draft, [field]: event.target.value })}
+              {leavesOf(value).map(([path, raw]) => {
+                const fixed = FIXED_FIELDS.has(path.split(".").pop() ?? path);
+                return typeof raw === "boolean" ? (
+                  <SegmentedControl
+                    key={path}
+                    label={label(path)}
+                    size="sm"
+                    value={draft[path] ?? String(raw)}
+                    onValueChange={(next) => setDraft({ ...draft, [path]: next })}
+                    options={[
+                      { value: "true", label: tSetting("values.true") },
+                      { value: "false", label: tSetting("values.false") },
+                    ]}
                   />
-                </Field>
-              ))}
+                ) : (
+                  <Field key={path} label={label(path)}>
+                    <Input
+                      value={fixed ? shown(path, raw) : (draft[path] ?? "")}
+                      disabled={fixed}
+                      inputMode={typeof raw === "string" && !/^[\d.]+$/.test(raw) ? "text" : "decimal"}
+                      onChange={(event) => setDraft({ ...draft, [path]: event.target.value })}
+                    />
+                  </Field>
+                );
+              })}
             </div>
           ) : (
             <Field label={tSetting(`${settingKey.replace(".", "_")}.title`)}>

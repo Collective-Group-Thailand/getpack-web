@@ -20,6 +20,7 @@ import type { Schemas } from "@/lib/api/types";
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS } from "../personas";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy, versionTag } from "../support";
+import { type BaseCredit, withCreditP3 } from "./loyalty-p3";
 import { baht, customers } from "./commerce";
 import type {
   CompanyBranchRow,
@@ -521,7 +522,18 @@ export function toAdminCompanyDto(store: (typeof stores)[number]): Schemas["Admi
 }
 
 /** The company's credit as `admin.companyCredit.*` answers it: figures, eligibility, every limit version. */
+/** `admin.companyCredit.get` (and the answer of every credit write): P3 adds version origins and the tier uplift. */
 function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["AdminCompanyCreditDto"] {
+  return withCreditP3(store.company.id, toBaseCreditDto(store));
+}
+
+/** A company's credit as `admin.companyCredit.setUpliftMode` answers it after the mode changed; null when unknown. */
+export function companyCreditOf(companyId: string): Schemas["AdminCompanyCreditDto"] | null {
+  const store = stores.find((candidate) => candidate.company.id === companyId);
+  return store ? toCompanyCreditDto(store) : null;
+}
+
+function toBaseCreditDto(store: (typeof stores)[number]): BaseCredit {
   const company = present(store);
   const pending = company.credit.versions.find((version) => version.status === "proposed");
   return {
@@ -850,6 +862,7 @@ export const companyHandlers = [
   // admin.companyCredit.get
   http.get("*/v1/admin/companies/:companyId/credit", ({ params, request }) => {
     const ok = access(request, String(params.companyId), "companies.read");
+    // Loyalty P3: version origins and the tier uplift.
     return ok instanceof Response ? ok : HttpResponse.json(toCompanyCreditDto(ok.store));
   }),
 

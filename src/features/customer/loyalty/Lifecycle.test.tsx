@@ -32,6 +32,9 @@ const multipliers = {
   paymentMethod: "1.00",
   reorderCampaign: "1.50",
   promotion: "1.00",
+  campaign: "1.00",
+  anniversary: "1.00",
+  earlyPay: "1.00",
   combined: "1.88",
   capped: false,
 };

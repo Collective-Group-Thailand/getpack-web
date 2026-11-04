@@ -13,6 +13,7 @@ import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 
@@ -57,7 +58,16 @@ export default async function Page() {
           typeNames={await getProductTypeNames(locale).catch(() => ({}) as Record<string, string>)}
         />
       ) : (
-        <EmptyState icon="ticket" title={t("empty.noneTitle")} description={t("empty.noneBody")} />
+        <EmptyState
+          icon="ticket"
+          title={t("empty.noneTitle")}
+          description={t("empty.noneBody")}
+          action={
+            <Button asChild variant="secondary">
+              <Link href="/products">{t("empty.products")}</Link>
+            </Button>
+          }
+        />
       )}
     </div>
   );

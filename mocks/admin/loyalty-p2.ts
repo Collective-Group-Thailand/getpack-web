@@ -11,6 +11,7 @@ import type { LoyaltyAnalytics, SurveyResults, SurveyTemplate } from "@/features
 import type { Schemas } from "@/lib/api/types";
 
 import { bangkokIso, mockId, principalOf, problem, type Principal } from "../support";
+import { adminRuleCampaignRows } from "./loyalty-p3";
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const page = <T>(data: T[]) => ({ data, meta: { page: 1, perPage: 25, total: data.length } });
@@ -327,7 +328,13 @@ export const loyaltyP2AdminHandlers = [
         endsAt: bangkokIso(6 * 24 * 60),
         convertedOrderCode: null,
         reason: "reorder_reminder",
+        name: null,
+        productTypeCodes: ["corrugated"],
+        audience: null,
+        createdBy: null,
       },
+      // Loyalty P3: the admin rule campaigns (`./loyalty-p3.ts`).
+      ...adminRuleCampaignRows(),
     ]),
   ),
   // admin.promotions.estimateAudience: a fake count from how narrow the audience is; rounded to tens, null under 10

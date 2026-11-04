@@ -41,6 +41,7 @@ export function LiffDeals({
 }) {
   const t = useTranslations("deals.liff");
   const tForYou = useTranslations("deals.forYou");
+  const tEmpty = useTranslations("deals.empty");
   const saves = useDealSaves();
   const [view, setView] = useState<"all" | "for_you" | "mine">("all");
   const [open, setOpen] = useState<Deal | null>(null);
@@ -116,9 +117,27 @@ export function LiffDeals({
           ))}
         </ul>
       ) : view === "mine" ? (
-        <EmptyState icon="ticket" title={t("emptyMine")} description={t("emptyMineBody")} />
+        <EmptyState
+          icon="ticket"
+          title={t("emptyMine")}
+          description={t("emptyMineBody")}
+          action={
+            <Button variant="secondary" onClick={() => setView("all")}>
+              {tEmpty("all")}
+            </Button>
+          }
+        />
       ) : view === "for_you" ? (
-        <EmptyState icon="ticket" title={tForYou("emptyTitle")} description={tForYou("emptyBody")} />
+        <EmptyState
+          icon="ticket"
+          title={tForYou("emptyTitle")}
+          description={tForYou("emptyBody")}
+          action={
+            <Button variant="secondary" onClick={() => setView("all")}>
+              {tEmpty("all")}
+            </Button>
+          }
+        />
       ) : null}
       <BundleSheet deal={bundleDeal} signedIn onOpenChange={(next) => (next ? null : setBundleDeal(null))} />
 

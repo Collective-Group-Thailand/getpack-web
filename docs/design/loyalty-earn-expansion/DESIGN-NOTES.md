@@ -293,3 +293,108 @@ from the P1.5 prototypes so the families match; every figure is a fake example (
 - Analytics: a sixth "programme" row was invented; removed (the API has four). The phone chart was unreadable at
   390; it now scrolls inside its panel at a 640 px minimum, as do the wide tables.
 - "สำหรับคุณ" phone header kept the desktop nav; hidden like P1.5.
+
+# P3 design notes — reward catalogue, tier perks, "แลกด้วยแต้ม"
+
+Prototypes: `prototypes/p3-redeem.html`, `p3-deals-points.html`, `p3-tier-perks.html`. Screenshots: `screenshots/P3/`
+(390 and 1440, light, full page). Each file holds the page first and, below a dashed rule, the review states. The base
+CSS (tokens, ticket masks, compact rows, account frame) is copied from the P2 prototypes so the families match; every
+figure is a fake example (API-CHANGES-P3 samples and the UAT seed's eight items).
+
+## 1. The reward ticket (`RewardCard`)
+
+- Same `Ticket` as a deal (D-486): **the stub is the price** — "60 แต้ม" at 40 px/600 tabular on `primary-subtle`, the
+  word "แต้ม" at 14 px on the same baseline. The stub is 76 px (a deal's is 116 px): a cost is one short figure and
+  carries no cap or tag, so a taller stub was empty green. A tier lock ("Gold ขึ้นไป", lock icon, `surface` chip on
+  the stub) sits at the stub's end only when `tierRequired` is set.
+- **The body is the reward**: name (16/600), one condition line from the API's `conditions` joined with " · ", then
+  the footer. Validity is **not** repeated on every card (all eight said "90 วันหลังแลก"); it is in the page lede and in
+  the confirm sheet, with the date.
+- Footer: outline "แลก" (grid rule: never a filled button in a grid) or — never both — the blocked reason as a muted
+  line with an icon: `insufficient_points` "แต้มไม่พอ — ขาดอีก 12 แต้ม" (info), `tier` "สำหรับสมาชิก Gold ขึ้นไป"
+  (lock), `frequency` "แลกได้อีกครั้ง 12 ม.ค. 2570" (clock), `open_limit` "มีคูปองนี้ที่ยังไม่ใช้ 2 ใบแล้ว" (wallet),
+  `held` "บัญชีอยู่ระหว่างตรวจสอบ แลกได้เมื่อตรวจเสร็จ" (shield). A blocked ticket's stub turns `neutral-subtle`; the
+  text stays readable (not `subtle`), the reason is the first thing to read.
+- Phone: compact rows with the 64 px mini-stub ("60" over "แต้ม"), as /deals.
+- Groups "ส่วนลดค่าสินค้า" (`cash_off`; the plan said "ส่วนลดเงินสด", renamed so no customer word says cash) and "สิทธิพิเศษ" (everything else), each with a one-line explainer beside the
+  heading. Three columns in the account frame, four on /deals.
+
+## 2. `/account/points/redeem`
+
+- Back link to "แต้มและสิทธิพิเศษ", h1 "แลกแต้ม", lede, "คูปองของฉัน" outline at the right (jumps to the list).
+- **Balance strip**: one card, three facts split by hairlines — the available balance is the one big figure (30 px);
+  "จะหมดอายุเร็ว ๆ นี้" in `warning` text with its date (static); open coupons + link. Phone: balance full width, the
+  two facts below.
+- **Confirm** (desktop 440 px dialog, phone bottom sheet): the item as a mini-stub row, then the sentence that matters
+  at 19 px — "ใช้ 60 แต้ม · คงเหลือ 1,190 แต้ม" — and two quiet facts with icons (validity with the date, the 7-day
+  cancel rule). Buttons: ghost "ไว้ก่อน", filled "ยืนยันแลก 60 แต้ม" (the verb with the cost, so the click is the
+  decision). No checkbox, no second confirmation.
+- **Success** replaces the sheet's content: success check, "คูปองอยู่ในกระเป๋าโค้ดแล้ว", the API's balance after, the
+  coupon as a horizontal ticket (stub = what it is, body = dashed code box with copy + "ใช้ได้ถึง …"), filled "ใช้กับตะกร้า"
+  and ghost "แลกต่อ".
+- **คูปองของฉัน**: a segmented control (ยังไม่ใช้ · ใช้แล้ว · หมดอายุ · ยกเลิก, with counts where known), rows in one
+  hairline container: mini-stub with a word ("ส่งฟรี", "ลด ฿50", "ด่วน"), name, "แลกด้วย 60 แต้ม · date" or, for a tier
+  perk, "สิทธิ์ระดับ Platinum · ไตรมาส 4/2569" in `primary-subtle-fg`; code box; at the end "ยกเลิกการแลก" (quiet bordered
+  button) with "คืนแต้มได้ถึง …" under it — the window's end as a date and time, never a countdown. A perk says
+  "สิทธิ์ตามระดับ ยกเลิกไม่ได้".
+- Cancel asks once in a small sheet: what happens to the code and the points, and that lots expired meanwhile are not
+  revived (ADR-0007). Buttons "เก็บคูปองไว้" / "ยกเลิกและคืนแต้ม".
+- "วิธีใช้" in three numbered columns at the foot (01 แลก · 02 ใช้ตอนชำระเงิน · 03 เปลี่ยนใจได้ 7 วัน), hairline above.
+
+## 3. `/deals?tab=points`
+
+- The tab is real ("แลกด้วยแต้ม 8"). Signed in: one line "แต้มของคุณ 1,250 แต้ม · คูปองที่แลกแล้วอยู่ในกระเป๋าโค้ด
+  ใช้ได้ 90 วัน" with a link to the points page; then the reward tickets, four across, each "แลก" links to
+  `/account/points/redeem#<code>` (the redeem page scrolls to and opens it — the sheet lives on one page only).
+- Guest: the sign-in card ("เข้าสู่ระบบเพื่อแลกแต้ม" + filled "เข้าสู่ระบบ") above the tickets; tickets show costs and
+  conditions and **no** action (a link on every card repeated the card above eight times). Never an empty state while
+  items exist.
+
+## 4. Tier and perks on `/account/points`
+
+- Header actions: "ชวนเพื่อน" (outline) and **"แลกแต้ม" (filled — the page's one primary)**.
+- One panel, two columns (5 : 7). Left: the tier name at 28 px as the panel's heading and figure ("ระดับสมาชิก" for
+  screen readers only — the design-language gate forbids eyebrow labels), "แต้ม ×2" beside it; "ระดับสูงสุดแล้ว · ยอดซื้อ 12 เดือน …" at the top tier, or the 4 px meter and "ยอดซื้อ 12 เดือน ฿325,000 จาก
+  ฿500,000 เพื่อเป็น Platinum". Below a hairline, "ตัวคูณแต้มที่ใช้อยู่ตอนนี้": one row per `activeMultipliers` item —
+  a small tag "×2" (solid `primary` for the tier, `primary-subtle` for time-boxed ones) and its name with "· ถึง 30 พ.ย."
+  (static). Footnote "รวมกันสูงสุด ×3 ต่อคำสั่งซื้อ แต้มที่ได้จริงแสดงตอนชำระเงิน" (the web never multiplies).
+- Right: "สิทธิ์ของคุณ", rows with a 32 px `bg-subtle` icon tile, the perk and one line of what it means. **Active
+  perks carry no status** (the first render said "ใช้อยู่" four times); only a granted coupon gets "ดูคูปอง", a used one
+  "ใช้แล้ว", a not-yet one "ไตรมาสถัดไป". Below, "เมื่อถึง Platinum": the next tier's perks, muted, with a dashed tile.
+- Customer words: "คิวผลิตลำดับพิเศษ — งานของคุณได้ลำดับก่อนในคิวผลิต" (no date promise), "ผลิตด่วนฟรี (ตามคิว)",
+  "ดูแลก่อนเมื่อทักแชต". No factory words, no 30-day terms, no account manager (not automated, D-500).
+- `/liff/points`: a "แลกแต้ม" row link to the redeem page.
+
+## 5. Admin (no prototype; the console's own components)
+
+- **Reward catalogue** (`/marketing/loyalty/rewards`): the console `DataTable` (code, name, kind, cost, tier, status,
+  redemptions 30 d) and a form in `FormSection` cards: what (kind, Thai/English names and descriptions), value (only the
+  fields of the kind: amount / max amount / addon code / days saved / rounds), conditions (minimum order, product
+  types, every N months), cost and validity, window and order. The cash-off rule (minimum ≥ 5 × amount) is shown as a
+  hint under the field and the API's `cap_floor` lands on it. Code and kind lock once active.
+- **Loyalty campaigns** (`/marketing/loyalty/campaigns`): the P2 list gains "สร้างแคมเปญ", edit before start and
+  cancel with a reason; the form reuses the audience criteria of the promotion editor.
+- **Benefit v2** in the promotion editor: four more kinds in the same select; a v2 kind shows its fields and an info
+  line "ใช้รูปแบบสิทธิ์ v2". Perks say what the order gets, never money.
+- **Credit uplift** (`/finance/credit-uplifts` + the company credit tab): a table of uplift versions with base → new,
+  a "เพดาน" badge when capped and the above-cap target, "ขออนุมัติวงเงินเต็ม" opening the existing request form
+  prefilled; in the credit tab a summary row (company tier, 12-month spend, base, target) and the mode as a segmented
+  control (อัตโนมัติ · หยุดไว้ · ปิด) that asks for a reason; versions carry an origin badge.
+- **Capacity deals** (`/marketing/promotions?origin=capacity_deal`): product type, week, free %, discount, approval
+  state and a link to the approval. The free % is per product type only.
+
+## 6. Self-review (changed after the first render)
+
+- The stub said "แลกด้วย" above every cost and the figure sat on the perforation; the word went and the stub is now a
+  76 px band with the cost centred.
+- "คูปองใช้ได้ 90 วันหลังแลก" on all eight cards → once in the lede, with the date in the confirm sheet.
+- Guest cards each had "เข้าสู่ระบบเพื่อแลก" → removed; the sign-in card above says it once.
+- Perks list said "ใช้อยู่" on every row → active perks carry nothing; only states that need action or explain a gap
+  have a word.
+- "แลกแต้ม" appeared twice on `/account/points` (header and a row under the panel) → the row went; the header button is
+  the page's primary.
+- The tier panel opened with an eyebrow ("ระดับสมาชิก" above the name) → removed; the name is the heading. Tier names
+  are the customer zone's Thai words (ซิลเวอร์ · โกลด์ · แพลทินัม), as the existing tier copy.
+- "ส่วนลดเงินสด" → "ส่วนลดค่าสินค้า": no customer word says cash (owner: no cash-out wording). The confirm sheet states
+  the validity in days ("90 วันนับจากวันที่แลก") and the date only on the coupon the API returns — the web adds no days
+  to a date.

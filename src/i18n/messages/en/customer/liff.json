@@ -46,7 +46,8 @@
     "tiers": {
       "member": "Member",
       "silver": "Silver",
-      "gold": "Gold"
+      "gold": "Gold",
+      "platinum": "Platinum"
     },
     "latest": "Latest",
     "more": "Full history on the website"

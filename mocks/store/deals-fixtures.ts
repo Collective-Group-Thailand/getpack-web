@@ -12,6 +12,7 @@ import type { Deal, DealBenefit, DealDetail, DealList, DealMyStatus } from "@/fe
 import type { DealBundle, DealP2Fields, ForYouReason } from "@/features/shared/loyalty-p2/types";
 
 import { bangkokIso, mockId } from "../support";
+import { REWARD_COUNT } from "./loyalty-p3";
 
 type Lang = "th" | "en";
 type Text = Record<Lang, string>;
@@ -435,6 +436,11 @@ export function toDeal(
     notEligibleReason: myStatus === "not_eligible" ? (fixture.notEligibleReason ?? null) : null,
     shareUrl: share.toString(),
     ...p2FieldsOf(fixture, lang, options.signedIn),
+    // Loyalty P3 (API-CHANGES-P3 deviation 6): every card says its kind; a promotion card has no reward or href.
+    kind: "promotion",
+    benefitText: fixture.benefit.summary[lang],
+    reward: null,
+    href: null,
   };
 }
 
@@ -511,7 +517,8 @@ export function buildDealList(
     items: [...items].sort(
       (a, b) => Number(b.featured) - Number(a.featured) || (a.endsAt ?? "9").localeCompare(b.endsAt ?? "9"),
     ),
-    counts: { all: byType.length, for_you: mine.length, ending_soon: soon.length, points: 0 },
+    // Loyalty P3: the reward catalogue's size; the tab's items are read from `store.rewards.list` (WEB-P3-NOTES §3).
+    counts: { all: byType.length, for_you: mine.length, ending_soon: soon.length, points: REWARD_COUNT },
   };
 }
 

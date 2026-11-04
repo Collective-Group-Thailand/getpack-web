@@ -6102,6 +6102,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/companies/{companyId}/credit/uplift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set a company's credit tier-uplift mode
+         * @description `auto`: the nightly job manages the uplift; `frozen`: it writes nothing and the limit in force stays; `off`: a version `tier_uplift_override` back to the base amount now and the job writes nothing (D-485, D-501). Reason ≥ 10 characters; audited.
+         *
+         *     Implements: D-485, D-501.
+         */
+        put: operations["admin.companyCredit.setUpliftMode"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/companies/{companyId}/discount-memos": {
         parameters: {
             query?: never;
@@ -6552,6 +6574,28 @@ export interface paths {
          *     Implements: D-010, D-092, D-033, D-169.
          */
         get: operations["admin.customerDocuments.listCreditRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/credit-uplifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List credit-limit tier uplifts
+         * @description Versions the tier uplift wrote (D-485, D-501): company, its tier and 12-month spend, base → target → new limit, the limit before, whether the cap (THB 1,000,000) cut it and the full target Finance may request through `admin.companyCredit.requestLimit`, the mode and a full request already pending.
+         *
+         *     Implements: D-485, D-501.
+         */
+        get: operations["admin.creditUplifts.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -11057,13 +11101,191 @@ export interface paths {
         };
         /**
          * List points campaigns
-         * @description The ×1.5 reorder campaigns the reorder reminder opened (D-492), with their customer, window and the reorder that converted them. Read-only in P2 (campaign editing is P3).
+         * @description The ×1.5 reorder campaigns the reorder reminder opened (D-492), with their customer, window and the reorder that converted them, and Marketing admin-rule campaigns (D-499) with name, product types, audience and author.
          *
          *     Implements: D-492, D-495.
          */
         get: operations["admin.loyaltyCampaigns.list"];
         put?: never;
+        /**
+         * Create a points campaign
+         * @description An `admin_rule` campaign (D-499): ×`multiplier` (1.01–5.00) on order points placed inside the window (≤ 92 days) for the product types (null = all) and the audience (conditions v2, D-494). Only the best single campaign counts on an order and the ×3.00 combined cap holds (D-495).
+         *
+         *     Implements: D-499, D-495, D-494.
+         */
+        post: operations["admin.loyaltyCampaigns.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/campaigns/{campaignId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a points campaign
+         * @description One campaign with its `ETag` (D-492, D-499).
+         *
+         *     Implements: D-499.
+         */
+        get: operations["admin.loyaltyCampaigns.get"];
+        put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit a points campaign before it starts
+         * @description `If-Match` required; an admin-rule campaign that has started is refused (`loyalty.campaign_started`, D-499).
+         *
+         *     Implements: D-499.
+         */
+        patch: operations["admin.loyaltyCampaigns.update"];
+        trace?: never;
+    };
+    "/v1/admin/loyalty/campaigns/{campaignId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a points campaign
+         * @description An admin-rule campaign stops counting at once; orders not yet earned do not get it (D-499).
+         *
+         *     Implements: D-499.
+         */
+        post: operations["admin.loyaltyCampaigns.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/reward-redemptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reward redemptions
+         * @description Catalogue and tier-perk coupons with their customer, status and value (D-498, D-500).
+         *
+         *     Implements: D-498, D-479, D-497, D-133, D-500.
+         */
+        get: operations["admin.rewardRedemptions.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/reward-redemptions/{redemptionId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a reward coupon for its points
+         * @description Any unused catalogue coupon, any time, with a reason (≥ 10 characters); audited; the same reversal as the store cancel (D-498, P11R).
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        post: operations["admin.rewardRedemptions.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/rewards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reward catalogue items
+         * @description Every item with its status, cost, tier and redemptions in the last 30 days (D-498).
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        get: operations["admin.rewardCatalog.list"];
+        put?: never;
+        /**
+         * Create a reward catalogue item
+         * @description A draft item and its hidden system promotion (`reward.<code>`, coupon, per customer, stack group `reward:<kind>`, D-498). `value` is a benefit v2 of the kind (D-497); a cash-off item needs a minimum order of at least 5 × its amount (`cap_floor`, D-133).
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        post: operations["admin.rewardCatalog.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/rewards/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a reward catalogue item
+         * @description One item with its backing promotion id (D-498); `ETag` for `If-Match`.
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        get: operations["admin.rewardCatalog.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update a reward catalogue item
+         * @description `If-Match` required. Code and kind are frozen while active (`rewards.item_active`). A new value or constraints writes a new backing promotion, so coupons already issued keep what they were bought with (D-498).
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        patch: operations["admin.rewardCatalog.update"];
+        trace?: never;
+    };
+    "/v1/admin/loyalty/rewards/{itemId}/actions/{action}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activate, pause or archive a reward item
+         * @description activate (draft / paused → active; its promotion goes live), pause and archive stop new redemptions; coupons already issued stay usable until they end (D-498).
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        post: operations["admin.rewardCatalog.action"];
         delete?: never;
         options?: never;
         head?: never;
@@ -13294,9 +13516,9 @@ export interface paths {
         };
         /**
          * List promotions
-         * @description Filter by status, kind or campaign; ordered by status then priority (D-053).
+         * @description Filter by status, kind, campaign or origin (D-502: `capacity_deal` drafts); ordered by status then priority (D-053).
          *
-         *     Implements: D-053.
+         *     Implements: D-053, D-502.
          */
         get: operations["admin.promotions.list"];
         put?: never;
@@ -13352,9 +13574,9 @@ export interface paths {
         put?: never;
         /**
          * Activate, pause or end a promotion
-         * @description A coupon promotion needs at least one code before it is activated; `end` is final (D-053).
+         * @description A coupon promotion needs at least one code before it is activated; `end` is final (D-053). D-502: `request_publish` sends a capacity deal to the `capacity_deal_publish` approval (Marketing; the requester cannot approve); a capacity deal is activated by the approval and cannot be activated or made public / unlisted before it (`promotions.not_publishable`, rule `approval_required`). System promotions stay hidden.
          *
-         *     Implements: D-053.
+         *     Implements: D-053, D-502.
          */
         post: operations["admin.promotions.action"];
         delete?: never;
@@ -13517,6 +13739,28 @@ export interface paths {
          *     Implements: D-495, D-417.
          */
         get: operations["admin.promotions.agentPerformance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promotions/capacity-deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List capacity-driven deal drafts
+         * @description Hidden automatic promotions the worker drafted from next week's free capacity per product type (D-502), with their `capacity_deal_publish` approval. The response names the outlook provider; no factory, factory count or per-factory figure is returned.
+         *
+         *     Implements: D-502.
+         */
+        get: operations["admin.capacityDeals.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -31192,7 +31436,7 @@ export interface paths {
         };
         /**
          * Get my points and tier
-         * @description Available points (redeemable at checkout with `redeemPoints`, D-133), pending points from completed orders (credited after the claim window, D-132), points expiring within 30 days, the point value (D-131) and my tier from 12-month spend (D-134).
+         * @description Available points (redeemable at checkout with `redeemPoints`, D-133), pending points from completed orders (credited after the claim window, D-132), points expiring within 30 days, the point value (D-131) and my tier from 12-month spend (D-134; Platinum D-478); my tier perks and the next tier's (D-500), the multipliers active now (informational, D-499), my anniversary month and the reward coupons I hold (D-498).
          *
          *     Implements: D-130, D-131, D-132, D-133, D-134.
          */
@@ -31214,9 +31458,9 @@ export interface paths {
         };
         /**
          * List my active points campaigns
-         * @description Campaigns running now for me (and for companies where I may order): the reorder bonus the reorder reminder opened (D-492: ×1.5 points on a reorder of that product placed before `endsAt`; static date, no countdown).
+         * @description Campaigns running now for me (and for companies where I may order): the reorder bonus the reorder reminder opened (D-492: ×1.5 points on a reorder of that product placed before `endsAt`; static date, no countdown); Marketing campaigns (`admin_rule`, D-499) whose audience I match — the audience itself is never disclosed — and my anniversary month as a virtual `anniversary` item. Only the best single admin campaign counts on an order; every factor is capped at ×3.00 together.
          *
-         *     Implements: D-492, D-495.
+         *     Implements: D-492, D-495, D-499.
          */
         get: operations["store.loyalty.campaigns"];
         put?: never;
@@ -32398,9 +32642,9 @@ export interface paths {
         };
         /**
          * List public deals
-         * @description Promotions Marketing made public that are active and inside their dates (a hidden promotion is never served), as cards: headline, benefit in words, main conditions, end date with a static "ending soon" label under 72 h (no countdown, D-481), the code when the deal has one shared code. `tab` filters (`for_you`: the deals whose audience I match and deals for product types I ordered — signed out: new-customer deals and deals with no audience, D-494; `points` is empty until P3); `matching_only` deals are left out for anonymous and non-matching callers; bundle deals carry `bundle` (items priced today, VAT incl.); `productTypeCode` keeps the deals that concern a product type (PDP badge); `ref` records a sales agent's share-link attribution and is echoed in `shareUrl`. Visitors get a response cached up to 60 s; a signed-in customer gets `myStatus` per deal. Text in the `Accept-Language` language (Thai fallback).
+         * @description Promotions Marketing made public that are active and inside their dates (a hidden promotion is never served), as cards: headline, benefit in words, main conditions, end date with a static "ending soon" label under 72 h (no countdown, D-481), the code when the deal has one shared code. `tab` filters (`for_you`: the deals whose audience I match and deals for product types I ordered — signed out: new-customer deals and deals with no audience, D-494; `points`: the reward catalogue as `kind: reward` cards with a `reward` block linking to `/account/points/redeem#<code>`, D-498 — other tabs never contain rewards and `counts.points` is their number); `matching_only` deals are left out for anonymous and non-matching callers; bundle deals carry `bundle` (items priced today, VAT incl.); `productTypeCode` keeps the deals that concern a product type (PDP badge); `ref` records a sales agent's share-link attribution and is echoed in `shareUrl`. Visitors get a response cached up to 60 s; a signed-in customer gets `myStatus` per deal. Text in the `Accept-Language` language (Thai fallback).
          *
-         *     Implements: D-481, D-053, D-486, D-494.
+         *     Implements: D-481, D-053, D-486, D-494, D-498.
          */
         get: operations["store.promotions.listPublic"];
         put?: never;
@@ -33269,6 +33513,116 @@ export interface paths {
         get: operations["store.reviews.getSummary"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/rewards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the reward catalogue
+         * @description Active rewards a customer may buy with points (D-498): name, cost, the value in words, condition lines and — signed in — my balance, `canRedeem` and the blocked reason (`insufficient_points` with `missingPoints`, `tier`, `frequency` with `nextAvailableAt`, `open_limit`, `held`). Visitors see costs only (cached 60 s). Never cash-out or transfer. Text in the `Accept-Language` language.
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        get: operations["store.rewards.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/rewards/{itemId}/actions/redeem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Redeem a reward with points
+         * @description In one transaction (D-498): row-locks my lots, writes a `redeem` entry of the cost (FIFO by expiry), issues one single-use coupon valid `validityDays` (end of that Bangkok day), records the redemption and posts P11 (catalogue). Cancellable for its points within 7 days while unused. `expectedCostPoints` guards a cost change.
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        post: operations["store.rewards.redeem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/rewards/{itemId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview a redemption
+         * @description What redeeming the item now would do (D-498), computed by the API so the confirm sheet never subtracts: the current `costPoints`, my available balance after it (`balanceAfter`, null when it cannot be redeemed), `eligible` and the blocked `reason` (as `store.rewards.list`). Writes nothing.
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        get: operations["store.rewards.preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/rewards/redemptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my reward coupons
+         * @description My catalogue and tier-perk coupons (D-498, D-500), newest first: code, end date, status (`issued`, `used`, `cancelled`, `expired`), the order it was used on, and until when a catalogue coupon may be cancelled. Tier perks spend 0 points and carry their quarter (`perkPeriod`).
+         *
+         *     Implements: D-498, D-479, D-497, D-133, D-500.
+         */
+        get: operations["store.rewards.listMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/rewards/redemptions/{redemptionId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel an unused reward coupon
+         * @description An unused catalogue coupon within 7 days of its redemption (D-498): the coupon is disabled and a `redeem_reversal` gives the points back to the lots they came from (lots that expired meanwhile are not revived), P11R. Tier-perk coupons cannot be cancelled.
+         *
+         *     Implements: D-498, D-479, D-497, D-133.
+         */
+        post: operations["store.rewards.cancel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -35527,6 +35881,31 @@ export interface components {
             /** @example trial */
             status: components["schemas"]["FactoryStatus"];
         };
+        ActiveMultiplierDto: {
+            /**
+             * Format: date-time
+             * @description Campaigns
+             * @example 2026-11-30T23:59:59+07:00
+             */
+            endsAt?: string;
+            /**
+             * Format: date
+             * @description Anniversary month: its last day
+             * @example 2026-11-30
+             */
+            endsOn?: string;
+            /** @example 2.00 */
+            multiplier: string;
+            /**
+             * @description Campaigns
+             * @example สะสมแต้มกล่องลูกฟูก
+             */
+            name?: string | null;
+            /** @example anniversary */
+            source: components["schemas"]["ActiveMultiplierSource"];
+        };
+        /** @enum {string} */
+        ActiveMultiplierSource: "tier" | "anniversary" | "campaign" | "reorder";
         /** @enum {string} */
         ActivityVisibility: "internal" | "customer" | "partner";
         /** @enum {string} */
@@ -36927,6 +37306,8 @@ export interface components {
              * @example 30
              */
             termDays: number | null;
+            /** @description The tier uplift (D-485, D-501) */
+            uplift: components["schemas"]["CreditUpliftStateDto"];
             /**
              * Format: date-time
              * @description D-462: the limit in force is temporary and ends at this time; null when permanent
@@ -37585,11 +37966,17 @@ export interface components {
             uploadedAt: string;
         };
         AdminLoyaltyCampaignDto: {
+            /** @description Conditions v2 audience (D-494) */
+            audience: {
+                [key: string]: unknown;
+            } | components["schemas"]["PromotionAudienceDto"] | null;
             /**
              * @description The reorder that converted it
              * @example null
              */
             convertedOrderCode: string | null;
+            /** @description Null for campaigns the system opened */
+            createdBy: components["schemas"]["UserRefDto"] | null;
             customer: components["schemas"]["UserRefDto"] | null;
             /**
              * Format: date-time
@@ -37605,8 +37992,18 @@ export interface components {
             kind: components["schemas"]["LoyaltyCampaignKind"];
             /** @example 1.50 */
             multiplier: string;
+            /**
+             * @description Admin rules (D-499)
+             * @example null
+             */
+            name: string | null;
             /** @example corrugated_rsc */
             productTypeCode: string | null;
+            /**
+             * @description Null = every product type
+             * @example null
+             */
+            productTypeCodes: string[] | null;
             /** @example reorder_reminder */
             reason: string | null;
             /**
@@ -38389,6 +38786,60 @@ export interface components {
             /** @description C4-API-2: the customer-facing name of the destination zone the shipping estimate used (from the delivery postcode); null while shipping is not priced. Never an origin or factory location (GLOBAL-RULES §1) */
             zoneName: components["schemas"]["LocalisedLabelDto"] | null;
         };
+        AdminRedemptionDto: {
+            /**
+             * @description Baht value of the points spent (P11)
+             * @example 60.00
+             */
+            bahtValue: string;
+            /**
+             * @description Available points right after the redemption; null in lists
+             * @example 154
+             */
+            balanceAfter: number | null;
+            /**
+             * Format: date-time
+             * @description Cancellable for its points until then (catalogue, unused); null for tier perks
+             * @example 2026-11-11T14:05:00+07:00
+             */
+            cancellableUntil: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /** @example null */
+            cancelReason: string | null;
+            coupon: components["schemas"]["RewardCouponDto"];
+            /**
+             * Format: date-time
+             * @example 2026-11-04T14:05:00+07:00
+             */
+            createdAt: string;
+            customer: components["schemas"]["UserRefDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e1001
+             */
+            id: string;
+            item: components["schemas"]["RewardItemRefDto"];
+            /**
+             * @description `YYYY-Qn` for tier perks
+             * @example null
+             */
+            perkPeriod: string | null;
+            /**
+             * @description 0 for tier perks
+             * @example 60
+             */
+            pointsSpent: number;
+            /** @example catalogue */
+            source: components["schemas"]["RewardRedemptionSource"];
+            /** @example issued */
+            status: components["schemas"]["RewardRedemptionStatus"];
+            /** @example null */
+            usedOrderCode: string | null;
+        };
         AdminReferralDto: {
             /**
              * Format: uuid
@@ -38569,6 +39020,67 @@ export interface components {
             rewardPoints: number;
             /** @example published */
             status: components["schemas"]["ReviewStatus"];
+        };
+        AdminRewardItemDto: {
+            /**
+             * Format: date-time
+             * @example 2026-12-01T00:00:00+07:00
+             */
+            activeFrom: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            activeTo: string | null;
+            /** @example print_upgrade */
+            code: string;
+            constraints: components["schemas"]["RewardConstraintsDto"];
+            /** @example 100 */
+            costPoints: number;
+            description: components["schemas"]["LocalizedLongTextDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e0001
+             */
+            id: string;
+            /** @example free_addon */
+            kind: components["schemas"]["RewardItemKind"];
+            name: components["schemas"]["LocalizedTextDto"];
+            /**
+             * Format: uuid
+             * @description The backing system promotion
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000090010
+             */
+            promotionId: string;
+            /**
+             * @description Redemptions in the last 30 days
+             * @example 12
+             */
+            redemptions30d: number;
+            /** @example 50 */
+            sortOrder: number;
+            /** @example active */
+            status: components["schemas"]["RewardItemStatus"];
+            /** @example null */
+            tierRequired: components["schemas"]["LoyaltyTier"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T10:00:00+07:00
+             */
+            updatedAt: string;
+            /** @example 90 */
+            validityDays: number;
+            /**
+             * @example {
+             *       "addonCode": "spot_uv",
+             *       "type": "free_addon"
+             *     }
+             */
+            value: {
+                [key: string]: unknown;
+            };
+            /** @example อัปเกรดงานพิมพ์ฟรี: Spot UV */
+            valueTextTh: string;
         };
         AdminSampleDto: {
             /**
@@ -43613,6 +44125,52 @@ export interface components {
             unit: string | null;
             weeks: components["schemas"]["CapacityWeekDto"][];
         };
+        CapacityDealApprovalRefDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a9001
+             */
+            id: string;
+            /** @example pending */
+            status: components["schemas"]["ApprovalStatus"];
+        };
+        CapacityDealDto: {
+            /** @description Null until a person requests publication */
+            approval: components["schemas"]["CapacityDealApprovalRefDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T07:20:00+07:00
+             */
+            createdAt: string;
+            /** @example 5 */
+            discountPct: string;
+            /**
+             * @description Free share of that week, aggregated per product type only
+             * @example 41.50
+             */
+            freePct: string;
+            /** @example corrugated_rsc */
+            productTypeCode: string;
+            /** @example กล่องลูกฟูก */
+            productTypeName: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f3001
+             */
+            promotionId: string;
+            /**
+             * @description The promotion status: `draft` until approved (no discount applies), then `active`, or `ended`
+             * @example draft
+             */
+            status: string;
+            /** @example hidden */
+            visibility: components["schemas"]["PromotionVisibility"];
+            /**
+             * Format: date
+             * @example 2026-11-09
+             */
+            weekStart: string;
+        };
         CapacityDto: {
             current: components["schemas"]["CapacityVersionDto"] | null;
             /** @example folding_carton */
@@ -46382,6 +46940,11 @@ export interface components {
             mergedIntoId: string | null;
             participants: components["schemas"]["ParticipantDto"][];
             /**
+             * @description The customer’s tier has the priority-support perk (Gold and above, `loyalty.tier_perks`, D-500)
+             * @example false
+             */
+            prioritySupport: boolean;
+            /**
              * @description Where a reply goes now (D-300)
              * @example line
              */
@@ -48464,6 +49027,40 @@ export interface components {
             /** @example orders */
             resource: components["schemas"]["ListExportResource"];
         };
+        CreateLoyaltyCampaignDto: {
+            audience?: {
+                [key: string]: unknown;
+            } | components["schemas"]["PromotionAudienceDto"] | null;
+            /**
+             * Format: date-time
+             * @description After startsAt, ≤ 92 days
+             * @example 2026-12-31T23:59:59+07:00
+             */
+            endsAt: string;
+            /** @example admin_rule */
+            kind: components["schemas"]["LoyaltyCampaignCreateKind"];
+            /**
+             * @description 1.01–5.00; the ×3.00 combined cap applies at earning (D-495)
+             * @example 1.50
+             */
+            multiplier: string;
+            /** @example สะสมแต้มกล่องลูกฟูก ×1.5 */
+            name: string;
+            /**
+             * @description Null = all
+             * @example [
+             *       "corrugated_rsc"
+             *     ]
+             */
+            productTypeCodes?: string[] | null;
+            /** @example year_end_2026 */
+            reason: string;
+            /**
+             * Format: date-time
+             * @example 2026-12-01T00:00:00+07:00
+             */
+            startsAt: string;
+        };
         CreateMachineDto: {
             /** @example เครื่องพิมพ์ออฟเซ็ท 5 สี + เคลือบ */
             details?: string | null;
@@ -48790,6 +49387,11 @@ export interface components {
                 [key: string]: unknown;
             } & components["schemas"]["PromotionBenefitDto"];
             /**
+             * @description Benefit schema (D-497): 2 adds `free_sample`, `free_rush`, `free_addon`, `revision_round` and a capped `free_shipping`; inferred when absent; a v2 benefit sent as 1 is refused (`version_required`)
+             * @example 1
+             */
+            benefitSchemaVersion?: components["schemas"]["PromotionConditionsSchemaVersion"];
+            /**
              * @description Budget of this promotion alone
              * @example 10000.00
              */
@@ -48899,6 +49501,44 @@ export interface components {
              * @example 07:00
              */
             runAt: string;
+        };
+        CreateRewardItemDto: {
+            /**
+             * Format: date-time
+             * @example 2026-12-01T00:00:00+07:00
+             */
+            activeFrom: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            activeTo?: string | null;
+            /** @example print_upgrade_spot_uv */
+            code: string;
+            constraints?: components["schemas"]["RewardConstraintsDto"];
+            /** @example 100 */
+            costPoints: number;
+            description?: components["schemas"]["LocalizedLongTextDto"];
+            /** @example free_addon */
+            kind: components["schemas"]["RewardItemKind"];
+            name: components["schemas"]["LocalizedTextDto"];
+            /** @example 50 */
+            sortOrder?: number;
+            /** @example null */
+            tierRequired?: components["schemas"]["LoyaltyTier"] | null;
+            /** @example 90 */
+            validityDays: number;
+            /**
+             * @description A benefit v2 of the item kind (`cash_off` → `{ type: "fixed", amount }`)
+             * @example {
+             *       "addonCode": "spot_uv",
+             *       "maxAmount": "1500.00",
+             *       "type": "free_addon"
+             *     }
+             */
+            value: {
+                [key: string]: unknown;
+            };
         };
         CreateRouteDto: {
             /** @example assignee */
@@ -49629,14 +50269,30 @@ export interface components {
              */
             reason: components["schemas"]["CreditEligibilityBasis"] | null;
         };
+        /**
+         * @description D-501: approved through `credit_limit`, written by the tier uplift, or the uplift switched off
+         * @enum {string}
+         */
+        CreditLimitOrigin: "request" | "tier_uplift" | "tier_uplift_override";
         CreditLimitVersionDto: {
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c1030
              */
             approvalId: string | null;
+            /**
+             * Format: uuid
+             * @description The base of an uplift
+             * @example null
+             */
+            baseVersionId: string | null;
             /** @example paid_orders */
             basis: components["schemas"]["CreditEligibilityBasis"];
+            /**
+             * @description The company's tier the uplift used
+             * @example null
+             */
+            companyTier: components["schemas"]["LoyaltyTier"] | null;
             /**
              * @description D-462: a term outside `b2b.credit_terms.allowedDays`
              * @example false
@@ -49659,6 +50315,11 @@ export interface components {
             id: string;
             /** @example 100000.00 */
             limitAmount: string;
+            /**
+             * @description D-501: approved through `credit_limit`, written by the tier uplift, or the uplift switched off
+             * @example request
+             */
+            origin: components["schemas"]["CreditLimitOrigin"];
             /** @example ชำระตรงเวลา 3 ครั้ง */
             reason: string;
             /**
@@ -49671,6 +50332,11 @@ export interface components {
             status: components["schemas"]["ConfigVersionStatus"];
             /** @example 30 */
             termDays: number;
+            /**
+             * @description e.g. `1.50` (Gold), `2.00` (Platinum)
+             * @example null
+             */
+            upliftFactor: string | null;
             /**
              * Format: date-time
              * @description D-462: a temporary limit ends at this time; null when permanent
@@ -49775,6 +50441,89 @@ export interface components {
         CreditSettlement: "store_credit" | "receivable";
         /** @enum {string} */
         CreditStatus: "prepaid" | "eligible" | "credit" | "blocked_overdue";
+        CreditUpliftDto: {
+            /** @example 1200000.00 */
+            aboveCapTarget: string | null;
+            /** @example 600000.00 */
+            baseLimit: string;
+            /** @example true */
+            capped: boolean;
+            company: components["schemas"]["B2bCompanyDto"];
+            /** @example 612400.00 */
+            companySpend12m: string | null;
+            /** @example platinum */
+            companyTier: components["schemas"]["LoyaltyTier"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T03:10:00+07:00
+             */
+            effectiveFrom: string;
+            /** @example 2.00 */
+            factor: string;
+            /** @example auto */
+            mode: components["schemas"]["CreditUpliftMode"];
+            /** @example 1000000.00 */
+            newLimit: string;
+            /** @example tier_uplift */
+            origin: components["schemas"]["CreditUpliftOrigin"];
+            /** @description A full-amount request waiting in `credit_limit` */
+            pendingRequest: components["schemas"]["CreditUpliftPendingDto"] | null;
+            /** @example 900000.00 */
+            previousLimit: string | null;
+            /** @example 1200000.00 */
+            target: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000b1001
+             */
+            versionId: string;
+        };
+        /** @enum {string} */
+        CreditUpliftMode: "auto" | "frozen" | "off";
+        /** @enum {string} */
+        CreditUpliftOrigin: "tier_uplift" | "tier_uplift_override";
+        CreditUpliftPendingDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a9002
+             */
+            approvalId: string;
+            /** @example 1200000.00 */
+            limitAmount: string;
+        };
+        CreditUpliftStateDto: {
+            /**
+             * @description Finance may request it via `credit_limit`
+             * @example null
+             */
+            aboveCapTarget: string | null;
+            /**
+             * @description The approved permanent request limit
+             * @example 200000.00
+             */
+            baseLimit: string | null;
+            /**
+             * @description The target is above `capAmount` (THB 1,000,000)
+             * @example false
+             */
+            capped: boolean;
+            /**
+             * @description The company's own 12-month spend
+             * @example 254300.00
+             */
+            companySpend12m: string | null;
+            /** @example gold */
+            companyTier: components["schemas"]["LoyaltyTier"] | null;
+            /** @example auto */
+            mode: components["schemas"]["CreditUpliftMode"];
+            /** @example null */
+            modeReason: string | null;
+            /**
+             * @description base × the tier factor
+             * @example 300000.00
+             */
+            target: string | null;
+        };
         CsCatalogProductDto: {
             /**
              * Format: uuid
@@ -50479,6 +51228,11 @@ export interface components {
              */
             unitPrice: string;
         };
+        /**
+         * @description `reward` cards (tab `points`, D-498) are reward-catalogue items bought with points
+         * @enum {string}
+         */
+        DealCardKind: "promotion" | "reward";
         DealConditionDto: {
             /** @example ขั้นต่ำ */
             label: string;
@@ -50496,8 +51250,8 @@ export interface components {
              */
             for_you: number;
             /**
-             * @description Points rewards arrive in P3
-             * @example 0
+             * @description Reward-catalogue items (P3, D-498)
+             * @example 8
              */
             points: number;
         };
@@ -50505,6 +51259,11 @@ export interface components {
             /** @example ดีลเด่น */
             badge: string | null;
             benefit: components["schemas"]["DealBenefitDto"];
+            /**
+             * @description The benefit in words (= `benefit.summary`)
+             * @example ลด 10% สูงสุด ฿1,500
+             */
+            benefitText: string;
             /** @description A bundle deal's items (D-494); null otherwise */
             bundle: components["schemas"]["DealBundleDto"] | null;
             /**
@@ -50541,10 +51300,20 @@ export interface components {
             /** @example null */
             heroImageUrl: string | null;
             /**
+             * @description Reward cards link to `/account/points/redeem#<code>`; null for promotions (their page is `/deals/{slug}`)
+             * @example null
+             */
+            href: string | null;
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d1501
              */
             id: string;
+            /**
+             * @description `reward` cards (tab `points`, D-498) are reward-catalogue items bought with points
+             * @example promotion
+             */
+            kind: components["schemas"]["DealCardKind"];
             /**
              * @description Signed-in customers only; null for visitors and for automatic deals with nothing to save
              * @example claimable
@@ -50559,6 +51328,8 @@ export interface components {
              *     ]
              */
             productTypeCodes: string[];
+            /** @description Reward cards only (D-498) */
+            reward: components["schemas"]["DealRewardDto"] | null;
             /** @example https://getpack.co/deals/box10-corrugated */
             shareUrl: string;
             /** @example box10-corrugated */
@@ -50577,6 +51348,11 @@ export interface components {
             /** @example ดีลเด่น */
             badge: string | null;
             benefit: components["schemas"]["DealBenefitDto"];
+            /**
+             * @description The benefit in words (= `benefit.summary`)
+             * @example ลด 10% สูงสุด ฿1,500
+             */
+            benefitText: string;
             /** @description A bundle deal's items (D-494); null otherwise */
             bundle: components["schemas"]["DealBundleDto"] | null;
             /**
@@ -50612,10 +51388,20 @@ export interface components {
             /** @example null */
             heroImageUrl: string | null;
             /**
+             * @description Reward cards link to `/account/points/redeem#<code>`; null for promotions (their page is `/deals/{slug}`)
+             * @example null
+             */
+            href: string | null;
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d1501
              */
             id: string;
+            /**
+             * @description `reward` cards (tab `points`, D-498) are reward-catalogue items bought with points
+             * @example promotion
+             */
+            kind: components["schemas"]["DealCardKind"];
             /**
              * @description Signed-in customers only; null for visitors and for automatic deals with nothing to save
              * @example claimable
@@ -50630,6 +51416,8 @@ export interface components {
              *     ]
              */
             productTypeCodes: string[];
+            /** @description Reward cards only (D-498) */
+            reward: components["schemas"]["DealRewardDto"] | null;
             /** @example https://getpack.co/deals/box10-corrugated */
             shareUrl: string;
             /** @example box10-corrugated */
@@ -50666,6 +51454,21 @@ export interface components {
         DealMyStatus: "claimable" | "saved" | "used" | "not_eligible";
         /** @enum {string} */
         DealNotEligibleReason: "first_order_only" | "new_customer_only" | "returning_customer_only" | "audience";
+        DealRewardDto: {
+            /** @example null */
+            blockedReason: components["schemas"]["RewardBlockedReason"] | null;
+            /**
+             * @description Null for visitors
+             * @example true
+             */
+            canRedeem: boolean | null;
+            /** @example free_shipping */
+            code: string;
+            /** @example 60 */
+            costPoints: number;
+            /** @example null */
+            tierRequired: components["schemas"]["LoyaltyTier"] | null;
+        };
         DealSavedDto: {
             /** @example saved */
             myStatus: components["schemas"]["DealSavedStatus"];
@@ -52701,6 +53504,10 @@ export interface components {
             /** @example 180.0 */
             p90Minutes: string | null;
         };
+        EarlyPayBonusDto: {
+            /** @example 1.20 */
+            multiplier: string;
+        };
         EarnByTierDto: {
             /** @example 31000 */
             earned: number;
@@ -52809,13 +53616,28 @@ export interface components {
          */
         EditorMode: "easy" | "pro";
         EntryMultipliersDto: {
+            /**
+             * @description Anniversary month (D-499)
+             * @example 1.00
+             */
+            anniversary: string;
+            /**
+             * @description Best admin campaign (D-499); 1.00 for entries before P3
+             * @example 1.00
+             */
+            campaign: string;
             /** @example false */
             capped: boolean;
             /**
-             * @description tier × payment × reorder × promotion, at most ×3.00 (D-495)
+             * @description tier × payment × reorder × promotion × campaign × anniversary × early pay, at most ×3.00 (D-495, D-499)
              * @example 2.25
              */
             combined: string;
+            /**
+             * @description Early pay (D-499): known when the earning is credited, so 1.00 on `earn_order` and the preview; the extra points are an `earn_bonus` with `bonusReason: early_pay` whose multipliers carry it
+             * @example 1.00
+             */
+            earlyPay: string;
             /** @example 1.20 */
             paymentMethod: string;
             /** @example 1.00 */
@@ -52824,6 +53646,20 @@ export interface components {
             reorderCampaign: string;
             /** @example 1.25 */
             tier: string;
+        };
+        EntryRewardDto: {
+            /** @example free_shipping */
+            code: string;
+            /**
+             * @description Thai name
+             * @example ส่งฟรี 1 คำสั่งซื้อ
+             */
+            name: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e1001
+             */
+            redemptionId: string;
         };
         EnvelopeQuantityDto: {
             /**
@@ -66415,6 +67251,18 @@ export interface components {
             /** @example ใบกำกับภาษีเต็มรูปแบบทุกคำสั่งซื้อ */
             th: string;
         };
+        LocalizedLongTextDto: {
+            /** @example For printed boxes with Spot UV selected */
+            en?: string | null;
+            /** @example ใช้กับกล่องพิมพ์ที่เลือก Spot UV */
+            th?: string | null;
+        };
+        LocalizedTextDto: {
+            /** @example Spot UV upgrade */
+            en?: string | null;
+            /** @example อัปเกรดเคลือบ Spot UV */
+            th: string;
+        };
         LocalLabelDto: {
             /** @example Overall satisfaction */
             en?: string | null;
@@ -66445,6 +67293,8 @@ export interface components {
             /** @example 2026-10 */
             to: string;
         };
+        /** @enum {string} */
+        LoyaltyCampaignCreateKind: "admin_rule";
         LoyaltyCampaignDto: {
             /**
              * Format: date-time
@@ -66460,8 +67310,18 @@ export interface components {
             kind: components["schemas"]["LoyaltyCampaignKind"];
             /** @example 1.50 */
             multiplier: string;
+            /**
+             * @description The campaign name (admin rules, D-499); null for reorder and anniversary campaigns
+             * @example null
+             */
+            name: string | null;
             /** @example corrugated_rsc */
             productTypeCode: string | null;
+            /**
+             * @description Product types the campaign covers; null = every product type
+             * @example null
+             */
+            productTypeCodes: string[] | null;
             /**
              * @description In the request language
              * @example กล่องลูกฟูก
@@ -66482,7 +67342,7 @@ export interface components {
             startsAt: string;
         };
         /** @enum {string} */
-        LoyaltyCampaignKind: "reorder_bonus" | "winback" | "admin";
+        LoyaltyCampaignKind: "reorder_bonus" | "winback" | "admin" | "admin_rule" | "anniversary";
         LoyaltyCampaignListDto: {
             items: components["schemas"]["LoyaltyCampaignDto"][];
         };
@@ -66490,6 +67350,37 @@ export interface components {
         LoyaltyCampaignStatus: "active" | "ended" | "cancelled";
         /** @enum {string} */
         LoyaltyEarnSource: "order" | "activity" | "referral" | "bonus";
+        /**
+         * @description Customer copy of `priority_production_slot`: "คิวผลิตลำดับพิเศษ" (no date promise)
+         * @enum {string}
+         */
+        LoyaltyPerkCode: "quarterly_free_shipping" | "free_shipping_every_order" | "priority_support" | "quarterly_free_rush" | "priority_production_slot";
+        LoyaltyPerkDto: {
+            /**
+             * @description Customer copy of `priority_production_slot`: "คิวผลิตลำดับพิเศษ" (no date promise)
+             * @example quarterly_free_rush
+             */
+            code: components["schemas"]["LoyaltyPerkCode"];
+            /**
+             * Format: date-time
+             * @example 2027-01-31T23:59:59+07:00
+             */
+            couponExpiresAt: string | null;
+            /**
+             * @description Quarterly perks
+             * @example 2026-Q4
+             */
+            period: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e1002
+             */
+            redemptionId: string | null;
+            /** @example granted */
+            status: components["schemas"]["LoyaltyPerkStatus"];
+        };
+        /** @enum {string} */
+        LoyaltyPerkStatus: "active" | "granted" | "used" | "next_quarter";
         /** @enum {string} */
         LoyaltyProgramme: "reorder_reminder" | "winback" | "quote_recovery" | "survey";
         LoyaltySummaryDto: {
@@ -66498,6 +67389,13 @@ export interface components {
              * @example 1
              */
             activeCampaigns: number;
+            /** @description Informational: the web never multiplies (the preview carries the numbers, D-499) */
+            activeMultipliers: components["schemas"]["ActiveMultiplierDto"][];
+            /**
+             * @description Bangkok calendar month of my anniversary (D-499)
+             * @example 11
+             */
+            anniversaryMonth: number;
             /**
              * @description Points that can be redeemed now
              * @example 128
@@ -66511,6 +67409,11 @@ export interface components {
             currency: string;
             /** @description Points expiring within the reminder window (30 days) */
             expiringSoon: components["schemas"]["ExpiringPointsDto"][];
+            /**
+             * @description The combined cap over every factor (D-495)
+             * @example 3.00
+             */
+            maxCombinedMultiplier: string;
             /**
              * @description Earn multiplier of the tier (D-134)
              * @example 1.25
@@ -66527,6 +67430,14 @@ export interface components {
              */
             nextTierMinSpend12m: string | null;
             /**
+             * @description Perk codes of the next tier (D-500); empty at the top tier
+             * @example [
+             *       "free_shipping_every_order",
+             *       "priority_support"
+             *     ]
+             */
+            nextTierPerks: string[];
+            /**
              * @description My 12-month spend as % of the next tier (100 at the top)
              * @example 42.50
              */
@@ -66536,11 +67447,18 @@ export interface components {
              * @example 25
              */
             pendingPoints: number;
+            /** @description Perks of my tier (D-500) */
+            perks: components["schemas"]["LoyaltyPerkDto"][];
             /**
              * @description THB per point (D-131)
              * @example 2.50
              */
             pointValue: string;
+            /**
+             * @description Reward coupons I hold, unused and valid (D-498)
+             * @example 2
+             */
+            rewardCoupons: number;
             /**
              * @description Spend of the last 12 months (before VAT, excluding shipping)
              * @example 62500.00
@@ -66574,7 +67492,7 @@ export interface components {
         /** @enum {string} */
         LoyaltyTaskStatus: "todo" | "held" | "done";
         /** @enum {string} */
-        LoyaltyTier: "member" | "silver" | "gold";
+        LoyaltyTier: "member" | "silver" | "gold" | "platinum";
         MachineDto: {
             /** @example เครื่องพิมพ์ออฟเซ็ท 5 สี + เคลือบ */
             details: string | null;
@@ -67316,7 +68234,7 @@ export interface components {
              */
             promotionId: string;
             /**
-             * @description `min_quantity`, `min_order_value`, `product_type`, `first_order_only`, `segment`, `channel`, `zone`, `payment_method`, `not_combinable`, `used_up`, `too_many_codes`, `capped`, `cart_empty`, `cart_unavailable`, `audience`, `product_type_count` (P2)
+             * @description `min_quantity`, `min_order_value`, `product_type`, `first_order_only`, `segment`, `channel`, `zone`, `payment_method`, `not_combinable`, `used_up`, `too_many_codes`, `capped`, `cart_empty`, `cart_unavailable`, `audience`, `product_type_count` (P2), `no_sample_line`, `addon_not_selected`, `rush_unavailable`, `no_design_service`, `points_cap` (P3, D-497)
              * @example min_quantity
              */
             reason: string;
@@ -69832,7 +70750,7 @@ export interface components {
          * @description Why an `earn_bonus` was given (D-493, D-494); null for every other entry
          * @enum {string}
          */
-        PointsBonusReason: "first_order" | "winback" | "promotion";
+        PointsBonusReason: "first_order" | "winback" | "promotion" | "early_pay";
         PointsEntryDto: {
             /**
              * Format: date-time
@@ -69885,6 +70803,8 @@ export interface components {
              * @example null
              */
             reason: string | null;
+            /** @description A `redeem` / `redeem_reversal` of the reward catalogue (D-498); null otherwise */
+            reward: components["schemas"]["EntryRewardDto"] | null;
             /** @example pending */
             status: components["schemas"]["PointsStatus"];
         };
@@ -69932,6 +70852,8 @@ export interface components {
              * @example 120
              */
             balance: number;
+            /** @description D-499: on a credit-term checkout, the bonus for paying in full early (credited with the points) */
+            earlyPayBonus: components["schemas"]["EarlyPayBonusDto"] | null;
             /**
              * @description Most points this order can take: the balance and 20 % of the order value (D-133); the margin floor may still cap it (`points.capped`)
              * @example 120
@@ -72013,7 +72935,23 @@ export interface components {
             unitPrice?: string;
         };
         /** @enum {string} */
-        PromotionBenefitType: "percent" | "fixed" | "tiered" | "free_shipping" | "unit_price_override" | "free_design" | "free_revision_rounds" | "free_mockup" | "points_multiplier" | "bonus_points";
+        PromotionBenefitType: "percent" | "fixed" | "tiered" | "free_shipping" | "unit_price_override" | "free_design" | "free_revision_rounds" | "free_mockup" | "points_multiplier" | "bonus_points" | "free_sample" | "free_rush" | "free_addon" | "revision_round";
+        PromotionCapacityDealDto: {
+            /** @description `capacity_deal_publish`; null until a Marketing user requests publication */
+            approval: components["schemas"]["CapacityDealApprovalRefDto"] | null;
+            /**
+             * @description Free share of next week, aggregated per product type
+             * @example 41.50
+             */
+            freePct: string;
+            /** @example corrugated_rsc */
+            productTypeCode: string;
+            /**
+             * Format: date
+             * @example 2026-11-09
+             */
+            weekStart: string;
+        };
         /** @enum {string} */
         PromotionCodeReason: "not_found" | "disabled" | "used_up" | "not_yours" | "inactive" | "not_started" | "expired" | "budget_exhausted" | "not_applicable";
         PromotionConditionsDto: {
@@ -72121,6 +73059,11 @@ export interface components {
             benefit: {
                 [key: string]: unknown;
             } & components["schemas"]["PromotionBenefitDto"];
+            /**
+             * @description 1 or 2 (D-497 benefit v2)
+             * @example 1
+             */
+            benefitSchemaVersion: number;
             /** @example 10% off, up to THB 500.00 */
             benefitSummaryEn: string;
             /**
@@ -72136,6 +73079,8 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-000000090001
              */
             campaignId: string | null;
+            /** @description Only for `origin = capacity_deal` (D-502); free capacity is per product type only */
+            capacityDeal: components["schemas"]["PromotionCapacityDealDto"] | null;
             conditions: {
                 [key: string]: unknown;
             } & components["schemas"]["PromotionConditionsDto"];
@@ -72173,6 +73118,11 @@ export interface components {
             kind: components["schemas"]["PromotionKind"];
             /** @example ลด 10% ลูกค้าใหม่ */
             name: string;
+            /**
+             * @description Who made it (D-502): a person, the system (`systemKey`) or the capacity-deal worker
+             * @example manual
+             */
+            origin: components["schemas"]["PromotionOrigin"];
             /** @example 100 */
             priority: number;
             /** @example 0.00 */
@@ -72216,6 +73166,8 @@ export interface components {
         };
         /** @enum {string} */
         PromotionKind: "coupon" | "automatic" | "referral";
+        /** @enum {string} */
+        PromotionLifecycleAction: "activate" | "pause" | "end" | "request_publish";
         /**
          * @description v2 (D-494): `matching_only` is never served to anonymous or non-matching callers
          * @enum {string}
@@ -72240,6 +73192,11 @@ export interface components {
         };
         /** @enum {string} */
         PromotionOfferStatus: "usable" | "disabled" | "used_up" | "not_yours" | "inactive" | "not_started" | "expired" | "budget_exhausted" | "not_applicable";
+        /**
+         * @description Who made it (D-502): a person, the system (`systemKey`) or the capacity-deal worker
+         * @enum {string}
+         */
+        PromotionOrigin: "manual" | "system" | "capacity_deal";
         PromotionPriorityDto: {
             /**
              * @description In evaluation order
@@ -74662,6 +75619,13 @@ export interface components {
         };
         /** @enum {string} */
         RecurringJournalStatus: "pending_approval" | "active" | "paused" | "ended" | "rejected";
+        RedeemRewardDto: {
+            /**
+             * @description The cost the customer saw; a different current cost answers 409 `rewards.cost_changed`
+             * @example 60
+             */
+            expectedCostPoints?: number;
+        };
         ReferenceConfigurationDto: {
             /**
              * @description The product type's calculator configuration (`FoldingConfigurationDto` / `CorrugateConfigurationDto`) with exactly one quantity; `catalogProductId` is set to this product
@@ -76127,6 +77091,173 @@ export interface components {
             /** @example folding_carton */
             productTypeCode: string;
         };
+        /** @enum {string} */
+        RewardBlockedReason: "insufficient_points" | "tier" | "frequency" | "open_limit" | "held";
+        RewardConstraintsDto: {
+            /** @example null */
+            minOrderValue?: string | null;
+            /**
+             * @description e.g. 3 for the free sample
+             * @example null
+             */
+            perUserEveryMonths?: number | null;
+            /**
+             * @example [
+             *       "folding_carton"
+             *     ]
+             */
+            productTypeCodes?: string[] | null;
+        };
+        RewardCouponDto: {
+            /** @example GP-RW-7Q4K-M2XD */
+            code: string;
+            /**
+             * Format: date-time
+             * @example 2027-02-02T23:59:59+07:00
+             */
+            expiresAt: string;
+        };
+        /** @enum {string} */
+        RewardItemAction: "activate" | "pause" | "archive";
+        RewardItemDto: {
+            /** @example null */
+            blockedReason: components["schemas"]["RewardBlockedReason"] | null;
+            /**
+             * @description Days after redeeming in which an unused coupon may be cancelled for its points (`loyalty.rewards`)
+             * @example 7
+             */
+            cancelWindowDays: number;
+            /**
+             * @description Null for visitors
+             * @example true
+             */
+            canRedeem: boolean | null;
+            /** @example free_shipping */
+            code: string;
+            /**
+             * @example [
+             *       "ขั้นต่ำ ฿2,000"
+             *     ]
+             */
+            conditions: string[];
+            /** @example 60 */
+            costPoints: number;
+            /** @example ใช้กับคำสั่งซื้อขั้นต่ำ ฿2,000 */
+            description: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e0001
+             */
+            id: string;
+            /** @example free_shipping */
+            kind: components["schemas"]["RewardItemKind"];
+            /**
+             * @description With `insufficient_points`
+             * @example 0
+             */
+            missingPoints: number;
+            /**
+             * @description In the request language
+             * @example ส่งฟรี 1 คำสั่งซื้อ
+             */
+            name: string;
+            /**
+             * Format: date-time
+             * @description With `frequency`: when the item can be redeemed again (a static date, no countdown)
+             * @example null
+             */
+            nextAvailableAt: string | null;
+            /** @example null */
+            tierRequired: components["schemas"]["LoyaltyTier"] | null;
+            /**
+             * @description Days a coupon stays valid
+             * @example 90
+             */
+            validityDays: number;
+            /** @example ส่งฟรี */
+            valueText: string;
+        };
+        /** @enum {string} */
+        RewardItemKind: "cash_off" | "free_shipping" | "free_sample" | "free_rush" | "free_addon" | "revision_round";
+        RewardItemRefDto: {
+            /** @example free_shipping */
+            code: string;
+            /** @example free_shipping */
+            kind: components["schemas"]["RewardItemKind"];
+            /** @example ส่งฟรี 1 คำสั่งซื้อ */
+            name: string;
+        };
+        /** @enum {string} */
+        RewardItemStatus: "draft" | "active" | "paused" | "archived";
+        RewardListDto: {
+            /**
+             * @description Available points; null for visitors
+             * @example 214
+             */
+            balance: number | null;
+            items: components["schemas"]["RewardItemDto"][];
+        };
+        RewardPreviewDto: {
+            /**
+             * @description Available points after redeeming it now; null when it cannot be redeemed (`reason`)
+             * @example 154
+             */
+            balanceAfter: number | null;
+            /**
+             * @description The current cost of the item
+             * @example 60
+             */
+            costPoints: number;
+            /** @example true */
+            eligible: boolean;
+            /** @example null */
+            reason: components["schemas"]["RewardBlockedReason"] | null;
+        };
+        RewardRedemptionDto: {
+            /**
+             * @description Available points right after the redemption; null in lists
+             * @example 154
+             */
+            balanceAfter: number | null;
+            /**
+             * Format: date-time
+             * @description Cancellable for its points until then (catalogue, unused); null for tier perks
+             * @example 2026-11-11T14:05:00+07:00
+             */
+            cancellableUntil: string | null;
+            coupon: components["schemas"]["RewardCouponDto"];
+            /**
+             * Format: date-time
+             * @example 2026-11-04T14:05:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000e1001
+             */
+            id: string;
+            item: components["schemas"]["RewardItemRefDto"];
+            /**
+             * @description `YYYY-Qn` for tier perks
+             * @example null
+             */
+            perkPeriod: string | null;
+            /**
+             * @description 0 for tier perks
+             * @example 60
+             */
+            pointsSpent: number;
+            /** @example catalogue */
+            source: components["schemas"]["RewardRedemptionSource"];
+            /** @example issued */
+            status: components["schemas"]["RewardRedemptionStatus"];
+            /** @example null */
+            usedOrderCode: string | null;
+        };
+        /** @enum {string} */
+        RewardRedemptionSource: "catalogue" | "tier_perk";
+        /** @enum {string} */
+        RewardRedemptionStatus: "issued" | "used" | "cancelled" | "expired";
         /**
          * @description How the customer accepted
          * @enum {string}
@@ -78760,6 +79891,12 @@ export interface components {
              * @example 5
              */
             shortagePct: number;
+        };
+        SetUpliftModeDto: {
+            /** @example frozen */
+            mode: components["schemas"]["CreditUpliftMode"];
+            /** @example รอตรวจงบการเงินปี 2569 ก่อนปรับวงเงิน */
+            reason: string;
         };
         ShareConfigurationDraftResultDto: {
             draft: components["schemas"]["ConfigurationDraftDto"];
@@ -87488,6 +88625,22 @@ export interface components {
              */
             swatchHex?: string | null;
         };
+        UpdateLoyaltyCampaignDto: {
+            audience?: {
+                [key: string]: unknown;
+            } | components["schemas"]["PromotionAudienceDto"] | null;
+            /** Format: date-time */
+            endsAt?: string;
+            /** @example 1.50 */
+            multiplier?: string;
+            /** @example สะสมแต้มกล่องลูกฟูก ×1.5 */
+            name?: string;
+            productTypeCodes?: string[] | null;
+            /** @example year_end_2026 */
+            reason?: string;
+            /** Format: date-time */
+            startsAt?: string;
+        };
         UpdateMachineDto: {
             /** @example เครื่องพิมพ์ออฟเซ็ท 5 สี + เคลือบ */
             details?: string | null;
@@ -87848,6 +89001,11 @@ export interface components {
             benefit?: {
                 [key: string]: unknown;
             } & components["schemas"]["PromotionBenefitDto"];
+            /**
+             * @description Benefit schema (D-497): 2 adds `free_sample`, `free_rush`, `free_addon`, `revision_round` and a capped `free_shipping`; inferred when absent; a v2 benefit sent as 1 is refused (`version_required`)
+             * @example 1
+             */
+            benefitSchemaVersion?: components["schemas"]["PromotionConditionsSchemaVersion"];
             /** @example null */
             budgetAmount?: string | null;
             conditions?: {
@@ -87891,6 +89049,38 @@ export interface components {
              * @example public
              */
             visibility?: components["schemas"]["PromotionVisibility"];
+        };
+        UpdateRewardItemDto: {
+            /** Format: date-time */
+            activeFrom?: string;
+            /** Format: date-time */
+            activeTo?: string | null;
+            /**
+             * @description Frozen while active
+             * @example print_upgrade_spot_uv
+             */
+            code?: string;
+            constraints?: components["schemas"]["RewardConstraintsDto"];
+            /** @example 120 */
+            costPoints?: number;
+            description?: components["schemas"]["LocalizedLongTextDto"];
+            /** @description Frozen while active */
+            kind?: components["schemas"]["RewardItemKind"];
+            name?: components["schemas"]["LocalizedTextDto"];
+            /** @example 50 */
+            sortOrder?: number;
+            tierRequired?: components["schemas"]["LoyaltyTier"] | null;
+            /** @example 90 */
+            validityDays?: number;
+            /**
+             * @example {
+             *       "daysSaved": 2,
+             *       "type": "free_rush"
+             *     }
+             */
+            value?: {
+                [key: string]: unknown;
+            };
         };
         UpdateSemiDesignDto: {
             /** @example มินิมอล ขาว-ดำ */
@@ -136408,16 +137598,29 @@ export interface operations {
                      *       "limitAmount": "100000.00",
                      *       "pendingRequest": null,
                      *       "termDays": 30,
+                     *       "uplift": {
+                     *         "aboveCapTarget": null,
+                     *         "baseLimit": "100000.00",
+                     *         "capped": false,
+                     *         "companySpend12m": "62500.00",
+                     *         "companyTier": "silver",
+                     *         "mode": "auto",
+                     *         "modeReason": null,
+                     *         "target": "100000.00"
+                     *       },
                      *       "validUntil": null,
                      *       "versions": [
                      *         {
                      *           "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000c1030",
+                     *           "baseVersionId": null,
                      *           "basis": "paid_orders",
+                     *           "companyTier": null,
                      *           "customTerm": false,
                      *           "decidedAt": "2026-10-06T10:00:00+07:00",
                      *           "effectiveFrom": "2026-10-05T10:00:00+07:00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c1031",
                      *           "limitAmount": "100000.00",
+                     *           "origin": "request",
                      *           "reason": "ชำระตรงเวลา 3 ครั้ง",
                      *           "requestedAt": "2026-10-05T10:00:00+07:00",
                      *           "requestedBy": {
@@ -136426,6 +137629,7 @@ export interface operations {
                      *           },
                      *           "status": "approved",
                      *           "termDays": 30,
+                     *           "upliftFactor": null,
                      *           "validUntil": null,
                      *           "versionNo": 1
                      *         }
@@ -136560,16 +137764,29 @@ export interface operations {
                      *         "versionNo": 1
                      *       },
                      *       "termDays": null,
+                     *       "uplift": {
+                     *         "aboveCapTarget": null,
+                     *         "baseLimit": "100000.00",
+                     *         "capped": false,
+                     *         "companySpend12m": "62500.00",
+                     *         "companyTier": "silver",
+                     *         "mode": "auto",
+                     *         "modeReason": null,
+                     *         "target": "100000.00"
+                     *       },
                      *       "validUntil": null,
                      *       "versions": [
                      *         {
                      *           "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000c1030",
+                     *           "baseVersionId": null,
                      *           "basis": "paid_orders",
+                     *           "companyTier": null,
                      *           "customTerm": false,
                      *           "decidedAt": null,
                      *           "effectiveFrom": "2026-10-05T10:00:00+07:00",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c1031",
                      *           "limitAmount": "100000.00",
+                     *           "origin": "request",
                      *           "reason": "ชำระตรงเวลา 3 ครั้ง",
                      *           "requestedAt": "2026-10-05T10:00:00+07:00",
                      *           "requestedBy": {
@@ -136578,6 +137795,7 @@ export interface operations {
                      *           },
                      *           "status": "proposed",
                      *           "termDays": 30,
+                     *           "upliftFactor": null,
                      *           "validUntil": null,
                      *           "versionNo": 1
                      *         }
@@ -136638,6 +137856,173 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.companyCredit.setUpliftMode": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                companyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetUpliftModeDto"];
+            };
+        };
+        responses: {
+            /** @description Credit */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "availableAmount": "75000.00",
+                     *       "creditStatus": "credit",
+                     *       "currency": "THB",
+                     *       "eligibility": {
+                     *         "allowedTermDays": [
+                     *           15,
+                     *           30,
+                     *           45,
+                     *           60
+                     *         ],
+                     *         "defaultTermDays": 30,
+                     *         "eligible": true,
+                     *         "financialStatementOnFile": false,
+                     *         "paidOrdersCount": 5,
+                     *         "paidOrdersNeeded": 3,
+                     *         "reason": "paid_orders"
+                     *       },
+                     *       "exposureAmount": "25000.00",
+                     *       "fallbackLimitAmount": null,
+                     *       "fallbackTermDays": null,
+                     *       "limitAmount": "100000.00",
+                     *       "pendingRequest": null,
+                     *       "termDays": 30,
+                     *       "uplift": {
+                     *         "aboveCapTarget": null,
+                     *         "baseLimit": "100000.00",
+                     *         "capped": false,
+                     *         "companySpend12m": "62500.00",
+                     *         "companyTier": "silver",
+                     *         "mode": "auto",
+                     *         "modeReason": null,
+                     *         "target": "100000.00"
+                     *       },
+                     *       "validUntil": null,
+                     *       "versions": [
+                     *         {
+                     *           "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000c1030",
+                     *           "baseVersionId": null,
+                     *           "basis": "paid_orders",
+                     *           "companyTier": null,
+                     *           "customTerm": false,
+                     *           "decidedAt": "2026-10-06T10:00:00+07:00",
+                     *           "effectiveFrom": "2026-10-05T10:00:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c1031",
+                     *           "limitAmount": "100000.00",
+                     *           "origin": "request",
+                     *           "reason": "ชำระตรงเวลา 3 ครั้ง",
+                     *           "requestedAt": "2026-10-05T10:00:00+07:00",
+                     *           "requestedBy": {
+                     *             "displayName": "Dev CS",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c1012"
+                     *           },
+                     *           "status": "approved",
+                     *           "termDays": 30,
+                     *           "upliftFactor": null,
+                     *           "validUntil": null,
+                     *           "versionNo": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminCompanyCreditDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `companies.uplift_not_eligible`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -138079,6 +139464,7 @@ export interface operations {
                      *               }
                      *             }
                      *           ],
+                     *           "prioritySupport": false,
                      *           "replyChannel": "line",
                      *           "sla": {
                      *             "firstRespondedAt": null,
@@ -138208,6 +139594,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "prioritySupport": false,
                      *       "replyChannel": "line",
                      *       "sla": {
                      *         "firstRespondedAt": null,
@@ -138341,6 +139728,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "prioritySupport": false,
                      *       "replyChannel": "line",
                      *       "sla": {
                      *         "firstRespondedAt": null,
@@ -138480,6 +139868,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "prioritySupport": false,
                      *       "replyChannel": "line",
                      *       "sla": {
                      *         "firstRespondedAt": null,
@@ -138609,6 +139998,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
+                     *       "prioritySupport": false,
                      *       "replyChannel": "line",
                      *       "sla": {
                      *         "firstRespondedAt": null,
@@ -139339,6 +140729,130 @@ export interface operations {
                      */
                     "application/json": {
                         data: components["schemas"]["CreditNoteRequestDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.creditUplifts.list": {
+        parameters: {
+            query?: {
+                aboveCap?: boolean;
+                companyId?: string;
+                from?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                to?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "aboveCapTarget": "1200000.00",
+                     *           "baseLimit": "600000.00",
+                     *           "capped": true,
+                     *           "company": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c0001",
+                     *             "legalName": "บริษัท ตัวอย่าง จำกัด"
+                     *           },
+                     *           "companySpend12m": "612400.00",
+                     *           "companyTier": "platinum",
+                     *           "effectiveFrom": "2026-11-05T03:10:00+07:00",
+                     *           "factor": "2.00",
+                     *           "mode": "auto",
+                     *           "newLimit": "1000000.00",
+                     *           "origin": "tier_uplift",
+                     *           "pendingRequest": null,
+                     *           "previousLimit": "900000.00",
+                     *           "target": "1200000.00",
+                     *           "versionId": "0192f3a0-7c1e-7d2a-9b1f-0000000b1001"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["CreditUpliftDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
                 };
@@ -147642,11 +149156,15 @@ export interface operations {
                      *       },
                      *       "points": {
                      *         "balance": 120,
+                     *         "earlyPayBonus": null,
                      *         "maximumPoints": 120,
                      *         "minimumPoints": 4,
                      *         "multipliers": {
+                     *           "anniversary": "1.00",
+                     *           "campaign": "1.00",
                      *           "capped": false,
                      *           "combined": "1.88",
+                     *           "earlyPay": "1.00",
                      *           "paymentMethod": "1.00",
                      *           "promotion": "1.00",
                      *           "reorderCampaign": "1.50",
@@ -147907,6 +149425,19 @@ export interface operations {
                     /**
                      * @example {
                      *       "activeCampaigns": 1,
+                     *       "activeMultipliers": [
+                     *         {
+                     *           "multiplier": "1.25",
+                     *           "source": "tier"
+                     *         },
+                     *         {
+                     *           "endsAt": "2026-11-30T23:59:59+07:00",
+                     *           "multiplier": "1.50",
+                     *           "name": "สะสมแต้มกล่องลูกฟูก",
+                     *           "source": "campaign"
+                     *         }
+                     *       ],
+                     *       "anniversaryMonth": 11,
                      *       "availablePoints": 128,
                      *       "availableValue": "320.00",
                      *       "bonusLots": [
@@ -147923,12 +149454,27 @@ export interface operations {
                      *           "points": 20
                      *         }
                      *       ],
+                     *       "maxCombinedMultiplier": "3.00",
                      *       "multiplier": "1.25",
                      *       "nextTier": "silver",
                      *       "nextTierMinSpend12m": "50000.00",
+                     *       "nextTierPerks": [
+                     *         "free_shipping_every_order",
+                     *         "priority_support"
+                     *       ],
                      *       "nextTierProgressPct": "42.50",
                      *       "pendingPoints": 25,
+                     *       "perks": [
+                     *         {
+                     *           "code": "quarterly_free_shipping",
+                     *           "couponExpiresAt": "2026-12-31T23:59:59+07:00",
+                     *           "period": "2026-Q4",
+                     *           "redemptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e1002",
+                     *           "status": "granted"
+                     *         }
+                     *       ],
                      *       "pointValue": "2.50",
+                     *       "rewardCoupons": 2,
                      *       "spend12m": "62500.00",
                      *       "spendBasisEn": "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
                      *       "spendBasisTh": "นับยอดเมื่อคำสั่งซื้อเสร็จสิ้นหลังได้รับของ · ยอดก่อน VAT ไม่รวมค่าส่ง · ย้อนหลัง 12 เดือน · อัปเดตวันละครั้ง",
@@ -148044,8 +149590,11 @@ export interface operations {
                      *       "groupCode": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000b0001",
                      *       "multipliers": {
+                     *         "anniversary": "1.00",
+                     *         "campaign": "1.00",
                      *         "capped": false,
                      *         "combined": "2.25",
+                     *         "earlyPay": "1.00",
                      *         "paymentMethod": "1.20",
                      *         "promotion": "1.00",
                      *         "reorderCampaign": "1.50",
@@ -148055,6 +149604,7 @@ export interface operations {
                      *       "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0002",
                      *       "points": 40,
                      *       "reason": "ชดเชยงานล่าช้า",
+                     *       "reward": null,
                      *       "status": "available"
                      *     }
                      */
@@ -148190,8 +149740,11 @@ export interface operations {
                      *           "groupCode": "OG-2610-0001",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000b0001",
                      *           "multipliers": {
+                     *             "anniversary": "1.00",
+                     *             "campaign": "1.00",
                      *             "capped": false,
                      *             "combined": "2.25",
+                     *             "earlyPay": "1.00",
                      *             "paymentMethod": "1.20",
                      *             "promotion": "1.00",
                      *             "reorderCampaign": "1.50",
@@ -148201,6 +149754,7 @@ export interface operations {
                      *           "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0002",
                      *           "points": 25,
                      *           "reason": null,
+                     *           "reward": null,
                      *           "status": "pending"
                      *         }
                      *       ],
@@ -171156,7 +172710,9 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
+                     *           "audience": null,
                      *           "convertedOrderCode": null,
+                     *           "createdBy": null,
                      *           "customer": {
                      *             "displayName": "คุณสมชาย",
                      *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0009"
@@ -171165,7 +172721,9 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c2001",
                      *           "kind": "reorder_bonus",
                      *           "multiplier": "1.50",
+                     *           "name": null,
                      *           "productTypeCode": "corrugated_rsc",
+                     *           "productTypeCodes": null,
                      *           "reason": "reorder_reminder",
                      *           "startsAt": "2026-11-05T09:40:00+07:00",
                      *           "status": "active"
@@ -171206,6 +172764,1502 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyCampaigns.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLoyaltyCampaignDto"];
+            };
+        };
+        responses: {
+            /** @description Campaign */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "audience": {
+                     *         "tiers": [
+                     *           "silver",
+                     *           "gold",
+                     *           "platinum"
+                     *         ]
+                     *       },
+                     *       "convertedOrderCode": null,
+                     *       "createdBy": {
+                     *         "displayName": "ทีมการตลาด",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0002"
+                     *       },
+                     *       "customer": null,
+                     *       "endsAt": "2026-12-31T23:59:59+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c2101",
+                     *       "kind": "admin_rule",
+                     *       "multiplier": "1.50",
+                     *       "name": "สะสมแต้มกล่องลูกฟูก ×1.5",
+                     *       "productTypeCode": null,
+                     *       "productTypeCodes": [
+                     *         "corrugated_rsc"
+                     *       ],
+                     *       "reason": "year_end_2026",
+                     *       "startsAt": "2026-12-01T00:00:00+07:00",
+                     *       "status": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminLoyaltyCampaignDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyCampaigns.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Campaign */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "audience": {
+                     *         "tiers": [
+                     *           "silver",
+                     *           "gold",
+                     *           "platinum"
+                     *         ]
+                     *       },
+                     *       "convertedOrderCode": null,
+                     *       "createdBy": {
+                     *         "displayName": "ทีมการตลาด",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0002"
+                     *       },
+                     *       "customer": null,
+                     *       "endsAt": "2026-12-31T23:59:59+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c2101",
+                     *       "kind": "admin_rule",
+                     *       "multiplier": "1.50",
+                     *       "name": "สะสมแต้มกล่องลูกฟูก ×1.5",
+                     *       "productTypeCode": null,
+                     *       "productTypeCodes": [
+                     *         "corrugated_rsc"
+                     *       ],
+                     *       "reason": "year_end_2026",
+                     *       "startsAt": "2026-12-01T00:00:00+07:00",
+                     *       "status": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminLoyaltyCampaignDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyCampaigns.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLoyaltyCampaignDto"];
+            };
+        };
+        responses: {
+            /** @description Campaign */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "audience": {
+                     *         "tiers": [
+                     *           "silver",
+                     *           "gold",
+                     *           "platinum"
+                     *         ]
+                     *       },
+                     *       "convertedOrderCode": null,
+                     *       "createdBy": {
+                     *         "displayName": "ทีมการตลาด",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0002"
+                     *       },
+                     *       "customer": null,
+                     *       "endsAt": "2026-12-31T23:59:59+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c2101",
+                     *       "kind": "admin_rule",
+                     *       "multiplier": "1.50",
+                     *       "name": "สะสมแต้มกล่องลูกฟูก ×1.5",
+                     *       "productTypeCode": null,
+                     *       "productTypeCodes": [
+                     *         "corrugated_rsc"
+                     *       ],
+                     *       "reason": "year_end_2026",
+                     *       "startsAt": "2026-12-01T00:00:00+07:00",
+                     *       "status": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminLoyaltyCampaignDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `loyalty.campaign_started` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyCampaigns.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["OptionalReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Campaign */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "audience": {
+                     *         "tiers": [
+                     *           "silver",
+                     *           "gold",
+                     *           "platinum"
+                     *         ]
+                     *       },
+                     *       "convertedOrderCode": null,
+                     *       "createdBy": {
+                     *         "displayName": "ทีมการตลาด",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0002"
+                     *       },
+                     *       "customer": null,
+                     *       "endsAt": "2026-12-31T23:59:59+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c2101",
+                     *       "kind": "admin_rule",
+                     *       "multiplier": "1.50",
+                     *       "name": "สะสมแต้มกล่องลูกฟูก ×1.5",
+                     *       "productTypeCode": null,
+                     *       "productTypeCodes": [
+                     *         "corrugated_rsc"
+                     *       ],
+                     *       "reason": "year_end_2026",
+                     *       "startsAt": "2026-12-01T00:00:00+07:00",
+                     *       "status": "cancelled"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminLoyaltyCampaignDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.rewardRedemptions.list": {
+        parameters: {
+            query?: {
+                customerId?: string;
+                itemId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                source?: components["schemas"]["RewardRedemptionSource"];
+                status?: components["schemas"]["RewardRedemptionStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "bahtValue": "150.00",
+                     *           "balanceAfter": null,
+                     *           "cancelReason": null,
+                     *           "cancellableUntil": "2026-11-11T14:05:00+07:00",
+                     *           "cancelledAt": null,
+                     *           "coupon": {
+                     *             "code": "GP-RW-7Q4K-M2XD",
+                     *             "expiresAt": "2027-02-02T23:59:59+07:00"
+                     *           },
+                     *           "createdAt": "2026-11-04T14:05:00+07:00",
+                     *           "customer": {
+                     *             "displayName": "คุณสมชาย",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0009"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *           "item": {
+                     *             "code": "free_shipping",
+                     *             "kind": "free_shipping",
+                     *             "name": "ส่งฟรี 1 คำสั่งซื้อ"
+                     *           },
+                     *           "perkPeriod": null,
+                     *           "pointsSpent": 60,
+                     *           "source": "catalogue",
+                     *           "status": "issued",
+                     *           "usedOrderCode": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AdminRedemptionDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.rewardRedemptions.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                redemptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DownloadWithReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Redemption */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bahtValue": "150.00",
+                     *       "balanceAfter": null,
+                     *       "cancelReason": "ลูกค้าขอยกเลิก — แลกผิดรายการ",
+                     *       "cancellableUntil": "2026-11-11T14:05:00+07:00",
+                     *       "cancelledAt": null,
+                     *       "coupon": {
+                     *         "code": "GP-RW-7Q4K-M2XD",
+                     *         "expiresAt": "2027-02-02T23:59:59+07:00"
+                     *       },
+                     *       "createdAt": "2026-11-04T14:05:00+07:00",
+                     *       "customer": {
+                     *         "displayName": "คุณสมชาย",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0009"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *       "item": {
+                     *         "code": "free_shipping",
+                     *         "kind": "free_shipping",
+                     *         "name": "ส่งฟรี 1 คำสั่งซื้อ"
+                     *       },
+                     *       "perkPeriod": null,
+                     *       "pointsSpent": 60,
+                     *       "source": "catalogue",
+                     *       "status": "cancelled",
+                     *       "usedOrderCode": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminRedemptionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `rewards.coupon_used`, `rewards.not_cancellable` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.rewardCatalog.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["RewardItemStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "activeFrom": "2026-12-01T00:00:00+07:00",
+                     *           "activeTo": null,
+                     *           "code": "print_upgrade",
+                     *           "constraints": {
+                     *             "minOrderValue": null,
+                     *             "perUserEveryMonths": null,
+                     *             "productTypeCodes": [
+                     *               "folding_carton"
+                     *             ]
+                     *           },
+                     *           "costPoints": 100,
+                     *           "description": {
+                     *             "en": "For printed boxes with Spot UV selected",
+                     *             "th": "ใช้กับกล่องพิมพ์ที่เลือก Spot UV"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0001",
+                     *           "kind": "free_addon",
+                     *           "name": {
+                     *             "en": "Spot UV upgrade",
+                     *             "th": "อัปเกรดเคลือบ Spot UV"
+                     *           },
+                     *           "promotionId": "0192f3a0-7c1e-7d2a-9b1f-000000090010",
+                     *           "redemptions30d": 12,
+                     *           "sortOrder": 50,
+                     *           "status": "active",
+                     *           "tierRequired": null,
+                     *           "updatedAt": "2026-11-04T10:00:00+07:00",
+                     *           "validityDays": 90,
+                     *           "value": {
+                     *             "addonCode": "spot_uv",
+                     *             "maxAmount": "1500.00",
+                     *             "type": "free_addon"
+                     *           },
+                     *           "valueTextTh": "อัปเกรดงานพิมพ์ฟรี: Spot UV สูงสุด 1500.00 บาท"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AdminRewardItemDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.rewardCatalog.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRewardItemDto"];
+            };
+        };
+        responses: {
+            /** @description Item */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activeFrom": "2026-12-01T00:00:00+07:00",
+                     *       "activeTo": null,
+                     *       "code": "print_upgrade",
+                     *       "constraints": {
+                     *         "minOrderValue": null,
+                     *         "perUserEveryMonths": null,
+                     *         "productTypeCodes": [
+                     *           "folding_carton"
+                     *         ]
+                     *       },
+                     *       "costPoints": 100,
+                     *       "description": {
+                     *         "en": "For printed boxes with Spot UV selected",
+                     *         "th": "ใช้กับกล่องพิมพ์ที่เลือก Spot UV"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0001",
+                     *       "kind": "free_addon",
+                     *       "name": {
+                     *         "en": "Spot UV upgrade",
+                     *         "th": "อัปเกรดเคลือบ Spot UV"
+                     *       },
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-000000090010",
+                     *       "redemptions30d": 0,
+                     *       "sortOrder": 50,
+                     *       "status": "draft",
+                     *       "tierRequired": null,
+                     *       "updatedAt": "2026-11-04T10:00:00+07:00",
+                     *       "validityDays": 90,
+                     *       "value": {
+                     *         "addonCode": "spot_uv",
+                     *         "maxAmount": "1500.00",
+                     *         "type": "free_addon"
+                     *       },
+                     *       "valueTextTh": "อัปเกรดงานพิมพ์ฟรี: Spot UV สูงสุด 1500.00 บาท"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminRewardItemDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `rewards.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.rewardCatalog.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Item */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activeFrom": "2026-12-01T00:00:00+07:00",
+                     *       "activeTo": null,
+                     *       "code": "print_upgrade",
+                     *       "constraints": {
+                     *         "minOrderValue": null,
+                     *         "perUserEveryMonths": null,
+                     *         "productTypeCodes": [
+                     *           "folding_carton"
+                     *         ]
+                     *       },
+                     *       "costPoints": 100,
+                     *       "description": {
+                     *         "en": "For printed boxes with Spot UV selected",
+                     *         "th": "ใช้กับกล่องพิมพ์ที่เลือก Spot UV"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0001",
+                     *       "kind": "free_addon",
+                     *       "name": {
+                     *         "en": "Spot UV upgrade",
+                     *         "th": "อัปเกรดเคลือบ Spot UV"
+                     *       },
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-000000090010",
+                     *       "redemptions30d": 12,
+                     *       "sortOrder": 50,
+                     *       "status": "active",
+                     *       "tierRequired": null,
+                     *       "updatedAt": "2026-11-04T10:00:00+07:00",
+                     *       "validityDays": 90,
+                     *       "value": {
+                     *         "addonCode": "spot_uv",
+                     *         "maxAmount": "1500.00",
+                     *         "type": "free_addon"
+                     *       },
+                     *       "valueTextTh": "อัปเกรดงานพิมพ์ฟรี: Spot UV สูงสุด 1500.00 บาท"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminRewardItemDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.rewardCatalog.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRewardItemDto"];
+            };
+        };
+        responses: {
+            /** @description Item */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activeFrom": "2026-12-01T00:00:00+07:00",
+                     *       "activeTo": null,
+                     *       "code": "print_upgrade",
+                     *       "constraints": {
+                     *         "minOrderValue": null,
+                     *         "perUserEveryMonths": null,
+                     *         "productTypeCodes": [
+                     *           "folding_carton"
+                     *         ]
+                     *       },
+                     *       "costPoints": 100,
+                     *       "description": {
+                     *         "en": "For printed boxes with Spot UV selected",
+                     *         "th": "ใช้กับกล่องพิมพ์ที่เลือก Spot UV"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0001",
+                     *       "kind": "free_addon",
+                     *       "name": {
+                     *         "en": "Spot UV upgrade",
+                     *         "th": "อัปเกรดเคลือบ Spot UV"
+                     *       },
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-000000090010",
+                     *       "redemptions30d": 12,
+                     *       "sortOrder": 50,
+                     *       "status": "active",
+                     *       "tierRequired": null,
+                     *       "updatedAt": "2026-11-04T10:00:00+07:00",
+                     *       "validityDays": 90,
+                     *       "value": {
+                     *         "addonCode": "spot_uv",
+                     *         "maxAmount": "1500.00",
+                     *         "type": "free_addon"
+                     *       },
+                     *       "valueTextTh": "อัปเกรดงานพิมพ์ฟรี: Spot UV สูงสุด 1500.00 บาท"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminRewardItemDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `rewards.code_taken`, `rewards.item_active` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.rewardCatalog.action": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                action: components["schemas"]["RewardItemAction"];
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Item */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activeFrom": "2026-12-01T00:00:00+07:00",
+                     *       "activeTo": null,
+                     *       "code": "print_upgrade",
+                     *       "constraints": {
+                     *         "minOrderValue": null,
+                     *         "perUserEveryMonths": null,
+                     *         "productTypeCodes": [
+                     *           "folding_carton"
+                     *         ]
+                     *       },
+                     *       "costPoints": 100,
+                     *       "description": {
+                     *         "en": "For printed boxes with Spot UV selected",
+                     *         "th": "ใช้กับกล่องพิมพ์ที่เลือก Spot UV"
+                     *       },
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0001",
+                     *       "kind": "free_addon",
+                     *       "name": {
+                     *         "en": "Spot UV upgrade",
+                     *         "th": "อัปเกรดเคลือบ Spot UV"
+                     *       },
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-000000090010",
+                     *       "redemptions30d": 12,
+                     *       "sortOrder": 50,
+                     *       "status": "active",
+                     *       "tierRequired": null,
+                     *       "updatedAt": "2026-11-04T10:00:00+07:00",
+                     *       "validityDays": 90,
+                     *       "value": {
+                     *         "addonCode": "spot_uv",
+                     *         "maxAmount": "1500.00",
+                     *         "type": "free_addon"
+                     *       },
+                     *       "valueTextTh": "อัปเกรดงานพิมพ์ฟรี: Spot UV สูงสุด 1500.00 บาท"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminRewardItemDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -186925,6 +189979,8 @@ export interface operations {
                 campaignId?: string;
                 kind?: components["schemas"]["PromotionKind"];
                 order?: components["schemas"]["SortOrder"];
+                /** @description D-502 */
+                origin?: components["schemas"]["PromotionOrigin"];
                 page?: number;
                 perPage?: number;
                 /** @description Free-text search */
@@ -186961,6 +190017,7 @@ export interface operations {
                      *             "pct": "10",
                      *             "type": "percent"
                      *           },
+                     *           "benefitSchemaVersion": 1,
                      *           "benefitSummaryEn": "10% off, up to THB 500.00",
                      *           "benefitSummaryTh": "ลด 10% สูงสุด 500.00 บาท",
                      *           "budgetAmount": null,
@@ -186970,6 +190027,7 @@ export interface operations {
                      *             "name": "เปิดตัว getpack"
                      *           },
                      *           "campaignId": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                     *           "capacityDeal": null,
                      *           "conditions": {
                      *             "productTypeCodes": [
                      *               "folding_carton"
@@ -187003,6 +190061,7 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                      *           "kind": "coupon",
                      *           "name": "ลด 10% ลูกค้าใหม่",
+                     *           "origin": "manual",
                      *           "priority": 100,
                      *           "spentAmount": "0.00",
                      *           "stackGroup": null,
@@ -187122,6 +190181,7 @@ export interface operations {
                      *         "pct": "10",
                      *         "type": "percent"
                      *       },
+                     *       "benefitSchemaVersion": 1,
                      *       "benefitSummaryEn": "10% off, up to THB 500.00",
                      *       "benefitSummaryTh": "ลด 10% สูงสุด 500.00 บาท",
                      *       "budgetAmount": null,
@@ -187131,6 +190191,7 @@ export interface operations {
                      *         "name": "เปิดตัว getpack"
                      *       },
                      *       "campaignId": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                     *       "capacityDeal": null,
                      *       "conditions": {
                      *         "productTypeCodes": [
                      *           "folding_carton"
@@ -187164,6 +190225,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                      *       "kind": "coupon",
                      *       "name": "ลด 10% ลูกค้าใหม่",
+                     *       "origin": "manual",
                      *       "priority": 100,
                      *       "spentAmount": "0.00",
                      *       "stackGroup": null,
@@ -187292,6 +190354,7 @@ export interface operations {
                      *         "pct": "10",
                      *         "type": "percent"
                      *       },
+                     *       "benefitSchemaVersion": 1,
                      *       "benefitSummaryEn": "10% off, up to THB 500.00",
                      *       "benefitSummaryTh": "ลด 10% สูงสุด 500.00 บาท",
                      *       "budgetAmount": null,
@@ -187301,6 +190364,7 @@ export interface operations {
                      *         "name": "เปิดตัว getpack"
                      *       },
                      *       "campaignId": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                     *       "capacityDeal": null,
                      *       "conditions": {
                      *         "productTypeCodes": [
                      *           "folding_carton"
@@ -187334,6 +190398,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                      *       "kind": "coupon",
                      *       "name": "ลด 10% ลูกค้าใหม่",
+                     *       "origin": "manual",
                      *       "priority": 100,
                      *       "spentAmount": "0.00",
                      *       "stackGroup": null,
@@ -187458,6 +190523,7 @@ export interface operations {
                      *         "pct": "10",
                      *         "type": "percent"
                      *       },
+                     *       "benefitSchemaVersion": 1,
                      *       "benefitSummaryEn": "10% off, up to THB 500.00",
                      *       "benefitSummaryTh": "ลด 10% สูงสุด 500.00 บาท",
                      *       "budgetAmount": null,
@@ -187467,6 +190533,7 @@ export interface operations {
                      *         "name": "เปิดตัว getpack"
                      *       },
                      *       "campaignId": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                     *       "capacityDeal": null,
                      *       "conditions": {
                      *         "productTypeCodes": [
                      *           "folding_carton"
@@ -187500,6 +190567,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                      *       "kind": "coupon",
                      *       "name": "ลด 10% ลูกค้าใหม่",
+                     *       "origin": "manual",
                      *       "priority": 100,
                      *       "spentAmount": "0.00",
                      *       "stackGroup": null,
@@ -187634,7 +190702,7 @@ export interface operations {
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
             };
             path: {
-                action: components["schemas"]["PromotionAction"];
+                action: components["schemas"]["PromotionLifecycleAction"];
                 promotionId: string;
             };
             cookie?: never;
@@ -187662,6 +190730,7 @@ export interface operations {
                      *         "pct": "10",
                      *         "type": "percent"
                      *       },
+                     *       "benefitSchemaVersion": 1,
                      *       "benefitSummaryEn": "10% off, up to THB 500.00",
                      *       "benefitSummaryTh": "ลด 10% สูงสุด 500.00 บาท",
                      *       "budgetAmount": null,
@@ -187671,6 +190740,7 @@ export interface operations {
                      *         "name": "เปิดตัว getpack"
                      *       },
                      *       "campaignId": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                     *       "capacityDeal": null,
                      *       "conditions": {
                      *         "productTypeCodes": [
                      *           "folding_carton"
@@ -187704,6 +190774,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                      *       "kind": "coupon",
                      *       "name": "ลด 10% ลูกค้าใหม่",
+                     *       "origin": "manual",
                      *       "priority": 100,
                      *       "spentAmount": "0.00",
                      *       "stackGroup": null,
@@ -187767,7 +190838,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `promotions.invalid_transition`, `promotions.no_codes`, `promotions.system_managed` */
+            /** @description Problem: `approval.already_pending`, `promotions.invalid_transition`, `promotions.no_codes`, `promotions.system_managed` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -188549,6 +191620,7 @@ export interface operations {
                      *         "pct": "10",
                      *         "type": "percent"
                      *       },
+                     *       "benefitSchemaVersion": 1,
                      *       "benefitSummaryEn": "10% off, up to THB 500.00",
                      *       "benefitSummaryTh": "ลด 10% สูงสุด 500.00 บาท",
                      *       "budgetAmount": null,
@@ -188558,6 +191630,7 @@ export interface operations {
                      *         "name": "เปิดตัว getpack"
                      *       },
                      *       "campaignId": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                     *       "capacityDeal": null,
                      *       "conditions": {
                      *         "productTypeCodes": [
                      *           "folding_carton"
@@ -188591,6 +191664,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                      *       "kind": "coupon",
                      *       "name": "ลด 10% ลูกค้าใหม่",
+                     *       "origin": "manual",
                      *       "priority": 100,
                      *       "spentAmount": "0.00",
                      *       "stackGroup": null,
@@ -188796,6 +191870,121 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.capacityDeals.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `meta.provider`: `capacity_bookings` or `disabled` */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "approval": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-0000000a9001",
+                     *             "status": "pending"
+                     *           },
+                     *           "createdAt": "2026-11-04T07:20:00+07:00",
+                     *           "discountPct": "5",
+                     *           "freePct": "41.50",
+                     *           "productTypeCode": "corrugated_rsc",
+                     *           "productTypeName": "กล่องลูกฟูก",
+                     *           "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *           "status": "draft",
+                     *           "visibility": "hidden",
+                     *           "weekStart": "2026-11-09"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["CapacityDealDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -303611,11 +306800,15 @@ export interface operations {
                      *       },
                      *       "points": {
                      *         "balance": 120,
+                     *         "earlyPayBonus": null,
                      *         "maximumPoints": 120,
                      *         "minimumPoints": 4,
                      *         "multipliers": {
+                     *           "anniversary": "1.00",
+                     *           "campaign": "1.00",
                      *           "capped": false,
                      *           "combined": "1.88",
+                     *           "earlyPay": "1.00",
                      *           "paymentMethod": "1.00",
                      *           "promotion": "1.00",
                      *           "reorderCampaign": "1.50",
@@ -319160,6 +322353,19 @@ export interface operations {
                     /**
                      * @example {
                      *       "activeCampaigns": 1,
+                     *       "activeMultipliers": [
+                     *         {
+                     *           "multiplier": "1.25",
+                     *           "source": "tier"
+                     *         },
+                     *         {
+                     *           "endsAt": "2026-11-30T23:59:59+07:00",
+                     *           "multiplier": "1.50",
+                     *           "name": "สะสมแต้มกล่องลูกฟูก",
+                     *           "source": "campaign"
+                     *         }
+                     *       ],
+                     *       "anniversaryMonth": 11,
                      *       "availablePoints": 128,
                      *       "availableValue": "320.00",
                      *       "bonusLots": [
@@ -319176,12 +322382,27 @@ export interface operations {
                      *           "points": 20
                      *         }
                      *       ],
+                     *       "maxCombinedMultiplier": "3.00",
                      *       "multiplier": "1.25",
                      *       "nextTier": "silver",
                      *       "nextTierMinSpend12m": "50000.00",
+                     *       "nextTierPerks": [
+                     *         "free_shipping_every_order",
+                     *         "priority_support"
+                     *       ],
                      *       "nextTierProgressPct": "42.50",
                      *       "pendingPoints": 25,
+                     *       "perks": [
+                     *         {
+                     *           "code": "quarterly_free_shipping",
+                     *           "couponExpiresAt": "2026-12-31T23:59:59+07:00",
+                     *           "period": "2026-Q4",
+                     *           "redemptionId": "0192f3a0-7c1e-7d2a-9b1f-0000000e1002",
+                     *           "status": "granted"
+                     *         }
+                     *       ],
                      *       "pointValue": "2.50",
+                     *       "rewardCoupons": 2,
                      *       "spend12m": "62500.00",
                      *       "spendBasisEn": "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
                      *       "spendBasisTh": "นับยอดเมื่อคำสั่งซื้อเสร็จสิ้นหลังได้รับของ · ยอดก่อน VAT ไม่รวมค่าส่ง · ย้อนหลัง 12 เดือน · อัปเดตวันละครั้ง",
@@ -319275,11 +322496,28 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c2001",
                      *           "kind": "reorder_bonus",
                      *           "multiplier": "1.50",
+                     *           "name": null,
                      *           "productTypeCode": "corrugated_rsc",
+                     *           "productTypeCodes": null,
                      *           "productTypeName": "กล่องลูกฟูก",
                      *           "reorderOfOrderCode": "OR-2610-0042",
                      *           "reorderOfOrderId": "0192f3a0-7c1e-7d2a-9b1f-0000000a0101",
                      *           "startsAt": "2026-11-05T09:40:00+07:00"
+                     *         },
+                     *         {
+                     *           "endsAt": "2026-12-31T23:59:59+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000c2101",
+                     *           "kind": "admin_rule",
+                     *           "multiplier": "1.50",
+                     *           "name": "สะสมแต้มกล่องลูกฟูก ×1.5",
+                     *           "productTypeCode": null,
+                     *           "productTypeCodes": [
+                     *             "corrugated_rsc"
+                     *           ],
+                     *           "productTypeName": null,
+                     *           "reorderOfOrderCode": null,
+                     *           "reorderOfOrderId": null,
+                     *           "startsAt": "2026-12-01T00:00:00+07:00"
                      *         }
                      *       ]
                      *     }
@@ -319613,8 +322851,11 @@ export interface operations {
                      *           "groupCode": "OG-2610-0001",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000b0001",
                      *           "multipliers": {
+                     *             "anniversary": "1.00",
+                     *             "campaign": "1.00",
                      *             "capped": false,
                      *             "combined": "2.25",
+                     *             "earlyPay": "1.00",
                      *             "paymentMethod": "1.20",
                      *             "promotion": "1.00",
                      *             "reorderCampaign": "1.50",
@@ -319624,6 +322865,7 @@ export interface operations {
                      *           "orderId": "0192f3a0-7c1e-7d2a-9b1f-0000000d0002",
                      *           "points": 25,
                      *           "reason": null,
+                     *           "reward": null,
                      *           "status": "pending"
                      *         }
                      *       ],
@@ -327556,6 +330798,7 @@ export interface operations {
                      *             "summary": "ลด 10% สูงสุด ฿1,500",
                      *             "value": "10"
                      *           },
+                     *           "benefitText": "ลด 10% สูงสุด ฿1,500",
                      *           "bundle": null,
                      *           "code": "BOX10",
                      *           "conditions": [
@@ -327579,12 +330822,15 @@ export interface operations {
                      *           "forYouReason": "ordered_product_type",
                      *           "headline": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
                      *           "heroImageUrl": null,
+                     *           "href": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+                     *           "kind": "promotion",
                      *           "myStatus": "claimable",
                      *           "notEligibleReason": null,
                      *           "productTypeCodes": [
                      *             "corrugated_rsc"
                      *           ],
+                     *           "reward": null,
                      *           "shareUrl": "https://getpack.co/deals/box10-corrugated",
                      *           "slug": "box10-corrugated",
                      *           "startsAt": "2026-11-01T00:00:00+07:00",
@@ -328040,6 +331286,7 @@ export interface operations {
                      *         "summary": "ลด 10% สูงสุด ฿1,500",
                      *         "value": "10"
                      *       },
+                     *       "benefitText": "ลด 10% สูงสุด ฿1,500",
                      *       "bundle": null,
                      *       "code": "BOX10",
                      *       "conditions": [
@@ -328073,12 +331320,15 @@ export interface operations {
                      *       "forYouReason": "ordered_product_type",
                      *       "headline": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
                      *       "heroImageUrl": null,
+                     *       "href": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+                     *       "kind": "promotion",
                      *       "myStatus": "claimable",
                      *       "notEligibleReason": null,
                      *       "productTypeCodes": [
                      *         "corrugated_rsc"
                      *       ],
+                     *       "reward": null,
                      *       "shareUrl": "https://getpack.co/deals/box10-corrugated",
                      *       "slug": "box10-corrugated",
                      *       "startsAt": "2026-11-01T00:00:00+07:00",
@@ -334249,6 +337499,580 @@ export interface operations {
             };
             /** @description Problem: `validation.failed` */
             422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.rewards.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Catalogue */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "balance": 214,
+                     *       "items": [
+                     *         {
+                     *           "blockedReason": null,
+                     *           "canRedeem": true,
+                     *           "cancelWindowDays": 7,
+                     *           "code": "free_shipping",
+                     *           "conditions": [
+                     *             "ขั้นต่ำ ฿2,000"
+                     *           ],
+                     *           "costPoints": 60,
+                     *           "description": "ใช้กับคำสั่งซื้อขั้นต่ำ ฿2,000",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e0001",
+                     *           "kind": "free_shipping",
+                     *           "missingPoints": 0,
+                     *           "name": "ส่งฟรี 1 คำสั่งซื้อ",
+                     *           "nextAvailableAt": null,
+                     *           "tierRequired": null,
+                     *           "validityDays": 90,
+                     *           "valueText": "ส่งฟรี"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RewardListDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.rewards.redeem": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RedeemRewardDto"];
+            };
+        };
+        responses: {
+            /** @description Redemption */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "balanceAfter": 154,
+                     *       "cancellableUntil": "2026-11-11T14:05:00+07:00",
+                     *       "coupon": {
+                     *         "code": "GP-RW-7Q4K-M2XD",
+                     *         "expiresAt": "2027-02-02T23:59:59+07:00"
+                     *       },
+                     *       "createdAt": "2026-11-04T14:05:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *       "item": {
+                     *         "code": "free_shipping",
+                     *         "kind": "free_shipping",
+                     *         "name": "ส่งฟรี 1 คำสั่งซื้อ"
+                     *       },
+                     *       "perkPeriod": null,
+                     *       "pointsSpent": 60,
+                     *       "source": "catalogue",
+                     *       "status": "issued",
+                     *       "usedOrderCode": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RewardRedemptionDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `rewards.cost_changed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `rewards.account_held`, `rewards.frequency_limit`, `rewards.insufficient_points`, `rewards.open_limit`, `rewards.tier_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.rewards.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Preview */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "balanceAfter": 154,
+                     *       "costPoints": 60,
+                     *       "eligible": true,
+                     *       "reason": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RewardPreviewDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.rewards.listMine": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["RewardRedemptionStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "balanceAfter": null,
+                     *           "cancellableUntil": "2026-11-11T14:05:00+07:00",
+                     *           "coupon": {
+                     *             "code": "GP-RW-7Q4K-M2XD",
+                     *             "expiresAt": "2027-02-02T23:59:59+07:00"
+                     *           },
+                     *           "createdAt": "2026-11-04T14:05:00+07:00",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *           "item": {
+                     *             "code": "free_shipping",
+                     *             "kind": "free_shipping",
+                     *             "name": "ส่งฟรี 1 คำสั่งซื้อ"
+                     *           },
+                     *           "perkPeriod": null,
+                     *           "pointsSpent": 60,
+                     *           "source": "catalogue",
+                     *           "status": "issued",
+                     *           "usedOrderCode": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["RewardRedemptionDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.rewards.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                redemptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redemption */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "balanceAfter": null,
+                     *       "cancellableUntil": "2026-11-11T14:05:00+07:00",
+                     *       "coupon": {
+                     *         "code": "GP-RW-7Q4K-M2XD",
+                     *         "expiresAt": "2027-02-02T23:59:59+07:00"
+                     *       },
+                     *       "createdAt": "2026-11-04T14:05:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
+                     *       "item": {
+                     *         "code": "free_shipping",
+                     *         "kind": "free_shipping",
+                     *         "name": "ส่งฟรี 1 คำสั่งซื้อ"
+                     *       },
+                     *       "perkPeriod": null,
+                     *       "pointsSpent": 60,
+                     *       "source": "catalogue",
+                     *       "status": "cancelled",
+                     *       "usedOrderCode": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RewardRedemptionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `rewards.cancel_window_closed`, `rewards.coupon_used`, `rewards.not_cancellable` */
+            409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

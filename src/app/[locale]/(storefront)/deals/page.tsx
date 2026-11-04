@@ -11,6 +11,8 @@ import { DealsView, FeaturedDeal } from "@/features/customer/deals/DealsView";
 import { dealsListSchema } from "@/features/customer/deals/seo";
 import { TypeSelect } from "@/features/customer/deals/TypeSelect";
 import { featuredDeal } from "@/features/shared/deals/model";
+import { getRewardsOrNull } from "@/features/customer/rewards/api.server";
+import { RewardsTab } from "@/features/customer/rewards/RewardsTab";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -71,11 +73,13 @@ export default async function DealsPage({
     getProductTypeNames(locale).catch(() => ({}) as Record<string, string>),
   ]);
   const signedIn = Boolean(readAccessToken(jar));
-  const [list, everything, applicable] = await Promise.all([
+  const [list, everything, applicable, rewards] = await Promise.all([
     listDeals({ tab, productTypeCode: type ?? undefined, ref }),
     // The type filter's options and the header's count are over every deal, whatever the view.
     tab === "all" && !type ? Promise.resolve(null) : listDeals({ ref }),
     signedIn ? getApplicableCodes() : Promise.resolve(null),
+    // Loyalty P3: "แลกด้วยแต้ม" is the reward catalogue (`store.rewards.list`, WEB-P3-NOTES §3).
+    tab === "points" ? getRewardsOrNull() : Promise.resolve(null),
   ]);
   const all = everything ?? list;
   const now = await readNow();
@@ -129,12 +133,15 @@ export default async function DealsPage({
         <>
           <div className="md:border-border mt-8 flex flex-col gap-3 md:mt-10 md:flex-row md:items-end md:justify-between md:gap-5 md:border-b">
             <DealTabs current={tab} counts={list.counts} signedIn={signedIn} type={type} />
-            {types.length > 1 ? (
+            {types.length > 1 && tab !== "points" ? (
               <div className="md:pb-2.5">
                 <TypeSelect value={type ?? ""} options={types} tab={tab === "all" ? null : tab} />
               </div>
             ) : null}
           </div>
+          {tab === "points" && rewards && rewards.items.length > 0 ? (
+            <RewardsTab list={rewards} signedIn={signedIn} />
+          ) : null}
           {/* Loyalty P2: a guest's "สำหรับคุณ" is the new-customer deals, under an invitation to sign in. */}
           {tab === "for_you" && !signedIn ? (
             <section
@@ -153,7 +160,7 @@ export default async function DealsPage({
             </section>
           ) : null}
           {tab === "for_you" && signedIn ? <p className="text-muted mt-4 text-sm">{t("forYou.lede")}</p> : null}
-          {rest.length > 0 ? (
+          {tab === "points" && rewards && rewards.items.length > 0 ? null : rest.length > 0 ? (
             <DealsView
               className="mt-4 md:mt-6"
               deals={rest}

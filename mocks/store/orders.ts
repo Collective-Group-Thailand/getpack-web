@@ -21,6 +21,7 @@ import { deliveredAt, receipts, toOrderDto, toStoreOrderDto } from "./order-dto"
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { provinceRefOf } from "./catalog";
 import { customerMe, customerOf, type MockCustomer } from "./customers";
+import { loyaltyP3FieldsOf, setRewardTierSource } from "./loyalty-p3";
 import { ownerIdOf } from "./owner";
 import { MILESTONE_STATUS, SHIPMENT_STATUS } from "@/domain/status";
 import { statusLabels } from "../status-labels";
@@ -366,7 +367,15 @@ const TIERS = [
   { tier: "member" as const, from: 0, multiplier: "1.00" },
   { tier: "silver" as const, from: 5_000_000, multiplier: "1.25" },
   { tier: "gold" as const, from: 20_000_000, multiplier: "1.50" },
+  // Loyalty P3 (D-478): Platinum ≥ ฿500,000 / 12 months ×2 — not in the published `LoyaltyTier` yet.
+  { tier: "platinum" as const, from: 50_000_000, multiplier: "2.00" },
 ];
+
+/** The persona's tier, Platinum included (loyalty P3), for the reward catalogue's tier rule. */
+function loyaltyTierOf(customer: MockCustomer) {
+  return TIERS[TIERS.findLastIndex((tier) => spendOf(customer) >= tier.from)]!.tier;
+}
+setRewardTierSource(loyaltyTierOf);
 
 function spendOf(customer: MockCustomer): number {
   return ordersOf(customer)
@@ -483,6 +492,8 @@ export const storeOrderHandlers = [
     const current = TIERS[at]!;
     const next = TIERS[at + 1] ?? null;
     const summary: Schemas["LoyaltySummaryDto"] = {
+      // Loyalty P3: perks, next tier's perk codes, active multipliers, anniversary month, open reward coupons.
+      ...loyaltyP3FieldsOf(customer, current.tier),
       availablePoints: customer.points,
       availableValue: baht(customer.points * 250),
       currency: "THB",
@@ -535,6 +546,7 @@ export const storeOrderHandlers = [
       createdAt: bangkokIso(-createdMinutesAgo),
       bonusReason: null,
       multipliers: null,
+      reward: null,
       ...extra,
     });
     const earned = ordersOf(customer)
