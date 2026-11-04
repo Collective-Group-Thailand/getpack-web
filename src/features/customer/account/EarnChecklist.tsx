@@ -7,8 +7,7 @@ import { useEffect, useRef } from "react";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { LoyaltyTask, LoyaltyTasks } from "@/lib/api/requests/store-loyalty";
+import { browserApi } from "@/lib/api/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Skeleton } from "@/ui/components/Skeleton";
@@ -17,6 +16,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { checklistView, newlyDone, taskLink } from "./earn-tasks";
+import type { LoyaltyTask, LoyaltyTasks } from "./loyalty-types";
 
 /** Under the `loyalty` resource, so a realtime `loyalty.points_awarded` invalidates it (`src/lib/realtime/events.ts`). */
 export const LOYALTY_TASKS_KEY = queryKeys.list("customer", "loyalty", { view: "tasks" });
@@ -49,7 +49,7 @@ export function EarnChecklist({
   const format = useFormat();
   const query = useQuery({
     queryKey: LOYALTY_TASKS_KEY,
-    queryFn: () => browserRequests().call("GET /v1/store/loyalty/tasks"),
+    queryFn: async () => (await browserApi().GET("/v1/store/loyalty/tasks")).data!,
     initialData: initial,
     staleTime: 10_000,
     refetchOnWindowFocus: true,

@@ -4,7 +4,7 @@ import {
   SHIP_TO_REGIONS,
   type PackagingProfile,
   type PackagingProfileInput,
-} from "@/lib/api/requests/store-loyalty";
+} from "./loyalty-types";
 
 export { MONTHLY_BOX_VOLUMES, PRODUCT_CATEGORIES, SHIP_TO_REGIONS };
 

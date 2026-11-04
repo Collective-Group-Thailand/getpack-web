@@ -1,0 +1,197 @@
+{
+  "title": "Deals and promotions",
+  "description": "Packaging discounts you can use now. Keep a code and pick it in your cart.",
+  "lede": "Packaging discounts you can use now. Keep a code and pick it in your cart.",
+  "count": "<b>{count}</b> live deals",
+  "updated": "Updated {time}",
+  "mine": {
+    "label": "Your coupons",
+    "saved": "{count} kept",
+    "usable": "<b>{count}</b> usable with your cart now",
+    "open": "Open coupon wallet",
+    "openShort": "Coupon wallet"
+  },
+  "tabs": {
+    "label": "Deal views",
+    "all": "All",
+    "for_you": "For you",
+    "ending_soon": "Ending soon",
+    "points": "Redeem with points"
+  },
+  "type": {
+    "label": "Product type",
+    "all": "All",
+    "apply": "Show"
+  },
+  "empty": {
+    "title": "No deals in this view yet",
+    "body": "See all deals, or pick another product type.",
+    "all": "See all deals",
+    "noneTitle": "No deals right now",
+    "noneBody": "New deals appear on this page. Meanwhile, prices are on the products page.",
+    "products": "See products and prices"
+  },
+  "list": "Deals",
+  "howto": {
+    "title": "How coupons work",
+    "s1": {
+      "title": "Keep or copy a code",
+      "body": "Press “Keep code” to put it in your account's coupon wallet, or copy the code to use yourself."
+    },
+    "s2": {
+      "title": "Match the conditions",
+      "body": "Set the specification and quantity the deal asks for, such as a minimum quantity or a product type."
+    },
+    "s3": {
+      "title": "Pick coupons in the cart",
+      "body": "Coupons that apply to your cart show in the order summary. Up to {max} work together.",
+      "bodyNoMax": "Coupons that apply to your cart show in the order summary, and several can work together."
+    }
+  },
+  "faq": {
+    "title": "Questions",
+    "combine": {
+      "q": "Can I use several coupons at once?",
+      "a": "Up to {max} per order. Coupons in the same group, such as two product discounts, work one at a time; the cart says which ones do not combine.",
+      "aNoMax": "Yes, up to the number the cart allows. Coupons in the same group, such as two product discounts, work one at a time; the cart says which ones do not combine."
+    },
+    "wallet": {
+      "q": "Where are the coupons I keep?",
+      "a": "In your account's coupon wallet; they appear in the cart's order summary when they apply to what is in it."
+    },
+    "how": {
+      "q": "How is the discount worked out?",
+      "a": "Each deal states its conditions and its maximum on the ticket. The actual discount is calculated in the cart and always shown before you pay."
+    },
+    "auto": {
+      "q": "How do deals without a code work?",
+      "a": "There is nothing to enter. When your cart matches the conditions, the discount shows at checkout."
+    }
+  },
+  "card": {
+    "off": "off",
+    "points": "points",
+    "freeShipping": "Free shipping",
+    "cap": "up to {amount}",
+    "until": "until {date}",
+    "noEnd": "No end date",
+    "daysLeft": "{days, plural, one {# day} other {# days}} left",
+    "featured": "Featured",
+    "save": "Keep code",
+    "saveShort": "Keep",
+    "saved": "Kept",
+    "viewWallet": "View in wallet",
+    "signInToSave": "Sign in to keep the code",
+    "used": "Used",
+    "automatic": "No code needed · taken off in the cart when the conditions match",
+    "automaticShort": "No code needed",
+    "copy": "Copy code {code}",
+    "copyShort": "Copy",
+    "copied": "Code {code} copied",
+    "terms": "Full terms",
+    "codeLabel": "Coupon code",
+    "saveFailed": "Could not keep the code. Try again.",
+    "savedToast": "{code} is in your coupon wallet",
+    "open": "Details of {headline}",
+    "reasons": {
+      "first_order_only": "First order only",
+      "min_quantity": "Below the minimum quantity",
+      "min_order_value": "Below the minimum order value",
+      "product_type": "For another product type",
+      "segment": "For some customers only",
+      "usage_limit": "Already used up",
+      "new_customer_only": "New customers only",
+      "returning_customer_only": "Returning customers only",
+      "other": "Does not match this deal's conditions yet"
+    },
+    "upTo": "Up to",
+    "perk": "Perk",
+    "alreadySaved": "Already saved",
+    "notSaveable": "This deal's code can't be saved right now"
+  },
+  "detail": {
+    "back": "All deals",
+    "conditions": "Main conditions",
+    "terms": "Terms",
+    "share": "Share this deal",
+    "shareHint": "Send this link to your team or customer.",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "faq": "Questions",
+    "period": "Valid {from} – {to}",
+    "periodOpen": "Valid from {from}",
+    "more": "Other deals"
+  },
+  "home": {
+    "title": "Deals you can use now",
+    "body": "Packaging discounts. Keep a code to use in your cart.",
+    "all": "See all deals"
+  },
+  "pdp": {
+    "label": "Deal",
+    "aria": "Deal for this product",
+    "view": "View deal",
+    "useCode": "Use code <b>{code}</b> in the cart",
+    "noCode": "No code needed; taken off in the cart when the conditions match",
+    "estimate": "Estimated price after the deal",
+    "more": "and {count} more"
+  },
+  "ladder": {
+    "title": "Order more, pay less per {unit}",
+    "note": "Per {unit}, incl. VAT",
+    "quantity": "Quantity",
+    "price": "Price/{unit}",
+    "against": "vs {qty} {unit}",
+    "saving": "Save {pct}",
+    "none": "—",
+    "selected": "Selected",
+    "custom": "Custom",
+    "showAll": "See every quantity",
+    "hideAll": "Hide every quantity",
+    "start": "Starting price",
+    "quote": "Request a quote",
+    "qty": "{qty} {unit}",
+    "choose": "Choose {qty} {unit} at {price} per {unit}",
+    "nudge": "Order <b>{qty} {unit}</b> for {price} per {unit}",
+    "nudgeDeal": "Order <b>{qty} {unit}</b> for {price} per {unit} and use the {deal} deal",
+    "loading": "Calculating prices"
+  },
+  "picker": {
+    "title": "Coupons for this cart",
+    "chosen": "{count} of {max} chosen",
+    "best": "Best value",
+    "saving": "−{amount}",
+    "conflict": "Does not combine with {code}",
+    "full": "{max} already chosen",
+    "notYet": "Not usable yet",
+    "row": "Coupons",
+    "choose": "Choose",
+    "none": "None chosen",
+    "sheetNote": "{count} of {max} chosen · up to {max} work together",
+    "done": "Done",
+    "close": "Close",
+    "failed": "Could not change the coupons. Try again.",
+    "apply": "Use coupon {code}",
+    "remove": "Stop using coupon {code}",
+    "manual": "Have another code?",
+    "loading": "Loading coupons",
+    "savingExVat": "before VAT"
+  },
+  "liff": {
+    "points": "Your points <b>{points}</b>",
+    "value": "worth {amount}",
+    "pointsLink": "Points",
+    "all": "All deals",
+    "mine": "My coupons ({count})",
+    "segments": "Show",
+    "share": "Share with a friend",
+    "wallet": "Open coupon wallet",
+    "sendTeam": "Send this deal to my team",
+    "emptyMine": "No coupons kept yet",
+    "emptyMineBody": "Press “Keep” on a deal to keep its code for your cart.",
+    "close": "Close",
+    "shareTitle": "A deal from getpack",
+    "linkCopied": "Link copied",
+    "openDeals": "Deals and coupons"
+  }
+}

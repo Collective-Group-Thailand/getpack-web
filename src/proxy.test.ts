@@ -190,3 +190,23 @@ describe("mock scenarios (?mock=, U-F0.1)", () => {
     }
   });
 });
+
+describe("deal share links (loyalty P1.5)", () => {
+  it("keeps an agent's ?ref= in a first-party, httpOnly, 30-day cookie on the storefront", async () => {
+    const response = await proxy(request("getpack.co", "/deals/box10-corrugated?ref=agt12345"));
+    const cookie = response.headers.get("set-cookie") ?? "";
+    expect(cookie).toMatch(/pk_deal_ref=AGT12345/);
+    expect(cookie).toMatch(/Max-Age=2592000/i);
+    expect(cookie).toMatch(/HttpOnly/i);
+    expect(cookie).toMatch(/SameSite=lax/i);
+  });
+
+  it("ignores a ref that is not an agent code, and never sets it on the back office", async () => {
+    expect((await proxy(request("getpack.co", "/deals?ref=<x>"))).headers.get("set-cookie") ?? "").not.toMatch(
+      /pk_deal_ref/,
+    );
+    expect(
+      (await proxy(request("admin.getpack.co", "/orders?ref=AGT12345"))).headers.get("set-cookie") ?? "",
+    ).not.toMatch(/pk_deal_ref/);
+  });
+});

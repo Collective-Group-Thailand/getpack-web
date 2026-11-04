@@ -1,4 +1,4 @@
-import type { LoyaltyTask, LoyaltyTaskCode, LoyaltyTasks } from "@/lib/api/requests/store-loyalty";
+import type { LoyaltyTask, LoyaltyTaskCode, LoyaltyTasks } from "./loyalty-types";
 
 import { studioHref } from "../studio/paths";
 

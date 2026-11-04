@@ -298,6 +298,8 @@ const QUEUES: Record<Schemas["ShipmentQueue"], (item: Shipment) => boolean> = {
     (item.status === "returned" && !item.resolution) ||
     (item.carrierRequest !== null && item.status === "ready"),
   pod_review: (item) => item.pod?.review === "pending",
+  // Delivered with no goods receipt yet (the finance card, D-165): the mock records no receipts, so every delivery.
+  without_goods_receipt: (item) => item.status === "delivered",
 };
 
 registerQueue("shipments.read", () => ({
@@ -435,6 +437,7 @@ function common(item: Shipment) {
       ? {
           kind: item.pod.kind,
           receiverName: item.pod.receiverName,
+          receiverRecorded: item.pod.receiverName.trim() !== "",
           deliveredQuantity: item.pod.deliveredQuantity,
           capturedAt: item.pod.capturedAt,
           photoFileIds: [...item.pod.photoIds],
@@ -461,6 +464,8 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
   const exceptionEvent = item.events.findLast((event) => event.status === "failed" || event.status === "returned");
   return {
     ...common(item),
+    // D-463: getpack booked a fallback carrier for the trip.
+    carrierBooked: item.carrier !== "factory_fleet",
     carrierBookingRef: item.carrier === "factory_fleet" ? null : item.trackingNo,
     carrierCostAmount: seesCost ? (item.economics?.carrierCost ?? null) : null,
     payoutAmount: seesCost ? (item.economics?.factoryPayout ?? null) : null,
@@ -500,10 +505,23 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
 
 /** A shipment as `partner.shipments.*` answers it: the factory's trip, never getpack's costs. */
 export function toPartnerShipmentDto(item: Shipment, permissions: readonly string[]): Schemas["PartnerShipmentDto"] {
-  const { destination, ...rest } = common(item);
-  // D-463: the factory's trip carries the destination code, province and postcode prefix — never the recipient.
+  const { destination, trackingNo, proofOfDelivery, ...rest } = common(item);
+  void trackingNo;
+  // D-463: the factory's trip carries the destination code, province and postcode prefix — never the recipient; the
+  // carrier's tracking number is staff-only, and the POD says only whether a receiver was recorded.
   return {
     ...rest,
+    carrierBooked: item.carrier !== "factory_fleet",
+    proofOfDelivery: proofOfDelivery
+      ? {
+          kind: proofOfDelivery.kind,
+          receiverRecorded: proofOfDelivery.receiverRecorded,
+          deliveredQuantity: proofOfDelivery.deliveredQuantity,
+          capturedAt: proofOfDelivery.capturedAt,
+          photoFileIds: proofOfDelivery.photoFileIds,
+          signatureFileId: proofOfDelivery.signatureFileId,
+        }
+      : null,
     destination: { code: destination.code, postcodePrefix: destination.postcodePrefix, province: destination.province },
     waybillIssued: false,
     nextActions: partnerShipmentActions(factsOf(item), new Set(permissions)),

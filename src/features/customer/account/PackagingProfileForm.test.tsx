@@ -4,14 +4,14 @@ import { NextIntlClientProvider } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import account from "@/i18n/messages/th/customer/account.json";
-import type { PackagingProfile } from "@/lib/api/requests/store-loyalty";
 
 import { draftFrom, validateDraft } from "./packaging-profile";
 import { PackagingProfileForm } from "./PackagingProfileForm";
+import type { PackagingProfile } from "./loyalty-types";
 
-const call = vi.hoisted(() => vi.fn());
+const put = vi.hoisted(() => vi.fn());
 const toast = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/api/requests/browser", () => ({ browserRequests: () => ({ call }) }));
+vi.mock("@/lib/api/browser", () => ({ browserApi: () => ({ PUT: put }) }));
 vi.mock("@/ui/components/Toast", () => ({ toast }));
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
@@ -43,7 +43,7 @@ function renderForm(profile: PackagingProfile = EMPTY, rewardPoints: number | nu
 }
 
 beforeEach(() => {
-  call.mockReset();
+  put.mockReset();
   toast.mockReset();
 });
 
@@ -79,19 +79,21 @@ describe("PackagingProfileForm", () => {
     ]) {
       expect(screen.getByText(message)).toBeInTheDocument();
     }
-    expect(call).not.toHaveBeenCalled();
+    expect(put).not.toHaveBeenCalled();
   });
 
   it("saves a complete profile and announces the points on the first completion", async () => {
     const now = "2026-11-04T08:00:00.000Z";
-    call.mockResolvedValue({
-      monthlyBoxVolume: "500_2000",
-      productCategories: ["food"],
-      shipToRegions: ["north"],
-      peakMonths: [11, 12],
-      purposeAccepted: true,
-      completedAt: now,
-      updatedAt: now,
+    put.mockResolvedValue({
+      data: {
+        monthlyBoxVolume: "500_2000",
+        productCategories: ["food"],
+        shipToRegions: ["north"],
+        peakMonths: [11, 12],
+        purposeAccepted: true,
+        completedAt: now,
+        updatedAt: now,
+      },
     });
     renderForm();
     fireEvent.click(screen.getByRole("radio", { name: "500–2,000 ใบ" }));
@@ -102,8 +104,8 @@ describe("PackagingProfileForm", () => {
     fireEvent.click(screen.getByRole("checkbox", { name: /รับทราบวัตถุประสงค์/ }));
     fireEvent.click(screen.getByRole("button", { name: "บันทึกข้อมูล" }));
 
-    await waitFor(() => expect(call).toHaveBeenCalled());
-    expect(call).toHaveBeenCalledWith("PUT /v1/store/loyalty/packaging-profile", {
+    await waitFor(() => expect(put).toHaveBeenCalled());
+    expect(put).toHaveBeenCalledWith("/v1/store/loyalty/packaging-profile", {
       body: {
         monthlyBoxVolume: "500_2000",
         productCategories: ["food"],
@@ -125,7 +127,7 @@ describe("PackagingProfileForm", () => {
       completedAt: "2026-11-01T00:00:00.000Z",
       updatedAt: "2026-11-01T00:00:00.000Z",
     };
-    call.mockResolvedValue({ ...done, updatedAt: "2026-11-04T00:00:00.000Z" });
+    put.mockResolvedValue({ data: { ...done, updatedAt: "2026-11-04T00:00:00.000Z" } });
     renderForm(done, null);
     fireEvent.click(screen.getByRole("button", { name: "บันทึกข้อมูล" }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith("บันทึกข้อมูลแล้ว"));

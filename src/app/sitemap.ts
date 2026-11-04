@@ -6,6 +6,8 @@ import { styleHref, styleTopicHref, topicHubHref, forUseCaseHref } from "@/featu
 import { topicsOf } from "@/features/customer/styles/topics";
 import { isLandingPublished, PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { USE_CASES } from "@/features/customer/styles/use-cases";
+import { listDeals } from "@/features/customer/deals/api.server";
+import { dealHref } from "@/features/customer/deals/paths";
 import { featureFlags } from "@/lib/env/server";
 import { articleHref, categoryHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { routing } from "@/i18n/routing";
@@ -31,6 +33,8 @@ const STATIC_ROUTES: {
   { path: "/", priority: 1, changeFrequency: "weekly" },
   { path: "/products", priority: 0.9, changeFrequency: "weekly" },
   { path: "/styles", priority: 0.8, changeFrequency: "weekly" },
+  // Loyalty P1.5: the public deals; each shown deal has its own page below.
+  { path: "/deals", priority: 0.7, changeFrequency: "daily" },
   { path: "/help", priority: 0.5, changeFrequency: "monthly" },
   { path: "/help/how-it-works", priority: 0.6, changeFrequency: "monthly" },
   { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
@@ -52,14 +56,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // The style library (U3.5 §5): one page per published base, at its Thai URL (the default locale);
   // a read that fails leaves the styles out, like the catalogue.
-  const [origin, catalogue, styles] = await Promise.all([
+  const [origin, catalogue, styles, deals] = await Promise.all([
     publicOrigin(),
     getSitemapEntries(),
     listAllStyles().catch(() => []),
+    // Only what the API shows (public, active, in its window); a failed read leaves the deals out.
+    listDeals(),
   ]);
 
   const entries: { path: string; priority: number; changeFrequency: Frequency; lastModified?: string }[] = [
     ...STATIC_ROUTES,
+    ...(deals?.items ?? []).map((deal) => ({ path: dealHref(deal), priority: 0.6, changeFrequency: "daily" as const })),
     ...catalogue
       .filter((entry) => entry.kind in ENTRY)
       .map((entry) => ({ ...ENTRY[entry.kind](entry), lastModified: entry.lastModified })),

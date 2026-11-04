@@ -89,8 +89,8 @@ describe("the product page's buy box (pdp redesign Phase 1)", () => {
     await waitFor(() => expect(screen.getByText(/รวม VAT แล้ว · ไม่รวมค่าจัดส่ง/)).toBeTruthy());
     const line = `${start.quantity.toLocaleString("th-TH")} ชิ้น · เบอร์ ${start.standardSizeCode} · รวม VAT แล้ว`;
     expect(screen.getByText(new RegExp(line))).toBeTruthy();
-    // Every tier card carries its own unit price once the calculation is in.
-    const quantities = within(screen.getByRole("group", { name: "จำนวน" })).getAllByRole("button");
+    // Every tier of the ladder (loyalty P1.5) carries its own unit price once the calculation is in.
+    const quantities = within(screen.getByRole("group", { name: /^สั่งมากขึ้น/ })).getAllByRole("button");
     expect(quantities).toHaveLength(start.quantities.length);
     await waitFor(() => quantities.forEach((button) => expect(button.textContent).toMatch(/฿/)));
     // No configuration is in the link while the page is on the default spec.
@@ -105,12 +105,12 @@ describe("the product page's buy box (pdp redesign Phase 1)", () => {
     await user.click(sizes.getByRole("button", { name: new RegExp(`^เบอร์ ${other.code} `) }));
     const materials = within(screen.getByRole("group", { name: "วัสดุ" })).getAllByRole("button");
     await user.click(materials.find((button) => button.getAttribute("aria-pressed") === "false")!);
-    const tiers = within(screen.getByRole("group", { name: "จำนวน" })).getAllByRole("button");
+    const tiers = within(screen.getByRole("group", { name: /^สั่งมากขึ้น/ })).getAllByRole("button");
     await user.click(tiers[0]!);
 
     const opened = configuratorStateFor(configurator, configureLink());
     expect(opened.standardSizeCode).toBe(other.code);
-    expect(opened.quantity).toBe(Number(tiers[0]!.firstChild!.textContent!.replace(/,/g, "")));
+    expect(opened.quantity).toBe(Number(tiers[0]!.firstChild!.textContent!.replace(/\D/g, "")));
     expect(pdpEvents.map(([name, props]) => [name, (props as { option?: string }).option])).toEqual(
       expect.arrayContaining([
         ["pdp_option_change", "size"],

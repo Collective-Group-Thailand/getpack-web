@@ -66,7 +66,11 @@ describe("design language v3", () => {
   });
 
   it("has no gradient — no gradient utility, no CSS gradient", () => {
-    expect(scan(ui, /\bbg-(gradient|linear|radial|conic)-|(linear|radial|conic)-gradient\(/)).toEqual([]);
+    // The one exception paints nothing: the coupon ticket's notches and stamp bites are round holes cut with a
+    // radial-gradient *mask* (loyalty P1.5, D-486) — a circle painted in the page colour breaks on every band.
+    const ticketMask = (hit: Hit) =>
+      hit.file === "src/ui/components/Ticket.tsx" && /radial-gradient\(circle \$\{r\}px/.test(hit.text);
+    expect(scan(ui, /\bbg-(gradient|linear|radial|conic)-|(linear|radial|conic)-gradient\(/, ticketMask)).toEqual([]);
   });
 
   it("has no grain or noise overlay", () => {

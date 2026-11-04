@@ -22,9 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Points in LINE (D-151): the balance and the latest movements; the rest on the site. */
 export default async function Page() {
   if (!(await liffCustomer())) return <LiffSignIn />;
-  const [t, tLiff, format, points, entries, tasks, support] = await Promise.all([
+  const [t, tLiff, tDeals, format, points, entries, tasks, support] = await Promise.all([
     getTranslations("account.points"),
     getTranslations("liff.points"),
+    getTranslations("deals"),
     getFormat(),
     getPoints(),
     getPointsEntries(10),
@@ -72,6 +73,9 @@ export default async function Page() {
           ))}
         </ul>
       </section>
+      <Button asChild variant="secondary" size="lg" iconStart="ticket">
+        <Link href="/liff/deals">{tDeals("liff.openDeals")}</Link>
+      </Button>
       <Button asChild variant="secondary" size="lg" iconEnd="external">
         <Link href="/account/points">{tLiff("more")}</Link>
       </Button>

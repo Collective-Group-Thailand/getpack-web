@@ -1133,6 +1133,16 @@ export const PROMOTIONS: Record<
     cap: 50_000,
   },
   CORRUGATE5: { title: "กล่องลูกฟูก ลด 5%", titleEn: "5% off corrugated boxes", pct: 5, types: ["corrugated"] },
+  // Loyalty P1.5: the deals the cart picker offers (`./deals-fixtures.ts`), so applying one validates here too.
+  BOX10: {
+    title: "กล่องลูกฟูก ลด 10%",
+    titleEn: "10% off corrugated boxes",
+    pct: 10,
+    types: ["corrugated"],
+    cap: 150_000,
+  },
+  FREESHIP: { title: "ส่งฟรี", titleEn: "Free shipping", pct: 0 },
+  LABEL8: { title: "สติกเกอร์ฉลาก ลด 8%", titleEn: "8% off labels", pct: 8, types: ["label_sticker"], cap: 80_000 },
 };
 const EXPIRED_CODES = new Set(["SUMMER2025"]);
 

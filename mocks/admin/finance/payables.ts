@@ -45,6 +45,16 @@ const vatOf = (net: number, registered: boolean) => (registered ? Math.round(net
 const factoryStores = () =>
   [...stores.values()].filter((store) => ["trial", "active", "suspended"].includes(store.factory.status));
 
+/** The staff-facing factory code and name the admin PO and statement reads add (getpack-api D-463 follow-ups). */
+function withFactory<T extends { factoryId: string }>(row: T): T & { factoryCode: string; factoryName: string } {
+  const factory = stores.get(row.factoryId)?.factory;
+  return {
+    ...row,
+    factoryCode: factory?.code ?? "—",
+    factoryName: factory ? (factory.tradeName ?? factory.legalName) : "—",
+  };
+}
+
 function factoryVendor(store: typeof stores extends Map<string, infer S> ? S : never): Vendor {
   const policy = policyOf(store.factory.id);
   return {
@@ -984,14 +994,14 @@ export const payableHandlers = [
       .map((row) => row.po)
       .filter((po) => !query.factoryId || po.factoryId === query.factoryId)
       .filter((po) => !query.status || po.status === query.status)
-      .filter((po) => matchesQuery(query.q, po.poNumber, po.jobNo, po.orderCode));
+      .filter((po) => matchesQuery(query.q, po.poNumber, po.jobNo, po.orderCode))
+      .map(withFactory);
     return paginate(sort(rows, query, "issuedAt", "desc"), query);
   }),
-  finance.get(
-    "/v1/admin/purchase-orders/{poId}",
-    "payables.read",
-    ({ params }) => purchaseOrders().find((row) => row.po.id === params.poId)?.po ?? notFound("ใบสั่งผลิต"),
-  ),
+  finance.get("/v1/admin/purchase-orders/{poId}", "payables.read", ({ params }) => {
+    const po = purchaseOrders().find((row) => row.po.id === params.poId)?.po;
+    return po ? withFactory(po) : notFound("ใบสั่งผลิต");
+  }),
   finance.get("/v1/admin/goods-receipts", "payables.read", ({ query }) => {
     const rows = goodsReceipts()
       .filter((row) => !query.factoryId || row.factoryId === query.factoryId)
@@ -1004,12 +1014,13 @@ export const payableHandlers = [
       .map((found) => toStatement(found, persona))
       .filter((statement) => !query.factoryId || statement.factoryId === query.factoryId)
       .filter((statement) => !query.status || statement.status === query.status)
-      .filter((statement) => matchesQuery(query.q, statement.bsNumber));
+      .filter((statement) => matchesQuery(query.q, statement.bsNumber))
+      .map(withFactory);
     return paginate(sort(rows, query, "periodTo", "desc"), query);
   }),
   finance.get("/v1/admin/billing-statements/{statementId}", "payables.read", ({ params, persona }) => {
     const found = statementsAll().find(({ statement }) => statement.id === params.statementId);
-    return found ? toStatement(found, persona) : notFound("ใบวางบิล");
+    return found ? withFactory(toStatement(found, persona)) : notFound("ใบวางบิล");
   }),
   finance.post(
     "/v1/admin/billing-statements/{statementId}/tax-invoices",

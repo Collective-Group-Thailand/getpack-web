@@ -34,6 +34,7 @@ import { queryOf, searchWith } from "./url-state";
 import { PRICE_DEBOUNCE_MS, useLivePrice } from "./pricing";
 import { rememberedPostcode, usePostcodeArea } from "./postcode";
 import { PromoCode } from "./PromoCode";
+import { DealPromoBox } from "@/features/customer/deals/DealPromoBox";
 import { PreviewSide, type PreviewDimensions } from "./PreviewSide";
 import { SizeStep } from "./SizeStep";
 import {
@@ -821,6 +822,21 @@ export function Configurator({
         onGoToShipping={() => scrollToStep(anchorOf("delivery"))}
         shippingArea={postcodeArea ? pick(locale, postcodeArea.province.nameTh, postcodeArea.province.nameEn) : null}
         promo={<PromoCode configurator={configurator} state={state} onChange={updateIn("summary")} />}
+        dealBox={
+          <DealPromoBox
+            productTypeCode={configurator.productTypeCode}
+            quote={
+              actions.lastQuote
+                ? {
+                    id: actions.lastQuote.quote.id,
+                    quantities: actions.lastQuote.quote.options.map((option) => option.quantity),
+                    anonymousId: advisor.anonymousId,
+                  }
+                : null
+            }
+            quantity={state.quantity}
+          />
+        }
       />
       {/* Room for the phone bar, so the last field is never under it. */}
       <div aria-hidden className="h-16 min-[1100px]:hidden" />

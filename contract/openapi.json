@@ -3983,6 +3983,17 @@
           "type": "https://errors.getpack/production.quantity_invalid"
         }
       },
+      "problem.promotions.already_saved": {
+        "summary": "promotions.already_saved",
+        "value": {
+          "code": "promotions.already_saved",
+          "detail": "โค้ดของดีลนี้อยู่ในบัญชีของคุณแล้ว เลือกใช้ได้ในตะกร้า",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 409,
+          "title": "เก็บโค้ดนี้ไว้แล้ว",
+          "type": "https://errors.getpack/promotions.already_saved"
+        }
+      },
       "problem.promotions.budget_exhausted": {
         "summary": "promotions.budget_exhausted",
         "value": {
@@ -4071,6 +4082,28 @@
           "type": "https://errors.getpack/promotions.not_a_coupon"
         }
       },
+      "problem.promotions.not_publishable": {
+        "summary": "promotions.not_publishable",
+        "value": {
+          "code": "promotions.not_publishable",
+          "detail": "ตรวจสถานะ ลิงก์ หัวข้อและเงื่อนไขภาษาไทย และคำที่ห้ามใช้ ตามรายการใน errors",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 422,
+          "title": "ยังเผยแพร่โปรโมชันนี้ไม่ได้",
+          "type": "https://errors.getpack/promotions.not_publishable"
+        }
+      },
+      "problem.promotions.not_saveable": {
+        "summary": "promotions.not_saveable",
+        "value": {
+          "code": "promotions.not_saveable",
+          "detail": "ดีลนี้ไม่มีโค้ดให้เก็บ หรือคุณใช้สิทธิ์ของดีลนี้ไม่ได้ในตอนนี้",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 409,
+          "title": "เก็บโค้ดนี้ไม่ได้",
+          "type": "https://errors.getpack/promotions.not_saveable"
+        }
+      },
       "problem.promotions.payment_method_required": {
         "summary": "promotions.payment_method_required",
         "value": {
@@ -4080,6 +4113,17 @@
           "status": 422,
           "title": "ช่องทางชำระไม่ตรงเงื่อนไข",
           "type": "https://errors.getpack/promotions.payment_method_required"
+        }
+      },
+      "problem.promotions.slug_taken": {
+        "summary": "promotions.slug_taken",
+        "value": {
+          "code": "promotions.slug_taken",
+          "detail": "เลือกลิงก์ (slug) อื่นสำหรับโปรโมชันนี้",
+          "requestId": "6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e",
+          "status": 409,
+          "title": "ลิงก์นี้มีโปรโมชันอื่นใช้แล้ว",
+          "type": "https://errors.getpack/promotions.slug_taken"
         }
       },
       "problem.promotions.system_managed": {
@@ -8123,6 +8167,177 @@
         ],
         "type": "object"
       },
+      "AdminBillingStatementDto": {
+        "properties": {
+          "bsNumber": {
+            "example": "DEVBS-26-00001",
+            "type": "string"
+          },
+          "confirmedAt": {
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confirmedBy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRefDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who confirmed it",
+            "example": null
+          },
+          "currency": {
+            "example": "THB",
+            "type": "string"
+          },
+          "disputeNote": {
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "disputedLineNos": {
+            "description": "Line numbers the factory named in its latest dispute (empty when none were named)",
+            "example": [],
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "factoryCode": {
+            "description": "Staff-facing factory code",
+            "example": "F0001",
+            "type": "string"
+          },
+          "factoryId": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+            "format": "uuid",
+            "type": "string"
+          },
+          "factoryName": {
+            "description": "The factory’s trade name, else its legal name",
+            "example": "โรงพิมพ์ตัวอย่าง",
+            "type": "string"
+          },
+          "generatedAt": {
+            "example": "2026-10-20T10:00:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "grossAmount": {
+            "example": "8517.20",
+            "type": "string"
+          },
+          "id": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-000000530003",
+            "format": "uuid",
+            "type": "string"
+          },
+          "inputVatStatus": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InputVatStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Input VAT status of the latest tax invoice (§2); null before one is submitted",
+            "example": null
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/BillingStatementLineDto"
+            },
+            "type": "array"
+          },
+          "netAmount": {
+            "example": "7960.00",
+            "type": "string"
+          },
+          "nextActions": {
+            "description": "What the signed-in user may do on it now (U-B0.3)",
+            "items": {
+              "$ref": "#/components/schemas/NextActionDto"
+            },
+            "type": "array"
+          },
+          "periodFrom": {
+            "example": "2026-10-05",
+            "format": "date",
+            "type": "string"
+          },
+          "periodTo": {
+            "example": "2026-10-20",
+            "format": "date",
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BillingStatementStatus"
+              }
+            ],
+            "example": "sent"
+          },
+          "taxInvoiceStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BillingStatementTaxInvoiceStatus"
+              }
+            ],
+            "example": "none"
+          },
+          "taxInvoices": {
+            "description": "The factory tax invoices submitted for the statement, newest first (void ones left out)",
+            "items": {
+              "$ref": "#/components/schemas/VendorInvoiceDto"
+            },
+            "type": "array"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/BillingStatementTotalsDto"
+          },
+          "vatAmount": {
+            "example": "557.20",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "bsNumber",
+          "factoryId",
+          "status",
+          "periodFrom",
+          "periodTo",
+          "netAmount",
+          "vatAmount",
+          "grossAmount",
+          "disputeNote",
+          "confirmedAt",
+          "lines",
+          "generatedAt",
+          "currency",
+          "totals",
+          "confirmedBy",
+          "disputedLineNos",
+          "taxInvoiceStatus",
+          "inputVatStatus",
+          "taxInvoices",
+          "nextActions",
+          "factoryName",
+          "factoryCode"
+        ],
+        "type": "object"
+      },
       "AdminCheckoutDto": {
         "properties": {
           "ccEmails": {
@@ -11311,6 +11526,104 @@
         ],
         "type": "object"
       },
+      "AdminPurchaseOrderDto": {
+        "properties": {
+          "currency": {
+            "example": "THB",
+            "type": "string"
+          },
+          "factoryCode": {
+            "description": "Staff-facing factory code",
+            "example": "F0001",
+            "type": "string"
+          },
+          "factoryId": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+            "format": "uuid",
+            "type": "string"
+          },
+          "factoryName": {
+            "description": "The factory’s trade name, else its legal name",
+            "example": "โรงพิมพ์ตัวอย่าง",
+            "type": "string"
+          },
+          "grossAmount": {
+            "example": "8560.00",
+            "type": "string"
+          },
+          "id": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-000000530001",
+            "format": "uuid",
+            "type": "string"
+          },
+          "issuedAt": {
+            "example": "2026-10-05T10:00:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "jobNo": {
+            "example": "JOB2610-00001",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ApLineDto"
+            },
+            "type": "array"
+          },
+          "netAmount": {
+            "example": "8000.00",
+            "type": "string"
+          },
+          "orderCode": {
+            "example": "O2610-00001",
+            "type": "string"
+          },
+          "poKind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobKind"
+              }
+            ],
+            "description": "The kind of the released job",
+            "example": "production"
+          },
+          "poNumber": {
+            "example": "DEVPO-26-00001",
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PoStatus"
+              }
+            ],
+            "example": "accepted"
+          },
+          "vatAmount": {
+            "example": "560.00",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "poNumber",
+          "poKind",
+          "status",
+          "factoryId",
+          "jobNo",
+          "orderCode",
+          "issuedAt",
+          "netAmount",
+          "vatAmount",
+          "grossAmount",
+          "currency",
+          "lines",
+          "factoryName",
+          "factoryCode"
+        ],
+        "type": "object"
+      },
       "AdminQuoteCalculationDto": {
         "properties": {
           "calculatorVersion": {
@@ -12896,6 +13209,11 @@
             ],
             "example": "factory_fleet"
           },
+          "carrierBooked": {
+            "description": "D-463: getpack booked a fallback carrier for the trip (\"booked\"). The carrier’s tracking number and tracking URL are staff-only — they open the recipient’s details on the carrier’s site",
+            "example": false,
+            "type": "boolean"
+          },
           "carrierBookingRef": {
             "example": null,
             "type": [
@@ -13071,7 +13389,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "With the receiver’s name and the carrier’s POD reference (staff only, D-463)"
           },
           "readyAt": {
             "example": "2026-10-19T16:00:00+07:00",
@@ -13115,6 +13434,7 @@
             "type": "string"
           },
           "trackingNo": {
+            "description": "The fallback carrier’s tracking number (staff only, D-463)",
             "example": null,
             "type": [
               "string",
@@ -13152,7 +13472,7 @@
           "statusLabelTh",
           "statusLabelAdminTh",
           "carrier",
-          "trackingNo",
+          "carrierBooked",
           "destination",
           "cartonsCount",
           "weightG",
@@ -13175,6 +13495,7 @@
           "factoryId",
           "factoryCode",
           "carrierBookingRef",
+          "trackingNo",
           "trackingUrl",
           "payoutAmount",
           "carrierCostAmount",
@@ -17078,6 +17399,107 @@
         ],
         "type": "string"
       },
+      "ApplicableCodeDto": {
+        "properties": {
+          "benefitSummary": {
+            "example": "ลด 10% สูงสุด ฿1,500",
+            "type": "string"
+          },
+          "best": {
+            "description": "The highest saving",
+            "example": true,
+            "type": "boolean"
+          },
+          "code": {
+            "example": "BOX10",
+            "type": "string"
+          },
+          "conflictsWith": {
+            "description": "Other applicable codes it cannot be used with",
+            "example": [
+              "LABEL8"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "headline": {
+            "example": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
+            "type": "string"
+          },
+          "onCart": {
+            "description": "Already entered on the cart",
+            "example": false,
+            "type": "boolean"
+          },
+          "promotionId": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+            "format": "uuid",
+            "type": "string"
+          },
+          "saving": {
+            "description": "The discount this code gives on the current cart (before VAT) — exactly the checkout preview after entering it",
+            "example": "1331.00",
+            "type": "string"
+          },
+          "stackGroup": {
+            "example": "product",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stacking": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StackingMode"
+              }
+            ],
+            "example": "stackable"
+          }
+        },
+        "required": [
+          "code",
+          "promotionId",
+          "headline",
+          "benefitSummary",
+          "saving",
+          "stackGroup",
+          "stacking",
+          "conflictsWith",
+          "best",
+          "onCart"
+        ],
+        "type": "object"
+      },
+      "ApplicableCodesDto": {
+        "properties": {
+          "applicable": {
+            "items": {
+              "$ref": "#/components/schemas/ApplicableCodeDto"
+            },
+            "type": "array"
+          },
+          "maxCodes": {
+            "description": "`promotions.max_codes_per_cart` (D-452)",
+            "example": 3,
+            "type": "integer"
+          },
+          "notYet": {
+            "items": {
+              "$ref": "#/components/schemas/NotYetCodeDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "applicable",
+          "notYet",
+          "maxCodes"
+        ],
+        "type": "object"
+      },
       "ApplyCodeDto": {
         "properties": {
           "code": {
@@ -20412,6 +20834,12 @@
           "design",
           "reproduction",
           "deduction"
+        ],
+        "type": "string"
+      },
+      "BillingStatementQueue": {
+        "enum": [
+          "missing_tax_invoice"
         ],
         "type": "string"
       },
@@ -25509,6 +25937,12 @@
           "carton"
         ],
         "type": "object"
+      },
+      "ClaimQueue": {
+        "enum": [
+          "open"
+        ],
+        "type": "string"
       },
       "ClaimQuoteDto": {
         "properties": {
@@ -37391,6 +37825,476 @@
         ],
         "type": "object"
       },
+      "DealBenefitDto": {
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DealBenefitKind"
+              }
+            ],
+            "example": "percent"
+          },
+          "maxDiscount": {
+            "example": "1500.00",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "example": "ลด 10% สูงสุด ฿1,500",
+            "type": "string"
+          },
+          "value": {
+            "description": "Percent, baht amount (decimal string), multiplier or perk value; null for free shipping",
+            "example": "10",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "value",
+          "maxDiscount",
+          "summary"
+        ],
+        "type": "object"
+      },
+      "DealBenefitKind": {
+        "enum": [
+          "percent",
+          "amount",
+          "free_shipping",
+          "points_multiplier",
+          "tiered",
+          "perk"
+        ],
+        "type": "string"
+      },
+      "DealConditionDto": {
+        "properties": {
+          "label": {
+            "example": "ขั้นต่ำ",
+            "type": "string"
+          },
+          "value": {
+            "example": "1,000 ชิ้น",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ],
+        "type": "object"
+      },
+      "DealCountsDto": {
+        "properties": {
+          "all": {
+            "example": 6,
+            "type": "integer"
+          },
+          "ending_soon": {
+            "example": 1,
+            "type": "integer"
+          },
+          "for_you": {
+            "description": "Every deal until audiences arrive (P2)",
+            "example": 6,
+            "type": "integer"
+          },
+          "points": {
+            "description": "Points rewards arrive in P3",
+            "example": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "all",
+          "for_you",
+          "ending_soon",
+          "points"
+        ],
+        "type": "object"
+      },
+      "DealDetailDto": {
+        "properties": {
+          "badge": {
+            "example": "ดีลเด่น",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "benefit": {
+            "$ref": "#/components/schemas/DealBenefitDto"
+          },
+          "code": {
+            "description": "Only for a deal with one shared code; automatic deals apply without a code",
+            "example": "BOX10",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/DealConditionDto"
+            },
+            "type": "array"
+          },
+          "endingSoon": {
+            "description": "Less than 72 hours left — a static label, never a countdown (D-481)",
+            "example": false,
+            "type": "boolean"
+          },
+          "endsAt": {
+            "example": "2026-11-30T23:59:59+07:00",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "faq": {
+            "items": {
+              "$ref": "#/components/schemas/DealFaqDto"
+            },
+            "type": "array"
+          },
+          "featured": {
+            "example": true,
+            "type": "boolean"
+          },
+          "headline": {
+            "example": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
+            "type": "string"
+          },
+          "heroImageUrl": {
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+            "format": "uuid",
+            "type": "string"
+          },
+          "myStatus": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DealMyStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Signed-in customers only; null for visitors and for automatic deals with nothing to save",
+            "example": "claimable"
+          },
+          "notEligibleReason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DealNotEligibleReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "example": null
+          },
+          "productTypeCodes": {
+            "description": "Empty = every product type",
+            "example": [
+              "corrugated_rsc"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "shareUrl": {
+            "example": "https://getpack.co/deals/box10-corrugated",
+            "type": "string"
+          },
+          "slug": {
+            "example": "box10-corrugated",
+            "type": "string"
+          },
+          "startsAt": {
+            "example": "2026-11-01T00:00:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "subline": {
+            "example": "เฉพาะกล่องลูกฟูกฝาชน",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "terms": {
+            "example": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "featured",
+          "headline",
+          "subline",
+          "badge",
+          "benefit",
+          "conditions",
+          "productTypeCodes",
+          "code",
+          "startsAt",
+          "endsAt",
+          "endingSoon",
+          "terms",
+          "heroImageUrl",
+          "myStatus",
+          "notEligibleReason",
+          "shareUrl",
+          "faq"
+        ],
+        "type": "object"
+      },
+      "DealDto": {
+        "properties": {
+          "badge": {
+            "example": "ดีลเด่น",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "benefit": {
+            "$ref": "#/components/schemas/DealBenefitDto"
+          },
+          "code": {
+            "description": "Only for a deal with one shared code; automatic deals apply without a code",
+            "example": "BOX10",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/DealConditionDto"
+            },
+            "type": "array"
+          },
+          "endingSoon": {
+            "description": "Less than 72 hours left — a static label, never a countdown (D-481)",
+            "example": false,
+            "type": "boolean"
+          },
+          "endsAt": {
+            "example": "2026-11-30T23:59:59+07:00",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "featured": {
+            "example": true,
+            "type": "boolean"
+          },
+          "headline": {
+            "example": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
+            "type": "string"
+          },
+          "heroImageUrl": {
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+            "format": "uuid",
+            "type": "string"
+          },
+          "myStatus": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DealMyStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Signed-in customers only; null for visitors and for automatic deals with nothing to save",
+            "example": "claimable"
+          },
+          "notEligibleReason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DealNotEligibleReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "example": null
+          },
+          "productTypeCodes": {
+            "description": "Empty = every product type",
+            "example": [
+              "corrugated_rsc"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "shareUrl": {
+            "example": "https://getpack.co/deals/box10-corrugated",
+            "type": "string"
+          },
+          "slug": {
+            "example": "box10-corrugated",
+            "type": "string"
+          },
+          "startsAt": {
+            "example": "2026-11-01T00:00:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "subline": {
+            "example": "เฉพาะกล่องลูกฟูกฝาชน",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "terms": {
+            "example": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "featured",
+          "headline",
+          "subline",
+          "badge",
+          "benefit",
+          "conditions",
+          "productTypeCodes",
+          "code",
+          "startsAt",
+          "endsAt",
+          "endingSoon",
+          "terms",
+          "heroImageUrl",
+          "myStatus",
+          "notEligibleReason",
+          "shareUrl"
+        ],
+        "type": "object"
+      },
+      "DealFaqDto": {
+        "properties": {
+          "a": {
+            "example": "เก็บโค้ดไว้ในบัญชี แล้วเลือกใช้ในตะกร้าก่อนชำระเงิน",
+            "type": "string"
+          },
+          "q": {
+            "example": "ใช้โค้ดนี้อย่างไร",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q",
+          "a"
+        ],
+        "type": "object"
+      },
+      "DealListDto": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/DealCountsDto"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DealDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "counts"
+        ],
+        "type": "object"
+      },
+      "DealMyStatus": {
+        "description": "Signed-in customers only; null for visitors and for automatic deals with nothing to save",
+        "enum": [
+          "claimable",
+          "saved",
+          "used",
+          "not_eligible"
+        ],
+        "type": "string"
+      },
+      "DealNotEligibleReason": {
+        "enum": [
+          "first_order_only",
+          "new_customer_only",
+          "returning_customer_only"
+        ],
+        "type": "string"
+      },
+      "DealSavedDto": {
+        "properties": {
+          "myStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DealSavedStatus"
+              }
+            ],
+            "example": "saved"
+          }
+        },
+        "required": [
+          "myStatus"
+        ],
+        "type": "object"
+      },
+      "DealSavedStatus": {
+        "enum": [
+          "saved"
+        ],
+        "type": "string"
+      },
+      "DealTab": {
+        "enum": [
+          "all",
+          "for_you",
+          "ending_soon",
+          "points"
+        ],
+        "type": "string"
+      },
       "DecideClaimDto": {
         "properties": {
           "decision": {
@@ -41987,6 +42891,110 @@
           "failed"
         ],
         "type": "string"
+      },
+      "EarnTaskDto": {
+        "properties": {
+          "code": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoyaltyTaskCode"
+              }
+            ],
+            "description": "The web owns titles, descriptions and routes (i18n `account.points.tasks.<code>.*`)",
+            "example": "tax_profile"
+          },
+          "doneAt": {
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "heldReason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LoyaltyTaskHeldReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when `held` (D-477); the UI shows only \"รอตรวจสอบ\"",
+            "example": null
+          },
+          "points": {
+            "description": "Points of the reward: the configured value for todo / held, the points written for done",
+            "example": 40,
+            "type": "integer"
+          },
+          "recommended": {
+            "description": "Exactly one todo task, the one with the most points (ties in `code` order), or none",
+            "example": true,
+            "type": "boolean"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoyaltyTaskStatus"
+              }
+            ],
+            "example": "todo"
+          }
+        },
+        "required": [
+          "code",
+          "points",
+          "status",
+          "doneAt",
+          "heldReason",
+          "recommended"
+        ],
+        "type": "object"
+      },
+      "EarnTasksDto": {
+        "properties": {
+          "capPoints": {
+            "description": "D-476 cap on activity + bonus points in a rolling 365 days",
+            "example": 600,
+            "type": "integer"
+          },
+          "capRemainingPoints": {
+            "example": 564,
+            "type": "integer"
+          },
+          "earnedPoints": {
+            "description": "Points written for the done tasks",
+            "example": 56,
+            "type": "integer"
+          },
+          "pointValue": {
+            "description": "THB per point (D-131)",
+            "example": "2.50",
+            "type": "string"
+          },
+          "remainingPoints": {
+            "description": "Sum of the todo tasks, capped by `capRemainingPoints`",
+            "example": 136,
+            "type": "integer"
+          },
+          "tasks": {
+            "description": "`todo` and `held` by points desc, then `done` by `doneAt` desc; tasks worth 0 points are omitted",
+            "items": {
+              "$ref": "#/components/schemas/EarnTaskDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tasks",
+          "earnedPoints",
+          "remainingPoints",
+          "capPoints",
+          "capRemainingPoints",
+          "pointValue"
+        ],
+        "type": "object"
       },
       "EditorMode": {
         "description": "The Studio editor's mode the person last chose (D-456); null until they choose",
@@ -73849,6 +74857,65 @@
         ],
         "type": "object"
       },
+      "LadderPromoHintDto": {
+        "properties": {
+          "estimatedTotal": {
+            "description": "Estimate incl. VAT: the product gross of the smallest option reaching the deal’s minimum less its percent (capped), before the checkout margin guard; the cart works out the real discount",
+            "example": "11979.00",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "promotionId": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "example": "ลดเพิ่ม 10% เมื่อสั่ง ≥ 1,000 ใบ",
+            "type": "string"
+          }
+        },
+        "required": [
+          "promotionId",
+          "text",
+          "estimatedTotal"
+        ],
+        "type": "object"
+      },
+      "LadderRowDto": {
+        "properties": {
+          "current": {
+            "example": false,
+            "type": "boolean"
+          },
+          "quantity": {
+            "example": 1000,
+            "type": "integer"
+          },
+          "savingPct": {
+            "description": "Whole percent cheaper per piece than the current option (rounded down)",
+            "example": "10",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unitPrice": {
+            "description": "Per piece incl. VAT (D-220) — the quotation option’s own price",
+            "example": "13.31",
+            "type": "string"
+          }
+        },
+        "required": [
+          "quantity",
+          "unitPrice",
+          "current",
+          "savingPct"
+        ],
+        "type": "object"
+      },
       "LaunchpadAction": {
         "enum": [
           "pay",
@@ -74345,6 +75412,26 @@
         ],
         "type": "string"
       },
+      "LocalTextDto": {
+        "properties": {
+          "en": {
+            "example": "10% off 1,000+ corrugated boxes",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "th": {
+            "example": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
+            "type": "string"
+          }
+        },
+        "required": [
+          "th",
+          "en"
+        ],
+        "type": "object"
+      },
       "LocaleCode": {
         "enum": [
           "th",
@@ -74501,6 +75588,40 @@
           "currency"
         ],
         "type": "object"
+      },
+      "LoyaltyTaskCode": {
+        "description": "The web owns titles, descriptions and routes (i18n `account.points.tasks.<code>.*`)",
+        "enum": [
+          "signup",
+          "line_link",
+          "google_link",
+          "apple_link",
+          "phone_verified",
+          "profile_completed",
+          "tax_profile",
+          "address",
+          "brand_kit",
+          "first_design",
+          "team_invite",
+          "packaging_profile",
+          "line_oa_friend"
+        ],
+        "type": "string"
+      },
+      "LoyaltyTaskHeldReason": {
+        "description": "Set when `held` (D-477); the UI shows only \"รอตรวจสอบ\"",
+        "enum": [
+          "duplicate_identity"
+        ],
+        "type": "string"
+      },
+      "LoyaltyTaskStatus": {
+        "enum": [
+          "todo",
+          "held",
+          "done"
+        ],
+        "type": "string"
       },
       "LoyaltyTier": {
         "enum": [
@@ -76025,6 +77146,40 @@
         "required": [
           "productTypeCode",
           "count"
+        ],
+        "type": "object"
+      },
+      "NotYetCodeDto": {
+        "properties": {
+          "code": {
+            "example": "MATTEFREE",
+            "type": "string"
+          },
+          "headline": {
+            "example": "เคลือบด้านฟรี เมื่อสั่ง 2,000 ใบ",
+            "type": "string"
+          },
+          "promotionId": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+            "format": "uuid",
+            "type": "string"
+          },
+          "reason": {
+            "description": "`min_quantity`, `min_order_value`, `product_type`, `first_order_only`, `segment`, `channel`, `zone`, `payment_method`, `not_combinable`, `used_up`, `too_many_codes`, `capped`, `cart_empty`, `cart_unavailable`",
+            "example": "min_quantity",
+            "type": "string"
+          },
+          "reasonText": {
+            "example": "สั่งเพิ่มอีก 1,000 ชิ้น",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "promotionId",
+          "headline",
+          "reason",
+          "reasonText"
         ],
         "type": "object"
       },
@@ -78100,6 +79255,132 @@
         ],
         "type": "object"
       },
+      "PackagingMonthlyBoxVolume": {
+        "description": "Boxes per month",
+        "enum": [
+          "lt_500",
+          "500_2000",
+          "2000_10000",
+          "gt_10000"
+        ],
+        "type": "string"
+      },
+      "PackagingProductCategory": {
+        "enum": [
+          "food",
+          "beverage",
+          "cosmetics",
+          "apparel",
+          "electronics",
+          "ecommerce",
+          "industrial",
+          "other"
+        ],
+        "type": "string"
+      },
+      "PackagingProfileDto": {
+        "properties": {
+          "completedAt": {
+            "description": "The first complete save (earns `earn_packaging_profile` once)",
+            "example": "2026-11-04T15:00:00+07:00",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "monthlyBoxVolume": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackagingMonthlyBoxVolume"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Boxes per month",
+            "example": "500_2000"
+          },
+          "peakMonths": {
+            "description": "Peak months, 1–12",
+            "example": [
+              11,
+              12
+            ],
+            "items": {
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "productCategories": {
+            "example": [
+              "food",
+              "cosmetics"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PackagingProductCategory"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "purposeAccepted": {
+            "description": "The PDPA purpose shown on the form was accepted",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "shipToRegions": {
+            "example": [
+              "bangkok_metro",
+              "north"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PackagingShipToRegion"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "example": "2026-11-04T15:00:00+07:00",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "monthlyBoxVolume",
+          "productCategories",
+          "shipToRegions",
+          "peakMonths",
+          "purposeAccepted",
+          "completedAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "PackagingShipToRegion": {
+        "enum": [
+          "bangkok_metro",
+          "central",
+          "north",
+          "northeast",
+          "east",
+          "west",
+          "south"
+        ],
+        "type": "string"
+      },
       "PackingTypeDto": {
         "properties": {
           "code": {
@@ -79412,6 +80693,58 @@
         ],
         "type": "string"
       },
+      "PartnerProofOfDeliveryDto": {
+        "properties": {
+          "capturedAt": {
+            "example": "2026-10-21T14:05:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "deliveredQuantity": {
+            "example": 590,
+            "type": "integer"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PodKind"
+              }
+            ]
+          },
+          "photoFileIds": {
+            "example": [
+              "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "receiverRecorded": {
+            "description": "D-463: a receiver name is on the POD. The name itself is staff-only, also when the factory recorded it",
+            "example": true,
+            "type": "boolean"
+          },
+          "signatureFileId": {
+            "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "receiverRecorded",
+          "deliveredQuantity",
+          "capturedAt",
+          "signatureFileId",
+          "photoFileIds"
+        ],
+        "type": "object"
+      },
       "PartnerSampleDto": {
         "properties": {
           "configuration": {
@@ -79508,6 +80841,11 @@
               }
             ],
             "example": "factory_fleet"
+          },
+          "carrierBooked": {
+            "description": "D-463: getpack booked a fallback carrier for the trip (\"booked\"). The carrier’s tracking number and tracking URL are staff-only — they open the recipient’s details on the carrier’s site",
+            "example": false,
+            "type": "boolean"
           },
           "carrierRequest": {
             "anyOf": [
@@ -79609,12 +80947,13 @@
           "proofOfDelivery": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ProofOfDeliveryDto"
+                "$ref": "#/components/schemas/PartnerProofOfDeliveryDto"
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "D-463: `receiverRecorded` instead of the receiver’s name"
           },
           "readyAt": {
             "example": "2026-10-19T16:00:00+07:00",
@@ -79646,13 +80985,6 @@
             "example": "เตรียมจัดส่ง",
             "type": "string"
           },
-          "trackingNo": {
-            "example": null,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "volumeCm3": {
             "example": 120000,
             "type": [
@@ -79677,7 +81009,7 @@
           "statusLabelTh",
           "statusLabelAdminTh",
           "carrier",
-          "trackingNo",
+          "carrierBooked",
           "destination",
           "cartonsCount",
           "weightG",
@@ -81837,6 +83169,16 @@
           "earn_review",
           "earn_referral",
           "earn_bonus",
+          "earn_identity_link",
+          "earn_phone_verified",
+          "earn_profile_completed",
+          "earn_tax_profile",
+          "earn_address",
+          "earn_brand_kit",
+          "earn_first_design",
+          "earn_team_invite",
+          "earn_packaging_profile",
+          "earn_line_oa_friend",
           "redeem",
           "redeem_reversal",
           "reversal_claim_refund",
@@ -86413,6 +87755,130 @@
         },
         "type": "object"
       },
+      "PromotionDisplayDto": {
+        "properties": {
+          "badge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Short label, e.g. \"ดีลเด่น\""
+          },
+          "featured": {
+            "description": "Hero card on /deals",
+            "example": true,
+            "type": "boolean"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slug": {
+            "example": "box10-corrugated",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "subline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "headline",
+          "subline",
+          "badge",
+          "terms",
+          "featured",
+          "slug"
+        ],
+        "type": "object"
+      },
+      "PromotionDisplayInputDto": {
+        "properties": {
+          "badge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "featured": {
+            "example": true,
+            "type": "boolean"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slug": {
+            "example": "box10-corrugated",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "subline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalTextDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
       "PromotionDto": {
         "properties": {
           "benefit": {
@@ -86472,9 +87938,31 @@
               "null"
             ]
           },
+          "display": {
+            "$ref": "#/components/schemas/PromotionDisplayDto"
+          },
+          "displaySchemaVersion": {
+            "example": 1,
+            "type": "integer"
+          },
           "endsAt": {
             "example": null,
             "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "heroImageFileId": {
+            "example": null,
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "heroImageUrl": {
+            "example": null,
             "type": [
               "string",
               "null"
@@ -86533,6 +88021,14 @@
             ],
             "example": "active"
           },
+          "systemKey": {
+            "description": "Set on promotions the system owns (always hidden), e.g. `quote_recovery.free_shipping` (D-484)",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "updatedAt": {
             "example": "2026-10-20T10:00:00+07:00",
             "format": "date-time",
@@ -86554,6 +88050,14 @@
               "integer",
               "null"
             ]
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PromotionVisibility"
+              }
+            ],
+            "example": "hidden"
           }
         },
         "required": [
@@ -86578,7 +88082,30 @@
           "benefitSummaryEn",
           "usage",
           "campaign",
+          "visibility",
+          "display",
+          "displaySchemaVersion",
+          "heroImageFileId",
+          "heroImageUrl",
+          "systemKey",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "PromotionHeroImageDto": {
+        "properties": {
+          "heroImageFileId": {
+            "description": "An uploaded image (files presign / complete, purpose `image`); null removes the hero image",
+            "example": "0192f3a0-7c1e-7d2a-9b1f-00000000f501",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "heroImageFileId"
         ],
         "type": "object"
       },
@@ -86689,6 +88216,29 @@
         ],
         "type": "object"
       },
+      "PromotionRefAgentDto": {
+        "properties": {
+          "agentCode": {
+            "example": "AGT0042",
+            "type": "string"
+          },
+          "visitors": {
+            "description": "Distinct visitors (customers or device sessions)",
+            "example": 12,
+            "type": "integer"
+          },
+          "visits": {
+            "example": 30,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "agentCode",
+          "visitors",
+          "visits"
+        ],
+        "type": "object"
+      },
       "PromotionReportDto": {
         "properties": {
           "appliedRedemptions": {
@@ -86727,6 +88277,28 @@
             "description": "Reserved and applied redemptions",
             "example": 42,
             "type": "integer"
+          },
+          "refAgents": {
+            "description": "P1.5: agents' share links seen in the period",
+            "items": {
+              "$ref": "#/components/schemas/PromotionRefAgentDto"
+            },
+            "type": "array"
+          },
+          "saves": {
+            "description": "P1.5: codes saved to wallets in the period",
+            "example": 64,
+            "type": "integer"
+          },
+          "uses": {
+            "description": "P1.5: uses (= reserved and applied redemptions)",
+            "example": 42,
+            "type": "integer"
+          },
+          "views": {
+            "description": "P1.5: deal page views in the period",
+            "example": 1250,
+            "type": "integer"
           }
         },
         "required": [
@@ -86737,6 +88309,10 @@
           "orderGroups",
           "grossAmount",
           "customers",
+          "uses",
+          "views",
+          "saves",
+          "refAgents",
           "currency"
         ],
         "type": "object"
@@ -86766,14 +88342,34 @@
             "description": "Reserved and applied redemptions",
             "example": 42,
             "type": "integer"
+          },
+          "saves": {
+            "description": "Codes saved to wallets from the deal (P1.5)",
+            "example": 64,
+            "type": "integer"
+          },
+          "views": {
+            "description": "Deal page views (P1.5)",
+            "example": 1250,
+            "type": "integer"
           }
         },
         "required": [
           "redemptions",
           "discountAmount",
-          "cappedAmount"
+          "cappedAmount",
+          "views",
+          "saves"
         ],
         "type": "object"
+      },
+      "PromotionVisibility": {
+        "enum": [
+          "public",
+          "unlisted",
+          "hidden"
+        ],
+        "type": "string"
       },
       "ProofCompareDto": {
         "properties": {
@@ -87053,6 +88649,7 @@
             "type": "string"
           },
           "carrierPodRef": {
+            "description": "The carrier’s POD reference (staff only, D-463)",
             "example": null,
             "type": [
               "string",
@@ -87081,12 +88678,14 @@
             "type": "array"
           },
           "receiverName": {
-            "description": "Who received it. On the partner surface null for a carrier POD (the carrier copies the recipient, P4-D1); a factory POD shows the name the factory recorded",
+            "description": "Who received it (staff only, D-463): typed by the factory, or the recipient on a carrier POD",
             "example": "สมหญิง ใจดี",
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string"
+          },
+          "receiverRecorded": {
+            "description": "D-463: a receiver name is on the POD. The name itself is staff-only, also when the factory recorded it",
+            "example": true,
+            "type": "boolean"
           },
           "signatureFileId": {
             "example": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006",
@@ -87099,11 +88698,12 @@
         },
         "required": [
           "kind",
-          "receiverName",
+          "receiverRecorded",
           "deliveredQuantity",
           "capturedAt",
           "signatureFileId",
           "photoFileIds",
+          "receiverName",
           "carrierPodRef"
         ],
         "type": "object"
@@ -88452,6 +90052,72 @@
         ],
         "type": "object"
       },
+      "PutPackagingProfileDto": {
+        "properties": {
+          "monthlyBoxVolume": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PackagingMonthlyBoxVolume"
+              }
+            ],
+            "example": "500_2000"
+          },
+          "peakMonths": {
+            "description": "1–12, may be empty",
+            "example": [
+              11,
+              12
+            ],
+            "items": {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "maxItems": 12,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "productCategories": {
+            "example": [
+              "food",
+              "cosmetics"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PackagingProductCategory"
+            },
+            "maxItems": 8,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "purposeAccepted": {
+            "description": "Must be `true`: the PDPA purpose shown on the form",
+            "example": true,
+            "type": "boolean"
+          },
+          "shipToRegions": {
+            "example": [
+              "bangkok_metro",
+              "north"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PackagingShipToRegion"
+            },
+            "maxItems": 7,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "monthlyBoxVolume",
+          "productCategories",
+          "shipToRegions",
+          "peakMonths",
+          "purposeAccepted"
+        ],
+        "type": "object"
+      },
       "QcCheckDto": {
         "properties": {
           "checklist": {
@@ -89217,6 +90883,41 @@
           "parts",
           "shipping",
           "tooling"
+        ],
+        "type": "object"
+      },
+      "QuoteLadderDto": {
+        "properties": {
+          "current": {
+            "example": 500,
+            "type": "integer"
+          },
+          "promoHint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LadderPromoHintDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/LadderRowDto"
+            },
+            "type": "array"
+          },
+          "unit": {
+            "example": "ใบ",
+            "type": "string"
+          }
+        },
+        "required": [
+          "unit",
+          "current",
+          "rows",
+          "promoHint"
         ],
         "type": "object"
       },
@@ -95578,6 +97279,12 @@
         ],
         "type": "object"
       },
+      "RfqQueue": {
+        "enum": [
+          "awaiting_first_response"
+        ],
+        "type": "string"
+      },
       "RfqQuotationDto": {
         "properties": {
           "id": {
@@ -101219,7 +102926,8 @@
           "awaiting_pickup",
           "in_transit",
           "exceptions",
-          "pod_review"
+          "pod_review",
+          "without_goods_receipt"
         ],
         "type": "string"
       },
@@ -119210,6 +120918,15 @@
               "null"
             ]
           },
+          "display": {
+            "additionalProperties": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PromotionDisplayInputDto"
+              }
+            ],
+            "description": "Keys given replace the stored ones (`{ headline, subline, badge, terms: {th, en}, featured, slug }`)"
+          },
           "endsAt": {
             "example": null,
             "format": "date-time",
@@ -119265,6 +120982,15 @@
               "integer",
               "null"
             ]
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PromotionVisibility"
+              }
+            ],
+            "description": "P1.5: `public` lists the deal on the store, `unlisted` serves it by its link only, `hidden` nowhere. Making it public or unlisted needs an active promotion, a slug, a Thai headline and Thai terms and no blocked word (`promotions.not_publishable`); every change is audited",
+            "example": "public"
           }
         },
         "type": "object"
@@ -146697,7 +148423,7 @@
     },
     "/v1/admin/billing-statements": {
       "get": {
-        "description": "Generated by getpack for the factory to confirm (ใบวางบิล, D-090); the factory then issues its own tax invoice against it.\n\nImplements: D-090, D-022, D-165.",
+        "description": "Generated by getpack for the factory to confirm (ใบวางบิล, D-090); the factory then issues its own tax invoice against it. Each names its factory (`factoryName`, `factoryCode`; admin only).\n\nImplements: D-090, D-022, D-165.",
         "operationId": "admin.payables.listStatements",
         "parameters": [
           {
@@ -146769,6 +148495,15 @@
             }
           },
           {
+            "description": "A work queue: `missing_tax_invoice` = confirmed with no recorded or validated factory tax invoice (the dashboard card, D-090)",
+            "in": "query",
+            "name": "queue",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/BillingStatementQueue"
+            }
+          },
+          {
             "$ref": "#/components/parameters/AcceptLanguage"
           }
         ],
@@ -146785,7 +148520,9 @@
                       "currency": "THB",
                       "disputeNote": null,
                       "disputedLineNos": [],
+                      "factoryCode": "F0001",
                       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                      "factoryName": "โรงพิมพ์ตัวอย่าง",
                       "generatedAt": "2026-10-20T10:00:00+07:00",
                       "grossAmount": "8517.20",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530003",
@@ -146845,7 +148582,7 @@
                   "properties": {
                     "data": {
                       "items": {
-                        "$ref": "#/components/schemas/BillingStatementDto"
+                        "$ref": "#/components/schemas/AdminBillingStatementDto"
                       },
                       "type": "array"
                     },
@@ -147000,7 +148737,7 @@
     },
     "/v1/admin/billing-statements/{statementId}": {
       "get": {
-        "description": "With its GR and deduction lines (D-090).\n\nImplements: D-090, D-022, D-165.",
+        "description": "With its GR and deduction lines and its factory’s name and code (D-090).\n\nImplements: D-090, D-022, D-165.",
         "operationId": "admin.payables.getStatement",
         "parameters": [
           {
@@ -147027,7 +148764,9 @@
                   "currency": "THB",
                   "disputeNote": null,
                   "disputedLineNos": [],
+                  "factoryCode": "F0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                  "factoryName": "โรงพิมพ์ตัวอย่าง",
                   "generatedAt": "2026-10-20T10:00:00+07:00",
                   "grossAmount": "8517.20",
                   "id": "0192f3a0-7c1e-7d2a-9b1f-000000530003",
@@ -147077,7 +148816,7 @@
                   "vatAmount": "557.20"
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/BillingStatementDto"
+                  "$ref": "#/components/schemas/AdminBillingStatementDto"
                 }
               }
             },
@@ -191448,7 +193187,7 @@
     },
     "/v1/admin/claims": {
       "get": {
-        "description": "Newest first; `type`, `origin` (customer, automatic from the tolerance, staff), `customerId` and `factoryId` narrow it. Each row names the customer.\n\nImplements: D-082.",
+        "description": "Newest first; `type`, `origin` (customer, automatic from the tolerance, staff), `customerId`, `factoryId` and `queue` (`open`: the dashboard card) narrow it. Each row names the customer.\n\nImplements: D-082.",
         "operationId": "admin.claims.list",
         "parameters": [
           {
@@ -191516,6 +193255,15 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "description": "A work queue: `open` = submitted, under review, need info or factory review (the dashboard card)",
+            "in": "query",
+            "name": "queue",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ClaimQueue"
             }
           },
           {
@@ -296396,7 +298144,7 @@
     },
     "/v1/admin/payout-runs": {
       "get": {
-        "description": "Newest first, with their items and approval (D-166).\n\nImplements: D-022, D-093, D-164, D-166.",
+        "description": "Newest first, with their items and approval (D-166); `status=proposed` = awaiting approval.\n\nImplements: D-022, D-093, D-164, D-166.",
         "operationId": "admin.payouts.list",
         "parameters": [
           {
@@ -296447,6 +298195,14 @@
             "schema": {
               "maxLength": 200,
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PayoutRunStatus"
             }
           },
           {
@@ -306046,7 +307802,24 @@
                         ]
                       },
                       "description": null,
+                      "display": {
+                        "badge": null,
+                        "featured": false,
+                        "headline": {
+                          "en": "10% off for new customers",
+                          "th": "ลด 10% ลูกค้าใหม่"
+                        },
+                        "slug": "welcome10",
+                        "subline": null,
+                        "terms": {
+                          "en": "Once per account; prices include VAT",
+                          "th": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                        }
+                      },
+                      "displaySchemaVersion": 1,
                       "endsAt": null,
+                      "heroImageFileId": null,
+                      "heroImageUrl": null,
                       "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                       "kind": "coupon",
                       "name": "ลด 10% ลูกค้าใหม่",
@@ -306056,14 +307829,18 @@
                       "stacking": "stackable",
                       "startsAt": "2026-11-01T00:00:00+07:00",
                       "status": "active",
+                      "systemKey": null,
                       "updatedAt": "2026-10-20T10:00:00+07:00",
                       "usage": {
                         "cappedAmount": "0.00",
                         "discountAmount": "0.00",
-                        "redemptions": 0
+                        "redemptions": 0,
+                        "saves": 0,
+                        "views": 0
                       },
                       "usageLimitPerCustomer": 1,
-                      "usageLimitTotal": 1000
+                      "usageLimitTotal": 1000,
+                      "visibility": "hidden"
                     }
                   ],
                   "meta": {
@@ -306301,7 +308078,24 @@
                     ]
                   },
                   "description": null,
+                  "display": {
+                    "badge": null,
+                    "featured": false,
+                    "headline": {
+                      "en": "10% off for new customers",
+                      "th": "ลด 10% ลูกค้าใหม่"
+                    },
+                    "slug": "welcome10",
+                    "subline": null,
+                    "terms": {
+                      "en": "Once per account; prices include VAT",
+                      "th": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                    }
+                  },
+                  "displaySchemaVersion": 1,
                   "endsAt": null,
+                  "heroImageFileId": null,
+                  "heroImageUrl": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                   "kind": "coupon",
                   "name": "ลด 10% ลูกค้าใหม่",
@@ -306311,14 +308105,18 @@
                   "stacking": "stackable",
                   "startsAt": "2026-11-01T00:00:00+07:00",
                   "status": "draft",
+                  "systemKey": null,
                   "updatedAt": "2026-10-20T10:00:00+07:00",
                   "usage": {
                     "cappedAmount": "0.00",
                     "discountAmount": "0.00",
-                    "redemptions": 0
+                    "redemptions": 0,
+                    "saves": 0,
+                    "views": 0
                   },
                   "usageLimitPerCustomer": 1,
-                  "usageLimitTotal": 1000
+                  "usageLimitTotal": 1000,
+                  "visibility": "hidden"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/PromotionDto"
@@ -306762,7 +308560,7 @@
     },
     "/v1/admin/promotions/report": {
       "get": {
-        "description": "Reserved and applied redemptions of a campaign or promotion (or all) in a period: discounts given, amounts capped by the margin guard or budget, order groups, their gross and customers (D-053).\n\nImplements: D-053, D-154.",
+        "description": "Reserved and applied redemptions of a campaign or promotion (or all) in a period: discounts given, amounts capped by the margin guard or budget, order groups, their gross and customers (D-053). P1.5 adds the deals surface: uses, deal page views, wallet saves and agents' share-link visitors per agent code.\n\nImplements: D-053, D-154, D-481.",
         "operationId": "admin.promotions.report",
         "parameters": [
           {
@@ -306823,7 +308621,17 @@
                   "discountAmount": "12500.00",
                   "grossAmount": "420000.00",
                   "orderGroups": 40,
-                  "redemptions": 42
+                  "redemptions": 42,
+                  "refAgents": [
+                    {
+                      "agentCode": "AGT0042",
+                      "visitors": 12,
+                      "visits": 30
+                    }
+                  ],
+                  "saves": 64,
+                  "uses": 42,
+                  "views": 1250
                 },
                 "schema": {
                   "$ref": "#/components/schemas/PromotionReportDto"
@@ -307013,7 +308821,24 @@
                     ]
                   },
                   "description": null,
+                  "display": {
+                    "badge": null,
+                    "featured": false,
+                    "headline": {
+                      "en": "10% off for new customers",
+                      "th": "ลด 10% ลูกค้าใหม่"
+                    },
+                    "slug": "welcome10",
+                    "subline": null,
+                    "terms": {
+                      "en": "Once per account; prices include VAT",
+                      "th": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                    }
+                  },
+                  "displaySchemaVersion": 1,
                   "endsAt": null,
+                  "heroImageFileId": null,
+                  "heroImageUrl": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                   "kind": "coupon",
                   "name": "ลด 10% ลูกค้าใหม่",
@@ -307023,14 +308848,18 @@
                   "stacking": "stackable",
                   "startsAt": "2026-11-01T00:00:00+07:00",
                   "status": "active",
+                  "systemKey": null,
                   "updatedAt": "2026-10-20T10:00:00+07:00",
                   "usage": {
                     "cappedAmount": "0.00",
                     "discountAmount": "0.00",
-                    "redemptions": 0
+                    "redemptions": 0,
+                    "saves": 0,
+                    "views": 0
                   },
                   "usageLimitPerCustomer": 1,
-                  "usageLimitTotal": 1000
+                  "usageLimitTotal": 1000,
+                  "visibility": "hidden"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/PromotionDto"
@@ -307197,7 +309026,7 @@
         ]
       },
       "patch": {
-        "description": "Anything but its kind and campaign, until it ends; orders already placed keep the redemption they reserved (D-053). Guarded by `If-Match`.\n\nImplements: D-053.",
+        "description": "Anything but its kind and campaign, until it ends; orders already placed keep the redemption they reserved (D-053). Guarded by `If-Match`. P1.5 deals surface: `display` (deal copy th/en, featured, slug) and `visibility`. Making a promotion public or unlisted — or keeping it so — needs it active, a slug, a Thai headline and Thai terms and no blocked word (factory, margin, countdown or \"ทันที\" wording, D-481), else 422 `promotions.not_publishable` listing each rule in `errors`; a slug used by another visible promotion is 409 `promotions.slug_taken`. Every visibility change writes an audit row and `promotion.visibility_changed`.\n\nImplements: D-053, D-481.",
         "operationId": "admin.promotions.update",
         "parameters": [
           {
@@ -307224,6 +309053,23 @@
                   "value": {
                     "priority": 50,
                     "usageLimitTotal": 2000
+                  }
+                },
+                "publish": {
+                  "value": {
+                    "display": {
+                      "featured": true,
+                      "headline": {
+                        "en": "10% off 1,000+ corrugated boxes",
+                        "th": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%"
+                      },
+                      "slug": "box10-corrugated",
+                      "terms": {
+                        "en": "Once per account; prices include VAT",
+                        "th": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                      }
+                    },
+                    "visibility": "public"
                   }
                 }
               },
@@ -307262,7 +309108,24 @@
                     ]
                   },
                   "description": null,
+                  "display": {
+                    "badge": null,
+                    "featured": false,
+                    "headline": {
+                      "en": "10% off for new customers",
+                      "th": "ลด 10% ลูกค้าใหม่"
+                    },
+                    "slug": "welcome10",
+                    "subline": null,
+                    "terms": {
+                      "en": "Once per account; prices include VAT",
+                      "th": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                    }
+                  },
+                  "displaySchemaVersion": 1,
                   "endsAt": null,
+                  "heroImageFileId": null,
+                  "heroImageUrl": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                   "kind": "coupon",
                   "name": "ลด 10% ลูกค้าใหม่",
@@ -307272,14 +309135,18 @@
                   "stacking": "stackable",
                   "startsAt": "2026-11-01T00:00:00+07:00",
                   "status": "active",
+                  "systemKey": null,
                   "updatedAt": "2026-10-20T10:00:00+07:00",
                   "usage": {
                     "cappedAmount": "0.00",
                     "discountAmount": "0.00",
-                    "redemptions": 0
+                    "redemptions": 0,
+                    "saves": 0,
+                    "views": 0
                   },
                   "usageLimitPerCustomer": 1,
-                  "usageLimitTotal": 1000
+                  "usageLimitTotal": 1000,
+                  "visibility": "hidden"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/PromotionDto"
@@ -307397,6 +309264,12 @@
                 "examples": {
                   "promotions.ended": {
                     "$ref": "#/components/examples/problem.promotions.ended"
+                  },
+                  "promotions.slug_taken": {
+                    "$ref": "#/components/examples/problem.promotions.slug_taken"
+                  },
+                  "promotions.system_managed": {
+                    "$ref": "#/components/examples/problem.promotions.system_managed"
                   }
                 },
                 "schema": {
@@ -307404,7 +309277,7 @@
                 }
               }
             },
-            "description": "Problem: `promotions.ended`",
+            "description": "Problem: `promotions.ended`, `promotions.slug_taken`, `promotions.system_managed`",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/XRequestId"
@@ -307435,6 +309308,9 @@
             "content": {
               "application/problem+json": {
                 "examples": {
+                  "promotions.not_publishable": {
+                    "$ref": "#/components/examples/problem.promotions.not_publishable"
+                  },
                   "validation.failed": {
                     "$ref": "#/components/examples/problem.validation.failed"
                   }
@@ -307444,7 +309320,7 @@
                 }
               }
             },
-            "description": "Problem: `validation.failed`",
+            "description": "Problem: `promotions.not_publishable`, `validation.failed`",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/XRequestId"
@@ -307600,7 +309476,24 @@
                     ]
                   },
                   "description": null,
+                  "display": {
+                    "badge": null,
+                    "featured": false,
+                    "headline": {
+                      "en": "10% off for new customers",
+                      "th": "ลด 10% ลูกค้าใหม่"
+                    },
+                    "slug": "welcome10",
+                    "subline": null,
+                    "terms": {
+                      "en": "Once per account; prices include VAT",
+                      "th": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                    }
+                  },
+                  "displaySchemaVersion": 1,
                   "endsAt": null,
+                  "heroImageFileId": null,
+                  "heroImageUrl": null,
                   "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
                   "kind": "coupon",
                   "name": "ลด 10% ลูกค้าใหม่",
@@ -307610,14 +309503,18 @@
                   "stacking": "stackable",
                   "startsAt": "2026-11-01T00:00:00+07:00",
                   "status": "active",
+                  "systemKey": null,
                   "updatedAt": "2026-10-20T10:00:00+07:00",
                   "usage": {
                     "cappedAmount": "0.00",
                     "discountAmount": "0.00",
-                    "redemptions": 0
+                    "redemptions": 0,
+                    "saves": 0,
+                    "views": 0
                   },
                   "usageLimitPerCustomer": 1,
-                  "usageLimitTotal": 1000
+                  "usageLimitTotal": 1000,
+                  "visibility": "hidden"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/PromotionDto"
@@ -307756,6 +309653,9 @@
             "content": {
               "application/problem+json": {
                 "examples": {
+                  "promotions.not_publishable": {
+                    "$ref": "#/components/examples/problem.promotions.not_publishable"
+                  },
                   "validation.failed": {
                     "$ref": "#/components/examples/problem.validation.failed"
                   }
@@ -307765,7 +309665,7 @@
                 }
               }
             },
-            "description": "Problem: `validation.failed`",
+            "description": "Problem: `promotions.not_publishable`, `validation.failed`",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/XRequestId"
@@ -309096,6 +310996,343 @@
           }
         ],
         "summary": "Disable or re-enable a coupon code",
+        "tags": [
+          "admin.promotions"
+        ],
+        "x-required-permissions": [
+          "promotions.manage"
+        ]
+      }
+    },
+    "/v1/admin/promotions/{promotionId}/hero-image": {
+      "post": {
+        "description": "P1.5: an image uploaded through the files pipeline (presign / complete, purpose `image`); the store serves it at `/v1/store/catalog/images/{id}` only while the deal is public or unlisted and active, after a clean scan. `heroImageFileId: null` removes it. Recorded as `promotion.updated` (D-481: no factory imagery — Marketing checks the picture, its metadata is stripped like every published image).\n\nImplements: D-481, D-053.\n\n**Files:** upload first — `admin.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).",
+        "operationId": "admin.promotions.setHeroImage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "promotionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatchOptional"
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "value": {
+                    "heroImageFileId": "0192f3a0-7c1e-7d2a-9b1f-00000000f501"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PromotionHeroImageDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "benefit": {
+                    "maxAmount": "500.00",
+                    "pct": "10",
+                    "type": "percent"
+                  },
+                  "benefitSummaryEn": "10% off, up to THB 500.00",
+                  "benefitSummaryTh": "ลด 10% สูงสุด 500.00 บาท",
+                  "budgetAmount": null,
+                  "campaign": {
+                    "code": "launch-2026",
+                    "id": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                    "name": "เปิดตัว getpack"
+                  },
+                  "campaignId": "0192f3a0-7c1e-7d2a-9b1f-000000090001",
+                  "conditions": {
+                    "productTypeCodes": [
+                      "folding_carton"
+                    ],
+                    "segments": [
+                      "new"
+                    ]
+                  },
+                  "description": null,
+                  "display": {
+                    "badge": null,
+                    "featured": false,
+                    "headline": {
+                      "en": "10% off for new customers",
+                      "th": "ลด 10% ลูกค้าใหม่"
+                    },
+                    "slug": "welcome10",
+                    "subline": null,
+                    "terms": {
+                      "en": "Once per account; prices include VAT",
+                      "th": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                    }
+                  },
+                  "displaySchemaVersion": 1,
+                  "endsAt": null,
+                  "heroImageFileId": null,
+                  "heroImageUrl": null,
+                  "id": "0192f3a0-7c1e-7d2a-9b1f-000000090002",
+                  "kind": "coupon",
+                  "name": "ลด 10% ลูกค้าใหม่",
+                  "priority": 100,
+                  "spentAmount": "0.00",
+                  "stackGroup": null,
+                  "stacking": "stackable",
+                  "startsAt": "2026-11-01T00:00:00+07:00",
+                  "status": "active",
+                  "systemKey": null,
+                  "updatedAt": "2026-10-20T10:00:00+07:00",
+                  "usage": {
+                    "cappedAmount": "0.00",
+                    "discountAmount": "0.00",
+                    "redemptions": 0,
+                    "saves": 0,
+                    "views": 0
+                  },
+                  "usageLimitPerCustomer": 1,
+                  "usageLimitTotal": 1000,
+                  "visibility": "hidden"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionDto"
+                }
+              }
+            },
+            "description": "Promotion",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "http.malformed_json": {
+                    "$ref": "#/components/examples/problem.http.malformed_json"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `http.malformed_json`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "promotions.ended": {
+                    "$ref": "#/components/examples/problem.promotions.ended"
+                  },
+                  "promotions.system_managed": {
+                    "$ref": "#/components/examples/problem.promotions.system_managed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `promotions.ended`, `promotions.system_managed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "concurrency.stale": {
+                    "$ref": "#/components/examples/problem.concurrency.stale"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `concurrency.stale`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "summary": "Set a deal's hero image",
         "tags": [
           "admin.promotions"
         ],
@@ -310528,7 +312765,7 @@
     },
     "/v1/admin/purchase-orders": {
       "get": {
-        "description": "One PO per released production job at the price and payout policy frozen at release (§6, D-022); newest first.\n\nImplements: D-090, D-022, D-165.",
+        "description": "One PO per released production job at the price and payout policy frozen at release (§6, D-022); newest first. Each names its factory (`factoryName`, `factoryCode`; admin only — D-050 / D-435 keep factories from customers).\n\nImplements: D-090, D-022, D-165.",
         "operationId": "admin.payables.listPurchaseOrders",
         "parameters": [
           {
@@ -310614,7 +312851,9 @@
                   "data": [
                     {
                       "currency": "THB",
+                      "factoryCode": "F0001",
                       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                      "factoryName": "โรงพิมพ์ตัวอย่าง",
                       "grossAmount": "8560.00",
                       "id": "0192f3a0-7c1e-7d2a-9b1f-000000530001",
                       "issuedAt": "2026-10-05T10:00:00+07:00",
@@ -310650,7 +312889,7 @@
                   "properties": {
                     "data": {
                       "items": {
-                        "$ref": "#/components/schemas/PurchaseOrderDto"
+                        "$ref": "#/components/schemas/AdminPurchaseOrderDto"
                       },
                       "type": "array"
                     },
@@ -310805,7 +313044,7 @@
     },
     "/v1/admin/purchase-orders/{poId}": {
       "get": {
-        "description": "With its lines (§6, D-022).\n\nImplements: D-090, D-022, D-165.",
+        "description": "With its lines and its factory’s name and code (§6, D-022).\n\nImplements: D-090, D-022, D-165.",
         "operationId": "admin.payables.getPurchaseOrder",
         "parameters": [
           {
@@ -310827,7 +313066,9 @@
               "application/json": {
                 "example": {
                   "currency": "THB",
+                  "factoryCode": "F0001",
                   "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000501",
+                  "factoryName": "โรงพิมพ์ตัวอย่าง",
                   "grossAmount": "8560.00",
                   "id": "0192f3a0-7c1e-7d2a-9b1f-000000530001",
                   "issuedAt": "2026-10-05T10:00:00+07:00",
@@ -310853,7 +313094,7 @@
                   "vatAmount": "560.00"
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                  "$ref": "#/components/schemas/AdminPurchaseOrderDto"
                 }
               }
             },
@@ -314342,7 +316583,7 @@
     },
     "/v1/admin/receivables": {
       "get": {
-        "description": "AR open items by due date: invoices and final tax invoices with a remainder, debit notes (§6).\n\nImplements: D-033, D-121.",
+        "description": "AR open items by due date: invoices and final tax invoices with a remainder, debit notes (§6); `overdue=true&b2b=true` is the dashboard’s overdue B2B card.\n\nImplements: D-033, D-121.",
         "operationId": "admin.receivables.list",
         "parameters": [
           {
@@ -314426,6 +316667,16 @@
             "description": "Only items past their due date",
             "in": "query",
             "name": "overdue",
+            "required": false,
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Only company (B2B) receivables — with `overdue=true` the dashboard card",
+            "in": "query",
+            "name": "b2b",
             "required": false,
             "schema": {
               "example": true,
@@ -322536,7 +324787,7 @@
     },
     "/v1/admin/rfqs": {
       "get": {
-        "description": "`q` matches the RFQ code; filter by status, assignee, overdue first response, product type, channel, submission dates (Bangkok) or an open factory consultation (`awaitingFactory`) (D-100).\n\nImplements: D-100, D-043, D-102.",
+        "description": "`q` matches the RFQ code; filter by status, assignee, overdue first response, product type, channel, submission dates (Bangkok) or an open factory consultation (`awaitingFactory`) (D-100); `queue=awaiting_first_response` is the dashboard card (open, not answered yet).\n\nImplements: D-100, D-043, D-102.",
         "operationId": "admin.rfqs.list",
         "parameters": [
           {
@@ -322595,6 +324846,15 @@
             "required": false,
             "schema": {
               "$ref": "#/components/schemas/RfqStatus"
+            }
+          },
+          {
+            "description": "A work queue: `awaiting_first_response` = open and not answered yet (the dashboard card, D-175)",
+            "in": "query",
+            "name": "queue",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/RfqQueue"
             }
           },
           {
@@ -331451,7 +333711,7 @@
             }
           },
           {
-            "description": "awaiting_pickup = packed; in_transit = picked up, in transit or out for delivery; exceptions = failed, or returned and not closed (D-230); pod_review = delivered with a POD not reviewed yet (D-229)",
+            "description": "awaiting_pickup = packed; in_transit = picked up, in transit or out for delivery; exceptions = failed, or returned and not closed (D-230); pod_review = delivered with a POD not reviewed yet (D-229); without_goods_receipt = delivered with no goods receipt yet (the finance card, D-165)",
             "in": "query",
             "name": "queue",
             "required": false,
@@ -331492,6 +333752,7 @@
                       "cancelReason": null,
                       "cancelledAt": null,
                       "carrier": "factory_fleet",
+                      "carrierBooked": false,
                       "carrierBookingRef": null,
                       "carrierCostAmount": null,
                       "carrierRequest": null,
@@ -331768,6 +334029,7 @@
                   "cancelReason": null,
                   "cancelledAt": null,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierBookingRef": null,
                   "carrierCostAmount": null,
                   "carrierRequest": null,
@@ -332069,6 +334331,7 @@
                   "cancelReason": null,
                   "cancelledAt": null,
                   "carrier": "flash_express",
+                  "carrierBooked": true,
                   "carrierBookingRef": "FLASH-1",
                   "carrierCostAmount": null,
                   "carrierRequest": null,
@@ -332473,6 +334736,7 @@
                   "cancelReason": null,
                   "cancelledAt": null,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierBookingRef": null,
                   "carrierCostAmount": null,
                   "carrierRequest": null,
@@ -332801,6 +335065,385 @@
         ]
       }
     },
+    "/v1/admin/shipments/{shipmentId}/actions/reissue-documents": {
+      "post": {
+        "description": "D-463 (amendment 2026-10-31): for a trip packed before the sealed carrier label, whose stored labels / packing list still carry the recipient. Issues a new carton tracking token (the shipment’s old tracking links are revoked — the customer’s order links are not), renders both documents again with the D-463 partner document (no recipient identity, render refused if one would appear), stores them and detaches the old files from the factory (staff keep them; nothing is deleted). Packed (`ready`) trips only, and not once a driver confirmed pickup on the handover link — otherwise `shipments.invalid_status`. With a reason; audited (`data_access`, `shipment.documents_reissued`) and the factory sees an activity row without data (print the labels again). Requires `Idempotency-Key`.\n\nImplements: D-463, D-442, D-050.",
+        "operationId": "admin.shipments.reissueDocuments",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatchOptional"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "value": {
+                    "reason": "ใบปะหน้าเดิมก่อน D-463 มีชื่อผู้รับ"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CancelShipmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "blockedByPayment": false,
+                  "cancelReason": null,
+                  "cancelledAt": null,
+                  "carrier": "factory_fleet",
+                  "carrierBooked": false,
+                  "carrierBookingRef": null,
+                  "carrierCostAmount": null,
+                  "carrierRequest": null,
+                  "cartons": [
+                    {
+                      "labelCode": "9F3A0C1B2D4E-01",
+                      "seq": 1,
+                      "weightG": null
+                    },
+                    {
+                      "labelCode": "9F3A0C1B2D4E-02",
+                      "seq": 2,
+                      "weightG": null
+                    },
+                    {
+                      "labelCode": "9F3A0C1B2D4E-03",
+                      "seq": 3,
+                      "weightG": null
+                    }
+                  ],
+                  "cartonsCount": 3,
+                  "deliveredAt": null,
+                  "destination": {
+                    "code": "D1",
+                    "line1": "99/9 ถนนสุขุมวิท",
+                    "line2": "แขวงคลองตัน เขตคลองเตย",
+                    "phone": "+66810001234",
+                    "postcode": "10110",
+                    "postcodePrefix": "101",
+                    "province": {
+                      "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2007",
+                      "nameEn": "Bangkok",
+                      "nameTh": "กรุงเทพมหานคร"
+                    },
+                    "recipientName": "สมหญิง ใจดี"
+                  },
+                  "events": [
+                    {
+                      "location": null,
+                      "note": null,
+                      "occurredAt": "2026-10-19T16:00:00+07:00",
+                      "source": "factory",
+                      "status": "ready",
+                      "statusLabelAdminTh": "พร้อมส่ง",
+                      "statusLabelTh": "พร้อมส่ง"
+                    }
+                  ],
+                  "exception": null,
+                  "factoryCode": "F-0001",
+                  "factoryId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1003",
+                  "handover": null,
+                  "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f2001",
+                  "items": [
+                    {
+                      "deliveredQuantity": null,
+                      "destinationCode": "D1",
+                      "destinationId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2002",
+                      "jobId": "0192f3a0-7c1e-7d2a-9b1f-0000000f1001",
+                      "jobNo": "JOB-2610-0001",
+                      "orderCode": "PK-2610-0001-01",
+                      "quantity": 600,
+                      "toleranceOutcome": null
+                    }
+                  ],
+                  "labelFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2010",
+                  "nextActions": [],
+                  "note": null,
+                  "packingListFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2011",
+                  "payoutAmount": "120.00",
+                  "pickedUpAt": null,
+                  "plannedShipOn": "2026-10-20",
+                  "podReview": null,
+                  "proofOfDelivery": null,
+                  "readyAt": "2026-10-19T16:00:00+07:00",
+                  "shipmentNo": "SH-2610-0001",
+                  "splitFrom": null,
+                  "status": "ready",
+                  "statusLabelAdminTh": "พร้อมส่ง",
+                  "statusLabelTh": "พร้อมส่ง",
+                  "trackingNo": null,
+                  "trackingUrl": null,
+                  "volumeCm3": 120000,
+                  "waybillIssued": false,
+                  "weightG": 18000
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AdminShipmentDto"
+                }
+              }
+            },
+            "description": "Re-issued: the shipment with its new label and packing-list files",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              },
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "http.malformed_json": {
+                    "$ref": "#/components/examples/problem.http.malformed_json"
+                  },
+                  "idempotency.key_invalid": {
+                    "$ref": "#/components/examples/problem.idempotency.key_invalid"
+                  },
+                  "idempotency.key_required": {
+                    "$ref": "#/components/examples/problem.idempotency.key_required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.in_progress": {
+                    "$ref": "#/components/examples/problem.idempotency.in_progress"
+                  },
+                  "shipments.invalid_status": {
+                    "$ref": "#/components/examples/problem.shipments.invalid_status"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.in_progress`, `shipments.invalid_status`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "concurrency.stale": {
+                    "$ref": "#/components/examples/problem.concurrency.stale"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `concurrency.stale`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.key_reused": {
+                    "$ref": "#/components/examples/problem.idempotency.key_reused"
+                  },
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.key_reused`, `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "summary": "Re-issue the factory’s carton labels and packing list",
+        "tags": [
+          "admin.logistics"
+        ],
+        "x-required-permissions": [
+          "shipments.manage"
+        ]
+      }
+    },
     "/v1/admin/shipments/{shipmentId}/actions/resolve-exception": {
       "post": {
         "description": "D-230: a failed delivery → `retry` (in transit again for another attempt) or `return` (the goods go back to the factory and their quantity can ship again on a new trip); a returned shipment is closed as `retry` (it ships again on a new trip) or `cancel` (it will not be delivered). With a reason; audited, event `shipment.exception_resolved`.\n\nImplements: D-230, D-013.",
@@ -332852,6 +335495,7 @@
                   "cancelReason": null,
                   "cancelledAt": null,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierBookingRef": null,
                   "carrierCostAmount": null,
                   "carrierRequest": null,
@@ -333236,6 +335880,7 @@
                     "cancelReason": null,
                     "cancelledAt": null,
                     "carrier": "factory_fleet",
+                    "carrierBooked": false,
                     "carrierBookingRef": null,
                     "carrierCostAmount": null,
                     "carrierRequest": null,
@@ -333313,6 +335958,7 @@
                     "cancelReason": null,
                     "cancelledAt": null,
                     "carrier": "factory_fleet",
+                    "carrierBooked": false,
                     "carrierBookingRef": null,
                     "carrierCostAmount": null,
                     "carrierRequest": null,
@@ -333900,6 +336546,7 @@
                   "cancelReason": null,
                   "cancelledAt": null,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierBookingRef": null,
                   "carrierCostAmount": null,
                   "carrierRequest": null,
@@ -334207,7 +336854,7 @@
     },
     "/v1/admin/shipments/{shipmentId}/handover-link": {
       "post": {
-        "description": "D-463 (sealed carrier label): a random, single-shipment link `<web>/l/<token>` for the carrier / driver, the only place outside getpack staff that shows the recipient’s name, phone and address. Valid until the trip is delivered, cancelled or returned and at most 7 days; issuing again revokes the previous link. The URL and token are returned once (only the hash is kept) — send them to the driver, never to the factory. Packed shipments up to delivery only. Audited (`data_access`); the factory sees only `waybillIssued`.\n\nImplements: D-463, D-050.",
+        "description": "D-463 (sealed carrier label): a random, single-shipment link `<web>/l/<token>` for the carrier / driver, the only place outside getpack staff that shows the recipient’s name, phone and address. Valid until the trip is delivered, cancelled or returned and at most `logistics.handover_link_ttl_days` (default 7 days, 1–30); issuing again revokes the previous link. The URL and token are returned once (only the hash is kept) — send them to the driver, never to the factory. Packed shipments up to delivery only. Audited (`data_access`); the factory sees only `waybillIssued`.\n\nImplements: D-463, D-050.",
         "operationId": "admin.shipments.issueHandoverLink",
         "parameters": [
           {
@@ -334469,6 +337116,7 @@
                   "cancelReason": null,
                   "cancelledAt": null,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierBookingRef": null,
                   "carrierCostAmount": null,
                   "carrierRequest": null,
@@ -334558,6 +337206,7 @@
                       "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
                     ],
                     "receiverName": "สมหญิง ใจดี",
+                    "receiverRecorded": true,
                     "signatureFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006"
                   },
                   "readyAt": "2026-10-19T16:00:00+07:00",
@@ -334859,6 +337508,7 @@
                   "cancelReason": null,
                   "cancelledAt": null,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierBookingRef": null,
                   "carrierCostAmount": null,
                   "carrierRequest": null,
@@ -334940,6 +337590,7 @@
                       "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
                     ],
                     "receiverName": "สมหญิง ใจดี",
+                    "receiverRecorded": true,
                     "signatureFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006"
                   },
                   "readyAt": "2026-10-19T16:00:00+07:00",
@@ -368060,6 +370711,15 @@
             "required": false,
             "schema": {
               "$ref": "#/components/schemas/BillingStatementStatus"
+            }
+          },
+          {
+            "description": "A work queue: `missing_tax_invoice` = confirmed with no recorded or validated factory tax invoice (the dashboard card, D-090)",
+            "in": "query",
+            "name": "queue",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/BillingStatementQueue"
             }
           },
           {
@@ -494048,6 +496708,7 @@
                     {
                       "blockedByPayment": false,
                       "carrier": "factory_fleet",
+                      "carrierBooked": false,
                       "carrierRequest": null,
                       "cartons": [
                         {
@@ -494113,7 +496774,6 @@
                       "status": "ready",
                       "statusLabelAdminTh": "พร้อมส่ง",
                       "statusLabelTh": "พร้อมส่ง",
-                      "trackingNo": null,
                       "volumeCm3": 120000,
                       "waybillIssued": false,
                       "weightG": 18000
@@ -494326,6 +496986,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": null,
                   "cartons": [
                     {
@@ -494391,7 +497052,6 @@
                   "status": "draft",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -494650,6 +497310,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": null,
                   "cartons": [
                     {
@@ -494715,7 +497376,6 @@
                   "status": "ready",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -494927,6 +497587,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": null,
                   "cartons": [
                     {
@@ -494992,7 +497653,6 @@
                   "status": "cancelled",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -495245,6 +497905,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": null,
                   "cartons": [
                     {
@@ -495310,7 +497971,6 @@
                   "status": "picked_up",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -495563,6 +498223,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": null,
                   "cartons": [
                     {
@@ -495628,7 +498289,6 @@
                   "status": "ready",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -495912,6 +498572,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": {
                     "reason": "รถโรงงานไม่วิ่งเชียงราย",
                     "requestedAt": "2026-10-19T17:00:00+07:00"
@@ -495980,7 +498641,6 @@
                   "status": "ready",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -496252,6 +498912,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": null,
                   "cartons": [
                     {
@@ -496317,7 +498978,6 @@
                   "status": "out_for_delivery",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -496599,6 +499259,7 @@
                 "example": {
                   "blockedByPayment": false,
                   "carrier": "factory_fleet",
+                  "carrierBooked": false,
                   "carrierRequest": null,
                   "cartons": [
                     {
@@ -496660,13 +499321,12 @@
                   "plannedShipOn": "2026-10-20",
                   "proofOfDelivery": {
                     "capturedAt": "2026-10-21T14:05:00+07:00",
-                    "carrierPodRef": null,
                     "deliveredQuantity": 590,
                     "kind": "factory_photo_signature",
                     "photoFileIds": [
                       "0192f3a0-7c1e-7d2a-9b1f-0000000f2005"
                     ],
-                    "receiverName": "สมหญิง ใจดี",
+                    "receiverRecorded": true,
                     "signatureFileId": "0192f3a0-7c1e-7d2a-9b1f-0000000f2006"
                   },
                   "readyAt": "2026-10-19T16:00:00+07:00",
@@ -496674,7 +499334,6 @@
                   "status": "delivered",
                   "statusLabelAdminTh": "พร้อมส่ง",
                   "statusLabelTh": "พร้อมส่ง",
-                  "trackingNo": null,
                   "volumeCm3": 120000,
                   "waybillIssued": false,
                   "weightG": 18000
@@ -506490,6 +509149,186 @@
           }
         ],
         "summary": "Estimate shipping of the cart to a postcode",
+        "tags": [
+          "store.cart"
+        ]
+      }
+    },
+    "/v1/store/cart/applicable-codes": {
+      "get": {
+        "description": "The codes I hold — saved from deals or assigned to me — that pass the same checks as entering them on the cart, each with the saving the checkout preview gives once it is entered (the checkout prices the cart with the code added; nothing is written and no attempt is counted). `best` marks the highest saving, `conflictsWith` the other codes it cannot be combined with. Codes that do not apply yet come in `notYet` with the reason in words. Expired, disabled, used-up codes are left out. `maxCodes` is `promotions.max_codes_per_cart` (D-452).\n\nImplements: D-053, D-452, D-481.",
+        "operationId": "store.cart.applicableCodes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "applicable": [
+                    {
+                      "benefitSummary": "ลด 10% สูงสุด ฿1,500",
+                      "best": true,
+                      "code": "BOX10",
+                      "conflictsWith": [
+                        "LABEL8"
+                      ],
+                      "headline": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
+                      "onCart": false,
+                      "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+                      "saving": "1331.00",
+                      "stackGroup": "product",
+                      "stacking": "stackable"
+                    }
+                  ],
+                  "maxCodes": 3,
+                  "notYet": [
+                    {
+                      "code": "MATTEFREE",
+                      "headline": "เคลือบด้านฟรี เมื่อสั่ง 2,000 ใบ",
+                      "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1502",
+                      "reason": "min_quantity",
+                      "reasonText": "สั่งเพิ่มอีก 1,000 ชิ้น"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicableCodesDto"
+                }
+              }
+            },
+            "description": "Codes for this cart",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "customer": []
+          }
+        ],
+        "summary": "List my codes that this cart accepts",
         "tags": [
           "store.cart"
         ]
@@ -542836,7 +545675,7 @@
     },
     "/v1/store/handover-links/actions/resolve": {
       "post": {
-        "description": "D-463 (sealed carrier label): the carrier / driver opens `<web>/l/<token>` (token starting with `d`) and sees the recipient’s name, phone and address, the shipment code and its cartons — never the factory, prices or other orders (D-050). The token is sent in the body, not the URL path, so it stays out of access logs. Unknown or regenerated (revoked) links → 404; a trip that is delivered, cancelled or returned, or a link older than 7 days → 410 `handover.expired`. Every open, refused ones included, is an audit row. Rate-limited.\n\nImplements: D-463, D-050.",
+        "description": "D-463 (sealed carrier label): the carrier / driver opens `<web>/l/<token>` (token starting with `d`) and sees the recipient’s name, phone and address, the shipment code and its cartons — never the factory, prices or other orders (D-050). The token is sent in the body, not the URL path, so it stays out of access logs. Unknown or regenerated (revoked) links → 404; a trip that is delivered, cancelled or returned, or a link older past its lifetime (`logistics.handover_link_ttl_days`, default 7 days) → 410 `handover.expired`. Every open, refused ones included, is an audit row. Rate-limited.\n\nImplements: D-463, D-050.",
         "operationId": "store.handover.resolve",
         "parameters": [
           {
@@ -543774,6 +546613,582 @@
           }
         ],
         "summary": "List my points history",
+        "tags": [
+          "store.loyalty"
+        ]
+      }
+    },
+    "/v1/store/loyalty/packaging-profile": {
+      "get": {
+        "description": "Monthly box volume, product categories, ship-to regions and peak months I shared for demand planning (D-475 packaging profile reward). Never 404: every field is null until the first save. Internal data, shown only to its owner here (PDPA purpose on the form).\n\nImplements: D-475.",
+        "operationId": "store.loyalty.getPackagingProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "completedAt": "2026-11-04T15:00:00+07:00",
+                  "monthlyBoxVolume": "500_2000",
+                  "peakMonths": [
+                    11,
+                    12
+                  ],
+                  "productCategories": [
+                    "food",
+                    "cosmetics"
+                  ],
+                  "purposeAccepted": true,
+                  "shipToRegions": [
+                    "bangkok_metro",
+                    "north"
+                  ],
+                  "updatedAt": "2026-11-04T15:00:00+07:00"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PackagingProfileDto"
+                }
+              }
+            },
+            "description": "Packaging profile (null fields before the first save)",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "customer": []
+          }
+        ],
+        "summary": "Get my packaging profile",
+        "tags": [
+          "store.loyalty"
+        ]
+      },
+      "put": {
+        "description": "Replaces the whole profile. `purposeAccepted` must be `true` (the PDPA purpose shown on the form). The first save sets `completedAt`, emits `customer.packaging_profile_completed` and earns the packaging profile reward once (D-475: THB 100 = 40 points, subject to the D-476 cap and the D-477 hold); later saves only update it.\n\nImplements: D-475, D-476, D-477.",
+        "operationId": "store.loyalty.updatePackagingProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "value": {
+                    "monthlyBoxVolume": "500_2000",
+                    "peakMonths": [
+                      11,
+                      12
+                    ],
+                    "productCategories": [
+                      "food",
+                      "cosmetics"
+                    ],
+                    "purposeAccepted": true,
+                    "shipToRegions": [
+                      "bangkok_metro",
+                      "north"
+                    ]
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PutPackagingProfileDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "completedAt": "2026-11-04T15:00:00+07:00",
+                  "monthlyBoxVolume": "500_2000",
+                  "peakMonths": [
+                    11,
+                    12
+                  ],
+                  "productCategories": [
+                    "food",
+                    "cosmetics"
+                  ],
+                  "purposeAccepted": true,
+                  "shipToRegions": [
+                    "bangkok_metro",
+                    "north"
+                  ],
+                  "updatedAt": "2026-11-04T15:00:00+07:00"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PackagingProfileDto"
+                }
+              }
+            },
+            "description": "Packaging profile",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "http.malformed_json": {
+                    "$ref": "#/components/examples/problem.http.malformed_json"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `http.malformed_json`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "customer": []
+          }
+        ],
+        "summary": "Save my packaging profile",
+        "tags": [
+          "store.loyalty"
+        ]
+      }
+    },
+    "/v1/store/loyalty/tasks": {
+      "get": {
+        "description": "The onboarding rewards I can still earn and the ones I earned (D-475), derived from the reward settings and my points ledger. `todo` and `held` tasks come first by points, then `done` ones, newest first; exactly one todo task is `recommended`. A task is `held` while Marketing reviews it (D-477: the reward matched another account; the UI shows only \"รอตรวจสอบ\"). Activity and bonus rewards are capped at 600 points (THB 1,500) per rolling 365 days (D-476): `remainingPoints` is the todo total within `capRemainingPoints`. Tasks worth 0 points are omitted, and `line_oa_friend` when the LINE OA is not configured. No titles or links: the web owns the copy and routes per `code`.\n\nImplements: D-475, D-476, D-477, D-131.",
+        "operationId": "store.loyalty.tasks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "capPoints": 600,
+                  "capRemainingPoints": 564,
+                  "earnedPoints": 56,
+                  "pointValue": "2.50",
+                  "remainingPoints": 136,
+                  "tasks": [
+                    {
+                      "code": "tax_profile",
+                      "doneAt": null,
+                      "heldReason": null,
+                      "points": 40,
+                      "recommended": true,
+                      "status": "todo"
+                    },
+                    {
+                      "code": "address",
+                      "doneAt": null,
+                      "heldReason": "duplicate_identity",
+                      "points": 8,
+                      "recommended": false,
+                      "status": "held"
+                    },
+                    {
+                      "code": "phone_verified",
+                      "doneAt": "2026-11-02T10:10:00+07:00",
+                      "heldReason": null,
+                      "points": 8,
+                      "recommended": false,
+                      "status": "done"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EarnTasksDto"
+                }
+              }
+            },
+            "description": "Earn checklist",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "customer": []
+          }
+        ],
+        "summary": "List my earn checklist",
         "tags": [
           "store.loyalty"
         ]
@@ -556138,6 +559553,243 @@
         ]
       }
     },
+    "/v1/store/promotions": {
+      "get": {
+        "description": "Promotions Marketing made public that are active and inside their dates (a hidden promotion is never served), as cards: headline, benefit in words, main conditions, end date with a static \"ending soon\" label under 72 h (no countdown, D-481), the code when the deal has one shared code. `tab` filters (`for_you` = all until P2, `points` is empty until P3); `productTypeCode` keeps the deals that concern a product type (PDP badge); `ref` records a sales agent's share-link attribution and is echoed in `shareUrl`. Visitors get a response cached up to 60 s; a signed-in customer gets `myStatus` per deal. Text in the `Accept-Language` language (Thai fallback).\n\nImplements: D-481, D-053, D-486.",
+        "operationId": "store.promotions.listPublic",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tab",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/DealTab"
+            }
+          },
+          {
+            "description": "Only deals that concern this product type (PDP badge)",
+            "in": "query",
+            "name": "productTypeCode",
+            "required": false,
+            "schema": {
+              "example": "corrugated_rsc",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A sales agent's code from a share link: recorded as the visitor's attribution and echoed in `shareUrl`",
+            "in": "query",
+            "name": "ref",
+            "required": false,
+            "schema": {
+              "example": "AGT0042",
+              "pattern": "^[A-Za-z0-9]{6,12}$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "App or browser install id; ties a `?ref=` attribution to this visitor before sign-in (stored hashed)",
+            "in": "header",
+            "name": "X-Device-Id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "counts": {
+                    "all": 1,
+                    "ending_soon": 0,
+                    "for_you": 1,
+                    "points": 0
+                  },
+                  "items": [
+                    {
+                      "badge": "ดีลเด่น",
+                      "benefit": {
+                        "kind": "percent",
+                        "maxDiscount": "1500.00",
+                        "summary": "ลด 10% สูงสุด ฿1,500",
+                        "value": "10"
+                      },
+                      "code": "BOX10",
+                      "conditions": [
+                        {
+                          "label": "สินค้า",
+                          "value": "กล่องลูกฟูกฝาชน"
+                        },
+                        {
+                          "label": "ขั้นต่ำ",
+                          "value": "1,000 ชิ้น"
+                        },
+                        {
+                          "label": "ใช้ร่วมกับ",
+                          "value": "ใช้ร่วมกับโปรอื่นได้"
+                        }
+                      ],
+                      "endingSoon": false,
+                      "endsAt": "2026-11-30T23:59:59+07:00",
+                      "featured": true,
+                      "headline": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
+                      "heroImageUrl": null,
+                      "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+                      "myStatus": "claimable",
+                      "notEligibleReason": null,
+                      "productTypeCodes": [
+                        "corrugated_rsc"
+                      ],
+                      "shareUrl": "https://getpack.co/deals/box10-corrugated",
+                      "slug": "box10-corrugated",
+                      "startsAt": "2026-11-01T00:00:00+07:00",
+                      "subline": "เฉพาะกล่องลูกฟูกฝาชน",
+                      "terms": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DealListDto"
+                }
+              }
+            },
+            "description": "Deals",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "List public deals",
+        "tags": [
+          "store.promotions"
+        ]
+      }
+    },
     "/v1/store/promotions/actions/check": {
       "post": {
         "description": "The same rules as entering it on the cart — status, dates, whom it is for, uses left — and, when given, the product type and quantity conditions (D-053). Nothing is saved. Another customer's code says `not_yours` and shows nothing of it. Attempts count against the hourly limits per customer, IP and device (`promotions.code_attempt_limits`, 429 with `Retry-After`). The amount is worked out on the cart.\n\nImplements: D-053, D-181.",
@@ -556527,6 +560179,461 @@
           }
         ],
         "summary": "List the promotion codes I hold",
+        "tags": [
+          "store.promotions"
+        ]
+      }
+    },
+    "/v1/store/promotions/{promotionId}/actions/save": {
+      "post": {
+        "description": "Keeps the deal's shared code in my wallet (`customer_saved_coupons`) so the cart can offer it (`store.cart.applicableCodes`). 409 `promotions.already_saved` when it is there already; 409 `promotions.not_saveable` when the deal has no single shared code, the code cannot be used now, or I may not use it (used, first order only…). 404 when the deal is not shown (D-053, D-481).\n\nImplements: D-481, D-053, D-486.",
+        "operationId": "store.promotions.save",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "promotionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "myStatus": "saved"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DealSavedDto"
+                }
+              }
+            },
+            "description": "Saved",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "promotions.already_saved": {
+                    "$ref": "#/components/examples/problem.promotions.already_saved"
+                  },
+                  "promotions.not_saveable": {
+                    "$ref": "#/components/examples/problem.promotions.not_saveable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `promotions.already_saved`, `promotions.not_saveable`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "customer": []
+          }
+        ],
+        "summary": "Save a deal's code to my wallet",
+        "tags": [
+          "store.promotions"
+        ]
+      }
+    },
+    "/v1/store/promotions/{slug}": {
+      "get": {
+        "description": "One deal by its slug — public, or unlisted when reached by its link — with an FAQ built from its terms and getpack's own wording (AEO). 404 when it is hidden, not active or outside its dates. Each call counts a view for the promotion report; `ref` records a sales agent's share-link attribution (D-481).\n\nImplements: D-481, D-053, D-486.",
+        "operationId": "store.promotions.getPublic",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "example": "box10-corrugated",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A sales agent's code from a share link",
+            "in": "query",
+            "name": "ref",
+            "required": false,
+            "schema": {
+              "example": "AGT0042",
+              "pattern": "^[A-Za-z0-9]{6,12}$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "App or browser install id; ties a `?ref=` attribution to this visitor before sign-in (stored hashed)",
+            "in": "header",
+            "name": "X-Device-Id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "badge": "ดีลเด่น",
+                  "benefit": {
+                    "kind": "percent",
+                    "maxDiscount": "1500.00",
+                    "summary": "ลด 10% สูงสุด ฿1,500",
+                    "value": "10"
+                  },
+                  "code": "BOX10",
+                  "conditions": [
+                    {
+                      "label": "สินค้า",
+                      "value": "กล่องลูกฟูกฝาชน"
+                    },
+                    {
+                      "label": "ขั้นต่ำ",
+                      "value": "1,000 ชิ้น"
+                    },
+                    {
+                      "label": "ใช้ร่วมกับ",
+                      "value": "ใช้ร่วมกับโปรอื่นได้"
+                    }
+                  ],
+                  "endingSoon": false,
+                  "endsAt": "2026-11-30T23:59:59+07:00",
+                  "faq": [
+                    {
+                      "a": "เก็บโค้ดไว้ในบัญชี แล้วเลือกใช้ในตะกร้าก่อนชำระเงิน",
+                      "q": "ใช้โค้ดนี้อย่างไร"
+                    },
+                    {
+                      "a": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว",
+                      "q": "เงื่อนไขของดีลนี้"
+                    }
+                  ],
+                  "featured": true,
+                  "headline": "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
+                  "heroImageUrl": null,
+                  "id": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+                  "myStatus": "claimable",
+                  "notEligibleReason": null,
+                  "productTypeCodes": [
+                    "corrugated_rsc"
+                  ],
+                  "shareUrl": "https://getpack.co/deals/box10-corrugated",
+                  "slug": "box10-corrugated",
+                  "startsAt": "2026-11-01T00:00:00+07:00",
+                  "subline": "เฉพาะกล่องลูกฟูกฝาชน",
+                  "terms": "ใช้ได้ 1 ครั้งต่อบัญชี ราคารวม VAT แล้ว"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DealDetailDto"
+                }
+              }
+            },
+            "description": "Deal",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Get a deal page",
         "tags": [
           "store.promotions"
         ]
@@ -563316,6 +567423,252 @@
         },
         "security": [],
         "summary": "Share a quotation",
+        "tags": [
+          "store.savedQuotes"
+        ]
+      }
+    },
+    "/v1/store/quotes/{quoteId}/ladder": {
+      "get": {
+        "description": "The quotation's own quantities with their VAT-inclusive price per piece (D-220), the one in view marked and how much cheaper per piece each larger quantity is — the same options the cart’s tier hint uses, no new price (D-452 (4)). `promoHint` names a public deal for this product type that starts at a larger quantity, with an estimate before the checkout margin guard. The owner only (signed in, or the anonymous session that saved it); 409 `quotes.not_live` once the price lock has ended (D-051).\n\nImplements: D-452, D-220, D-051.",
+        "operationId": "store.quotes.ladder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "quoteId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The option in view; default the cart item’s quantity for this quotation, else the smallest option",
+            "in": "query",
+            "name": "quantity",
+            "required": false,
+            "schema": {
+              "example": 500,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The configurator session that saved the quote, when not signed in",
+            "in": "query",
+            "name": "anonymousId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "current": 500,
+                  "promoHint": {
+                    "estimatedTotal": "11979.00",
+                    "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d1501",
+                    "text": "ลดเพิ่ม 10% เมื่อสั่ง ≥ 1,000 ใบ"
+                  },
+                  "rows": [
+                    {
+                      "current": false,
+                      "quantity": 300,
+                      "savingPct": null,
+                      "unitPrice": "16.20"
+                    },
+                    {
+                      "current": true,
+                      "quantity": 500,
+                      "savingPct": null,
+                      "unitPrice": "14.79"
+                    },
+                    {
+                      "current": false,
+                      "quantity": 1000,
+                      "savingPct": "10",
+                      "unitPrice": "13.31"
+                    }
+                  ],
+                  "unit": "ใบ"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteLadderDto"
+                }
+              }
+            },
+            "description": "Ladder",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "quotes.not_live": {
+                    "$ref": "#/components/examples/problem.quotes.not_live"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `quotes.not_live`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Get the volume ladder of my quotation",
         "tags": [
           "store.savedQuotes"
         ]

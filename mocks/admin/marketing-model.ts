@@ -51,6 +51,12 @@ export interface PromotionRow {
   budgetAmount: string | null;
   usage: PromotionUsage;
   updatedAt: string;
+  /** Loyalty P1.5 (`admin.promotions.update` → `visibility`, `display`): off every store surface until shown. */
+  visibility?: Schemas["PromotionVisibility"];
+  display?: Schemas["PromotionDisplayDto"];
+  /** `admin.promotions.setHeroImage`: the uploaded file, and the URL the API answers for it. */
+  heroImageFileId?: string | null;
+  heroImageUrl?: string | null;
 }
 
 export interface CouponCodeRow {

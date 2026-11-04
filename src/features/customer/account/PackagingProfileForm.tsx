@@ -8,8 +8,7 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { PackagingProfile } from "@/lib/api/requests/store-loyalty";
+import { browserApi } from "@/lib/api/browser";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
@@ -30,6 +29,7 @@ import {
   type PackagingDraft,
   type Volume,
 } from "./packaging-profile";
+import type { PackagingProfile } from "./loyalty-types";
 
 const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 type MonthKey = `${(typeof MONTHS)[number]}`;
@@ -90,7 +90,8 @@ export function PackagingProfileForm({
     setFailure(null);
     const firstCompletion = profile.completedAt === null && savedAt === profile.updatedAt;
     try {
-      const saved = await browserRequests().call("PUT /v1/store/loyalty/packaging-profile", { body: toInput(draft) });
+      const { data } = await browserApi().PUT("/v1/store/loyalty/packaging-profile", { body: toInput(draft) });
+      const saved = data!;
       setSavedAt(saved.updatedAt);
       setDraft(draftFrom(saved));
       if (firstCompletion && rewardPoints) {

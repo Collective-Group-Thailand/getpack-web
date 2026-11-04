@@ -248,3 +248,34 @@ export function serviceSchema(input: { name: string; description: string; url: s
     provider: { "@type": "Organization", name: BRAND_NAME, legalName: BRAND_COMPANY },
   } as const;
 }
+
+/* ------------------------------------------------------------------------------------ *
+ * Deals (loyalty P1.5): a public promotion as an `Offer`. The same rule again — the offer
+ * states the API's own words and dates; no price is claimed (a deal is a discount, not a price),
+ * no availability or rating.
+ * ------------------------------------------------------------------------------------ */
+
+export interface OfferSchemaInput {
+  name: string;
+  description: string;
+  /** The deal's own absolute URL. */
+  url: string;
+  validFrom: string;
+  validThrough: string | null;
+  /** The product types it applies to, by name. */
+  category?: readonly string[];
+}
+
+export function offerSchema(input: OfferSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Offer",
+    name: input.name,
+    description: input.description,
+    url: input.url,
+    validFrom: input.validFrom,
+    ...(input.validThrough ? { validThrough: input.validThrough } : {}),
+    ...(input.category && input.category.length > 0 ? { category: input.category.join(", ") } : {}),
+    offeredBy: { "@type": "Organization", name: BRAND_NAME, legalName: BRAND_COMPANY },
+  } as const;
+}

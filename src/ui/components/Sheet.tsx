@@ -32,6 +32,12 @@ export interface SheetProps extends VariantProps<typeof sheetVariants> {
   footer?: React.ReactNode;
   closeLabel: string;
   className?: string;
+  /**
+   * `bare`: no header, footer or surface of its own — the content draws the whole sheet (a coupon ticket whose
+   * notches must show the scrim, loyalty P1.5). The title stays for screen readers; close with `SheetClose`, Esc or
+   * the scrim.
+   */
+  appearance?: "panel" | "bare";
 }
 
 /**
@@ -49,8 +55,29 @@ export function Sheet({
   closeLabel,
   side,
   className,
+  appearance = "panel",
 }: SheetProps) {
   const returnFocus = useReturnFocus();
+
+  if (appearance === "bare")
+    return (
+      <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="z-overlay bg-overlay fixed inset-0" />
+          <DialogPrimitive.Content
+            {...returnFocus}
+            {...(description ? {} : { "aria-describedby": undefined })}
+            className={cn("z-modal fixed inset-x-0 bottom-0 max-h-[92dvh] overflow-y-auto", className)}
+          >
+            <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
+            {description ? (
+              <DialogPrimitive.Description className="sr-only">{description}</DialogPrimitive.Description>
+            ) : null}
+            {children}
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    );
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -79,3 +106,6 @@ export function Sheet({
     </DialogPrimitive.Root>
   );
 }
+
+/** Closes the sheet it sits in (a `bare` sheet draws its own close control). */
+export const SheetClose = DialogPrimitive.Close;

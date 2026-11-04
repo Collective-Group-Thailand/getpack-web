@@ -4,12 +4,16 @@ import { setRequestLocale } from "next-intl/server";
 import {
   getCatalogueTree,
   getLibraryTotals,
+  getProductTypeNames,
   getSupportChannels,
   listAllStyles,
   listFaqs,
   listStockProducts,
   listStyles,
 } from "@/features/customer/catalog/api.server";
+import { listDeals } from "@/features/customer/deals/api.server";
+import { readNow } from "@/features/customer/deals/now.server";
+import { HomeDeals, homeDeals } from "@/features/customer/deals/HomeDeals";
 import { getHomeContent } from "@/features/customer/home/content.server";
 import {
   CustomerCases,
@@ -47,21 +51,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [content, tree, styles, published, faqs, channels, guarantee, hero, library, stock, jar] = await Promise.all([
-    getHomeContent(locale),
-    getCatalogueTree(),
-    listStyles({ sort: "popular", limit: 7 }).catch(() => null),
-    // The curated templates are looked up in the whole (cached) library; popular ones fill any gap.
-    listAllStyles().catch(() => []),
-    listFaqs().catch(() => []),
-    getSupportChannels(),
-    getGuarantee().catch(() => null),
-    getStudioHero(),
-    getLibraryTotals(),
-    // The ready-to-ship shelf picks a varied two dozen from these; a failure leaves the shelf out.
-    listStockProducts({ perPage: 100 }).catch(() => null),
-    cookies(),
-  ]);
+  const [content, tree, styles, published, faqs, channels, guarantee, hero, library, stock, jar, deals, typeNames] =
+    await Promise.all([
+      getHomeContent(locale),
+      getCatalogueTree(),
+      listStyles({ sort: "popular", limit: 7 }).catch(() => null),
+      // The curated templates are looked up in the whole (cached) library; popular ones fill any gap.
+      listAllStyles().catch(() => []),
+      listFaqs().catch(() => []),
+      getSupportChannels(),
+      getGuarantee().catch(() => null),
+      getStudioHero(),
+      getLibraryTotals(),
+      // The ready-to-ship shelf picks a varied two dozen from these; a failure leaves the shelf out.
+      listStockProducts({ perPage: 100 }).catch(() => null),
+      cookies(),
+      // Loyalty P1.5: the deal strip; a failed read leaves it out like any other block.
+      listDeals(),
+      getProductTypeNames(locale).catch(() => ({}) as Record<string, string>),
+    ]);
 
   // Instant-price categories lead, as they lead the catalogue (UX audit step 4). Only packaging
   // a customer configures: the `standard_product` and `service` types are bookkeeping, not a range.
@@ -89,6 +97,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         }}
       />
       <TrustRow />
+      <HomeDeals
+        deals={homeDeals(deals?.items)}
+        signedIn={Boolean(readAccessToken(jar))}
+        now={await readNow()}
+        typeNames={typeNames}
+      />
       {stock ? (
         <StockShelfSection
           items={stock.data}

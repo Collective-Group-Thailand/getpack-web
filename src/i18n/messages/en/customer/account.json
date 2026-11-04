@@ -305,6 +305,16 @@
       "earn_review": "A review",
       "earn_referral": "Inviting a friend",
       "earn_bonus": "Bonus",
+      "earn_identity_link": "Linked Google or Apple",
+      "earn_phone_verified": "Verified mobile number",
+      "earn_profile_completed": "Completed account details",
+      "earn_tax_profile": "Added tax details",
+      "earn_address": "Added a delivery address",
+      "earn_brand_kit": "Added logo and brand colours",
+      "earn_first_design": "Saved first design",
+      "earn_team_invite": "Invited the team",
+      "earn_packaging_profile": "Told us about packaging use",
+      "earn_line_oa_friend": "Added getpack on LINE",
       "redeem": "Used",
       "redeem_reversal": "Returned",
       "reversal_claim_refund": "Taken back after a claim or refund",
@@ -469,7 +479,8 @@
     "history": "Credit history",
     "tableItem": "Item",
     "tableDate": "Date",
-    "tableAmount": "Amount"
+    "tableAmount": "Amount",
+    "seeDeals": "See deals and promotions"
   },
   "copy": {
     "copied": "Copied"

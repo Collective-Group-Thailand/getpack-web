@@ -122,6 +122,7 @@
     "podBody": "Required for every delivery by your own fleet",
     "podDone": "Proof of delivery",
     "receiver": "Received by",
+    "receiverRecorded": "Receiver recorded",
     "delivered": "Delivered",
     "at": "At",
     "photoAlt": "Delivery photo {n}",

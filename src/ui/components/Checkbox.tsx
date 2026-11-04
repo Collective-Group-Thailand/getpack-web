@@ -12,13 +12,15 @@ export interface CheckboxProps extends Omit<React.ComponentProps<typeof Checkbox
   description?: React.ReactNode;
   /** `sm`: a 12px label on one line beside the box — a consent line under a form (home newsletter). */
   size?: "md" | "sm";
+  /** The label takes the rest of the row (a picker row with a figure at its end). */
+  stretch?: boolean;
 }
 
 /**
  * A checkbox whose label is part of the component: a bare box with the label somewhere else
  * is the most common a11y defect in a form, so the API does not allow it.
  */
-export function Checkbox({ label, description, size = "md", className, id, ...props }: CheckboxProps) {
+export function Checkbox({ label, description, size = "md", stretch = false, className, id, ...props }: CheckboxProps) {
   const generatedId = useId();
   const checkboxId = id ?? generatedId;
   const descriptionId = description ? `${checkboxId}-description` : undefined;
@@ -42,8 +44,14 @@ export function Checkbox({ label, description, size = "md", className, id, ...pr
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
 
-      <div className="min-w-0">
-        <label htmlFor={checkboxId} className={size === "sm" ? "text-xs leading-4" : "text-sm leading-normal"}>
+      <div className={cn("min-w-0", stretch && "flex-1")}>
+        <label
+          htmlFor={checkboxId}
+          className={cn(
+            size === "sm" ? "text-xs leading-4" : "text-sm leading-normal",
+            stretch && "block cursor-pointer",
+          )}
+        >
           {label}
         </label>
         {/* A div, not a p: a description may hold block content (the consent step's <details>). */}
