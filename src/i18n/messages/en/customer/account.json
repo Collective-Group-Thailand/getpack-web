@@ -111,7 +111,8 @@
     "tiers": {
       "member": "Member",
       "silver": "Silver",
-      "gold": "Gold"
+      "gold": "Gold",
+      "platinum": "Platinum"
     },
     "seePoints": "See your points",
     "shortcuts": "Shortcuts",
@@ -964,5 +965,182 @@
     },
     "capped": "Combined multiplier at its maximum",
     "paymentHint": "Pay by QR or bank transfer for points ×{multiplier}: {points} points"
+  },
+  "rewards": {
+    "title": "Redeem points",
+    "cta": "Redeem points",
+    "intro": "Pick a coupon. Redeemed coupons go to your code wallet and are used at checkout.",
+    "unit": "points",
+    "points": "{points} points",
+    "coupons": "{count, plural, one {# coupon} other {# coupons}}",
+    "label": "{name} · {points} points",
+    "redeem": "Redeem",
+    "redeemNamed": "Redeem {name} for {points} points",
+    "tierTag": "{tier} and up",
+    "emptyTitle": "Nothing to redeem right now",
+    "emptyBody": "Your points are all there, and you can always use them as a discount at checkout.",
+    "blocked": {
+      "insufficient_points": "Not enough points — {missing} more needed",
+      "tier": "For {tier} members and up",
+      "frequency": "Can be redeemed again on {date}",
+      "open_limit": "You already hold as many unused coupons of this as allowed",
+      "held": "Your account is under review; you can redeem once it is done"
+    },
+    "balance": {
+      "label": "Your points",
+      "available": "Available points",
+      "expiring": "Expiring soon",
+      "none": "None",
+      "open": "Unused coupons",
+      "seeMine": "See my coupons"
+    },
+    "groups": {
+      "cash": {
+        "title": "Discounts",
+        "note": "Taken off the goods before VAT"
+      },
+      "perks": {
+        "title": "Perks",
+        "note": "Shipping, samples, rush jobs and print upgrades"
+      }
+    },
+    "how": {
+      "label": "How redeemed coupons work",
+      "redeem": {
+        "title": "Redeem",
+        "body": "The points are taken when you redeem; the coupon goes to your code wallet."
+      },
+      "use": {
+        "title": "Use at checkout",
+        "body": "Pick the coupon in your cart — one per order of each kind."
+      },
+      "change": {
+        "title": "Change your mind",
+        "body": "An unused coupon can be cancelled within {days} days and the points return to your account.",
+        "bodyGeneric": "An unused coupon can be cancelled until the date it shows, and the points return to your account."
+      }
+    },
+    "sheet": {
+      "title": "Redeem points for a coupon",
+      "doneTitle": "The coupon is in your code wallet",
+      "close": "Close",
+      "unit": "points",
+      "spend": "Use {points} points",
+      "after": "{points} points left",
+      "validity": "The coupon is valid for {days} days from today",
+      "cancelRule": "Cancel within {days} days if unused and the points come back",
+      "cancelRuleGeneric": "Cancel before the date on the coupon if unused and the points come back",
+      "notNow": "Not now",
+      "confirm": "Redeem for {points} points",
+      "left": "{points} points left",
+      "validUntil": "Valid until {date}",
+      "cancelUntil": "You can change your mind until {date} in My coupons",
+      "more": "Keep browsing",
+      "useInCart": "Use in cart",
+      "errors": {
+        "rewards_insufficient_points": "You no longer have enough points for this",
+        "rewards_tier_required": "This is for a higher membership tier",
+        "rewards_frequency_limit": "This can be redeemed again later — see the date on the card",
+        "rewards_open_limit": "You already hold as many unused coupons of this as allowed",
+        "rewards_account_held": "Your account is under review; you can redeem once it is done",
+        "rewards_cost_changed": "The points needed just changed. Close and open it again",
+        "http_not_found": "This is no longer available",
+        "generic": "Could not redeem. No points were taken — try again"
+      }
+    },
+    "stub": {
+      "cash": "Discount",
+      "shipping": "Shipping",
+      "sample": "Sample",
+      "rush": "Rush",
+      "upgrade": "Upgrade",
+      "revision": "Revision"
+    },
+    "mine": {
+      "title": "My coupons",
+      "tabsLabel": "Coupon status",
+      "tabs": {
+        "issued": "Unused",
+        "used": "Used",
+        "expired": "Expired",
+        "cancelled": "Cancelled"
+      },
+      "empty": {
+        "issued": "No coupons waiting to be used",
+        "used": "No used coupons yet",
+        "expired": "No expired coupons",
+        "cancelled": "No cancelled coupons"
+      },
+      "perk": "Membership perk",
+      "perkFrom": "Membership perk · Q{quarter} {year}",
+      "boughtWith": "Redeemed for {points} points · {date}",
+      "validUntil": "Valid until {date}",
+      "usedOn": "Used on {order}",
+      "used": "Used",
+      "expiredOn": "Expired {date}",
+      "cancelledLine": "Cancelled, points returned",
+      "cancel": "Cancel redemption",
+      "refundUntil": "Points back until {date}",
+      "perkNoCancel": "A membership perk cannot be cancelled",
+      "confirmTitle": "Cancel this redemption?",
+      "confirmBody": "Coupon {code} will stop working and {points} points return to your account. Points that expired in the meantime do not come back.",
+      "confirm": "Cancel and return points",
+      "keep": "Keep the coupon",
+      "cancelled": "Cancelled — {points} points returned",
+      "errors": {
+        "windowClosed": "It can no longer be cancelled; the coupon stays valid until its date",
+        "used": "This coupon has been used",
+        "generic": "Could not cancel — try again"
+      }
+    }
+  },
+  "perks": {
+    "eyebrow": "Membership tier",
+    "multiplier": "×{value} points",
+    "progress": "12-month spend {spend} of {needed} to reach {tier}",
+    "progressLabel": "Progress to {tier}",
+    "top": "Top tier · 12-month spend {spend}",
+    "notYetCounted": "{amount} more counts once those orders are completed",
+    "multipliersTitle": "Points multipliers in force now",
+    "multipliers": {
+      "tier": "{tier} tier",
+      "anniversary": "Membership anniversary month",
+      "campaign": "Points campaign",
+      "reorder": "Reorder",
+      "payment": "QR or bank transfer"
+    },
+    "until": "until {date}",
+    "cap": "Up to ×{value} combined per order; checkout shows the points you will actually earn",
+    "title": "Your perks",
+    "none": "Perks start at Silver. Your spend moves you up.",
+    "nextTitle": "At {tier}",
+    "quarter": "Q{quarter} {year}",
+    "couponUntil": "coupon valid until {date}",
+    "nextQuarterNote": "The next coupon arrives when the new quarter starts",
+    "seeCoupon": "See coupon",
+    "used": "Used",
+    "nextQuarter": "Next quarter",
+    "codes": {
+      "quarterly_free_shipping": {
+        "title": "Free shipping on one order every quarter",
+        "note": "A free-shipping coupon in your code wallet every quarter"
+      },
+      "free_shipping_every_order": {
+        "title": "Free shipping on every order",
+        "note": "Taken off in the cart, no code needed"
+      },
+      "priority_support": {
+        "title": "Priority chat support",
+        "note": "Your messages go to the front of the support queue"
+      },
+      "quarterly_free_rush": {
+        "title": "Free rush production (subject to the queue) once a quarter",
+        "note": "A rush coupon in your code wallet every quarter"
+      },
+      "priority_production_slot": {
+        "title": "Priority production slot",
+        "note": "Your jobs get an earlier place in the production queue"
+      }
+    }
   }
 }

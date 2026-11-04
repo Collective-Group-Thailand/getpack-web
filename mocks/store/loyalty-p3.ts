@@ -364,6 +364,7 @@ export const loyaltyP3Handlers = [
     return {
       balance: customer ? customer.points : null,
       items: REWARD_FIXTURES.map((fixture) => itemOf(fixture, customer, lang)),
+      cancelWindowDays: CANCEL_WINDOW / DAY,
     };
   }),
   // CONTRACT-REQUEST store.rewards

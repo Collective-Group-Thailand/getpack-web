@@ -316,7 +316,7 @@ figure is a fake example (API-CHANGES-P3 samples and the UAT seed's eight items)
   `held` "บัญชีอยู่ระหว่างตรวจสอบ แลกได้เมื่อตรวจเสร็จ" (shield). A blocked ticket's stub turns `neutral-subtle`; the
   text stays readable (not `subtle`), the reason is the first thing to read.
 - Phone: compact rows with the 64 px mini-stub ("60" over "แต้ม"), as /deals.
-- Groups "ส่วนลดเงินสด" (`cash_off`) and "สิทธิพิเศษ" (everything else), each with a one-line explainer beside the
+- Groups "ส่วนลดค่าสินค้า" (`cash_off`; the plan said "ส่วนลดเงินสด", renamed so no customer word says cash) and "สิทธิพิเศษ" (everything else), each with a one-line explainer beside the
   heading. Three columns in the account frame, four on /deals.
 
 ## 2. `/account/points/redeem`

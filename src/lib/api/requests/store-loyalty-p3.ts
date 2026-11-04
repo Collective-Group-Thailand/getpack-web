@@ -116,6 +116,11 @@ export const rewardList = z
     /** Null for an anonymous caller. */
     balance: z.number().int().min(0).nullable(),
     items: z.array(rewardItem),
+    /**
+     * `loyalty.rewards.cancelWindowDays` (7): asked of getpack-api in WEB-P3-NOTES §3 — the confirm sheet states the
+     * window, and a setting is never written into the UI. Without it the sheet words the rule without a number.
+     */
+    cancelWindowDays: z.number().int().min(0).nullable().optional(),
   })
   .meta({ id: "RewardListDto" });
 
