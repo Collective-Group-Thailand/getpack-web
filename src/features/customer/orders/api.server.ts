@@ -174,3 +174,22 @@ export async function getDesignVersion(
   ).GET("/v1/store/designs/{designId}/versions/{versionNo}", { params: { path: { designId, versionNo } } });
   return data?.document ? { spec: data.document.spec, content: data.document.content } : null;
 }
+
+/**
+ * My review of a delivered order (`store.reviews.get`, D-135): `null` when there is none yet (404), `undefined` when
+ * the read failed — the order page then leaves the review card out rather than offering a second review.
+ */
+export async function getMyReview(orderId: string): Promise<Schemas["ReviewDto"] | null | undefined> {
+  try {
+    return await orNull(
+      (async () =>
+        (
+          await (
+            await serverApi("customer")
+          ).GET("/v1/store/orders/{orderId}/review", { params: { path: { orderId } } })
+        ).data!)(),
+    );
+  } catch {
+    return undefined;
+  }
+}

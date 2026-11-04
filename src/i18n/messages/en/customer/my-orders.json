@@ -594,5 +594,49 @@
       "afterPayment": "Set after payment"
     },
     "loading": "Loading orders…"
+  },
+  "review": {
+    "title": "Review this order",
+    "titleDone": "Your review",
+    "intro": "Tell us how the boxes turned out. Reviews that pass our check appear on the customer reviews page with your shortened name.",
+    "ratingLabel": "Overall satisfaction",
+    "starsLabel": "{rating} of 5 stars",
+    "ratingWords": {
+      "1": "Unhappy",
+      "2": "Needs work",
+      "3": "Fair",
+      "4": "Happy",
+      "5": "Very happy"
+    },
+    "commentLabel": "Anything to add (optional)",
+    "commentHint": "Print quality, how sturdy the box is, the delivery · up to {max, number} characters",
+    "photosTitle": "Photos of what arrived (optional)",
+    "photoBonus": "Add real photos for extra points · up to 4",
+    "publicNote": "A sent review can't be edited, but you can add photos later",
+    "submit": "Send review",
+    "waitUpload": "Uploading photos…",
+    "status": {
+      "pending": "Being checked",
+      "published": "On the reviews page",
+      "hidden": "Not shown publicly"
+    },
+    "sentOn": "Sent {date}",
+    "photosLabel": "Review photo",
+    "earned": "You earned <b>{points} points</b> for this review",
+    "reply": "getpack replied {date}",
+    "addTitle": "Add photos of what arrived",
+    "addPhotos": "Add photos",
+    "addMore": "Add more photos",
+    "addSave": "Save {count, plural, one {# photo} other {# photos}}",
+    "cancel": "Cancel",
+    "errors": {
+      "rating": "Choose a star rating before sending",
+      "exists": "This order already has a review. Reload the page to see it.",
+      "notDelivered": "You can review once the order has arrived",
+      "failed": "Couldn't send the review. Try again.",
+      "photos": "Your review is saved, but the photos didn't attach. Try saving them again.",
+      "photoLimit": "Up to {max} photos per review",
+      "photoWindow": "Photos can be added within 30 days of the review"
+    }
   }
 }

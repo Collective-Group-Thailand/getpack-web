@@ -28,6 +28,8 @@ const config: StorybookConfig = {
     "../src/features/customer/surveys/**/*.stories.@(ts|tsx)",
     "../src/features/customer/loyalty/**/*.stories.@(ts|tsx)",
     "../src/features/admin/marketing/**/*.stories.@(ts|tsx)",
+    // Loyalty P2: the order review with photos.
+    "../src/features/customer/orders/**/*.stories.@(ts|tsx)",
     // The deals surface: the ladder and the cart's coupon picker (loyalty P1.5); DealCard is under shared.
     "../src/features/customer/deals/**/*.stories.@(ts|tsx)",
     "../src/features/customer/cart/**/*.stories.@(ts|tsx)",

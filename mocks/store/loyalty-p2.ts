@@ -7,8 +7,9 @@
  * corrugated box (until a fixed date, D-481), data refresh due, no showcase consent yet. A newcomer has none of it.
  */
 
-import { HttpResponse } from "msw";
+import { http, HttpResponse } from "msw";
 
+import type { Schemas } from "@/lib/api/types";
 import type {
   DataRefresh,
   LoyaltyCampaign,
@@ -80,8 +81,11 @@ interface State {
   survey: SurveyInstance["status"];
   dataConfirmedAt: string | null;
   showcase: ShowcaseConsent;
-  photos: number;
+  /** My reviews by order id, with the P2 `photos[]` the published `ReviewDto` does not carry yet. */
+  reviews: Map<string, MockReview>;
 }
+
+type MockReview = Schemas["ReviewDto"] & { photos: { id: string; url: string }[]; photoRewardPoints: number };
 
 const states = new Map<string, State>();
 function stateOf(customer: MockCustomer): State {
@@ -97,7 +101,7 @@ function stateOf(customer: MockCustomer): State {
         decidedAt: null,
         rewardPoints: 40,
       },
-      photos: 0,
+      reviews: new Map(),
     });
   return states.get(customer.persona)!;
 }
@@ -276,23 +280,55 @@ export const loyaltyP2Handlers = [
     return state.showcase;
   }),
 
-  // CONTRACT-REQUEST store.reviews.add-photos
-  mockRequest("POST /v1/store/orders/{orderId}/review/photos", ({ request, body }) => {
+  // store.reviews.get / submit are published; these keep the review per order so the order page's form, its
+  // "รีวิวของคุณ" state and the P2 photos agree (the generated handler answers one fixed review for every order).
+  http.get("*/v1/store/orders/:orderId/review", ({ request, params }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const review = stateOf(customer).reviews.get(String(params.orderId));
+    return review ? HttpResponse.json(review) : problem(404, "http.not_found", "ยังไม่มีรีวิว");
+  }),
+  http.post("*/v1/store/orders/:orderId/review", async ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const state = stateOf(customer);
-    if (state.photos + body.photoFileIds.length > 4)
+    const orderId = String(params.orderId);
+    if (state.reviews.has(orderId)) return problem(409, "reviews.exists", "รีวิวแล้ว");
+    const body = (await request.json()) as Schemas["SubmitReviewDto"];
+    const review: MockReview = {
+      id: mockId("rvw", state.reviews.size + 1),
+      orderId,
+      orderCode: "OR-2610-0042",
+      productTypeCode: "folding_carton",
+      rating: body.rating,
+      comment: body.comment ?? null,
+      status: "pending",
+      reply: null,
+      // D-490: ฿25 at the seeded point value (2.50) = 10 points.
+      rewardPoints: 10,
+      createdAt: bangkokIso(),
+      photos: [],
+      photoRewardPoints: 0,
+    };
+    state.reviews.set(orderId, review);
+    return HttpResponse.json(review, { status: 201 });
+  }),
+
+  // CONTRACT-REQUEST store.reviews.add-photos
+  mockRequest("POST /v1/store/orders/{orderId}/review/photos", ({ request, params, body }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const review = stateOf(customer).reviews.get(params.orderId);
+    if (!review) return problem(404, "http.not_found", "ยังไม่มีรีวิว");
+    if (review.photos.length + body.photoFileIds.length > 4)
       return problem(422, "reviews.photo_limit", "แนบรูปได้สูงสุด 4 รูป");
-    const first = state.photos === 0;
-    state.photos += body.photoFileIds.length;
-    return HttpResponse.json(
-      {
-        photos: body.photoFileIds.map((id) => ({ id, url: `/v1/store/catalog/images/${id}` })),
-        rewardPoints: 10 + (first ? 10 : 0),
-        photoRewardPoints: first ? 10 : 0,
-      },
-      { status: 201 },
-    );
+    const first = review.photos.length === 0;
+    review.photos.push(...body.photoFileIds.map((id) => ({ id, url: `/v1/store/catalog/images/${id}` })));
+    if (first) {
+      review.photoRewardPoints = 10;
+      review.rewardPoints += 10;
+    }
+    return HttpResponse.json(review, { status: 201 });
   }),
 
   // CONTRACT-REQUEST store.promotions.add-bundle: the mock adds the customer's saved quotations (one per item, up to
