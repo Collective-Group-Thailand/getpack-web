@@ -45,7 +45,7 @@ export interface TierPerksProps {
  * name as the panel's figure, the API's percentage on a 4 px meter towards the next tier (or "ระดับสูงสุดแล้ว"), what
  * counts, and the multipliers in force — informational, the web never multiplies (the checkout shows the points).
  * Right: the tier's perks — an active perk carries no status; only a granted coupon ("ดูคูปอง"), a used one and the
- * next quarter's say anything — then the next tier's perks, muted. No date or factory is promised for the production
+ * next quarter's say anything — then the next tier's perks, muted. No date or production site is promised for the
  * slot; 30-day terms and an account manager are not automated (D-500) and are not listed.
  */
 export function TierPerks({ points, loyalty, className }: TierPerksProps) {
