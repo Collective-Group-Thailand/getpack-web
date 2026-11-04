@@ -11,6 +11,7 @@
  */
 
 import type { Schemas } from "@/lib/api/types";
+import type { ConditionsV2Fields, DisplayV2Fields } from "@/lib/api/requests/admin-loyalty-p2";
 
 import { http, HttpResponse } from "msw";
 
@@ -21,6 +22,7 @@ import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
 import type { CampaignRow, CouponCodeRow, PromotionRow } from "./marketing-model";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
+import { AGENT_ROWS } from "./loyalty-p2";
 import { etagOf as tableEtag } from "./tables";
 
 /** A coupon batch as the fixture keeps it; `toCouponBatchDto` is what the API answers. */
@@ -327,6 +329,12 @@ function publishErrors(
   return errors;
 }
 
+/** Whether a promotion's stored conditions use v2 keys (audience, bundle count). */
+function conditionsV2Of(row: PromotionRow): boolean {
+  const conditions = row.conditions as ConditionsV2Fields;
+  return Boolean(conditions.audience || conditions.cartProductTypeCountGte);
+}
+
 function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
   const campaign = campaigns.find((candidate) => candidate.id === row.campaignId);
   // The spend is the discount given: what the promotion's own budget is measured against.
@@ -337,7 +345,9 @@ function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
     heroImageFileId: null,
     heroImageUrl: null,
     ...row,
-    displaySchemaVersion: 1,
+    // Loyalty P2 (CONTRACT-REQUEST admin.promotions.audience): v2 once an audience, a bundle or a listing is stored.
+    displaySchemaVersion: row.display && ("listing" in row.display || "bundle" in row.display) ? 2 : 1,
+    ...(conditionsV2Of(row) ? { conditionsSchemaVersion: 2 } : {}),
     systemKey: null,
     usage: { ...row.usage, views: row.usage.redemptions * 12, saves: row.usage.redemptions * 2 },
     spentAmount: row.usage.discountAmount,
@@ -435,7 +445,8 @@ function reportOf(rows: readonly PromotionRow[]): Schemas["PromotionReportDto"] 
     uses: redemptions,
     views: redemptions * 12,
     saves: redemptions * 2,
-    refAgents: [],
+    // Loyalty P2: the share-link rows gain the performance fields (CONTRACT-REQUEST admin.promotions.agent-performance).
+    refAgents: rows.length ? AGENT_ROWS.map(({ agentName: _name, ...row }) => row) : [],
     currency: "THB",
   };
 }
@@ -797,6 +808,27 @@ export const marketingContractHandlers = [
     const visibility = rest.visibility ?? row.visibility ?? "hidden";
     if (display.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(display.slug))
       return invalid("display.slug", "slug ใช้ได้เฉพาะตัวพิมพ์เล็ก ตัวเลข และขีด");
+    // Loyalty P2 (D-494): a bundle is `cartProductTypeCountGte ≥ 2` if and only if `stackGroup = 'bundle'`;
+    // `matching_only` needs an audience.
+    const v2Conditions = { ...row.conditions, ...(rest.conditions ?? {}) } as ConditionsV2Fields;
+    const stackGroup = rest.stackGroup !== undefined ? rest.stackGroup : row.stackGroup;
+    const isBundle = (v2Conditions.cartProductTypeCountGte ?? 0) >= 2;
+    if (isBundle !== (stackGroup === "bundle"))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        {
+          path: isBundle ? "stackGroup" : "conditions.cartProductTypeCountGte",
+          code: "bundle_pair",
+          message: "ดีลชุดต้องมีจำนวนประเภทสินค้าขั้นต่ำ 2 และกลุ่มการใช้ร่วม bundle",
+        },
+      ]);
+    if ((display as DisplayV2Fields).listing === "matching_only" && !v2Conditions.audience)
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        {
+          path: "display.listing",
+          code: "listing_requires_audience",
+          message: "แสดงเฉพาะกลุ่มต้องกำหนดกลุ่มลูกค้าก่อน",
+        },
+      ]);
     const failed = publishErrors(row, visibility, display);
     if (failed.length)
       return problem(

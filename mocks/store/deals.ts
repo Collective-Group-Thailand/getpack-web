@@ -14,7 +14,16 @@ import type { ApplicableCodes, QuoteLadder } from "@/features/shared/deals/types
 import { mockId, problem } from "../support";
 import { cartOf, codes } from "./cart";
 import { customerOf } from "./customers";
-import { buildDealList, DEAL_FIXTURES, HELD_CODES, isLinkable, isShown, NOT_YET, toDealDetail } from "./deals-fixtures";
+import {
+  buildDealList,
+  DEAL_FIXTURES,
+  HELD_CODES,
+  isLinkable,
+  isShown,
+  NOT_YET,
+  servedTo,
+  toDealDetail,
+} from "./deals-fixtures";
 import { checkCode, findQuote } from "./quotes";
 
 /** Deals each persona saved in this session (`customer_saved_coupons`). */
@@ -64,8 +73,9 @@ export const dealsHandlers = [
   // store.promotions.getPublic (public): a listed or unlisted deal by its link; 404 for hidden or out of window
   http.get("*/v1/store/promotions/:slug", ({ request, params }) => {
     const fixture = DEAL_FIXTURES.find((entry) => entry.slug === params.slug);
-    if (!fixture || !isLinkable(fixture)) return notFound();
     const customer = customerOf(request);
+    // Loyalty P2: a `matching_only` deal answers 404 to a guest.
+    if (!fixture || !isLinkable(fixture) || !servedTo(fixture, Boolean(customer))) return notFound();
     return HttpResponse.json(
       toDealDetail(fixture, langOf(request), {
         origin: ORIGIN,

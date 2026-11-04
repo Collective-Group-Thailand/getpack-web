@@ -12,6 +12,7 @@
  */
 
 import { http, HttpResponse } from "msw";
+import type { LoyaltySummaryP2Fields } from "@/lib/api/requests/store-loyalty-p2";
 
 import type { Schemas } from "@/lib/api/types";
 
@@ -503,7 +504,13 @@ export const storeOrderHandlers = [
       nextTierMinSpend12m: next ? baht(next.from) : null,
       nextTierProgressPct: next ? Math.min(100, (spendOf(customer) / next.from) * 100).toFixed(2) : "100.00",
     };
-    return HttpResponse.json(summary);
+    // Loyalty P2 (CONTRACT-REQUEST store.loyalty.p2-fields): the review customer holds a 40-point win-back lot.
+    const p2: LoyaltySummaryP2Fields = {
+      bonusLots:
+        customer.ownerIndex === null ? [] : [{ points: 40, reason: "winback", expiresAt: bangkokIso(30 * DAY) }],
+      activeCampaigns: customer.ownerIndex === null ? 0 : 1,
+    };
+    return HttpResponse.json({ ...summary, ...p2 });
   }),
 
   // store.loyalty.ledger (published, U-F0.2), newest first.

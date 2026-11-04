@@ -47,9 +47,10 @@ export function EarnChecklist({
 }) {
   const t = useTranslations("account.points");
   const format = useFormat();
-  const query = useQuery({
+  const query = useQuery<LoyaltyTasks>({
     queryKey: LOYALTY_TASKS_KEY,
-    queryFn: async () => (await browserApi().GET("/v1/store/loyalty/tasks")).data!,
+    // P2 task codes are wider than the published enum (CONTRACT-REQUEST store.loyalty.p2-fields).
+    queryFn: async () => (await browserApi().GET("/v1/store/loyalty/tasks")).data! as LoyaltyTasks,
     initialData: initial,
     staleTime: 10_000,
     refetchOnWindowFocus: true,

@@ -12,6 +12,7 @@
  */
 
 import type { Schemas } from "@/lib/api/types";
+import type { PointsLiabilityMemo } from "@/lib/api/requests/admin-loyalty-p2";
 
 import { PERSONAS } from "../../personas";
 import { bangkokIso, mockId, problem } from "../../support";
@@ -1305,11 +1306,14 @@ export const closeHandlers = [
   ),
   finance.get("/v1/admin/financial-reports/profit-and-loss", "ledger.read", ({ query }) =>
     range(query.from, query.to)
-      ? profitAndLoss(
-          String(query.from),
-          String(query.to),
-          (query.dimension ?? "none") as Schemas["ProfitAndLossDimension"],
-        )
+      ? {
+          ...profitAndLoss(
+            String(query.from),
+            String(query.to),
+            (query.dimension ?? "none") as Schemas["ProfitAndLossDimension"],
+          ),
+          ...pointsLiabilityOf(String(query.to)),
+        }
       : invalid([{ path: "from", code: "range", message: "YYYY-MM ถึง YYYY-MM" }]),
   ),
   finance.get("/v1/admin/financial-reports/cash-flow", "ledger.read", ({ query }) =>
@@ -1378,3 +1382,25 @@ export const closeHandlers = [
     return { url: `data:text/csv;charset=utf-8,${encodeURIComponent(row.csv)}`, expiresAt: bangkokIso(15) };
   }),
 ];
+
+/**
+ * Loyalty P2 (CONTRACT-REQUEST admin.loyalty.p2-fields): the executive P&L's points-liability memo for the month `to`
+ * — a memo block that never changes `lines` or `totals`. The figures are the analytics mock's.
+ */
+function pointsLiabilityOf(to: string): { pointsLiability: PointsLiabilityMemo } {
+  const [year, month] = to.split("-").map(Number) as [number, number];
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return {
+    pointsLiability: {
+      asOf: `${to}-${String(last).padStart(2, "0")}`,
+      outstandingPoints: 182400,
+      faceValue: "456000.00",
+      expectedRedemptionRatePct: "60",
+      rateConfirmation: "pending_cpa",
+      estimatedLiability: "273600.00",
+      ledgerBalance2330: "270150.00",
+      pointsExpenseInPeriod: "4860.00",
+      source: "loyalty.expected_redemption_rate_pct",
+    },
+  };
+}

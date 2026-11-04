@@ -58,6 +58,10 @@ export function suggestionsOf(customer: MockCustomer): Schemas["ReorderSuggestio
       suggestedQuantity: order.quantity,
       orderCount: 3,
       productType: typeRef(order.productType),
+      // Loyalty P2 (CONTRACT-REQUEST store.loyalty.p2-fields): the D-492 prediction, and the ×1.5 campaign on the
+      // first suggestion of a customer who has one (a static end date, D-481).
+      predictedStockOutOn: bangkokIso(14 * DAY).slice(0, 10),
+      bonus: i === 0 && customer.ownerIndex !== null ? { multiplier: "1.50", endsAt: bangkokIso(6 * DAY + 600) } : null,
     } as Schemas["ReorderSuggestionDto"];
   });
 }

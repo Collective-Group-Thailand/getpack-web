@@ -21,8 +21,10 @@ afterAll(() => server.close());
 
 const client = (token?: string) =>
   createApiClient({ baseUrl: "http://api.mock", ...(token ? { accessToken: token } : {}) });
-const list = async (token?: string, query: { productTypeCode?: string; ref?: string } = {}) =>
-  (await client(token).GET("/v1/store/promotions", { params: { query } })).data!;
+const list = async (
+  token?: string,
+  query: { productTypeCode?: string; ref?: string; tab?: "all" | "for_you" | "ending_soon" | "points" } = {},
+) => (await client(token).GET("/v1/store/promotions", { params: { query } })).data!;
 
 describe("deals mock (store.promotions.*)", () => {
   it("never serves a hidden or ended deal, and serves an unlisted one only by its link", async () => {
@@ -53,7 +55,8 @@ describe("deals mock (store.promotions.*)", () => {
 
   it("filters by product type for the PDP badge and echoes ?ref in the share link", async () => {
     const { items } = await list(undefined, { productTypeCode: "corrugated", ref: "AG123" });
-    expect(items.map((deal) => deal.code)).toEqual(["BOX10"]);
+    // BOX10 and the P2 bundle (an automatic deal, no code); SILVER8 is `matching_only`, never served to a guest.
+    expect(items.map((deal) => deal.code)).toEqual(["BOX10", null]);
     expect(new URL(items[0]!.shareUrl).searchParams.get("ref")).toBe("AG123");
   });
 
@@ -68,5 +71,18 @@ describe("deals mock (store.promotions.*)", () => {
     await expect(save()).rejects.toSatisfy(
       (error) => isApiError(error) && error.status === 409 && error.code === "promotions.already_saved",
     );
+  });
+
+  it("serves the P2 for-you tab and keeps a matching-only deal from guests (loyalty P2)", async () => {
+    const guest = await list(undefined, { tab: "for_you" });
+    expect(guest.items.map((deal) => deal.slug)).not.toContain("silver-gold-8");
+    expect(guest.counts.for_you).toBe(guest.items.length);
+    const signedIn = await list(accessToken("customer"), { tab: "for_you" });
+    expect(signedIn.items.map((deal) => deal.slug)).toEqual(
+      expect.arrayContaining(["silver-gold-8", "starter-bundle"]),
+    );
+    const reasons = signedIn.items.map((deal) => (deal as { forYouReason?: string | null }).forYouReason);
+    expect(reasons).not.toContain("inactive_days");
+    expect(reasons).not.toContain("business_type");
   });
 });

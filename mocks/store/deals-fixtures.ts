@@ -9,6 +9,7 @@
  */
 
 import type { Deal, DealBenefit, DealDetail, DealList, DealMyStatus } from "@/features/shared/deals/types";
+import type { DealBundle, DealP2Fields, ForYouReason } from "@/lib/api/requests/store-loyalty-p2";
 
 import { bangkokIso, mockId } from "../support";
 
@@ -34,6 +35,20 @@ export interface DealFixture {
   /** What a signed-in customer sees when they have not saved it. */
   forCustomer: DealMyStatus | null;
   notEligibleReason?: Deal["notEligibleReason"];
+  /**
+   * Loyalty P2 (conditions v2): who the deal is for. `reason` is what "สำหรับคุณ" may say (null = matched on a
+   * business type or inactivity, never disclosed); `matchingOnly` keeps it away from guests and non-matching callers.
+   */
+  audience?: { reason: ForYouReason | null; newCustomer?: boolean; matchingOnly?: boolean };
+  /** Loyalty P2: a bundle deal's presets as the API prices them (`display.bundle`). */
+  bundle?: {
+    items: (Omit<DealBundle["items"][number], "productTypeName" | "summary" | "unit"> & {
+      productTypeName: Text;
+      summary: Text;
+      unit: Text;
+    })[];
+    estimatedSaving: string | null;
+  };
 }
 
 const t = (th: string, en: string): Text => ({ th, en });
@@ -121,6 +136,7 @@ export const DEAL_FIXTURES: DealFixture[] = [
   {
     n: 4,
     slug: "welcome-300",
+    audience: { reason: "new_customer", newCustomer: true },
     visibility: "public",
     featured: false,
     headline: t("คำสั่งซื้อแรก ลด ฿300", "฿300 off your first order"),
@@ -142,6 +158,7 @@ export const DEAL_FIXTURES: DealFixture[] = [
   {
     n: 5,
     slug: "reorder-points-x2",
+    audience: { reason: null },
     visibility: "public",
     featured: false,
     headline: t("สั่งซ้ำภายใน 30 วัน รับแต้ม ×2", "Reorder within 30 days for ×2 points"),
@@ -305,6 +322,71 @@ export const DEAL_FIXTURES: DealFixture[] = [
     terms: t("เปิดได้จากลิงก์ที่ตัวแทนส่งให้เท่านั้น", "Opened only from the link an agent sends."),
     forCustomer: "claimable",
   },
+  {
+    n: 20,
+    slug: "starter-bundle",
+    visibility: "public",
+    featured: false,
+    headline: t("ชุดเปิดร้าน กล่องลูกฟูก + สติกเกอร์", "Starter set: corrugated box + labels"),
+    subline: null,
+    badge: null,
+    benefit: { kind: "percent", value: "5", maxDiscount: null, summary: t("ชุดสินค้า ลด 5%", "Bundle 5% off") },
+    conditions: [],
+    productTypeCodes: ["corrugated", "label_sticker"],
+    code: null,
+    startsInDays: -3,
+    endsInDays: 57,
+    terms: t(
+      "ใช้ได้เมื่อตะกร้ามีกล่องลูกฟูกและสติกเกอร์ในคำสั่งซื้อเดียวกัน ใช้ร่วมกับดีลชุดอื่นไม่ได้",
+      "Applies when the cart holds corrugated boxes and labels in one order. Does not combine with other bundle deals.",
+    ),
+    forCustomer: "claimable",
+    audience: { reason: "ordered_product_type" },
+    bundle: {
+      items: [
+        {
+          productTypeCode: "corrugated",
+          productTypeName: t("กล่องลูกฟูก", "Corrugated box"),
+          summary: t("30 × 20 × 15 ซม. · ลอน B · พิมพ์ 1 สี", "30 × 20 × 15 cm · B flute · 1-colour print"),
+          quantity: 500,
+          unit: t("ใบ", "pcs"),
+          unitPrice: "14.79",
+        },
+        {
+          productTypeCode: "label_sticker",
+          productTypeName: t("สติกเกอร์", "Labels"),
+          summary: t("วงกลม 5 ซม. · PP ขาว", "5 cm circle · white PP"),
+          quantity: 1000,
+          unit: t("ดวง", "pcs"),
+          unitPrice: "1.20",
+        },
+      ],
+      estimatedSaving: "640.00",
+    },
+  },
+  {
+    n: 21,
+    slug: "silver-gold-8",
+    visibility: "public",
+    featured: false,
+    headline: t("สมาชิก Silver ขึ้นไป ลด 8%", "Silver members and up: 8% off"),
+    subline: null,
+    badge: null,
+    benefit: {
+      kind: "percent",
+      value: "8",
+      maxDiscount: "1200.00",
+      summary: t("ลด 8% สูงสุด ฿1,200", "8% off, up to ฿1,200"),
+    },
+    conditions: [{ label: MIN, value: t("1,000 ใบ", "1,000 pcs") }],
+    productTypeCodes: ["corrugated"],
+    code: "SILVER8",
+    startsInDays: -2,
+    endsInDays: 41,
+    terms: null,
+    forCustomer: "claimable",
+    audience: { reason: "tier", matchingOnly: true },
+  },
 ];
 
 const DAY_MINUTES = 24 * 60;
@@ -352,8 +434,33 @@ export function toDeal(
     myStatus,
     notEligibleReason: myStatus === "not_eligible" ? (fixture.notEligibleReason ?? null) : null,
     shareUrl: share.toString(),
+    ...p2FieldsOf(fixture, lang, options.signedIn),
   };
 }
+
+/** Loyalty P2 (`forYou`, `forYouReason`, `bundle`): the review customer is a returning Silver who ordered boxes. */
+function p2FieldsOf(fixture: DealFixture, lang: Lang, signedIn: boolean): DealP2Fields {
+  const audience = fixture.audience;
+  const forYou = signedIn ? Boolean(audience) && !audience?.newCustomer : !audience || Boolean(audience.newCustomer);
+  return {
+    forYou,
+    forYouReason: forYou ? (audience?.reason ?? null) : null,
+    bundle: fixture.bundle
+      ? {
+          items: fixture.bundle.items.map((item) => ({
+            ...item,
+            productTypeName: item.productTypeName[lang],
+            summary: item.summary[lang],
+            unit: item.unit[lang],
+          })),
+          estimatedSaving: fixture.bundle.estimatedSaving,
+        }
+      : null,
+  };
+}
+
+/** A `matching_only` deal is never served to a guest (nor, in the API, to a non-matching customer). */
+export const servedTo = (fixture: DealFixture, signedIn: boolean) => signedIn || !fixture.audience?.matchingOnly;
 
 const GLOBAL_FAQ: { q: Text; a: Text }[] = [
   {
@@ -389,20 +496,22 @@ export function buildDealList(
   options: Parameters<typeof toDeal>[2] & { savedSlugs: ReadonlySet<string> },
   filter: { productTypeCode?: string; tab?: string },
 ): DealList {
-  const shown = DEAL_FIXTURES.filter(isShown).map((fixture) =>
-    toDeal(fixture, lang, { ...options, saved: options.savedSlugs.has(fixture.slug) }),
+  const shown = DEAL_FIXTURES.filter((fixture) => isShown(fixture) && servedTo(fixture, options.signedIn)).map(
+    (fixture) => toDeal(fixture, lang, { ...options, saved: options.savedSlugs.has(fixture.slug) }),
   );
   const byType = filter.productTypeCode
     ? shown.filter((entry) => entry.productTypeCodes.includes(filter.productTypeCode!))
     : shown;
   const soon = byType.filter((entry) => entry.endingSoon);
-  const items = filter.tab === "ending_soon" ? soon : filter.tab === "points" ? [] : byType;
+  const mine = byType.filter((entry) => (entry as Deal & Partial<DealP2Fields>).forYou);
+  const items =
+    filter.tab === "ending_soon" ? soon : filter.tab === "points" ? [] : filter.tab === "for_you" ? mine : byType;
   return {
     // Featured first, then the soonest end — the API's display order (the web never re-sorts).
     items: [...items].sort(
       (a, b) => Number(b.featured) - Number(a.featured) || (a.endsAt ?? "9").localeCompare(b.endsAt ?? "9"),
     ),
-    counts: { all: byType.length, for_you: byType.length, ending_soon: soon.length, points: 0 },
+    counts: { all: byType.length, for_you: mine.length, ending_soon: soon.length, points: 0 },
   };
 }
 

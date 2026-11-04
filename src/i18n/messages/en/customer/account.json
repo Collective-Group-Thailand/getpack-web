@@ -415,6 +415,22 @@
         "title": "Add getpack on LINE",
         "description": "Chat with our team and get news on LINE",
         "action": "Add friend"
+      },
+      "data_refresh": {
+        "title": "Confirm your company and addresses",
+        "description": "Check your invoicing details and delivery addresses are still right, once a year",
+        "action": "Check details",
+        "nextDue": "Next confirmation {date}"
+      },
+      "showcase_consent": {
+        "title": "Let us show your work",
+        "description": "Allow getpack to show your brand name or packaging photos as an example of our work",
+        "action": "See details"
+      },
+      "first_sample": {
+        "title": "Order your first sample",
+        "description": "Earn points when your first paid sample is delivered",
+        "action": "See samples"
       }
     }
   },

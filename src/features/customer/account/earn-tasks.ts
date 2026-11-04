@@ -22,6 +22,10 @@ export const TASK_ROUTES: Record<Exclude<LoyaltyTaskCode, "line_oa_friend">, str
   first_design: studioHref(),
   team_invite: "/business/members",
   packaging_profile: "/account/packaging-profile",
+  // Loyalty P2: the yearly data confirmation, the showcase consent, and the sample page for a first paid sample.
+  data_refresh: "/account/confirm-data",
+  showcase_consent: "/account/showcase",
+  first_sample: "/samples",
 };
 
 export interface TaskLink {

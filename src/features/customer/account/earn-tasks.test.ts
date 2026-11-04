@@ -28,7 +28,7 @@ describe("the earn checklist's view of the API list", () => {
 
   it("counts done tasks out of all of them", () => {
     const view = checklistView(data);
-    expect([view.done, view.total]).toEqual([3, 13]);
+    expect([view.done, view.total]).toEqual([3, 16]);
     expect(view.allDone).toBe(false);
   });
 
@@ -38,7 +38,7 @@ describe("the earn checklist's view of the API list", () => {
     expect(capped.remainingPoints).toBe(0);
     expect(view.capReached).toBe(true);
     expect(view.recommended).toBeNull();
-    expect(view.rows).toHaveLength(13);
+    expect(view.rows).toHaveLength(16);
   });
 
   it("announces only tasks that turned done, never held ones", () => {
@@ -54,7 +54,7 @@ describe("the earn checklist's view of the API list", () => {
 
 describe("task links", () => {
   it("has a route for every code but the LINE OA", () => {
-    expect(Object.keys(TASK_ROUTES)).toHaveLength(12);
+    expect(Object.keys(TASK_ROUTES)).toHaveLength(15);
     expect(taskLink("packaging_profile", null)).toEqual({ href: "/account/packaging-profile", external: false });
   });
 
