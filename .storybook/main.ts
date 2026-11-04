@@ -27,6 +27,8 @@ const config: StorybookConfig = {
     // Loyalty P2: the surveys, the lifecycle surfaces, and the admin movement chart and segment picker.
     "../src/features/customer/surveys/**/*.stories.@(ts|tsx)",
     "../src/features/customer/loyalty/**/*.stories.@(ts|tsx)",
+    // Loyalty P3: reward tickets, the confirm sheet, my coupons, tier perks, the /deals points tab.
+    "../src/features/customer/rewards/**/*.stories.@(ts|tsx)",
     "../src/features/admin/marketing/**/*.stories.@(ts|tsx)",
     // Loyalty P2: the order review with photos.
     "../src/features/customer/orders/**/*.stories.@(ts|tsx)",

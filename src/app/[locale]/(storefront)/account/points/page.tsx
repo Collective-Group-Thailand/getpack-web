@@ -6,7 +6,6 @@ import { getLoyaltyTasks, getPoints, getPointsEntries } from "@/features/custome
 import { EarnChecklist } from "@/features/customer/account/EarnChecklist";
 import { PortalTable } from "@/features/customer/account/PortalTable";
 import { SummaryCards } from "@/features/customer/account/SummaryCards";
-import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getSupportChannels } from "@/features/customer/catalog/api.server";
 import { clientEnv } from "@/lib/env";
@@ -19,6 +18,8 @@ import { Button } from "@/ui/components/Button";
 import { Icon } from "@/ui/icons";
 import { multiplierParts } from "@/features/shared/loyalty-p2/multipliers";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { TierPerks } from "@/features/customer/rewards/TierPerks";
+import { loyaltyP3Of } from "@/features/shared/loyalty-p3/read";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.points");
@@ -31,11 +32,12 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function Page() {
   await requireCustomer();
-  const [t, tHome, tReferral, tLifecycle, format, points, entries, tasks, support] = await Promise.all([
+  const [t, tHome, tReferral, tLifecycle, tRewards, format, points, entries, tasks, support] = await Promise.all([
     getTranslations("account.points"),
     getTranslations("account.home"),
     getTranslations("account.referral"),
     getTranslations("account.lifecycle"),
+    getTranslations("account.rewards"),
     getFormat(),
     getPoints(),
     getPointsEntries(50),
@@ -55,6 +57,8 @@ export default async function Page() {
     multiplierParts(entry.multipliers)
       .map(({ part, value }) => tLifecycle(`multipliers.${part}`, { value }))
       .join(" · ");
+  // Loyalty P3: Platinum, perks and the multipliers in force (CONTRACT-REQUEST store.loyalty.p3-fields).
+  const loyalty = loyaltyP3Of(points);
   const lineOaId = clientEnv.NEXT_PUBLIC_LINE_OA_ID?.trim() || support?.lineOaId?.trim() || null;
 
   return (
@@ -63,9 +67,15 @@ export default async function Page() {
         title={t("title")}
         lede={t("intro", { value: format.thb(points.pointValue) })}
         actions={
-          <Button asChild variant="secondary" iconStart="users">
-            <Link href="/account/referral">{tReferral("title")}</Link>
-          </Button>
+          <>
+            <Button asChild variant="secondary" iconStart="users">
+              <Link href="/account/referral">{tReferral("title")}</Link>
+            </Button>
+            {/* Loyalty P3: the page's one primary — the reward catalogue. */}
+            <Button asChild iconStart="gift">
+              <Link href="/account/points/redeem">{tRewards("cta")}</Link>
+            </Button>
+          </>
         }
       />
       <SummaryCards
@@ -103,7 +113,7 @@ export default async function Page() {
           {
             key: "tier",
             label: t("tier"),
-            value: tHome(`tiers.${points.tier}`),
+            value: tHome(`tiers.${loyalty.tier}`),
             hint: t("tierHint", { multiplier: points.multiplier, spend: format.thb(points.spend12m) }),
             icon: "gift",
           },
@@ -111,9 +121,7 @@ export default async function Page() {
       />
       {/* Loyalty P1: the earn checklist between the figures and the tier (PLAN §3); hidden when the read fails. */}
       {tasks ? <EarnChecklist className="mt-4" initial={tasks} lineOaId={lineOaId} /> : null}
-      <div className="border-border bg-surface rounded-card mt-4 border p-4 text-sm sm:p-5">
-        <TierProgress points={points} />
-      </div>
+      <TierPerks className="mt-4" points={points} loyalty={loyalty} />
       {points.expiringSoon.length > 0 ? (
         <div className="mt-4 flex flex-col gap-2">
           {points.expiringSoon.map((lot) => (

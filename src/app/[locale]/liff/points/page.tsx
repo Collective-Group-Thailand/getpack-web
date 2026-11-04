@@ -11,6 +11,7 @@ import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
+import { loyaltyP3Of } from "@/features/shared/loyalty-p3/read";
 import { Button } from "@/ui/components/Button";
 import { clientEnv } from "@/lib/env";
 import { cn } from "@/ui/lib/cn";
@@ -23,10 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Points in LINE (D-151): the balance and the latest movements; the rest on the site. */
 export default async function Page() {
   if (!(await liffCustomer())) return <LiffSignIn />;
-  const [t, tLiff, tDeals, format, points, entries, tasks, support] = await Promise.all([
+  const [t, tLiff, tDeals, tRewards, format, points, entries, tasks, support] = await Promise.all([
     getTranslations("account.points"),
     getTranslations("liff.points"),
     getTranslations("deals"),
+    getTranslations("account.rewards"),
     getFormat(),
     getPoints(),
     getPointsEntries(10),
@@ -51,7 +53,8 @@ export default async function Page() {
             icon: "star",
             highlight: true,
           },
-          { key: "tier", label: tLiff("tier"), value: tLiff(`tiers.${points.tier}`), icon: "gift" },
+          // Loyalty P3: Platinum is read past the published enum (CONTRACT-REQUEST store.loyalty.p3-fields).
+          { key: "tier", label: tLiff("tier"), value: tLiff(`tiers.${loyaltyP3Of(points).tier}`), icon: "gift" },
         ]}
       />
       {/* Loyalty P2: bonus points waiting (win-back). */}
@@ -76,6 +79,10 @@ export default async function Page() {
           ))}
         </ul>
       </section>
+      {/* Loyalty P3: the reward catalogue lives on the web page (the confirm sheet, my coupons). */}
+      <Button asChild variant="secondary" size="lg" iconStart="gift">
+        <Link href="/account/points/redeem">{tRewards("cta")}</Link>
+      </Button>
       <Button asChild variant="secondary" size="lg" iconStart="ticket">
         <Link href="/liff/deals">{tDeals("liff.openDeals")}</Link>
       </Button>
