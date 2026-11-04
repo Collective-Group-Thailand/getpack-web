@@ -122,8 +122,8 @@ test.describe("cart and checkout", () => {
     await expect(page.getByRole("list", { name: "โค้ดในตะกร้า" })).toContainText("GETPACK10ใช้ได้");
     await expect(summary).toContainText("ส่วนลด");
 
-    await page.getByLabel(/^คะแนนที่ใช้/).fill("10");
-    await expect(summary.getByText(/ใช้ 10 คะแนน ลด ฿/)).toBeVisible();
+    await page.getByLabel(/^แต้มที่ใช้/).fill("10");
+    await expect(summary.getByText(/ใช้ 10 แต้ม ลด ฿/)).toBeVisible();
 
     // Above THB 20,000 the rules choose 50/50 (D-020); what is due today is the deposit.
     // CONTRACT-GAP store.checkout: the schedule is shown, not chosen.

@@ -2,7 +2,7 @@ import type { IconName } from "@/ui/icons";
 
 /**
  * The account's sections (account pack Phase 1, GLOBAL-RULES §5 "Account nav labels"): nine places in two groups
- * — ภาพรวม · ซื้อ (คำสั่งซื้อ, ใบเสนอราคา, งานออกแบบ, สั่งซ้ำ) · เอกสารและบัญชี (เอกสาร, ข้อความ, คะแนนและสิทธิพิเศษ,
+ * — ภาพรวม · ซื้อ (คำสั่งซื้อ, ใบเสนอราคา, งานออกแบบ, สั่งซ้ำ) · เอกสารและบัญชี (เอกสาร, ข้อความ, แต้มและสิทธิพิเศษ,
  * ข้อมูลบัญชี). Pages that belong together are tabs of one section; every earlier page keeps its own address and
  * is now that section's tab, so no old link breaks (งวดชำระ moved into each order; its page stays, under orders). The
  * side nav, the phone's scrolling bar, the tab bars and the header's avatar menu all read this one list.

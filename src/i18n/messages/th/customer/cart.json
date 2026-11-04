@@ -22,7 +22,7 @@
   "itemsCount": "{count, plural, other {# รายการ}}",
   "vatIncluded": "รวม VAT แล้ว",
   "subtotal": "ยอดรวมสินค้า",
-  "atCheckout": "ส่วนลด คะแนน และการแบ่งชำระ คำนวณในขั้นชำระเงิน",
+  "atCheckout": "ส่วนลด แต้ม และการแบ่งชำระ คำนวณในขั้นชำระเงิน",
   "blockedTitle": "ก่อนชำระเงิน",
   "blockers": {
     "reprice": "{name}: ต้องคำนวณและยืนยันราคาใหม่",

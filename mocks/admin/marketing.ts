@@ -391,7 +391,7 @@ function benefitSummary(benefit: Schemas["PromotionBenefitDto"]): { th: string; 
     case "free_revision_rounds":
       return { th: `แก้แบบฟรี ${benefit.rounds} รอบ`, en: `${benefit.rounds} free revision rounds` };
     case "points_multiplier":
-      return { th: `คะแนน x${benefit.multiplier}`, en: `${benefit.multiplier}× points` };
+      return { th: `แต้ม x${benefit.multiplier}`, en: `${benefit.multiplier}× points` };
     case "bonus_points":
       return { th: `รับคะแนนพิเศษ ${benefit.points} คะแนน`, en: `${benefit.points} bonus points` };
     case "free_shipping":

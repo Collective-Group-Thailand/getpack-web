@@ -24,7 +24,7 @@ test.describe("account redesign (C6)", () => {
       "สั่งซ้ำ",
       "เอกสาร",
       "ข้อความ",
-      "คะแนนและสิทธิพิเศษ",
+      "แต้มและสิทธิพิเศษ",
       "ข้อมูลบัญชี",
     ]) {
       await expect(nav.getByRole("link", { name, exact: true }).first()).toBeVisible();

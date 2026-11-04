@@ -214,9 +214,9 @@ test.describe("the account", () => {
 
   test("points, referral and the wallet", async ({ page }) => {
     await signInAsCustomer(page, "/account/points");
-    await expect(page.getByText("คะแนนที่ใช้ได้")).toBeVisible();
-    await expect(page.getByRole("table", { name: "ประวัติคะแนน" }).getByText("สมัครสมาชิก")).toBeVisible();
-    await expect(page.getByText(/คะแนนจะหมดอายุวันที่/)).toBeVisible();
+    await expect(page.getByText("แต้มที่ใช้ได้")).toBeVisible();
+    await expect(page.getByRole("table", { name: "ประวัติแต้ม" }).getByText("สมัครสมาชิก")).toBeVisible();
+    await expect(page.getByText(/แต้มจะหมดอายุวันที่/)).toBeVisible();
     await expectNoViolations(page);
 
     await gotoHydrated(page, `${HOSTS.customer}/account/referral`);
