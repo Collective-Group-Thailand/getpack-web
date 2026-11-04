@@ -233,5 +233,14 @@
     "gone": "This deal is no longer open",
     "failed": "That didn't add to your cart. Please try again.",
     "itemCount": "Bundle · {count} items"
+  },
+  "points": {
+    "list": "Rewards for points",
+    "balance": "Your points: <b>{points}</b>",
+    "validity": "Redeemed coupons go to your code wallet and last {days} days",
+    "mine": "See my points and coupons",
+    "signInTitle": "Sign in to redeem points",
+    "signInBody": "Members earn points on every order and redeem them for coupons here.",
+    "signIn": "Sign in"
   }
 }
