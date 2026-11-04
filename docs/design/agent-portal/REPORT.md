@@ -1,6 +1,65 @@
 # getpack Agent — autorun REPORT
 
-(Overall status table and "สิ่งที่คุณต้องทำ" are written at the end of the run.)
+**Status: DONE** · run 2026-11-02 22:18 → 2026-11-04 (Asia/Bangkok) · every phase passed its gate and is merged to `main` in both repos.
+
+## Overview
+
+| Phase | Status | Merged | api merge | web merge | Notes |
+|---|---|---|---|---|---|
+| P0 Rules (no cap, progressive WHT) | PASS | ✔ | `fbaceab4` | `e0176433` | D-464, D-465 |
+| P1 Landing + two-step apply | PASS | ✔ | `e28f4962` | `6a01d784` | D-466 |
+| P2 Agent zone + PWA | PASS | ✔ | `16211925` | `ee7c593f` | D-467 |
+| P3 Lead management | PASS | ✔ | `07462222` | `ef7e802d` | D-468 |
+| P4 Sales desk + discount approval | PASS | ✔ | `10ecc5f2` | `a28f88f4` | D-469, D-470 |
+| P5 Capture + scoring | PASS | ✔ | `45df1407` | `c5dd9765` | D-471 |
+| P6 Management P&L | PASS | ✔ | `4830e6b4` | `518d028d` | D-472 |
+| P7 QA, pilot, record | PASS | ✔ | `abf9f820` | `35460e3c` | assumptions only |
+
+**Totals:** getpack-api 74 commits + 8 merges · getpack-web 92 commits + 8 merges · decisions D-464 – D-472 (identical in both repos) · every commit authored and committed by Superball, no trailers.
+
+**Tests at the end:** API unit 1,927 · web unit 1,961 (+ dieline 12,678) · web e2e 88/88 · API e2e/integration written for every phase but **not run here (no Docker) — CI must run them before UAT.**
+
+**Not verifiable in this environment:** API e2e (Docker), k6 at 50 rps on UAT, Lighthouse performance ≥ 90 (this VM scores lower; /agent 80–84), Safari iOS / Chrome Android device pass and PWA install, Storybook visual baselines, real XLSX/PDF export (S3 + Chromium).
+
+## สิ่งที่คุณต้องทำ
+
+ลำดับตามความสำคัญ — ข้อที่มี "คำแนะนำ" คือสิ่งที่ผมแนะนำในฐานะหัวหน้าทีมสายนั้น
+
+**ก่อน UAT**
+1. ให้ CI รัน e2e และ integration ของ getpack-api บน `main` (เครื่องนี้ไม่มี Docker) — ถ้าล้ม ส่งชื่อ test มาให้ผมแก้
+2. รัน `pnpm db:seed:uat` บน UAT โดยตั้ง `UAT_SEED_CONFIRM=uat-only` และ `FIELD_ENCRYPTION_KEY` เดียวกับ API (ไม่งั้นลิงก์ใบเสนอราคาและเลขบัญชีจะว่าง) — ตัวตนสำหรับทดสอบอยู่ใน `docs/launch/UAT-DATA.md`
+3. รัน `pnpm lhci agent-landing agent-apply agent-zone` บน CI และ k6 `perf/k6/agent-portal.js` บน UAT — เป้า Lighthouse perf ≥ 90, p95 < 300 ms
+4. ทดสอบบน iPhone (Safari) และ Android (Chrome) ตามเช็กลิสต์ใน `DESIGN-NOTES.md` P7 รวมการติดตั้งแอป getpack Agent
+
+**ระบบและโดเมน**
+5. ตั้ง DNS + TLS `agent.getpack.co` → ชี้ไปที่ web deployment เดียวกับ `getpack.co` และใส่ `AGENT_HOST=agent.getpack.co`
+6. เพิ่ม `agent.getpack.co` ใน LINE Login callback URL และ Firebase Authorized domains
+7. สร้าง VAPID keys จริงและใส่ใน env ของ API (UAT และ production), เชื่อม LINE OA channel สำหรับแจ้งเตือนตัวแทน
+8. Production image ของ API ต้องมี `tesseract-ocr` + ภาษาไทย (Dockerfile แก้แล้ว) — ตั้ง `OCR_ADAPTER=tesseract_cli`
+
+**กฎหมาย ภาษี PDPA**
+9. ให้ทนายรีวิวสัญญาตัวแทน v2 แล้ว export เป็น `getpack-api/docs/legal/sales-agent-agreement-v2-draft.md` → ผมจะ seed เป็นร่าง → publish ผ่าน /admin/agents (maker-checker) — ระหว่างนี้ใช้ v1
+10. เติมเลขทะเบียน ที่อยู่ สาขา ของ Collective Group ใน settings บริษัท (ใช้ในสัญญาและ 50 ทวิ)
+11. ให้ CPA ยืนยัน: ตารางภาษี SME ใน `tax.cit_rates` (และใส่ทุนชำระแล้ว `paidUpCapital` — ยังไม่ใส่ระบบคิด 20 %), การขยายเวลา e-filing +8 วัน, กรณีภาษีหักเป็น 0 ไม่ออก 50 ทวิ, และกรณี PLAN §5 ที่หักเกินในปีแล้วไม่คืน (ตัวแทนไปขอคืนใน ภ.ง.ด.90) — **คำแนะนำ:** คงแบบไม่คืนระหว่างปีไว้ก่อน เพราะปลอดภัยต่อการถูกประเมินภาษีเพิ่ม
+12. Finance Manager เพิ่มเวอร์ชันใหม่ของ `tax.calendar` ให้มี `pnd1` (วันที่ 7 ของเดือนถัดไป) เพื่อให้ระบบเตือนกำหนดยื่น
+13. นักบัญชีผูกบัญชี GL ให้ 5 บรรทัด P&L ที่ยังไม่มีบัญชี: เงินเดือน, ค่าเช่าและสาธารณูปโภค, ซอฟต์แวร์และคลาวด์, ค่าวิชาชีพ, ดอกเบี้ยจ่าย (`pnl.line_catalogue`)
+14. DPO เขียนและ publish ข้อความ consent `agent_waitlist` (ถ้ายังไม่มี ฟอร์มรอเปิดรับจะปิด) — **คำแนะนำ:** เก็บข้อมูลรายชื่อรอ 12 เดือนหลังเปิด public แล้วลบ; ยืนยันระยะเก็บรูปนามบัตร 7 วัน — **คำแนะนำ:** คง 7 วัน
+15. DPO กำหนดขั้นตอนลบข้อมูลผู้ติดต่อที่ถูกบันทึกเป็นลูกค้ามุ่งหวัง (ยังไม่มีปุ่มในระบบ — ทำผ่าน RUNBOOK §6 ไปก่อน)
+
+**ธุรกิจและฝ่ายขาย**
+16. เลือกตัวแทนนำร่อง 10–20 คน → Sales Manager ใส่ customer public id ใน `agents.pilot` แล้วตั้ง `enabled: true` — **คำแนะนำ:** pilot 60 วันตาม PLAN §4 แล้วทบทวน KPI ก่อนเปิด `agents.programme` ให้ public
+17. ยืนยันค่าที่ยังเป็น proposed: น้ำหนักคะแนน lead (`sales.scoring_rules`), วันรอสตูดิโอ 3 วัน, เวลาตอบครั้งแรก 4 ชั่วโมง, ความน่าจะเป็นต่อขั้น 10/20/40/60 % — **คำแนะนำ:** ใช้ตามที่ seed ไว้ช่วง pilot แล้วปรับจากข้อมูลจริง
+18. ตั้งค่าที่ยังว่างโดยตั้งใจ: กันหนี้สูญ % (`finance.bad_debt_provision_pct`) และเพดานยอดอนุมัติส่วนลด — **คำแนะนำ:** เริ่มกันหนี้สูญ 1 % สำหรับลูกค้าเครดิต และยังไม่ตั้งเพดานยอดจนกว่ามีดีลจริง (เกณฑ์ % กับ floor ป้องกันอยู่แล้ว)
+19. เปิดสวิตช์จับ lead อัตโนมัติ (`capture.studio_idle_enabled`, `capture.dieline_download_enabled`) เมื่อมีเซลล์รับงานจริง
+20. วันจ่ายเงินตัวแทน: ระบบจ่ายภายใน `paymentTermsDays` (15 วัน) หลังอนุมัติ ไม่ใช่ "วันที่ 5" ตาม P-02 — **คำแนะนำ:** คงตามระบบ ถ้าต้องการวันที่ 5 ให้ปรับ setting ไม่ต้องแก้โค้ด
+21. กรอกผู้ติดต่อเหตุฉุกเฉินใน `RUNBOOK.md` §8
+
+**งานต่อยอด (ไม่บล็อกการเปิด pilot)**
+- แยก client message ตาม route เพื่อดัน Lighthouse perf ของหน้า storefront (`docs/performance-budgets.md`)
+- Contract requests ที่ยื่นไว้: win rate รายช่วง, รายการสินค้าสำหรับเซลล์, ผู้ร่าง/ผู้ส่งการ์ดคู่มือ, เมนู P&L สำหรับ Director, deep link ในการแจ้งเตือนตัวแทน
+- แหล่ง lead จาก LINE OA (รอระบบแท็กแชท), การยืนยันล็อกราคาโดยโรงงานใน partner zone, คะแนนจากการเข้าหน้าราคา (ต้องมี consent purpose ใหม่)
+
+---
 
 ## P0 — Rules: no cap, factory referral retired, no profit wording, progressive WHT · PASS
 - Branches `feat/agent-p0-rules` · merge SHAs: api `fbaceab4`, web `e0176433`
@@ -153,4 +212,23 @@
   - Five lines unmapped in the chart of accounts (salaries, rent & utilities, software & cloud, professional fees, finance cost) → manual until mapped
   - English tooltip texts empty; Director has no sidebar route to the planner (contract request `admin.menu-pnl`)
 - Screenshots: `docs/design/agent-portal/screenshots/P6/` (grid 1440/1920/1024, override, tooltip + drill-down, variance, locked, phone cards)
+
+## P7 — QA, pilot and record · PASS
+- Branches `chore/agent-p7-launch` · merge SHAs: api `abf9f820`, web `35460e3c`
+- Delivered
+  - API: UAT seed layer (`pnpm db:seed:uat`, guard `UAT_SEED_CONFIRM=uat-only`) — freelance individual, juristic VAT and employee agents, 12 leads in every stage, quotes, commissions in every status (฿200,000 uncapped, co-funded, reversal), 6 approval states, deal registrations, two statements (progressive WHT ฿12,216.67 on ฿250,000; juristic 3 % + VAT), inbound with a breached SLA, a P&L plan; k6 script + EXPLAIN pack; security review (21 findings: 7 fixed, 12 verified incl. 17 IDOR tests, 4 accepted, 1 open); runbook; pilot switch (`agents.pilot` allow-list setting, owner Sales Manager, off) + waiting list (consent-versioned, neutral replies, throttled) with admin list/export
+  - Web: responsive gate over ~40 routes × 8 widths with fixes; Lighthouse sets for landing, apply and getpack Agent; client message trim; landing/apply decide apply vs waiting list vs closed; admin waiting-list tab; landing claims aligned with what shipped; agent wording unit gate
+- Decisions recorded: none new (P7 choices recorded as assumptions)
+- Gate results
+  - API: typecheck ✔ · lint ✔ · unit 1,927 ✔ · prettier ✔ · contract:build (no drift) + Spectral ✔ · migration rolled back and redeployed ✔ · dev and UAT seeds idempotent ✔ · local smoke 50 rps × 30 s: p95 18.7 ms, 0 errors (plain Node generator; k6 not installed — SKIPPED) · e2e SKIPPED-DOCKER
+  - Web: lint ✔ · typecheck ✔ · unit 1,961 ✔ · gen:api:check ✔ · tokens:check ✔ · build ✔ · e2e 88/88 (P0–P7 + zones) ✔ · no horizontal scroll at any width ✔ · Lighthouse mobile (VM): a11y 100 everywhere; perf /agent 80–84, agent pages 80–96 → CI to confirm ≥ 90 · real-device and PWA install passes NOT PERFORMED (no devices; checklists in DESIGN-NOTES) · wording grep clean ✔
+- Assumptions taken
+  - Pilot list as a Sales Manager setting instead of the flag's own userIds (flags are Superadmin-only)
+  - Waiting-list retention 12 months after public opening (proposal for the DPO); rate limits are technical constants
+  - Performance budgets are warnings (repo policy for field metrics); accessibility stays an error at 1.0
+  - "ใบเสนอราคาในนามคุณ" rewritten to "ส่งใบเสนอราคาให้ลูกค้าได้เอง" (the quote does not carry the agent's name); "เรียลไทม์" → "ได้ในที่เดียว"
+- Open questions
+  - Forecast reads orders once per active link (fine for the pilot; batch before scale)
+  - `tax.calendar` has no ภ.ง.ด.1 row → no filing reminder yet
+- Screenshots: `docs/design/agent-portal/screenshots/P7/` (waiting list 390/1440, thank-you, closed 390/1440, pilot landing/apply, admin waiting list, contact sheets 360/1920)
 
