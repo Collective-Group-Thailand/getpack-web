@@ -91,7 +91,8 @@ export function SegmentPicker({
       case "tiers":
         return chips(
           draft.tiers,
-          LOYALTY_TIERS.map((tier) => ({ value: tier, label: t(`tiers.${tier}`) })),
+          // Loyalty P3 (D-478): Platinum is a tier an audience can name.
+          [...LOYALTY_TIERS, "platinum" as const].map((tier) => ({ value: tier, label: t(`tiers.${tier}`) })),
           (value) => set({ tiers: toggle(draft.tiers, value) }),
         );
       case "businessTypes":
