@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { pointsLiabilityOf } from "@/features/shared/loyalty-p2/read";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -29,6 +30,7 @@ import { downloadCsv, toCsv } from "./csv";
 import { AccountPicker, useAccounts } from "./ledger";
 import { PeriodBar, EmptyLink } from "./frame";
 import { journalHref, sourceHref, useSourceLabel } from "./shared";
+import { PointsLiabilityMemo } from "./PointsLiabilityMemo";
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 const thisMonth = () => bangkokToday().slice(0, 7);
@@ -623,6 +625,8 @@ export function ProfitAndLossView() {
       ) : report.isPending ? (
         <Skeleton className="h-72" />
       ) : null}
+      {/* Loyalty P2: the points-liability memo for the month `to` (never part of the lines or totals). */}
+      {data && pointsLiabilityOf(data) ? <PointsLiabilityMemo memo={pointsLiabilityOf(data)!} /> : null}
       {dimension !== "none" ? (
         <DeskSection title={t(`dimensions.${dimension}`)}>
           <DataTable

@@ -2751,7 +2751,16 @@
       "grossMarginPct": "Margin %",
       "expenses": "Expenses",
       "netProfit": "Net profit",
-      "empty": "No revenue or cost in these months"
+      "empty": "No revenue or cost in these months",
+      "points": {
+        "title": "Memo: points liability",
+        "memoOnly": "Not part of the statement above",
+        "estimate": "Points liability (estimate at a {rate} redemption rate)",
+        "pendingCpa": "Awaiting CPA",
+        "ledger": "Account 2330 balance at {date}",
+        "expense": "Points expense in the period (6120)",
+        "outstanding": "{points} outstanding points · face value"
+      }
     },
     "cashFlow": {
       "title": "Cash flow (indirect)",
