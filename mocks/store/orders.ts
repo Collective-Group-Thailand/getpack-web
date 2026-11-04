@@ -21,6 +21,7 @@ import { deliveredAt, receipts, toOrderDto, toStoreOrderDto } from "./order-dto"
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { provinceRefOf } from "./catalog";
 import { customerMe, customerOf, type MockCustomer } from "./customers";
+import { loyaltyP3FieldsOf, setRewardTierSource } from "./loyalty-p3";
 import { ownerIdOf } from "./owner";
 import { MILESTONE_STATUS, SHIPMENT_STATUS } from "@/domain/status";
 import { statusLabels } from "../status-labels";
@@ -366,7 +367,15 @@ const TIERS = [
   { tier: "member" as const, from: 0, multiplier: "1.00" },
   { tier: "silver" as const, from: 5_000_000, multiplier: "1.25" },
   { tier: "gold" as const, from: 20_000_000, multiplier: "1.50" },
+  // Loyalty P3 (D-478): Platinum ≥ ฿500,000 / 12 months ×2 — not in the published `LoyaltyTier` yet.
+  { tier: "platinum" as const, from: 50_000_000, multiplier: "2.00" },
 ];
+
+/** The persona's tier, Platinum included (loyalty P3), for the reward catalogue's tier rule. */
+function loyaltyTierOf(customer: MockCustomer) {
+  return TIERS[TIERS.findLastIndex((tier) => spendOf(customer) >= tier.from)]!.tier;
+}
+setRewardTierSource(loyaltyTierOf);
 
 function spendOf(customer: MockCustomer): number {
   return ordersOf(customer)
@@ -497,9 +506,10 @@ export const storeOrderHandlers = [
         "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
       // The mock keeps no paid-but-not-completed spend.
       spendNotYetCounted: "0.00",
-      tier: current.tier,
+      // Platinum (P3) is not in the published enum yet (CONTRACT-REQUEST store.loyalty.p3-fields).
+      tier: current.tier as Schemas["LoyaltyTier"],
       // The next tier up (D-134) and the 12-month spend as a share of it; 100 at the top.
-      nextTier: next?.tier ?? null,
+      nextTier: (next?.tier ?? null) as Schemas["LoyaltyTier"] | null,
       nextTierMinSpend12m: next ? baht(next.from) : null,
       nextTierProgressPct: next ? Math.min(100, (spendOf(customer) / next.from) * 100).toFixed(2) : "100.00",
       // Loyalty P2: the review customer holds a 40-point win-back lot and one active reorder campaign.
@@ -507,7 +517,8 @@ export const storeOrderHandlers = [
         customer.ownerIndex === null ? [] : [{ points: 40, reason: "winback", expiresAt: bangkokIso(30 * DAY) }],
       activeCampaigns: customer.ownerIndex === null ? 0 : 1,
     };
-    return HttpResponse.json(summary);
+    // Loyalty P3: perks, active multipliers and open reward coupons (CONTRACT-REQUEST store.loyalty.p3-fields).
+    return HttpResponse.json({ ...summary, ...loyaltyP3FieldsOf(customer, current.tier) });
   }),
 
   // store.loyalty.ledger (published, U-F0.2), newest first.

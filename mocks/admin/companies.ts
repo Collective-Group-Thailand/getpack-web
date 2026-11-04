@@ -20,6 +20,7 @@ import type { Schemas } from "@/lib/api/types";
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS } from "../personas";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy, versionTag } from "../support";
+import { withCreditP3 } from "./loyalty-p3";
 import { baht, customers } from "./commerce";
 import type {
   CompanyBranchRow,
@@ -850,7 +851,10 @@ export const companyHandlers = [
   // admin.companyCredit.get
   http.get("*/v1/admin/companies/:companyId/credit", ({ params, request }) => {
     const ok = access(request, String(params.companyId), "companies.read");
-    return ok instanceof Response ? ok : HttpResponse.json(toCompanyCreditDto(ok.store));
+    // Loyalty P3: version origins and the tier uplift (CONTRACT-REQUEST admin.loyalty.p3-fields).
+    return ok instanceof Response
+      ? ok
+      : HttpResponse.json(withCreditP3(ok.store.company.id, toCompanyCreditDto(ok.store)));
   }),
 
   // admin.companyCredit.requestLimit — opens a credit_limit approval, answers the credit (D-121).
