@@ -20,6 +20,10 @@ const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/admin/companies/CompanyWorkspace.tsx":
     "a company's tabs: review KYC, set the credit limit and issue documents are the section's own actions",
   "src/features/admin/cs/CalculatorWorkspace.tsx": "the result's place beside the calculator form, which is the step",
+  "src/features/admin/marketing/AgentLinksTable.tsx":
+    "a report section: rows appear when agents share the deal's link; the campaign's own actions are beside it",
+  "src/features/admin/marketing/SurveysAdmin.tsx":
+    "the templates section's own action is สร้างชุดคำถาม, beside the table",
   // G2
   "src/features/admin/shipping/RatesTable.tsx":
     "a rate version's lines, drawn inside the version editor whose own controls add and import lines",

@@ -141,3 +141,56 @@ pnpm lhci        # /deals stays ≥ 90/95/100
 # When getpack-api publishes P2:
 pnpm gen:api --adopt --tag vX.Y.Z   # registry.test.ts lists the P2 requests to retire
 ```
+
+## 7. Integration (2026-11-04, getpack-api `feat/loyalty-p2-lifecycle` 09338241)
+
+- **Contract.** `contract/openapi.json` is the API branch's document (1501 paths), pinned unreleased in
+  `contract.lock.json` (commit 09338241, still labelled 0.75.0 / v0.75.0 so `verifyLock` passes, as the P1.5 pin).
+  `pnpm gen:api` regenerated `schema.d.ts`, the MSW examples/problems, `problem-codes.ts` and
+  `docs/contract-requests.openapi.json`. Re-adopt with `pnpm gen:api --adopt --tag vX.Y.Z` once the API tags a release.
+- **Adopted (generated client).** All 23 P2 operations and both `…p2-fields` requests left the registry
+  (`store-loyalty-p2.ts` / `admin-loyalty-p2.ts` deleted), `awaiting-triage.ts` and the open table of
+  `docs/contract-requests.md` (four "Resolved" rows). Screens call `browserApi` / `serverApi` /
+  `adminBrowserApis().contract`; types are `Schemas` aliases in `features/shared/loyalty-p2/types.ts`. The
+  `safeParse` readers (`loyalty-p2/read.ts`, `reviewPhotosOf`) and the `loyalty-types.ts` widening are gone.
+- **API-CHANGES-P2 deviations followed.** (1) Data-refresh and survey rewards are written synchronously: the toast and
+  "ได้รับ … แต้ม" are credited figures; the confirm reply's `rewardPoints` is the next cycle's (0). (2) `toEarn` never
+  includes the payment bonus (`multipliers.paymentMethod` "1.00"); the QR / transfer line is `paymentBonus` +
+  `toEarnWithPaymentBonus`. (3) A bundle saves before its items (`display.bundle: null`, the tab says "เผยแพร่ได้เมื่อ
+  ชุดมีสินค้าครบ"); the publish guard's `bundle_items` is listed under the preview; the mock's guard does the same.
+  (4) addBundle is all or none; `promotions.bundle_unavailable` names the items; `If-Match` optional. (5) Survey
+  `order_id` / quarterly opening: nothing on the web. (6) An approved showcase consent can be changed
+  ("เปลี่ยนสิ่งที่อนุญาต"): the new request withdraws the approved one; no second reward line. (7) Win-back cycle, (8)
+  one promotion bonus per order × promotion: labels only (`bonusReasons.promotion`). (9) Audience estimate rounded to
+  tens (mock too). (10) `EntryMultipliersDto`, `B2bCompanyDto`, `TemplateVersionStatus`; also `BonusLotReason` =
+  `winback` only, survey seen/dismiss answer 200 `SurveyEnvelopeDto`, template list paginated (`data`), results
+  `responses` / `completionRatePct` / `counts` / `texts`, templates `completed` / `opened` / `createdAt`,
+  `StoreReorderSuggestionDto`, `ProfitAndLossDto.pointsLiability`, `display.listing` always present. (11)
+  `loyalty.analytics` owned by `finance_manager`; Finance reads the analytics through `loyalty.read` (D-496, copied
+  verbatim from getpack-api `docs/decisions.md`).
+- **Review photos.** `store.reviews.addPhotos` answers the whole `ReviewDto`: the card now replaces its photo list
+  instead of appending (the request-era code would have listed new photos twice). The two-step flow stays.
+- **The three asks of §3.** (3) Template code uniqueness **is served**: 422 `validation.failed` with `code` · `taken`;
+  the editor shows "มีชุดคำถามที่ใช้รหัสนี้แล้ว…" under the code field (`isCodeTaken`). (1) Review reward before
+  submitting and (2) review eligibility on the order are **not served**: they stay open as contract requests
+  `store.reviews.reward-preview` and `store.orders.reviewable` (rows in `docs/contract-requests.md`; fields on
+  published reads, so no registry definition).
+- **One banner on `/account` (design decision; resolves §5.3).** `accountBannerOf` (`features/customer/account/
+  account-banner.ts`, Vitest) picks at most one: data confirmation → survey due → earn checklist → win-back; each keeps
+  its own rule, the rest wait for a later visit (a survey not rendered is not marked seen). The reorder bonus is not an
+  `/account` banner.
+- **Problem copy.** th/en titles for `promotions.bundle_unavailable` / `not_bundle`, `reviews.photo_limit` /
+  `photo_window_closed`, `showcase.*`, `surveys.*`.
+- **MSW.** Every P2 handler is plain `http.*` in the generated shapes (store: surveys, campaigns, data refresh,
+  showcase, reviews with photos, add-bundle; admin: a small `staff()` wrapper for analytics, campaigns, estimate,
+  agent performance, templates with ETag, results, showcase consents). Fixtures gained `bonusLots`, `activeCampaigns`,
+  ledger `bonusReason` / `multipliers`, `nextDueAt`, the P&L memo inside `profitAndLoss()`, the export resource
+  `promotion_agent_performance`.
+- **Gates** (Linux VM, `$HOME/linuxbind` esbuild + rolldown, nothing installed into the repo): `gen:api --check` PASS;
+  `tsc` on 123 + 42 files (every changed file, every reader of a changed schema or of the request layer, and their
+  import graph; temporary config, removed) PASS; ESLint on the 70 changed TS/TSX files PASS; Prettier PASS; Vitest
+  `src/lib/api` (incl. `registry.test.ts`, request mocks), `mocks`, `src/i18n`, `src/app`, `src/proxy.test.ts`,
+  `features/customer/{account,loyalty,surveys,orders,deals,cart,checkout,repeat,liff,fulfilment}`,
+  `features/admin/{marketing,finance,approvals,customers,console}`, `features/shared` — 94 files PASS. Fixed on the
+  way: `dead-ends.test.ts` (P2's `AgentLinksTable` and `SurveysAdmin` empty states, now on the allow-list with their
+  reason). Whole-repo `tsc`, Storybook build, `next build` and e2e: SKIPPED (the Mac).
