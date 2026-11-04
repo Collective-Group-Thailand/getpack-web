@@ -11,6 +11,8 @@ const ACTION_BESIDE_IT: Record<string, string> = {
   "src/features/shared/shell/NotificationBell.tsx": "inside the bell's popover; closing it is the next step",
   // Loyalty P3: the catalogue sits right above the coupon list, and redeeming is the next step.
   "src/features/customer/rewards/MyRewardCoupons.tsx": "under the reward catalogue; redeeming one fills the list",
+  // Shared, but drawn only by partner console pages — never in the customer zone; the console navigation is beside it.
+  "src/features/shared/errors/PageError.tsx": "partner console pages only, inside its navigation",
 };
 
 const CUSTOMER = ["src/app/[[]locale]/**/*.tsx", "src/features/customer/**/*.tsx", "src/features/shared/**/*.tsx"];
