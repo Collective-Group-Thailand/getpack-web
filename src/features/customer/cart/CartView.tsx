@@ -27,7 +27,7 @@ import { shareOrCopy } from "../configurator/useQuoteActions";
 import { productNameOf } from "../orders/summary";
 import { CartItemCard } from "./CartItemCard";
 import { editCart, readCart, type Cart, type CartItem } from "./cart-client";
-import { PromoCodeBox } from "./PromoCodeBox";
+import { CartCoupons } from "./CartCoupons";
 import { quotePdf, quoteShareLink } from "./quote-actions";
 import { ShippingEstimate, type ShippingEstimateResult } from "./ShippingEstimate";
 import { useGuestCartMerge } from "./useGuestCartMerge";
@@ -369,13 +369,12 @@ export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?
           total={{ label: tFlow("summary.total"), value: totalValue, hint: totalHint }}
           pending={mutate.isPending}
           codes={
-            <PromoCodeBox
-              variant="compact"
+            <CartCoupons
               codes={cart.codes}
               maxCodes={cart.maxCodes}
-              note={tFlow("summary.codesNote")}
+              cartVersion={cart.updatedAt}
               pending={mutate.isPending}
-              error={codeError}
+              manual={{ error: codeError, note: tFlow("summary.codesNote") }}
               onApply={async (code) => {
                 setCodeError(null);
                 try {

@@ -28,9 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function Page() {
   await requireCustomer();
-  const [t, tQuotes, tReferral, tStatus, format, credit, codes] = await Promise.all([
+  const [t, tReferral, tStatus, format, credit, codes] = await Promise.all([
     getTranslations("account.wallet"),
-    getTranslations("account.quotes"),
     getTranslations("account.referral"),
     getTranslations("status"),
     getFormat(),
@@ -86,8 +85,9 @@ export default async function Page() {
             title={t("noCodes")}
             description={t("codesHint")}
             action={
+              // Loyalty P1.5: an empty wallet leads to the deals, where codes are kept.
               <Button asChild variant="secondary">
-                <Link href="/products">{tQuotes("browse")}</Link>
+                <Link href="/deals">{t("seeDeals")}</Link>
               </Button>
             }
           />

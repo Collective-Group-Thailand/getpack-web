@@ -318,7 +318,78 @@
     "systemManaged": "Referral promotions are managed by the system and cannot be changed here",
     "summary": "Promotion summary",
     "period": "Period",
-    "usageLabel": "How this promotion has been used"
+    "usageLabel": "How this promotion has been used",
+    "tabs": {
+      "label": "Promotion sections",
+      "setup": "Set-up",
+      "display": "On the deals page"
+    },
+    "display": {
+      "preview": "Preview on the deals page",
+      "visibility": "Visibility",
+      "visibilityNote": "Hidden by default. The promotion appears on the deals page once it is public and passes the checks on the right.",
+      "visibilities": {
+        "hidden": "Hidden",
+        "unlisted": "Link only",
+        "public": "Public"
+      },
+      "visibilityHints": {
+        "hidden": "Not shown anywhere on the storefront",
+        "unlisted": "Opens from its link, not listed",
+        "public": "On the deals page, the home page and matching product pages"
+      },
+      "ticket": "Ticket text",
+      "ticketNote": "A short headline says what the customer gets; the subline says the scope. No urgency or countdown wording.",
+      "terms": "Terms",
+      "termsNote": "The full text shown on the deal's own page.",
+      "hero": "Hero image",
+      "heroNote": "Used by share links and the deal page. PNG, JPEG or WebP.",
+      "heroNone": "No image yet",
+      "heroUpload": "Upload image",
+      "heroReplace": "Replace image",
+      "heroSaved": "Hero image saved",
+      "heroFailed": "Could not upload the image",
+      "fields": {
+        "headline": {
+          "th": "Headline (Thai)",
+          "en": "Headline (English)"
+        },
+        "subline": {
+          "th": "Subline (Thai)",
+          "en": "Subline (English)"
+        },
+        "terms": {
+          "th": "Terms (Thai)",
+          "en": "Terms (English)"
+        },
+        "required": "Needed to publish",
+        "slug": "Link slug",
+        "slugHint": "Lower-case letters, digits and hyphens, e.g. box10-corrugated, used as /deals/slug",
+        "featured": "Featured deal",
+        "featuredHint": "Shown as the lead ticket on the deals page",
+        "badge": "“Featured” badge",
+        "badgeHint": "One amber badge on the lead ticket"
+      },
+      "badgeDefault": {
+        "th": "ดีลเด่น",
+        "en": "Featured"
+      },
+      "checks": {
+        "title": "Before publishing",
+        "active": "The promotion is active",
+        "slug": "A slug is set",
+        "headline": "The Thai headline is filled in",
+        "terms": "The Thai terms are filled in",
+        "words": "No wording a public deal may not use",
+        "met": "met",
+        "unmet": "not met"
+      },
+      "save": "Save display",
+      "publish": "Publish on the deals page",
+      "saved": "Display saved",
+      "published": "Published on the deals page",
+      "failed": "Could not save the display"
+    }
   },
   "coupons": {
     "title": "Coupon codes",

@@ -1,6 +1,7 @@
 import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
+import { cleanDealRef, dealRefCookie } from "@/lib/attribution/deal-ref";
 import { routing } from "@/i18n/routing";
 import {
   clearedSessionCookieWrites,
@@ -143,6 +144,9 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
   for (const [name, value] of Object.entries(securityHeaders(zone, { isHttps: isSecure }))) {
     response.headers.set(name, value);
   }
+  // Loyalty P1.5: an agent's deal share link (`?ref=`) is remembered for 30 days and forwarded by the deal reads.
+  const dealRef = zone === "customer" ? cleanDealRef(request.nextUrl.searchParams.get("ref")) : null;
+  if (dealRef) response.cookies.set(dealRefCookie(dealRef, isSecure));
   // D-463: the driver handover page shows a recipient to whoever holds its link — never cached, never indexed.
   if (zone === "customer" && isDriverHandoverPath(pathname)) {
     for (const [name, value] of Object.entries(driverHandoverHeaders())) response.headers.set(name, value);

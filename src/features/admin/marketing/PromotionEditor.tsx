@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -24,6 +24,7 @@ import { PageHeader } from "@/ui/components/PageHeader";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
+import { ViewTabs } from "@/ui/components/ViewTabs";
 
 import {
   adminBrowserApis,
@@ -36,6 +37,7 @@ import {
 } from "../console";
 import { DetailSkeleton } from "../console/DetailSkeleton";
 import { CouponCodes } from "./CouponCodes";
+import { PromotionDisplay } from "./PromotionDisplay";
 import type { Promotion } from "./resources";
 import { bangkokDayOf, bangkokMidnight } from "./time";
 
@@ -263,6 +265,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const format = useFormat();
   const en = useLocale() === "en";
   const router = useRouter();
+  const tab = useSearchParams().get("tab") === "display" ? "display" : "setup";
   const queryClient = useQueryClient();
   const actor = useActor();
   const can = (permission: string) => actor.permissions.includes(permission);
@@ -456,371 +459,387 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
       ) : null}
       {systemManaged ? <Callout tone="info" title={t("systemManaged")} /> : null}
 
-      <FormColumns
-        aside={
-          <FormSummary title={t("summary")} barClassName={EDGE_BAR} action={saveButton}>
-            <SummaryRows
-              rows={[
-                { key: "kind", label: t("fields.kind"), value: t(`kinds.${form.kind}`) },
-                { key: "benefit", label: t("benefit"), value: what },
-                { key: "period", label: t("period"), value: period },
-                {
-                  key: "channels",
-                  label: t("fields.channels"),
-                  value: picked(form.conditions.channels, (value) => t(`channels.${value}`)),
-                },
-                {
-                  key: "types",
-                  label: t("fields.productTypes"),
-                  value: picked(form.conditions.productTypeCodes, productTypes.labelOf),
-                },
-                {
-                  key: "budget",
-                  label: t("fields.budgetAmount"),
-                  value: filled(form.budgetAmount) ? format.thb(Number(form.budgetAmount).toFixed(2)) : "",
-                },
-              ]}
-            />
-            {lifecycle.length ? (
-              <div data-fill="row" className="border-border flex flex-col gap-2 border-t pt-4">
-                {lifecycle.map((next) => (
-                  <Button
-                    key={next.action}
-                    variant={
-                      next.action === "activate" && lifecycleLeads
-                        ? "primary"
-                        : next.action === "end"
-                          ? "ghost"
-                          : "secondary"
-                    }
-                    className={next.action === "end" ? "text-danger" : undefined}
-                    onClick={() => setAction(next)}
-                  >
-                    {t(`actions.${wording(next)}.label`)}
-                  </Button>
-                ))}
-              </div>
-            ) : null}
-          </FormSummary>
-        }
-      >
-        <FormSection card step={1} title={t("basics")}>
-          <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
-            <Field label={t("fields.name")} required className="md:col-span-2">
-              <Input value={form.name} disabled={!editable} onChange={(event) => set({ name: event.target.value })} />
-            </Field>
-            <Field label={t("fields.kind")} hint={item ? t("hints.kindFixed") : t(`kindHints.${form.kind}`)}>
-              <SearchableSelect
-                value={form.kind}
-                disabled={Boolean(item) || !editable}
-                onValueChange={(kind) => set({ kind: kind as Draft["kind"] })}
-                options={(["coupon", "automatic", "referral"] as const).map((value) => ({
-                  value,
-                  label: t(`kinds.${value}`),
-                }))}
-              />
-            </Field>
-            <Field label={t("fields.campaign")} hint={item ? t("hints.campaignFixed") : undefined}>
-              <SearchableSelect
-                value={form.campaignId || "none"}
-                disabled={Boolean(item) || !editable}
-                onValueChange={(value) => set({ campaignId: value === "none" ? "" : value })}
-                options={[
-                  { value: "none", label: t("noCampaign") },
-                  ...(campaigns.data?.data ?? [])
-                    .filter((row) => row.status !== "ended" || row.id === form.campaignId)
-                    .map((row) => ({ value: row.id, label: `${row.code} · ${row.name}` })),
+      {/* Loyalty P1.5: how the promotion appears on the deals surface is its own tab. */}
+      {item && !systemManaged ? (
+        <ViewTabs
+          label={t("tabs.label")}
+          current={tab}
+          items={[
+            { key: "setup", href: `/marketing/promotions/${item.id}`, label: t("tabs.setup") },
+            { key: "display", href: `/marketing/promotions/${item.id}?tab=display`, label: t("tabs.display") },
+          ]}
+        />
+      ) : null}
+
+      {item && tab === "display" && !systemManaged ? (
+        <PromotionDisplay item={item} editable={can("promotions.manage") && item.status !== "ended"} />
+      ) : (
+        <FormColumns
+          aside={
+            <FormSummary title={t("summary")} barClassName={EDGE_BAR} action={saveButton}>
+              <SummaryRows
+                rows={[
+                  { key: "kind", label: t("fields.kind"), value: t(`kinds.${form.kind}`) },
+                  { key: "benefit", label: t("benefit"), value: what },
+                  { key: "period", label: t("period"), value: period },
+                  {
+                    key: "channels",
+                    label: t("fields.channels"),
+                    value: picked(form.conditions.channels, (value) => t(`channels.${value}`)),
+                  },
+                  {
+                    key: "types",
+                    label: t("fields.productTypes"),
+                    value: picked(form.conditions.productTypeCodes, productTypes.labelOf),
+                  },
+                  {
+                    key: "budget",
+                    label: t("fields.budgetAmount"),
+                    value: filled(form.budgetAmount) ? format.thb(Number(form.budgetAmount).toFixed(2)) : "",
+                  },
                 ]}
               />
-            </Field>
-            <Field label={t("fields.startsOn")} required>
-              <DateField
-                value={form.startsOn}
-                display={form.startsOn ? format.date(form.startsOn) : tFilters("pickDate")}
-                disabled={!editable}
-                onChange={(event) => set({ startsOn: event.target.value })}
-              />
-            </Field>
-            <Field label={t("fields.endsOn")} hint={t("hints.endsOn")}>
-              <DateField
-                value={form.endsOn}
-                min={form.startsOn || undefined}
-                display={form.endsOn ? format.date(form.endsOn) : tFilters("pickDate")}
-                disabled={!editable}
-                onChange={(event) => set({ endsOn: event.target.value })}
-              />
-            </Field>
-            <Field label={t("fields.priority")} hint={t("hints.priority")} required>
-              <NumberInput
-                step={1}
-                value={form.priority}
-                disabled={!editable}
-                onChange={(event) => set({ priority: event.target.value })}
-              />
-            </Field>
-            <Field label={t("fields.stacking")} hint={t(`stackingHints.${form.stacking}`)}>
-              <SearchableSelect
-                value={form.stacking}
-                disabled={!editable}
-                onValueChange={(stacking) => set({ stacking: stacking as Draft["stacking"] })}
-                options={(["exclusive", "stackable", "best_of"] as const).map((value) => ({
-                  value,
-                  label: t(`stacking.${value}`),
-                }))}
-              />
-            </Field>
-            <Field label={t("fields.stackGroup")} hint={t("hints.stackGroup")}>
-              <Input
-                value={form.stackGroup}
-                disabled={!editable}
-                onChange={(event) => set({ stackGroup: event.target.value })}
-              />
-            </Field>
-          </div>
-        </FormSection>
+              {lifecycle.length ? (
+                <div data-fill="row" className="border-border flex flex-col gap-2 border-t pt-4">
+                  {lifecycle.map((next) => (
+                    <Button
+                      key={next.action}
+                      variant={
+                        next.action === "activate" && lifecycleLeads
+                          ? "primary"
+                          : next.action === "end"
+                            ? "ghost"
+                            : "secondary"
+                      }
+                      className={next.action === "end" ? "text-danger" : undefined}
+                      onClick={() => setAction(next)}
+                    >
+                      {t(`actions.${wording(next)}.label`)}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
+            </FormSummary>
+          }
+        >
+          <FormSection card step={1} title={t("basics")}>
+            <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
+              <Field label={t("fields.name")} required className="md:col-span-2">
+                <Input value={form.name} disabled={!editable} onChange={(event) => set({ name: event.target.value })} />
+              </Field>
+              <Field label={t("fields.kind")} hint={item ? t("hints.kindFixed") : t(`kindHints.${form.kind}`)}>
+                <SearchableSelect
+                  value={form.kind}
+                  disabled={Boolean(item) || !editable}
+                  onValueChange={(kind) => set({ kind: kind as Draft["kind"] })}
+                  options={(["coupon", "automatic", "referral"] as const).map((value) => ({
+                    value,
+                    label: t(`kinds.${value}`),
+                  }))}
+                />
+              </Field>
+              <Field label={t("fields.campaign")} hint={item ? t("hints.campaignFixed") : undefined}>
+                <SearchableSelect
+                  value={form.campaignId || "none"}
+                  disabled={Boolean(item) || !editable}
+                  onValueChange={(value) => set({ campaignId: value === "none" ? "" : value })}
+                  options={[
+                    { value: "none", label: t("noCampaign") },
+                    ...(campaigns.data?.data ?? [])
+                      .filter((row) => row.status !== "ended" || row.id === form.campaignId)
+                      .map((row) => ({ value: row.id, label: `${row.code} · ${row.name}` })),
+                  ]}
+                />
+              </Field>
+              <Field label={t("fields.startsOn")} required>
+                <DateField
+                  value={form.startsOn}
+                  display={form.startsOn ? format.date(form.startsOn) : tFilters("pickDate")}
+                  disabled={!editable}
+                  onChange={(event) => set({ startsOn: event.target.value })}
+                />
+              </Field>
+              <Field label={t("fields.endsOn")} hint={t("hints.endsOn")}>
+                <DateField
+                  value={form.endsOn}
+                  min={form.startsOn || undefined}
+                  display={form.endsOn ? format.date(form.endsOn) : tFilters("pickDate")}
+                  disabled={!editable}
+                  onChange={(event) => set({ endsOn: event.target.value })}
+                />
+              </Field>
+              <Field label={t("fields.priority")} hint={t("hints.priority")} required>
+                <NumberInput
+                  step={1}
+                  value={form.priority}
+                  disabled={!editable}
+                  onChange={(event) => set({ priority: event.target.value })}
+                />
+              </Field>
+              <Field label={t("fields.stacking")} hint={t(`stackingHints.${form.stacking}`)}>
+                <SearchableSelect
+                  value={form.stacking}
+                  disabled={!editable}
+                  onValueChange={(stacking) => set({ stacking: stacking as Draft["stacking"] })}
+                  options={(["exclusive", "stackable", "best_of"] as const).map((value) => ({
+                    value,
+                    label: t(`stacking.${value}`),
+                  }))}
+                />
+              </Field>
+              <Field label={t("fields.stackGroup")} hint={t("hints.stackGroup")}>
+                <Input
+                  value={form.stackGroup}
+                  disabled={!editable}
+                  onChange={(event) => set({ stackGroup: event.target.value })}
+                />
+              </Field>
+            </div>
+          </FormSection>
 
-        <FormSection card step={2} title={t("conditions")} description={t("conditionsNote")}>
-          <fieldset>
-            <legend className="mb-2 text-sm font-medium">{t("fields.channels")}</legend>
-            <div className="flex flex-wrap gap-x-5 gap-y-3">
-              {CHANNELS.map((channel) => (
-                <Checkbox
-                  key={channel}
-                  label={t(`channels.${channel}`)}
-                  disabled={!editable}
-                  checked={form.conditions.channels.includes(channel)}
-                  onCheckedChange={(on) =>
-                    setConditions({ channels: toggle(form.conditions.channels, channel, on === true) })
-                  }
-                />
-              ))}
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend className="mb-2 text-sm font-medium">{t("fields.segments")}</legend>
-            <div className="flex flex-wrap gap-x-5 gap-y-3">
-              {SEGMENTS.map((segment) => (
-                <Checkbox
-                  key={segment}
-                  label={t(`segments.${segment}`)}
-                  disabled={!editable}
-                  checked={form.conditions.segments.includes(segment)}
-                  onCheckedChange={(on) =>
-                    setConditions({ segments: toggle(form.conditions.segments, segment, on === true) })
-                  }
-                />
-              ))}
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend className="mb-2 text-sm font-medium">{t("fields.productTypes")}</legend>
-            {productTypes.isPending && productTypes.fetchStatus !== "idle" ? (
-              <div aria-busy="true" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {[0, 1, 2, 3, 4, 5].map((slot) => (
-                  <span key={slot} className="bg-surface-subtle h-6 rounded-md" />
-                ))}
-              </div>
-            ) : typeOptions.length ? (
-              <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
-                {typeOptions.map((option) => (
+          <FormSection card step={2} title={t("conditions")} description={t("conditionsNote")}>
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium">{t("fields.channels")}</legend>
+              <div className="flex flex-wrap gap-x-5 gap-y-3">
+                {CHANNELS.map((channel) => (
                   <Checkbox
-                    key={option.value}
-                    label={option.label}
+                    key={channel}
+                    label={t(`channels.${channel}`)}
                     disabled={!editable}
-                    checked={form.conditions.productTypeCodes.includes(option.value)}
+                    checked={form.conditions.channels.includes(channel)}
                     onCheckedChange={(on) =>
-                      setConditions({
-                        productTypeCodes: toggle(form.conditions.productTypeCodes, option.value, on === true),
-                      })
+                      setConditions({ channels: toggle(form.conditions.channels, channel, on === true) })
                     }
                   />
                 ))}
               </div>
-            ) : (
-              <p className="text-muted text-sm">{t("hints.noProductTypes")}</p>
-            )}
-          </fieldset>
-          <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
-            {number(
-              t("fields.minOrderValue"),
-              form.conditions.minOrderValue,
-              (value) => setConditions({ minOrderValue: value }),
-              t("hints.minOrderValue"),
-            )}
-            {number(
-              t("fields.minQuantity"),
-              form.conditions.minQuantity,
-              (value) => setConditions({ minQuantity: value }),
-              t("hints.minQuantity"),
-            )}
-          </div>
-          <Switch
-            label={t("fields.firstOrderOnly")}
-            disabled={!editable}
-            checked={form.conditions.firstOrderOnly}
-            onCheckedChange={(firstOrderOnly) => setConditions({ firstOrderOnly })}
-          />
-        </FormSection>
+            </fieldset>
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium">{t("fields.segments")}</legend>
+              <div className="flex flex-wrap gap-x-5 gap-y-3">
+                {SEGMENTS.map((segment) => (
+                  <Checkbox
+                    key={segment}
+                    label={t(`segments.${segment}`)}
+                    disabled={!editable}
+                    checked={form.conditions.segments.includes(segment)}
+                    onCheckedChange={(on) =>
+                      setConditions({ segments: toggle(form.conditions.segments, segment, on === true) })
+                    }
+                  />
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium">{t("fields.productTypes")}</legend>
+              {productTypes.isPending && productTypes.fetchStatus !== "idle" ? (
+                <div aria-busy="true" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {[0, 1, 2, 3, 4, 5].map((slot) => (
+                    <span key={slot} className="bg-surface-subtle h-6 rounded-md" />
+                  ))}
+                </div>
+              ) : typeOptions.length ? (
+                <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {typeOptions.map((option) => (
+                    <Checkbox
+                      key={option.value}
+                      label={option.label}
+                      disabled={!editable}
+                      checked={form.conditions.productTypeCodes.includes(option.value)}
+                      onCheckedChange={(on) =>
+                        setConditions({
+                          productTypeCodes: toggle(form.conditions.productTypeCodes, option.value, on === true),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted text-sm">{t("hints.noProductTypes")}</p>
+              )}
+            </fieldset>
+            <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
+              {number(
+                t("fields.minOrderValue"),
+                form.conditions.minOrderValue,
+                (value) => setConditions({ minOrderValue: value }),
+                t("hints.minOrderValue"),
+              )}
+              {number(
+                t("fields.minQuantity"),
+                form.conditions.minQuantity,
+                (value) => setConditions({ minQuantity: value }),
+                t("hints.minQuantity"),
+              )}
+            </div>
+            <Switch
+              label={t("fields.firstOrderOnly")}
+              disabled={!editable}
+              checked={form.conditions.firstOrderOnly}
+              onCheckedChange={(firstOrderOnly) => setConditions({ firstOrderOnly })}
+            />
+          </FormSection>
 
-        <FormSection card step={3} title={t("benefit")} description={t("benefitNote")}>
-          {redeemed ? <Callout tone="info" title={t("benefitLocked")} /> : null}
-          <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
-            <Field label={t("fields.benefitType")}>
-              <SearchableSelect
-                value={benefit.type}
-                disabled={!editable || redeemed}
-                onValueChange={(type) => setBenefit({ type: type as BenefitType })}
-                options={BENEFITS.map((value) => ({ value, label: t(`benefits.${value}`) }))}
-              />
-            </Field>
-            {benefit.type === "percent"
-              ? number(t("fields.pct"), benefit.pct, (pct) => setBenefit({ pct }), undefined, "%", redeemed)
-              : null}
-            {benefit.type === "fixed"
-              ? number(
-                  t("fields.amount"),
-                  benefit.amount,
-                  (amount) => setBenefit({ amount }),
-                  t("hints.baht"),
-                  undefined,
-                  redeemed,
-                )
-              : null}
-            {benefit.type === "tiered" ? (
-              <Field label={t("fields.basis")}>
+          <FormSection card step={3} title={t("benefit")} description={t("benefitNote")}>
+            {redeemed ? <Callout tone="info" title={t("benefitLocked")} /> : null}
+            <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
+              <Field label={t("fields.benefitType")}>
                 <SearchableSelect
-                  value={benefit.basis}
+                  value={benefit.type}
                   disabled={!editable || redeemed}
-                  onValueChange={(basis) => setBenefit({ basis: basis as Draft["benefit"]["basis"] })}
-                  options={(["value", "quantity"] as const).map((value) => ({ value, label: t(`bases.${value}`) }))}
+                  onValueChange={(type) => setBenefit({ type: type as BenefitType })}
+                  options={BENEFITS.map((value) => ({ value, label: t(`benefits.${value}`) }))}
                 />
               </Field>
-            ) : null}
-            {benefit.type === "percent" || benefit.type === "tiered"
-              ? number(
-                  t("fields.maxAmount"),
-                  benefit.maxAmount,
-                  (maxAmount) => setBenefit({ maxAmount }),
-                  t("hints.cap"),
-                  undefined,
-                  redeemed,
-                )
-              : null}
-            {benefit.type === "unit_price_override"
-              ? number(
-                  t("fields.unitPrice"),
-                  benefit.unitPrice,
-                  (unitPrice) => setBenefit({ unitPrice }),
-                  t("hints.unitPrice"),
-                  undefined,
-                  redeemed,
-                )
-              : null}
-            {benefit.type === "free_revision_rounds"
-              ? number(
-                  t("fields.rounds"),
-                  benefit.rounds,
-                  (rounds) => setBenefit({ rounds }),
-                  undefined,
-                  undefined,
-                  redeemed,
-                )
-              : null}
-            {benefit.type === "points_multiplier"
-              ? number(
-                  t("fields.multiplier"),
-                  benefit.multiplier,
-                  (multiplier) => setBenefit({ multiplier }),
-                  undefined,
-                  "×",
-                  redeemed,
-                )
-              : null}
-            {benefit.type === "bonus_points"
-              ? number(
-                  t("fields.points"),
-                  benefit.points,
-                  (points) => setBenefit({ points }),
-                  undefined,
-                  undefined,
-                  redeemed,
-                )
-              : null}
-          </div>
-          {benefit.type === "tiered" ? (
-            <fieldset className="flex flex-col gap-2">
-              <legend className="mb-1 text-sm font-medium">{t("fields.tiers")}</legend>
-              {benefit.tiers.map((tier, index) => (
-                <div key={index} className="grid grid-cols-[minmax(0,1fr)_8rem_auto] items-end gap-2">
-                  <Field label={t(`fields.tierFrom.${benefit.basis}`, { no: index + 1 })}>
-                    <NumberInput
-                      min={0}
-                      step="any"
-                      value={tier.min}
-                      disabled={!editable || redeemed}
-                      onChange={(event) => setTier(index, { min: event.target.value })}
-                    />
-                  </Field>
-                  <Field label={t("fields.tierPct", { no: index + 1 })}>
-                    <NumberInput
-                      min={0}
-                      step="any"
-                      unit="%"
-                      value={tier.pct}
-                      disabled={!editable || redeemed}
-                      onChange={(event) => setTier(index, { pct: event.target.value })}
-                    />
-                  </Field>
-                  <IconButton
-                    name="trash"
-                    variant="ghost"
-                    label={t("removeTier", { no: index + 1 })}
-                    disabled={!editable || redeemed || benefit.tiers.length === 1}
-                    onClick={() => setBenefit({ tiers: benefit.tiers.filter((_, at) => at !== index) })}
+              {benefit.type === "percent"
+                ? number(t("fields.pct"), benefit.pct, (pct) => setBenefit({ pct }), undefined, "%", redeemed)
+                : null}
+              {benefit.type === "fixed"
+                ? number(
+                    t("fields.amount"),
+                    benefit.amount,
+                    (amount) => setBenefit({ amount }),
+                    t("hints.baht"),
+                    undefined,
+                    redeemed,
+                  )
+                : null}
+              {benefit.type === "tiered" ? (
+                <Field label={t("fields.basis")}>
+                  <SearchableSelect
+                    value={benefit.basis}
+                    disabled={!editable || redeemed}
+                    onValueChange={(basis) => setBenefit({ basis: basis as Draft["benefit"]["basis"] })}
+                    options={(["value", "quantity"] as const).map((value) => ({ value, label: t(`bases.${value}`) }))}
                   />
-                </div>
-              ))}
-              {editable && !redeemed ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  iconStart="plus"
-                  className="self-start"
-                  onClick={() => setBenefit({ tiers: [...benefit.tiers, blankTier()] })}
-                >
-                  {t("addTier")}
-                </Button>
+                </Field>
               ) : null}
-            </fieldset>
-          ) : null}
-          <p className="text-muted text-xs">{t("marginGuard")}</p>
-        </FormSection>
+              {benefit.type === "percent" || benefit.type === "tiered"
+                ? number(
+                    t("fields.maxAmount"),
+                    benefit.maxAmount,
+                    (maxAmount) => setBenefit({ maxAmount }),
+                    t("hints.cap"),
+                    undefined,
+                    redeemed,
+                  )
+                : null}
+              {benefit.type === "unit_price_override"
+                ? number(
+                    t("fields.unitPrice"),
+                    benefit.unitPrice,
+                    (unitPrice) => setBenefit({ unitPrice }),
+                    t("hints.unitPrice"),
+                    undefined,
+                    redeemed,
+                  )
+                : null}
+              {benefit.type === "free_revision_rounds"
+                ? number(
+                    t("fields.rounds"),
+                    benefit.rounds,
+                    (rounds) => setBenefit({ rounds }),
+                    undefined,
+                    undefined,
+                    redeemed,
+                  )
+                : null}
+              {benefit.type === "points_multiplier"
+                ? number(
+                    t("fields.multiplier"),
+                    benefit.multiplier,
+                    (multiplier) => setBenefit({ multiplier }),
+                    undefined,
+                    "×",
+                    redeemed,
+                  )
+                : null}
+              {benefit.type === "bonus_points"
+                ? number(
+                    t("fields.points"),
+                    benefit.points,
+                    (points) => setBenefit({ points }),
+                    undefined,
+                    undefined,
+                    redeemed,
+                  )
+                : null}
+            </div>
+            {benefit.type === "tiered" ? (
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-sm font-medium">{t("fields.tiers")}</legend>
+                {benefit.tiers.map((tier, index) => (
+                  <div key={index} className="grid grid-cols-[minmax(0,1fr)_8rem_auto] items-end gap-2">
+                    <Field label={t(`fields.tierFrom.${benefit.basis}`, { no: index + 1 })}>
+                      <NumberInput
+                        min={0}
+                        step="any"
+                        value={tier.min}
+                        disabled={!editable || redeemed}
+                        onChange={(event) => setTier(index, { min: event.target.value })}
+                      />
+                    </Field>
+                    <Field label={t("fields.tierPct", { no: index + 1 })}>
+                      <NumberInput
+                        min={0}
+                        step="any"
+                        unit="%"
+                        value={tier.pct}
+                        disabled={!editable || redeemed}
+                        onChange={(event) => setTier(index, { pct: event.target.value })}
+                      />
+                    </Field>
+                    <IconButton
+                      name="trash"
+                      variant="ghost"
+                      label={t("removeTier", { no: index + 1 })}
+                      disabled={!editable || redeemed || benefit.tiers.length === 1}
+                      onClick={() => setBenefit({ tiers: benefit.tiers.filter((_, at) => at !== index) })}
+                    />
+                  </div>
+                ))}
+                {editable && !redeemed ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    iconStart="plus"
+                    className="self-start"
+                    onClick={() => setBenefit({ tiers: [...benefit.tiers, blankTier()] })}
+                  >
+                    {t("addTier")}
+                  </Button>
+                ) : null}
+              </fieldset>
+            ) : null}
+            <p className="text-muted text-xs">{t("marginGuard")}</p>
+          </FormSection>
 
-        <FormSection card step={4} title={t("limits")}>
-          <div className="grid gap-x-4 gap-y-4 md:grid-cols-3">
-            {number(
-              t("fields.usageLimitTotal"),
-              form.usageLimitTotal,
-              (usageLimitTotal) => set({ usageLimitTotal }),
-              t("hints.unlimited"),
-            )}
-            {number(
-              t("fields.usageLimitPerCustomer"),
-              form.usageLimitPerCustomer,
-              (usageLimitPerCustomer) => set({ usageLimitPerCustomer }),
-              t("hints.unlimited"),
-            )}
-            {number(
-              t("fields.budgetAmount"),
-              form.budgetAmount,
-              (budgetAmount) => set({ budgetAmount }),
-              t("hints.budget"),
-            )}
-          </div>
-        </FormSection>
+          <FormSection card step={4} title={t("limits")}>
+            <div className="grid gap-x-4 gap-y-4 md:grid-cols-3">
+              {number(
+                t("fields.usageLimitTotal"),
+                form.usageLimitTotal,
+                (usageLimitTotal) => set({ usageLimitTotal }),
+                t("hints.unlimited"),
+              )}
+              {number(
+                t("fields.usageLimitPerCustomer"),
+                form.usageLimitPerCustomer,
+                (usageLimitPerCustomer) => set({ usageLimitPerCustomer }),
+                t("hints.unlimited"),
+              )}
+              {number(
+                t("fields.budgetAmount"),
+                form.budgetAmount,
+                (budgetAmount) => set({ budgetAmount }),
+                t("hints.budget"),
+              )}
+            </div>
+          </FormSection>
 
-        {item?.kind === "coupon" ? <CouponCodes promotion={item} /> : null}
-      </FormColumns>
+          {item?.kind === "coupon" ? <CouponCodes promotion={item} /> : null}
+        </FormColumns>
+      )}
 
       {action && item ? (
         <ConfirmAction

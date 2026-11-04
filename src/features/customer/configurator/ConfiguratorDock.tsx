@@ -62,6 +62,8 @@ export interface ConfiguratorDockProps {
   shippingArea?: string | null;
   /** The discount code field, when the configurator offers one. */
   promo?: React.ReactNode;
+  /** Loyalty P1.5: the product type's deal (`DealPromoBox`), drawn inside the price field. */
+  dealBox?: React.ReactNode;
 }
 
 /**
@@ -97,6 +99,7 @@ export function ConfiguratorDock({
   onGoToShipping,
   shippingArea,
   promo,
+  dealBox,
 }: ConfiguratorDockProps) {
   const t = useTranslations("configurator.dock");
   const tActions = useTranslations("configurator.actions");
@@ -303,31 +306,35 @@ export function ConfiguratorDock({
         <div className="border-border bg-surface rounded-card shadow-card flex flex-col gap-3.5 border p-5 sm:p-[1.375rem]">
           <h2 className="text-muted m-0 text-sm font-normal">{t("title")}</h2>
           {/* Project A: the price on the pale brand tint, the figure in green. */}
-          <div aria-live="polite" aria-atomic="true" className="bg-primary-subtle rounded-xl p-4">
-            {status ?? (
-              <>
-                <p className="serif text-primary m-0 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-4xl leading-none tabular-nums">
-                  <span
-                    key={priced?.unitPrice ?? "none"}
-                    data-unit-price=""
-                    className={reason ? "pk-flash rounded-sm px-1" : undefined}
-                  >
-                    {format.thb(priced?.unitPrice)}
-                  </span>{" "}
-                  {/* A real space, so the price reads and copies as "฿x / ชิ้น" like every other price. */}
-                  <small className="text-muted font-sans text-[0.9375rem] font-medium tracking-normal">
-                    {t("perUnit", { unit })}
-                  </small>
-                  {reason ? (
-                    <Badge size="sm" tone="info" icon="info" className="ms-1 self-center">
-                      {t(`changed.${reason}`)}
-                    </Badge>
-                  ) : null}
-                </p>
-                {subline ? <p className="text-muted mt-2 mb-0 text-sm tabular-nums">{subline}</p> : null}
-                {basis ? <p className="text-muted mt-1 mb-0 text-xs leading-snug">{basis}</p> : null}
-              </>
-            )}
+          <div className="bg-primary-subtle overflow-hidden rounded-xl">
+            <div aria-live="polite" aria-atomic="true" className="p-4">
+              {status ?? (
+                <>
+                  <p className="serif text-primary m-0 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-4xl leading-none tabular-nums">
+                    <span
+                      key={priced?.unitPrice ?? "none"}
+                      data-unit-price=""
+                      className={reason ? "pk-flash rounded-sm px-1" : undefined}
+                    >
+                      {format.thb(priced?.unitPrice)}
+                    </span>{" "}
+                    {/* A real space, so the price reads and copies as "฿x / ชิ้น" like every other price. */}
+                    <small className="text-muted font-sans text-[0.9375rem] font-medium tracking-normal">
+                      {t("perUnit", { unit })}
+                    </small>
+                    {reason ? (
+                      <Badge size="sm" tone="info" icon="info" className="ms-1 self-center">
+                        {t(`changed.${reason}`)}
+                      </Badge>
+                    ) : null}
+                  </p>
+                  {subline ? <p className="text-muted mt-2 mb-0 text-sm tabular-nums">{subline}</p> : null}
+                  {basis ? <p className="text-muted mt-1 mb-0 text-xs leading-snug">{basis}</p> : null}
+                </>
+              )}
+            </div>
+            {/* Loyalty P1.5: the deal for this product type, in the price field under a perforation. */}
+            {dealBox}
           </div>
           {priced ? (
             <div

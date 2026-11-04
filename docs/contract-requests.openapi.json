@@ -812,6 +812,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "ref",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
           }
         ],
         "responses": {

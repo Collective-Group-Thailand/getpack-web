@@ -28,6 +28,8 @@ import {
   type PrintChoice,
 } from "./model";
 import { usePdp } from "./PdpProvider";
+import { DealPromoBox } from "@/features/customer/deals/DealPromoBox";
+import { VolumeLadder } from "@/features/customer/deals/VolumeLadder";
 
 const SignInSheet = dynamic(() => import("@/features/customer/auth/SignInSheet").then((module) => module.SignInSheet), {
   ssr: false,
@@ -132,51 +134,55 @@ export function PdpBuyBox({
     <div className="border-border bg-surface rounded-card flex flex-col gap-5 border p-4 md:p-5">
       {/* The price, its quantity line and the spec line (D-441): their height is kept while the first price
           loads, so the pickers below do not move (CLS). Project A: on the pale brand tint, the figure in green. */}
-      <div
-        aria-live="polite"
-        aria-busy={loading || price.pending}
-        className="bg-primary-subtle min-h-[7.5rem] rounded-xl p-4 md:p-5"
-      >
-        {current?.unitPrice ? (
-          <>
-            <p className={cn("m-0 flex flex-wrap items-baseline gap-x-2.5", price.pending && "opacity-60")}>
-              <b className="text-primary text-[2.125rem] leading-none font-semibold tracking-tight tabular-nums md:text-[2.625rem]">
-                {format.thb(current.unitPrice)}
-              </b>
-              <span className="text-muted tabular-nums">
-                {t("price.perUnit", { unit })}
-                {current.grossAmount ? ` · ${t("price.total", { total: format.thb(current.grossAmount) })}` : null}
-              </span>
-            </p>
-            <p className="text-muted mt-2 text-[0.8125rem] tabular-nums">
-              {size
-                ? t("price.sub", { qty: format.number(selection.quantity), unit, size: size.code })
-                : t("price.subNoSize", { qty: format.number(selection.quantity), unit })}
-            </p>
-            {/* D-441: which spec the price is for, in the API's one string. */}
-            {specLabel ? <p className="text-muted mt-1 text-xs leading-snug">{specLabel}</p> : null}
-          </>
-        ) : loading ? (
-          <div>
-            <Skeleton className="bg-surface h-10 w-56" />
-            <Skeleton className="bg-surface mt-3 h-3.5 w-72 max-w-full" />
-            <span className="sr-only">{t("price.loading")}</span>
-          </div>
-        ) : failed ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-danger-subtle-fg m-0 text-sm">{t("price.error")}</p>
-            <Button size="sm" variant="secondary" onClick={() => void price.refetch()}>
-              {t("price.retry")}
-            </Button>
-          </div>
-        ) : quoteOnly ? (
-          <div>
-            <p className="m-0 text-lg font-semibold">{t("price.quoteOnly")}</p>
-            <p className="text-muted mt-1 text-[0.8125rem]">{t("price.quoteOnlyNote")}</p>
-          </div>
-        ) : (
-          <p className="text-muted m-0 text-sm">{t("price.incomplete")}</p>
-        )}
+      <div className="bg-primary-subtle overflow-hidden rounded-xl">
+        <div aria-live="polite" aria-busy={loading || price.pending} className="min-h-[7.5rem] p-4 md:p-5">
+          {current?.unitPrice ? (
+            <>
+              <p className={cn("m-0 flex flex-wrap items-baseline gap-x-2.5", price.pending && "opacity-60")}>
+                <b className="text-primary text-[2.125rem] leading-none font-semibold tracking-tight tabular-nums md:text-[2.625rem]">
+                  {format.thb(current.unitPrice)}
+                </b>
+                <span className="text-muted tabular-nums">
+                  {t("price.perUnit", { unit })}
+                  {current.grossAmount ? ` · ${t("price.total", { total: format.thb(current.grossAmount) })}` : null}
+                </span>
+              </p>
+              <p className="text-muted mt-2 text-[0.8125rem] tabular-nums">
+                {size
+                  ? t("price.sub", { qty: format.number(selection.quantity), unit, size: size.code })
+                  : t("price.subNoSize", { qty: format.number(selection.quantity), unit })}
+              </p>
+              {/* D-441: which spec the price is for, in the API's one string. */}
+              {specLabel ? <p className="text-muted mt-1 text-xs leading-snug">{specLabel}</p> : null}
+            </>
+          ) : loading ? (
+            <div>
+              <Skeleton className="bg-surface h-10 w-56" />
+              <Skeleton className="bg-surface mt-3 h-3.5 w-72 max-w-full" />
+              <span className="sr-only">{t("price.loading")}</span>
+            </div>
+          ) : failed ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-danger-subtle-fg m-0 text-sm">{t("price.error")}</p>
+              <Button size="sm" variant="secondary" onClick={() => void price.refetch()}>
+                {t("price.retry")}
+              </Button>
+            </div>
+          ) : quoteOnly ? (
+            <div>
+              <p className="m-0 text-lg font-semibold">{t("price.quoteOnly")}</p>
+              <p className="text-muted mt-1 text-[0.8125rem]">{t("price.quoteOnlyNote")}</p>
+            </div>
+          ) : (
+            <p className="text-muted m-0 text-sm">{t("price.incomplete")}</p>
+          )}
+        </div>
+        {/* Loyalty P1.5: the deal for this product type sits in the price field, under a perforation. */}
+        <DealPromoBox
+          productTypeCode={configurator.productTypeCode}
+          calculationId={price.data?.calculationId ?? null}
+          quantity={selection.quantity}
+        />
       </div>
 
       {sizes.length > 0 ? (
@@ -294,48 +300,26 @@ export function PdpBuyBox({
         </div>
       ) : null}
 
+      {/* Loyalty P1.5: the quantity ladder of this calculation — a table from 768 px, tiles below (STITCH-NOTES §c). */}
       {tiers.length > 0 ? (
-        <div>
-          <OptionHead label={t("options.quantity")} id="pdp-quantity-label">
-            {largest ? <small className="text-muted">{t("options.quantityHint")}</small> : null}
-          </OptionHead>
-          <div role="group" aria-labelledby="pdp-quantity-label" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-            {tiers.map((quantity) => {
-              const step = stepOf(quantity);
-              return (
-                <button
-                  key={quantity}
-                  type="button"
-                  aria-pressed={selection.quantity === quantity}
-                  onClick={() =>
-                    choose(pickQuantity(selection, quantity), { option: "quantity", value: String(quantity) })
-                  }
-                  className={cn(
-                    card,
-                    "flex min-h-14 flex-col items-center justify-center px-1 py-2 text-sm font-semibold tabular-nums",
-                  )}
-                >
-                  {format.number(quantity)}
-                  <small
-                    className={cn(
-                      "text-muted text-xs font-normal",
-                      selection.quantity === quantity && "text-primary-subtle-fg",
-                      price.pending && "opacity-60",
-                    )}
-                  >
-                    {step?.instant && step.unitPrice ? (
-                      format.thb(step.unitPrice)
-                    ) : step ? (
-                      t("options.quantityQuote")
-                    ) : (
-                      <span className="bg-bg-subtle inline-block h-3 w-12 animate-pulse rounded-sm align-middle" />
-                    )}
-                  </small>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <VolumeLadder
+          unit={unit}
+          selected={selection.quantity}
+          pending={price.pending}
+          customHref={configureLink}
+          onSelect={(quantity) =>
+            choose(pickQuantity(selection, quantity), { option: "quantity", value: String(quantity) })
+          }
+          rows={tiers.map((quantity) => {
+            const step = stepOf(quantity);
+            return {
+              quantity,
+              unitPrice: step?.instant ? (step.unitPrice ?? null) : null,
+              savingPct: step?.instant ? (step.savingPercent ?? null) : null,
+              quoteOnly: Boolean(step && !step.instant),
+            };
+          })}
+        />
       ) : null}
 
       {/* One primary action; the rest are quiet ghost actions in one wrapping row (Project A), never clipped. */}

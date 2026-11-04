@@ -144,6 +144,8 @@ export const storeDealsRequests = {
     summary: "One public deal by its slug, with its FAQ; 404 when it is not shown",
     decisions: ["D-481"],
     public: true,
+    /** Web assumption: a share link lands here, so the detail takes the list's `?ref=` too. */
+    query: z.object({ ref: z.string().max(40).optional() }),
     response: dealDetail,
   }),
   "POST /v1/store/promotions/{promotionId}/actions/save": request({

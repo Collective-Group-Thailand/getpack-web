@@ -469,7 +469,8 @@
     "history": "ประวัติเครดิต",
     "tableItem": "รายการ",
     "tableDate": "วันที่",
-    "tableAmount": "จำนวนเงิน"
+    "tableAmount": "จำนวนเงิน",
+    "seeDeals": "ดูดีลและโปรโมชัน"
   },
   "copy": {
     "copied": "คัดลอกแล้ว"

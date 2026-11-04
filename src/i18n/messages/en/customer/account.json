@@ -469,7 +469,8 @@
     "history": "Credit history",
     "tableItem": "Item",
     "tableDate": "Date",
-    "tableAmount": "Amount"
+    "tableAmount": "Amount",
+    "seeDeals": "See deals and promotions"
   },
   "copy": {
     "copied": "Copied"

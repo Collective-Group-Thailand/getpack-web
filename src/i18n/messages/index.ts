@@ -48,6 +48,7 @@ const NAMESPACES = [
   "pages",
   "assistant",
   "agent",
+  "deals",
   "admin",
   "console",
   "approvals",
@@ -140,6 +141,8 @@ export const ZONE_NAMESPACES = {
     "studio",
     "pages",
     "agent",
+    // Loyalty P1.5: the deals surface (storefront, LIFF).
+    "deals",
     // getpack Assistant's copy rides in the client messages only in a build that has it (U5.5, D-218).
     ...(ASSISTANT_BUILT_IN ? (["assistant"] as const) : []),
   ],
@@ -180,6 +183,8 @@ export const ZONE_NAMESPACES = {
     "designer",
     // D-428/D-429: shared with the partner zone (logo, seal, signatories, my signature).
     "docBranding",
+    // Loyalty P1.5: the promotion editor previews the storefront's own DealCard.
+    "deals",
   ],
   partner: [
     "common",
@@ -238,6 +243,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     studio: () => import("./th/customer/studio.json"),
     assistant: () => import("./th/customer/assistant.json"),
     agent: () => import("./th/customer/agent.json"),
+    deals: () => import("./th/customer/deals.json"),
     agents: () => import("./th/admin/agents.json"),
     pricing: () => import("./th/admin/pricing.json"),
     advisor: () => import("./th/admin/advisor.json"),
@@ -311,6 +317,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     studio: () => import("./en/customer/studio.json"),
     assistant: () => import("./en/customer/assistant.json"),
     agent: () => import("./en/customer/agent.json"),
+    deals: () => import("./en/customer/deals.json"),
     agents: () => import("./en/admin/agents.json"),
     pricing: () => import("./en/admin/pricing.json"),
     advisor: () => import("./en/admin/advisor.json"),
