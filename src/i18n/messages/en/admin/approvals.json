@@ -101,7 +101,8 @@
     "factory_tolerance_change": "Factory tolerance change",
     "guarantee_policy_change": "Guarantee policy change",
     "style_library_change": "Style library change",
-    "showcase_consent_review": "Customer showcase consent"
+    "showcase_consent_review": "Customer showcase consent",
+    "capacity_deal_publish": "Publish a capacity deal"
   },
   "fields": {
     "quoteCode": "Quotation",

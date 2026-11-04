@@ -101,7 +101,8 @@
     "factory_tolerance_change": "เปลี่ยนค่าคลาดเคลื่อนของโรงงาน",
     "guarantee_policy_change": "เปลี่ยนนโยบายรับประกัน",
     "style_library_change": "เปลี่ยนคลังแบบกล่อง",
-    "showcase_consent_review": "ขอแสดงผลงานของลูกค้า"
+    "showcase_consent_review": "ขอแสดงผลงานของลูกค้า",
+    "capacity_deal_publish": "เผยแพร่ดีลจากคิวผลิตว่าง"
   },
   "fields": {
     "quoteCode": "ใบเสนอราคา",
