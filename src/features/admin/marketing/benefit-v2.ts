@@ -1,11 +1,11 @@
 /**
  * Loyalty P3 (D-497): benefit schema v2 in the promotion editor — the v2 kinds' bodies and the
  * `benefitSchemaVersion: 2` that goes beside them. A v1 benefit stays v1 (no version sent); `free_shipping` becomes v2
- * only when it carries a cap. The published `PromotionBenefitDto` does not know v2 yet (CONTRACT-REQUEST
- * admin.loyalty.p3-fields), so the editor casts at its one call site.
+ * only when it carries a cap. `PromotionBenefitDto` lists the v2 types; `daysSaved` / `addonCode` travel as its open
+ * fields (`benefitV2FieldsOf` reads them back).
  */
 
-import type { BenefitV2 } from "@/lib/api/requests/admin-loyalty-p3";
+import type { BenefitV2 } from "@/features/shared/loyalty-p3/types";
 
 /** The editor's benefit draft, as far as v2 reads it: the numbers still as typed. */
 export interface BenefitV2Draft {
@@ -42,6 +42,9 @@ export function benefitV2Body(benefit: BenefitV2Draft): BenefitV2 | null {
 }
 
 /** `benefitSchemaVersion: 2` next to a v2 benefit; the body unchanged otherwise. */
-export function withSchemaVersion<T extends object>(body: T, benefit: BenefitV2Draft): T {
-  return benefitV2Body(benefit) ? ({ ...body, benefitSchemaVersion: 2 } as T) : body;
+export function withSchemaVersion<T extends object>(
+  body: T,
+  benefit: BenefitV2Draft,
+): T & { benefitSchemaVersion?: 2 } {
+  return benefitV2Body(benefit) ? { ...body, benefitSchemaVersion: 2 as const } : body;
 }

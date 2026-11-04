@@ -7,7 +7,7 @@ import console_ from "@/i18n/messages/th/admin/console.json";
 import finance from "@/i18n/messages/th/admin/finance.json";
 import marketing from "@/i18n/messages/th/admin/marketing.json";
 import common from "@/i18n/messages/th/common/common.json";
-import type { RewardCatalogItem } from "@/lib/api/requests/admin-loyalty-p3";
+import type { RewardCatalogItem } from "@/features/shared/loyalty-p3/types";
 import type { Schemas } from "@/lib/api/types";
 
 import { CreditUpliftPanel } from "../companies/CreditUplift";
@@ -44,6 +44,7 @@ const ITEM: RewardCatalogItem = {
   description: { th: "ใช้กับกล่องพิมพ์ที่เลือก Spot UV", en: "For printed boxes with Spot UV selected" },
   costPoints: 100,
   value: { type: "free_addon", addonCode: "spot_uv", maxAmount: "1500.00" },
+  valueTextTh: "อัปเกรดงานพิมพ์ฟรี: Spot UV",
   constraints: { minOrderValue: null, productTypeCodes: ["folding_carton"], perUserEveryMonths: null },
   tierRequired: null,
   validityDays: 90,
@@ -53,7 +54,6 @@ const ITEM: RewardCatalogItem = {
   status: "active",
   promotionId: "0192f3a0-7c1e-7d2a-9b1f-0000000f0207",
   redemptions30d: 4,
-  openCoupons: 1,
   updatedAt: "2026-10-25T10:00:00+07:00",
 };
 

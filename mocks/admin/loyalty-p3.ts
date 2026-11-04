@@ -1,30 +1,32 @@
 /**
  * Loyalty P3 (API-CHANGES-P3, Admin): the reward catalogue and its redemptions, admin loyalty campaigns, the
- * credit-limit tier uplift and capacity-deal drafts — kept in memory. Every handler is a contract request
- * (`mockRequest`), so its answer is validated against `src/lib/api/requests/admin-loyalty-p3.ts`.
+ * credit-limit tier uplift and capacity-deal drafts — kept in memory, in the generated shapes (getpack-api
+ * `feat/loyalty-p3-catalogue-tiers`, pinned in `contract.lock.json`). Admin lists answer the paginated `{ data, meta }`
+ * (API-CHANGES-P3 deviation 5).
  *
  * The catalogue is the UAT seed's eight items (all active). One uplift row is capped (Platinum ×2 over ฿1,000,000),
  * one is not. Capacity is per product type only: no factory id, name or count anywhere (D-502).
  */
 
+import { http, HttpResponse } from "msw";
+
 import type {
-  AdminLoyaltyCampaignRule,
+  AdminLoyaltyCampaign,
   AdminRedemption,
   BenefitV2,
   CreditUplift,
   CreditUpliftMode,
   CreditUpliftRow,
-  CreditVersionP3Fields,
   RewardCatalogInput,
   RewardCatalogItem,
-} from "@/lib/api/requests/admin-loyalty-p3";
+} from "@/features/shared/loyalty-p3/types";
 import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can } from "../personas";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { REWARD_FIXTURES } from "../store/loyalty-p3";
+import { companyCreditOf } from "./companies";
 import { capacityDealPromotions } from "./marketing";
 
 const DAY = 24 * 60;
@@ -32,6 +34,16 @@ const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มี
 const allowed = (request: Request, permission: string) => can(staffPersonaOf(request), permission);
 const invalid = (path: string, code: string, message: string) =>
   problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [{ path, code, message }]);
+const json = <T>(body: T, init: { status?: number; etag?: string } = {}) =>
+  HttpResponse.json(body as never, {
+    status: init.status ?? 200,
+    ...(init.etag ? { headers: { ETag: init.etag } } : {}),
+  });
+const bodyOf = async <T>(request: Request): Promise<T> => (await request.json().catch(() => ({}))) as T;
+const pageOf = (query: URLSearchParams) => ({
+  page: Number(query.get("page") ?? 1),
+  perPage: Number(query.get("perPage") ?? 25),
+});
 
 /* ------------------------------------------------------------------------------ reward catalogue */
 
@@ -56,14 +68,28 @@ interface ItemRow extends RewardCatalogItem {
   version: number;
 }
 
+const VALUE_TEXT: Record<BenefitV2["type"], (value: BenefitV2) => string> = {
+  fixed: (value) => `ลด ฿${Number((value as { amount: string }).amount).toLocaleString("en-US")}`,
+  free_shipping: () => "ส่งฟรี",
+  free_sample: () => "ตัวอย่างฟรี",
+  free_rush: () => "ผลิตด่วนฟรี",
+  free_addon: () => "อัปเกรดงานพิมพ์ฟรี",
+  revision_round: () => "แก้แบบเพิ่มฟรี",
+};
+const valueTextOf = (value: Record<string, unknown>) => {
+  const benefit = value as BenefitV2;
+  return VALUE_TEXT[benefit.type]?.(benefit) ?? "";
+};
+
 const items: ItemRow[] = REWARD_FIXTURES.map((fixture, at) => ({
   id: mockId("rwi", fixture.n),
   code: fixture.code,
   kind: fixture.kind,
   name: fixture.name,
-  description: null,
+  description: { th: null, en: null },
   costPoints: fixture.costPoints,
   value: VALUE_OF[fixture.code]!,
+  valueTextTh: valueTextOf(VALUE_OF[fixture.code]!),
   constraints: {
     minOrderValue: MIN_OF[fixture.code] ?? null,
     productTypeCodes: fixture.code === "print_upgrade" ? ["folding_carton"] : null,
@@ -77,7 +103,6 @@ const items: ItemRow[] = REWARD_FIXTURES.map((fixture, at) => ({
   status: "active",
   promotionId: mockId("prm", 200 + fixture.n),
   redemptions30d: [42, 31, 9, 58, 12, 6, 4, 17][at] ?? 0,
-  openCoupons: [11, 8, 3, 19, 2, 2, 1, 5][at] ?? 0,
   updatedAt: bangkokIso(-10 * DAY),
   version: 1,
 }));
@@ -100,7 +125,7 @@ const KNOWN_ADDONS = new Set(["spot_uv", "matte_lamination", "gloss_lamination",
 /** The API's item rules: value of the kind, the cash-off floor (D-133 20 % cap), a known addon. */
 function itemProblem(input: Partial<RewardCatalogInput>, current?: ItemRow): Response | null {
   const kind = input.kind ?? current?.kind;
-  const value = input.value ?? current?.value;
+  const value = (input.value ?? current?.value) as BenefitV2 | undefined;
   const constraints = input.constraints ?? current?.constraints;
   if (kind && value && VALUE_TYPE[kind] !== value.type)
     return invalid("value.type", "kind_mismatch", "สิทธิ์ไม่ตรงกับประเภทของรางวัล");
@@ -131,15 +156,20 @@ const redemptions: AdminRedemption[] = [
     customer: {
       id: mockId("cus", 1 + (at % 3)),
       displayName: ["คุณสมชาย ใจดี", "บริษัท ตัวอย่าง จำกัด", "คุณวิภา แสงทอง"][at % 3]!,
-      code: ["C-000112", "C-000245", "C-000318"][at % 3]!,
     },
     item: { code: fixture.code, name: fixture.name.th, kind: fixture.kind },
     source: perk ? ("tier_perk" as const) : ("catalogue" as const),
     pointsSpent: perk ? 0 : fixture.costPoints,
+    bahtValue: perk ? "0.00" : (fixture.costPoints * 2.5).toFixed(2),
+    balanceAfter: null,
     status: status as AdminRedemption["status"],
-    couponCode: `GP-${perk ? "TP" : "RW"}-${(4000 + at).toString(36).toUpperCase()}-Q${at}7K`,
-    expiresAt: bangkokIso((90 - Number(daysAgo)) * DAY),
+    coupon: {
+      code: `GP-${perk ? "TP" : "RW"}-${(4000 + at).toString(36).toUpperCase()}-Q${at}7K`,
+      expiresAt: bangkokIso((90 - Number(daysAgo)) * DAY),
+    },
+    cancellableUntil: !perk && status === "issued" ? bangkokIso((7 - Number(daysAgo)) * DAY) : null,
     usedOrderCode: (used as string | null) ?? null,
+    perkPeriod: perk ? "2026-Q4" : null,
     cancelledAt: status === "cancelled" ? bangkokIso((-Number(daysAgo) + 1) * DAY) : null,
     cancelReason: status === "cancelled" ? "ลูกค้าขอยกเลิก — แลกผิดรายการ" : null,
     createdAt: bangkokIso(-Number(daysAgo) * DAY),
@@ -148,7 +178,7 @@ const redemptions: AdminRedemption[] = [
 
 /* ----------------------------------------------------------------------------- loyalty campaigns */
 
-const campaigns: (AdminLoyaltyCampaignRule & { version: number })[] = [
+const campaigns: (AdminLoyaltyCampaign & { version: number })[] = [
   {
     id: mockId("lcr", 1),
     name: "สะสมแต้มกล่องลูกฟูก ×1.5",
@@ -161,7 +191,9 @@ const campaigns: (AdminLoyaltyCampaignRule & { version: number })[] = [
     reason: "corrugated_nov_2026",
     status: "active",
     createdBy: { id: mockId("usr", 7), displayName: "ฝ่ายการตลาด (ข้อมูลจำลอง)" },
-    cancelledAt: null,
+    customer: null,
+    productTypeCode: "corrugated_rsc",
+    convertedOrderCode: null,
     version: 1,
   },
   {
@@ -174,37 +206,22 @@ const campaigns: (AdminLoyaltyCampaignRule & { version: number })[] = [
     productTypeCodes: null,
     audience: {},
     reason: "year_end_2026",
-    status: "scheduled",
+    // The API has no `scheduled`: an active campaign whose start is ahead (the web shows "รอเริ่ม").
+    status: "active",
     createdBy: { id: mockId("usr", 7), displayName: "ฝ่ายการตลาด (ข้อมูลจำลอง)" },
-    cancelledAt: null,
+    customer: null,
+    productTypeCode: null,
+    convertedOrderCode: null,
     version: 1,
   },
 ];
 
-/** Admin rule campaigns as `admin.loyaltyCampaigns.list` rows, P3 fields included (`./loyalty-p2.ts`). */
-export function adminRuleCampaignRows() {
-  return campaigns.map(({ version, ...row }) => {
-    void version;
-    return {
-      id: row.id,
-      kind: row.kind,
-      status: row.status === "scheduled" ? "active" : row.status,
-      multiplier: row.multiplier,
-      customer: null,
-      productTypeCode: row.productTypeCodes?.[0] ?? null,
-      startsAt: row.startsAt,
-      endsAt: row.endsAt,
-      convertedOrderCode: null,
-      reason: row.reason,
-      name: row.name,
-      productTypeCodes: row.productTypeCodes,
-      audience: row.audience,
-      createdBy: row.createdBy,
-    };
-  });
+/** Admin rule campaigns as `admin.loyaltyCampaigns.list` rows (`./loyalty-p2.ts`). */
+export function adminRuleCampaignRows(): AdminLoyaltyCampaign[] {
+  return campaigns.map((row) => strippedCampaign(row));
 }
 
-function campaignProblem(input: Partial<AdminLoyaltyCampaignRule>): Response | null {
+function campaignProblem(input: Partial<Schemas["CreateLoyaltyCampaignDto"]>): Response | null {
   if (input.multiplier !== undefined && !(Number(input.multiplier) >= 1.01 && Number(input.multiplier) <= 5))
     return invalid("multiplier", "range", "ตัวคูณ 1.01–5.00");
   if (input.startsAt && input.endsAt) {
@@ -214,10 +231,10 @@ function campaignProblem(input: Partial<AdminLoyaltyCampaignRule>): Response | n
   }
   return null;
 }
-const strippedCampaign = ({ version, ...row }: (typeof campaigns)[number]): AdminLoyaltyCampaignRule => {
+function strippedCampaign({ version, ...row }: (typeof campaigns)[number]): AdminLoyaltyCampaign {
   void version;
   return row;
-};
+}
 
 /* ------------------------------------------------------------------------------- credit uplift */
 
@@ -226,7 +243,7 @@ const modes = new Map<string, { mode: CreditUpliftMode; reason: string | null }>
 const UPLIFT_ROWS: CreditUpliftRow[] = [
   {
     versionId: mockId("clv", 9001),
-    company: { id: mockId("cmp", 1), legalName: "บริษัท ตัวอย่าง จำกัด" },
+    company: { id: mockId("cmy", 1), legalName: "บริษัท ตัวอย่าง จำกัด" },
     companyTier: "platinum",
     companySpend12m: "612400.00",
     baseLimit: "600000.00",
@@ -238,11 +255,12 @@ const UPLIFT_ROWS: CreditUpliftRow[] = [
     aboveCapTarget: "1200000.00",
     effectiveFrom: "2026-11-04T03:10:00+07:00",
     mode: "auto",
+    origin: "tier_uplift",
     pendingRequest: null,
   },
   {
     versionId: mockId("clv", 9002),
-    company: { id: mockId("cmp", 2), legalName: "บริษัท แพ็คดี ซัพพลาย จำกัด (ข้อมูลจำลอง)" },
+    company: { id: mockId("cmy", 2), legalName: "บริษัท แพ็คดี ซัพพลาย จำกัด (ข้อมูลจำลอง)" },
     companyTier: "gold",
     companySpend12m: "248900.00",
     baseLimit: "200000.00",
@@ -254,12 +272,18 @@ const UPLIFT_ROWS: CreditUpliftRow[] = [
     aboveCapTarget: null,
     effectiveFrom: "2026-11-03T03:10:00+07:00",
     mode: "auto",
+    origin: "tier_uplift",
     pendingRequest: null,
   },
 ];
 
+/** A company's credit before P3's fields (the companies mock builds it; {@link withCreditP3} completes it). */
+export type BaseCredit = Omit<Schemas["AdminCompanyCreditDto"], "uplift" | "versions"> & {
+  versions: Omit<Schemas["CreditLimitVersionDto"], "origin" | "baseVersionId" | "upliftFactor" | "companyTier">[];
+};
+
 /** The uplift block of a company's credit (`admin.companyCredit.get`), from its approved permanent base. */
-function upliftOf(companyId: string, credit: Schemas["AdminCompanyCreditDto"]): CreditUplift {
+function upliftOf(companyId: string, credit: BaseCredit): CreditUplift {
   const row = UPLIFT_ROWS.find((candidate) => candidate.company.id === companyId);
   const override = modes.get(companyId);
   if (row)
@@ -286,10 +310,10 @@ function upliftOf(companyId: string, credit: Schemas["AdminCompanyCreditDto"]): 
   };
 }
 
-/** `admin.companyCredit.get` from P3 on: the uplift and each version's origin (CONTRACT-REQUEST admin.loyalty.p3-fields). */
-export function withCreditP3(companyId: string, credit: Schemas["AdminCompanyCreditDto"]) {
+/** `admin.companyCredit.get` from P3 on: the uplift and each version's origin. */
+export function withCreditP3(companyId: string, credit: BaseCredit): Schemas["AdminCompanyCreditDto"] {
   const row = UPLIFT_ROWS.find((candidate) => candidate.company.id === companyId);
-  const versions = credit.versions.map((version): Schemas["CreditLimitVersionDto"] & CreditVersionP3Fields => ({
+  const versions = credit.versions.map((version): Schemas["CreditLimitVersionDto"] => ({
     ...version,
     origin: "request",
     baseVersionId: null,
@@ -319,60 +343,79 @@ export function withCreditP3(companyId: string, credit: Schemas["AdminCompanyCre
 
 /* ------------------------------------------------------------------------------------- handlers */
 
+const itemById = (id: unknown) => items.find((candidate) => candidate.id === id);
+const campaignById = (id: unknown) => campaigns.find((candidate) => candidate.id === id);
+
 export const loyaltyP3AdminHandlers = [
-  // CONTRACT-REQUEST admin.reward-catalog
-  mockRequest("GET /v1/admin/loyalty/rewards", ({ request, query }) => {
+  // admin.rewardCatalog.list (paginated)
+  http.get("*/v1/admin/loyalty/rewards", ({ request }) => {
     if (!allowed(request, "promotions.read")) return forbidden();
-    return { items: items.filter((row) => !query?.status || row.status === query.status).map(strip) };
+    const query = new URL(request.url).searchParams;
+    const status = query.get("status");
+    return json(paginate(items.filter((row) => !status || row.status === status).map(strip), pageOf(query)));
   }),
-  // CONTRACT-REQUEST admin.reward-catalog
-  mockRequest("POST /v1/admin/loyalty/rewards", ({ request, body }) => {
+  // admin.rewardCatalog.create — a draft and its hidden system promotion
+  http.post("*/v1/admin/loyalty/rewards", async ({ request }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
+    const body = await bodyOf<RewardCatalogInput>(request);
     if (items.some((row) => row.code === body.code)) return problem(409, "rewards.code_taken", "มีรหัสรางวัลนี้แล้ว");
     const refused = itemProblem(body);
     if (refused) return refused;
     const row: ItemRow = {
-      ...body,
+      code: body.code,
+      kind: body.kind,
+      name: body.name,
+      description: { th: body.description?.th ?? null, en: body.description?.en ?? null },
+      costPoints: body.costPoints,
+      value: body.value,
+      valueTextTh: valueTextOf(body.value),
+      constraints: body.constraints ?? {},
+      tierRequired: body.tierRequired ?? null,
+      validityDays: body.validityDays,
+      activeFrom: body.activeFrom,
+      activeTo: body.activeTo ?? null,
+      sortOrder: body.sortOrder ?? (items.length + 1) * 10,
       id: mockId("rwi", 50 + items.length),
       status: "draft",
       promotionId: mockId("prm", 250 + items.length),
       redemptions30d: 0,
-      openCoupons: 0,
       updatedAt: bangkokIso(),
       version: 1,
     };
     items.push(row);
-    return strip(row);
+    return json(strip(row), { status: 201, etag: etagOf(row) });
   }),
-  // CONTRACT-REQUEST admin.reward-catalog
-  mockRequest("GET /v1/admin/loyalty/rewards/{itemId}", ({ request, params }) => {
+  // admin.rewardCatalog.get
+  http.get("*/v1/admin/loyalty/rewards/:itemId", ({ request, params }) => {
     if (!allowed(request, "promotions.read")) return forbidden();
-    const row = items.find((candidate) => candidate.id === params.itemId);
+    const row = itemById(params.itemId);
     if (!row) return problem(404, "http.not_found", "ไม่พบรายการนี้");
-    return new Response(JSON.stringify(strip(row)), {
-      headers: { "Content-Type": "application/json", ETag: etagOf(row) },
-    });
+    return json(strip(row), { etag: etagOf(row) });
   }),
-  // CONTRACT-REQUEST admin.reward-catalog
-  mockRequest("PATCH /v1/admin/loyalty/rewards/{itemId}", ({ request, params, body }) => {
+  // admin.rewardCatalog.update (If-Match); code and kind are frozen while active
+  http.patch("*/v1/admin/loyalty/rewards/:itemId", async ({ request, params }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
-    const row = items.find((candidate) => candidate.id === params.itemId);
+    const row = itemById(params.itemId);
     if (!row) return problem(404, "http.not_found", "ไม่พบรายการนี้");
     const match = request.headers.get("if-match");
     if (match && match !== etagOf(row)) return problem(412, "concurrency.stale", "มีคนแก้ไขรายการนี้ไปแล้ว");
+    const body = await bodyOf<Schemas["UpdateRewardItemDto"]>(request);
     if (row.status === "active" && ((body.code && body.code !== row.code) || (body.kind && body.kind !== row.kind)))
       return problem(409, "rewards.item_active", "เปลี่ยนรหัสหรือประเภทระหว่างเปิดใช้ไม่ได้");
     const refused = itemProblem(body, row);
     if (refused) return refused;
-    Object.assign(row, body, { updatedAt: bangkokIso(), version: row.version + 1 });
-    return new Response(JSON.stringify(strip(row)), {
-      headers: { "Content-Type": "application/json", ETag: etagOf(row) },
+    Object.assign(row, body, {
+      description: { th: body.description?.th ?? row.description.th, en: body.description?.en ?? row.description.en },
+      valueTextTh: valueTextOf(body.value ?? row.value),
+      updatedAt: bangkokIso(),
+      version: row.version + 1,
     });
+    return json(strip(row), { etag: etagOf(row) });
   }),
-  // CONTRACT-REQUEST admin.reward-catalog
-  mockRequest("POST /v1/admin/loyalty/rewards/{itemId}/actions/{action}", ({ request, params }) => {
+  // admin.rewardCatalog.action — activate | pause | archive
+  http.post("*/v1/admin/loyalty/rewards/:itemId/actions/:action", ({ request, params }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
-    const row = items.find((candidate) => candidate.id === params.itemId);
+    const row = itemById(params.itemId);
     if (!row) return problem(404, "http.not_found", "ไม่พบรายการนี้");
     const next = { activate: "active", pause: "paused", archive: "archived" }[String(params.action)] as
       ItemRow["status"] | undefined;
@@ -384,131 +427,143 @@ export const loyaltyP3AdminHandlers = [
     if (!next || !from[next]!.includes(row.status))
       return problem(409, "rewards.invalid_transition", "ทำรายการนี้กับรางวัลในสถานะนี้ไม่ได้");
     Object.assign(row, { status: next, updatedAt: bangkokIso(), version: row.version + 1 });
-    return strip(row);
+    return json(strip(row), { etag: etagOf(row) });
   }),
-  // CONTRACT-REQUEST admin.reward-redemptions
-  mockRequest("GET /v1/admin/loyalty/reward-redemptions", ({ request, query }) => {
+  // admin.rewardRedemptions.list (paginated)
+  http.get("*/v1/admin/loyalty/reward-redemptions", ({ request }) => {
     if (!allowed(request, "loyalty.read")) return forbidden();
-    const q = query?.q?.toLowerCase();
+    const query = new URL(request.url).searchParams;
+    const q = query.get("q")?.toLowerCase();
+    const itemId = query.get("itemId");
+    const itemCode = itemId ? itemById(itemId)?.code : null;
     const rows = redemptions
-      .filter((row) => !query?.itemCode || row.item.code === query.itemCode)
-      .filter((row) => !query?.status || row.status === query.status)
+      .filter((row) => !itemId || row.item.code === itemCode)
+      .filter((row) => !query.get("status") || row.status === query.get("status"))
+      .filter((row) => !query.get("source") || row.source === query.get("source"))
+      .filter((row) => !query.get("customerId") || row.customer.id === query.get("customerId"))
       .filter(
-        (row) =>
-          !q ||
-          row.customer.displayName.toLowerCase().includes(q) ||
-          row.customer.code.toLowerCase().includes(q) ||
-          row.couponCode.toLowerCase().includes(q),
+        (row) => !q || row.customer.displayName.toLowerCase().includes(q) || row.coupon.code.toLowerCase().includes(q),
       );
-    return paginate(rows, { page: query?.page ?? 1, perPage: query?.perPage ?? 25 });
+    return json(paginate(rows, pageOf(query)));
   }),
-  // CONTRACT-REQUEST admin.reward-redemptions
-  mockRequest(
-    "POST /v1/admin/loyalty/reward-redemptions/{redemptionId}/actions/cancel",
-    ({ request, params, body }) => {
-      if (!allowed(request, "loyalty.adjust")) return forbidden();
-      const row = redemptions.find((candidate) => candidate.id === params.redemptionId);
-      if (!row) return problem(404, "http.not_found", "ไม่พบรายการนี้");
-      if (row.source !== "catalogue") return problem(409, "rewards.not_cancellable", "สิทธิ์ตามระดับยกเลิกไม่ได้");
-      if (row.status !== "issued") return problem(409, "rewards.coupon_used", "คูปองนี้ใช้หรือปิดไปแล้ว");
-      Object.assign(row, { status: "cancelled", cancelledAt: bangkokIso(), cancelReason: body.reason });
-      return row;
-    },
-  ),
-  // CONTRACT-REQUEST admin.loyalty.campaign-rules
-  mockRequest("POST /v1/admin/loyalty/campaigns", ({ request, body }) => {
+  // admin.rewardRedemptions.cancel — loyalty.adjust, a reason
+  http.post("*/v1/admin/loyalty/reward-redemptions/:redemptionId/actions/cancel", async ({ request, params }) => {
+    if (!allowed(request, "loyalty.adjust")) return forbidden();
+    const row = redemptions.find((candidate) => candidate.id === params.redemptionId);
+    if (!row) return problem(404, "http.not_found", "ไม่พบรายการนี้");
+    if (row.source !== "catalogue") return problem(409, "rewards.not_cancellable", "สิทธิ์ตามระดับยกเลิกไม่ได้");
+    if (row.status !== "issued") return problem(409, "rewards.coupon_used", "คูปองนี้ใช้หรือปิดไปแล้ว");
+    const body = await bodyOf<Schemas["DownloadWithReasonDto"]>(request);
+    Object.assign(row, {
+      status: "cancelled",
+      cancelledAt: bangkokIso(),
+      cancelReason: body.reason,
+      cancellableUntil: null,
+    });
+    return json(row);
+  }),
+  // admin.loyaltyCampaigns.create — an admin rule
+  http.post("*/v1/admin/loyalty/campaigns", async ({ request }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
+    const body = await bodyOf<Schemas["CreateLoyaltyCampaignDto"]>(request);
     const refused = campaignProblem(body);
     if (refused) return refused;
     const who = staffPersonaOf(request);
-    const row = {
-      ...body,
+    const row: (typeof campaigns)[number] = {
       id: mockId("lcr", 10 + campaigns.length),
-      status: Date.parse(body.startsAt) > Date.now() ? ("scheduled" as const) : ("active" as const),
+      kind: body.kind,
+      name: body.name,
+      multiplier: body.multiplier,
+      startsAt: body.startsAt,
+      endsAt: body.endsAt,
+      productTypeCodes: body.productTypeCodes ?? null,
+      productTypeCode: body.productTypeCodes?.[0] ?? null,
+      audience: body.audience ?? null,
+      reason: body.reason,
+      status: "active",
       createdBy: who ? { id: mockId("usr", 7), displayName: who.displayName } : null,
-      cancelledAt: null,
+      customer: null,
+      convertedOrderCode: null,
       version: 1,
     };
     campaigns.push(row);
-    return strippedCampaign(row);
+    return json(strippedCampaign(row), { status: 201, etag: `W/"${row.id}.${row.version}"` });
   }),
-  // CONTRACT-REQUEST admin.loyalty.campaign-rules
-  mockRequest("GET /v1/admin/loyalty/campaigns/{campaignId}", ({ request, params }) => {
+  // admin.loyaltyCampaigns.get
+  http.get("*/v1/admin/loyalty/campaigns/:campaignId", ({ request, params }) => {
     if (!allowed(request, "promotions.read")) return forbidden();
-    const row = campaigns.find((candidate) => candidate.id === params.campaignId);
+    const row = campaignById(params.campaignId);
     if (!row) return problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
-    return new Response(JSON.stringify(strippedCampaign(row)), {
-      headers: { "Content-Type": "application/json", ETag: `W/"${row.id}.${row.version}"` },
-    });
+    return json(strippedCampaign(row), { etag: `W/"${row.id}.${row.version}"` });
   }),
-  // CONTRACT-REQUEST admin.loyalty.campaign-rules — before startsAt only
-  mockRequest("PATCH /v1/admin/loyalty/campaigns/{campaignId}", ({ request, params, body }) => {
+  // admin.loyaltyCampaigns.update — before startsAt only
+  http.patch("*/v1/admin/loyalty/campaigns/:campaignId", async ({ request, params }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
-    const row = campaigns.find((candidate) => candidate.id === params.campaignId);
+    const row = campaignById(params.campaignId);
     if (!row) return problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
     if (Date.parse(row.startsAt) <= Date.now())
       return problem(409, "loyalty.campaign_started", "แคมเปญเริ่มแล้ว แก้ไขไม่ได้ ยกเลิกแล้วสร้างใหม่แทน");
-    const refused = campaignProblem({ ...row, ...body });
+    const body = await bodyOf<Schemas["UpdateLoyaltyCampaignDto"]>(request);
+    const refused = campaignProblem({
+      multiplier: body.multiplier ?? row.multiplier,
+      startsAt: body.startsAt ?? row.startsAt,
+      endsAt: body.endsAt ?? row.endsAt,
+    });
     if (refused) return refused;
-    Object.assign(row, body, { version: row.version + 1 });
-    return strippedCampaign(row);
+    Object.assign(row, body, {
+      productTypeCode: (body.productTypeCodes ?? row.productTypeCodes)?.[0] ?? null,
+      version: row.version + 1,
+    });
+    return json(strippedCampaign(row), { etag: `W/"${row.id}.${row.version}"` });
   }),
-  // CONTRACT-REQUEST admin.loyalty.campaign-rules
-  mockRequest("POST /v1/admin/loyalty/campaigns/{campaignId}/actions/cancel", ({ request, params }) => {
+  // admin.loyaltyCampaigns.cancel — the reason is optional
+  http.post("*/v1/admin/loyalty/campaigns/:campaignId/actions/cancel", ({ request, params }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
-    const row = campaigns.find((candidate) => candidate.id === params.campaignId);
+    const row = campaignById(params.campaignId);
     if (!row) return problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
     if (row.status === "cancelled" || row.status === "ended")
       return problem(409, "loyalty.campaign_closed", "แคมเปญนี้ปิดไปแล้ว");
-    Object.assign(row, { status: "cancelled", cancelledAt: bangkokIso(), version: row.version + 1 });
-    return strippedCampaign(row);
+    Object.assign(row, { status: "cancelled", version: row.version + 1 });
+    return json(strippedCampaign(row));
   }),
-  // CONTRACT-REQUEST admin.credit-uplift
-  mockRequest("PUT /v1/admin/companies/{companyId}/credit/uplift", ({ request, params, body }) => {
+  // admin.companyCredit.setUpliftMode — answers the whole credit
+  http.put("*/v1/admin/companies/:companyId/credit/uplift", async ({ request, params }) => {
     if (!allowed(request, "company_credit.manage")) return forbidden();
-    const row = UPLIFT_ROWS.find((candidate) => candidate.company.id === params.companyId);
+    const companyId = String(params.companyId);
+    const row = UPLIFT_ROWS.find((candidate) => candidate.company.id === companyId);
     if (!row) return problem(422, "companies.uplift_not_eligible", "บริษัทนี้ยังไม่มีวงเงินฐานที่อนุมัติแบบถาวร");
-    modes.set(row.company.id, { mode: body.mode, reason: body.reason });
+    const body = await bodyOf<Schemas["SetUpliftModeDto"]>(request);
+    modes.set(companyId, { mode: body.mode, reason: body.reason });
     row.mode = body.mode;
-    return {
-      uplift: {
-        mode: body.mode,
-        modeReason: body.reason,
-        baseLimit: row.baseLimit,
-        companyTier: row.companyTier,
-        companySpend12m: row.companySpend12m,
-        target: row.target,
-        capped: row.capped,
-        aboveCapTarget: row.aboveCapTarget,
-      },
-    };
+    const credit = companyCreditOf(companyId);
+    return credit ? json(credit) : problem(404, "http.not_found", "ไม่พบบริษัทนี้");
   }),
-  // CONTRACT-REQUEST admin.credit-uplift
-  mockRequest("GET /v1/admin/credit-uplifts", ({ request, query }) => {
+  // admin.creditUplifts.list (paginated)
+  http.get("*/v1/admin/credit-uplifts", ({ request }) => {
     if (!allowed(request, "company_credit.manage") && !allowed(request, "companies.read")) return forbidden();
-    return {
-      items: UPLIFT_ROWS.filter((row) => !query?.companyId || row.company.id === query.companyId).filter(
-        (row) => query?.aboveCap === undefined || String(row.capped) === query.aboveCap,
-      ),
-    };
+    const query = new URL(request.url).searchParams;
+    const companyId = query.get("companyId");
+    const aboveCap = query.get("aboveCap");
+    const rows = UPLIFT_ROWS.filter((row) => !companyId || row.company.id === companyId).filter(
+      (row) => aboveCap === null || String(row.capped) === aboveCap,
+    );
+    return json(paginate(rows, pageOf(query)));
   }),
-  // CONTRACT-REQUEST admin.capacity-deals — per product type, never a factory
-  mockRequest("GET /v1/admin/promotions/capacity-deals", ({ request }) => {
+  // admin.capacityDeals.list (paginated) — per product type, never a factory
+  http.get("*/v1/admin/promotions/capacity-deals", ({ request }) => {
     if (!allowed(request, "promotions.read")) return forbidden();
-    return {
-      provider: "capacity_bookings",
-      items: capacityDealPromotions().map((row) => ({
-        promotionId: row.id,
-        productTypeCode: row.capacityDeal!.productTypeCode,
-        productTypeName: "กล่องลูกฟูก",
-        weekStart: row.capacityDeal!.weekStart,
-        freePct: row.capacityDeal!.freePct,
-        discountPct: row.benefit.pct ?? "0",
-        visibility: row.visibility ?? "hidden",
-        status: row.status,
-        approval: row.capacityDeal!.approval,
-        createdAt: bangkokIso(-4 * 60),
-      })),
-    };
+    const rows: Schemas["CapacityDealDto"][] = capacityDealPromotions().map((row) => ({
+      promotionId: row.id,
+      productTypeCode: row.capacityDeal!.productTypeCode,
+      productTypeName: "กล่องลูกฟูก",
+      weekStart: row.capacityDeal!.weekStart,
+      freePct: row.capacityDeal!.freePct,
+      discountPct: row.benefit.pct ?? "0",
+      visibility: row.visibility ?? "hidden",
+      status: row.status,
+      approval: row.capacityDeal!.approval,
+      createdAt: bangkokIso(-4 * 60),
+    }));
+    return json(paginate(rows, pageOf(new URL(request.url).searchParams)));
   }),
 ];

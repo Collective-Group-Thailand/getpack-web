@@ -14,6 +14,7 @@ import {
   SAMPLE_LIST,
   SAMPLE_NOW,
   SAMPLE_POINTS,
+  SAMPLE_PREVIEW,
   SAMPLE_REDEMPTIONS,
   SAMPLE_REWARDS,
 } from "./fixtures";
@@ -23,8 +24,9 @@ import { RewardCard } from "./RewardCard";
 import { RewardsTab } from "./RewardsTab";
 import { TierPerks } from "./TierPerks";
 
-const call = vi.fn();
-vi.mock("@/lib/api/requests/browser", () => ({ browserRequests: () => ({ call }) }));
+const get = vi.fn();
+const post = vi.fn();
+vi.mock("@/lib/api/browser", () => ({ browserApi: () => ({ GET: get, POST: post }) }));
 vi.mock("@/ui/components/Toast", () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
@@ -42,7 +44,11 @@ function renderTh(node: React.ReactNode) {
   );
 }
 
-beforeEach(() => call.mockReset());
+beforeEach(() => {
+  get.mockReset();
+  post.mockReset();
+  get.mockResolvedValue({ data: SAMPLE_PREVIEW });
+});
 
 describe("RewardCard", () => {
   it("puts the cost on the stub and offers one outline action", () => {
@@ -73,35 +79,56 @@ describe("RewardCard", () => {
 });
 
 describe("RedeemSheet", () => {
-  it("states the cost and the balance after, then shows the coupon from the API", async () => {
+  it("states the cost and the API's balance after, then shows the coupon from the API", async () => {
     const item = SAMPLE_REWARDS[2]!;
-    call.mockResolvedValueOnce({ ...SAMPLE_REDEMPTIONS[0]!, balanceAfter: 1190 });
+    post.mockResolvedValueOnce({ data: { ...SAMPLE_REDEMPTIONS[0]!, balanceAfter: 1190 } });
     const onRedeemed = vi.fn();
-    renderTh(
-      <RedeemSheet item={item} balance={1250} cancelWindowDays={7} onOpenChange={vi.fn()} onRedeemed={onRedeemed} />,
-    );
+    await act(async () => {
+      renderTh(<RedeemSheet item={item} onOpenChange={vi.fn()} onRedeemed={onRedeemed} />);
+    });
+    expect(get).toHaveBeenCalledWith("/v1/store/rewards/{itemId}/preview", { params: { path: { itemId: item.id } } });
     expect(screen.getByText(/ใช้ 60 แต้ม/)).toBeTruthy();
     expect(screen.getByText(/คงเหลือ 1,190 แต้ม/)).toBeTruthy();
     expect(screen.getByText("ยกเลิกได้ภายใน 7 วันถ้ายังไม่ใช้ แต้มจะคืนเข้าบัญชี")).toBeTruthy();
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "ยืนยันแลก 60 แต้ม" })));
-    const [key, init] = call.mock.calls[0]!;
-    expect(key).toBe("POST /v1/store/rewards/{itemId}/actions/redeem");
-    expect(init).toMatchObject({ path: { itemId: item.id }, body: { expectedCostPoints: 60 } });
-    expect(typeof init.idempotencyKey).toBe("string");
+    const [path, init] = post.mock.calls[0]!;
+    expect(path).toBe("/v1/store/rewards/{itemId}/actions/redeem");
+    expect(init).toMatchObject({ params: { path: { itemId: item.id } }, body: { expectedCostPoints: 60 } });
+    expect(typeof init.params.header["Idempotency-Key"]).toBe("string");
     expect(screen.getByText("คูปองอยู่ในกระเป๋าโค้ดแล้ว", { selector: "p" })).toBeTruthy();
     expect(screen.getByText("GP-RW-7Q4K-M2XD")).toBeTruthy();
     expect(screen.getByRole("link", { name: "ใช้กับตะกร้า" }).getAttribute("href")).toBe("/cart");
     expect(onRedeemed).toHaveBeenCalled();
   });
 
-  it("words the cancel rule without a number when the API sends no window", () => {
-    renderTh(<RedeemSheet item={SAMPLE_REWARDS[0]!} balance={1250} onOpenChange={vi.fn()} onRedeemed={vi.fn()} />);
+  it("states the cost alone until the preview answers, and words a window of 0 days without a number", () => {
+    get.mockReturnValueOnce(new Promise(() => undefined));
+    renderTh(
+      <RedeemSheet item={{ ...SAMPLE_REWARDS[0]!, cancelWindowDays: 0 }} onOpenChange={vi.fn()} onRedeemed={vi.fn()} />,
+    );
+    expect(screen.getByText(/ใช้ 20 แต้ม/)).toBeTruthy();
+    expect(screen.queryByText(/คงเหลือ/)).toBeNull();
     expect(screen.getByText("ยกเลิกได้ถ้ายังไม่ใช้ ภายในวันที่ระบุบนคูปอง แต้มจะคืนเข้าบัญชี")).toBeTruthy();
   });
 
+  it("refuses from the preview's reason without calling the redeem", async () => {
+    get.mockResolvedValueOnce({
+      data: { costPoints: 60, balanceAfter: null, eligible: false, reason: "insufficient_points" },
+    });
+    await act(async () => {
+      renderTh(<RedeemSheet item={SAMPLE_REWARDS[2]!} onOpenChange={vi.fn()} onRedeemed={vi.fn()} />);
+    });
+    expect(screen.queryByText(/คงเหลือ/)).toBeNull();
+    expect(screen.getByRole("button", { name: "ยืนยันแลก 60 แต้ม" }).hasAttribute("disabled")).toBe(true);
+    expect(post).not.toHaveBeenCalled();
+  });
+
   it("says a changed cost in words and keeps the sheet open", async () => {
-    call.mockRejectedValueOnce(new ApiError({ status: 409, code: "rewards.cost_changed", title: "x" } as never));
-    renderTh(<RedeemSheet item={SAMPLE_REWARDS[0]!} balance={1250} onOpenChange={vi.fn()} onRedeemed={vi.fn()} />);
+    get.mockResolvedValueOnce({ data: { costPoints: 20, balanceAfter: 1230, eligible: true, reason: null } });
+    post.mockRejectedValueOnce(new ApiError({ status: 409, code: "rewards.cost_changed", title: "x" } as never));
+    await act(async () => {
+      renderTh(<RedeemSheet item={SAMPLE_REWARDS[0]!} onOpenChange={vi.fn()} onRedeemed={vi.fn()} />);
+    });
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "ยืนยันแลก 20 แต้ม" })));
     expect(screen.getByText("จำนวนแต้มที่ใช้แลกเพิ่งเปลี่ยน ปิดแล้วเปิดรายการนี้อีกครั้ง")).toBeTruthy();
   });
@@ -121,12 +148,12 @@ describe("MyRewardCoupons", () => {
   });
 
   it("cancels after one confirmation and moves the coupon to ยกเลิก", async () => {
-    call.mockResolvedValueOnce({ ...SAMPLE_REDEMPTIONS[0]!, status: "cancelled", cancellableUntil: null });
+    post.mockResolvedValueOnce({ data: { ...SAMPLE_REDEMPTIONS[0]!, status: "cancelled", cancellableUntil: null } });
     renderTh(<MyRewardCoupons redemptions={SAMPLE_REDEMPTIONS} now={SAMPLE_NOW} />);
     fireEvent.click(screen.getByRole("button", { name: "ยกเลิกการแลก" }));
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "ยกเลิกและคืนแต้ม" })));
-    expect(call).toHaveBeenCalledWith("POST /v1/store/rewards/redemptions/{redemptionId}/actions/cancel", {
-      path: { redemptionId: SAMPLE_REDEMPTIONS[0]!.id },
+    expect(post).toHaveBeenCalledWith("/v1/store/rewards/redemptions/{redemptionId}/actions/cancel", {
+      params: { path: { redemptionId: SAMPLE_REDEMPTIONS[0]!.id } },
     });
     expect(screen.queryByText("GP-RW-7Q4K-M2XD")).toBeNull();
   });

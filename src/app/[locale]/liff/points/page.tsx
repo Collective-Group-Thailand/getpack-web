@@ -11,7 +11,6 @@ import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
-import { loyaltyP3Of } from "@/features/shared/loyalty-p3/read";
 import { Button } from "@/ui/components/Button";
 import { clientEnv } from "@/lib/env";
 import { cn } from "@/ui/lib/cn";
@@ -53,8 +52,7 @@ export default async function Page() {
             icon: "star",
             highlight: true,
           },
-          // Loyalty P3: Platinum is read past the published enum (CONTRACT-REQUEST store.loyalty.p3-fields).
-          { key: "tier", label: tLiff("tier"), value: tLiff(`tiers.${loyaltyP3Of(points).tier}`), icon: "gift" },
+          { key: "tier", label: tLiff("tier"), value: tLiff(`tiers.${points.tier}`), icon: "gift" },
         ]}
       />
       {/* Loyalty P2: bonus points waiting (win-back). */}

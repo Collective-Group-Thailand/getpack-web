@@ -6,7 +6,7 @@
  */
 
 import type { Schemas } from "@/lib/api/types";
-import type { CapacityDealRef, PromotionOrigin } from "@/lib/api/requests/admin-loyalty-p3";
+import type { CapacityDealRef, PromotionOrigin } from "@/features/shared/loyalty-p3/types";
 
 export interface CampaignRow {
   id: string;
@@ -58,7 +58,7 @@ export interface PromotionRow {
   /** `admin.promotions.setHeroImage`: the uploaded file, and the URL the API answers for it. */
   heroImageFileId?: string | null;
   heroImageUrl?: string | null;
-  /** Loyalty P3 (CONTRACT-REQUEST admin.loyalty.p3-fields): who made it, and a capacity deal's week and approval. */
+  /** Loyalty P3: who made it, and a capacity deal's week and approval. */
   origin?: PromotionOrigin;
   capacityDeal?: CapacityDealRef | null;
 }

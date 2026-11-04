@@ -10,6 +10,7 @@ import {
   GOLD_POINTS,
   PLATINUM,
   SAMPLE_LIST,
+  SAMPLE_PREVIEW,
   SAMPLE_NOW,
   SAMPLE_POINTS,
   SAMPLE_REDEMPTIONS,
@@ -79,10 +80,9 @@ export const ConfirmSheet: Story = {
   render: () => (
     <RedeemSheet
       item={SAMPLE_REWARDS[2]!}
-      balance={1250}
-      cancelWindowDays={7}
       onOpenChange={() => undefined}
       onRedeemed={() => undefined}
+      initialPreview={SAMPLE_PREVIEW}
     />
   ),
 };
@@ -91,8 +91,6 @@ export const SuccessSheet: Story = {
   render: () => (
     <RedeemSheet
       item={SAMPLE_REWARDS[2]!}
-      balance={1250}
-      cancelWindowDays={7}
       onOpenChange={() => undefined}
       onRedeemed={() => undefined}
       initialResult={{ ...SAMPLE_REDEMPTIONS[0]!, balanceAfter: 1190 }}

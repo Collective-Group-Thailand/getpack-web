@@ -436,6 +436,11 @@ export function toDeal(
     notEligibleReason: myStatus === "not_eligible" ? (fixture.notEligibleReason ?? null) : null,
     shareUrl: share.toString(),
     ...p2FieldsOf(fixture, lang, options.signedIn),
+    // Loyalty P3 (API-CHANGES-P3 deviation 6): every card says its kind; a promotion card has no reward or href.
+    kind: "promotion",
+    benefitText: fixture.benefit.summary[lang],
+    reward: null,
+    href: null,
   };
 }
 

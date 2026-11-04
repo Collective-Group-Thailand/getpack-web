@@ -8,8 +8,8 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
 import { isApiError } from "@/lib/api/problem";
-import type { AdminRedemption, RewardCatalogItem } from "@/lib/api/requests/admin-loyalty-p3";
-import type { RedemptionStatus } from "@/lib/api/requests/store-loyalty-p3";
+import type { AdminRedemption, RewardCatalogItem } from "@/features/shared/loyalty-p3/types";
+import type { RedemptionStatus } from "@/features/shared/loyalty-p3/types";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -72,14 +72,19 @@ function RewardItems() {
   const [busy, setBusy] = useState<string | null>(null);
   const items = useQuery({
     queryKey: queryKeys.list("admin", "reward_item", {}),
-    queryFn: async () => (await adminBrowserApis().requests.call("GET /v1/admin/loyalty/rewards")).items,
+    queryFn: async () => {
+      const { data } = await adminBrowserApis().contract.GET("/v1/admin/loyalty/rewards", {
+        params: { query: { perPage: 100 } },
+      });
+      return data!.data;
+    },
   });
 
   const run = async (row: RewardCatalogItem, action: "activate" | "pause" | "archive") => {
     setBusy(`${row.id}:${action}`);
     try {
-      await adminBrowserApis().requests.call("POST /v1/admin/loyalty/rewards/{itemId}/actions/{action}", {
-        path: { itemId: row.id, action },
+      await adminBrowserApis().contract.POST("/v1/admin/loyalty/rewards/{itemId}/actions/{action}", {
+        params: { path: { itemId: row.id, action } },
       });
       toast.success(t(`form.actions.${action}.done`));
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "reward_item") });
@@ -110,7 +115,7 @@ function RewardItems() {
                   href={`/marketing/loyalty/rewards/${row.id}`}
                   className="text-primary font-medium hover:underline"
                 >
-                  {en ? row.name.en : row.name.th}
+                  {en ? (row.name.en ?? row.name.th) : row.name.th}
                 </Link>
                 <p className="text-muted font-mono text-xs">{row.code}</p>
               </div>
@@ -148,7 +153,6 @@ function RewardItems() {
             numeric: true,
             cell: (row) => format.number(row.redemptions30d),
           },
-          { id: "open", header: t("columns.open"), numeric: true, cell: (row) => format.number(row.openCoupons) },
           {
             id: "actions",
             header: <span className="sr-only">{t("columns.actions")}</span>,
@@ -192,12 +196,12 @@ export function RewardRedemptions() {
   const [refused, setRefused] = useState<string | null>(null);
   const rows = useQuery({
     queryKey: queryKeys.list("admin", "reward_redemption", { status }),
-    queryFn: async () =>
-      (
-        await adminBrowserApis().requests.call("GET /v1/admin/loyalty/reward-redemptions", {
-          query: { status: status || undefined, perPage: 100 },
-        })
-      ).data,
+    queryFn: async () => {
+      const { data } = await adminBrowserApis().contract.GET("/v1/admin/loyalty/reward-redemptions", {
+        params: { query: { ...(status ? { status } : {}), perPage: 100 } },
+      });
+      return data!.data;
+    },
   });
 
   const cancel = async () => {
@@ -208,10 +212,10 @@ export function RewardRedemptions() {
     }
     setBusy(true);
     try {
-      await adminBrowserApis().requests.call(
-        "POST /v1/admin/loyalty/reward-redemptions/{redemptionId}/actions/cancel",
-        { path: { redemptionId: cancelling.id }, body: { reason: reason.trim() } },
-      );
+      await adminBrowserApis().contract.POST("/v1/admin/loyalty/reward-redemptions/{redemptionId}/actions/cancel", {
+        params: { path: { redemptionId: cancelling.id } },
+        body: { reason: reason.trim() },
+      });
       toast.success(t("cancelled", { points: format.number(cancelling.pointsSpent) }));
       setCancelling(null);
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "reward_redemption") });
@@ -251,12 +255,7 @@ export function RewardRedemptions() {
           {
             id: "customer",
             header: t("columns.customer"),
-            cell: (row) => (
-              <div>
-                <p className="font-medium">{row.customer.displayName}</p>
-                <p className="text-muted text-xs tabular-nums">{row.customer.code}</p>
-              </div>
-            ),
+            cell: (row) => <p className="font-medium">{row.customer.displayName}</p>,
           },
           {
             id: "item",
@@ -273,7 +272,7 @@ export function RewardRedemptions() {
           {
             id: "coupon",
             header: t("columns.coupon"),
-            cell: (row) => <span className="font-mono text-xs tracking-[0.04em]">{row.couponCode}</span>,
+            cell: (row) => <span className="font-mono text-xs tracking-[0.04em]">{row.coupon.code}</span>,
           },
           {
             id: "status",
@@ -291,7 +290,7 @@ export function RewardRedemptions() {
             ),
           },
           { id: "created", header: t("columns.created"), cell: (row) => format.dateTime(row.createdAt) },
-          { id: "expires", header: t("columns.expires"), cell: (row) => format.date(row.expiresAt) },
+          { id: "expires", header: t("columns.expires"), cell: (row) => format.date(row.coupon.expiresAt) },
           {
             id: "actions",
             header: <span className="sr-only">{t("columns.actions")}</span>,
@@ -319,7 +318,7 @@ export function RewardRedemptions() {
         description={
           cancelling
             ? t("confirmBody", {
-                code: cancelling.couponCode,
+                code: cancelling.coupon.code,
                 customer: cancelling.customer.displayName,
                 points: format.number(cancelling.pointsSpent),
               })
@@ -356,8 +355,12 @@ export function RewardItemEditor({ itemId }: { itemId?: string }) {
   const key = queryKeys.detail("admin", "reward_item", itemId ?? "new");
   const read = useQuery({
     queryKey: key,
-    queryFn: () =>
-      adminBrowserApis().requests.read("GET /v1/admin/loyalty/rewards/{itemId}", { path: { itemId: itemId! } }),
+    queryFn: async () => {
+      const { data, response } = await adminBrowserApis().contract.GET("/v1/admin/loyalty/rewards/{itemId}", {
+        params: { path: { itemId: itemId! } },
+      });
+      return { data: data!, etag: response.headers.get("ETag") };
+    },
     enabled: Boolean(itemId),
   });
   if (read.isError) return <QueryError error={read.error} onRetry={() => void read.refetch()} />;
@@ -367,7 +370,7 @@ export function RewardItemEditor({ itemId }: { itemId?: string }) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        title={item ? (en ? item.name.en : item.name.th) : t("newTitle")}
+        title={item ? (en ? (item.name.en ?? item.name.th) : item.name.th) : t("newTitle")}
         description={item ? <span className="font-mono">{item.code}</span> : t("newNote")}
         back={{ href: "/marketing/loyalty/rewards", label: t("title") }}
       />

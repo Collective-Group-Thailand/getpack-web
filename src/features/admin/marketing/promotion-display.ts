@@ -175,5 +175,10 @@ export function previewDeal(item: Schemas["PromotionDto"], display: DisplayDraft
     forYou: false,
     forYouReason: null,
     bundle: null,
+    // Loyalty P3: a promotion card (never a reward).
+    kind: "promotion",
+    benefitText: locale === "en" ? item.benefitSummaryEn : item.benefitSummaryTh,
+    reward: null,
+    href: null,
   };
 }

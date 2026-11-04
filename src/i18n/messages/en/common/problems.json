@@ -180,7 +180,8 @@
     "po_required": "PO number required",
     "tax_id_taken": "Tax id already registered",
     "asset_exists": "Asset exists",
-    "last_admin": "Last Company Admin"
+    "last_admin": "Last Company Admin",
+    "uplift_not_eligible": "This company has no approved permanent base limit, so its limit cannot follow its tier yet."
   },
   "concurrency": {
     "precondition_required": "This page is out of date. Refresh it and try again.",
@@ -356,7 +357,8 @@
     "signature_invalid": "Signature invalid"
   },
   "loyalty": {
-    "insufficient_points": "Not enough points"
+    "insufficient_points": "Not enough points",
+    "campaign_started": "The campaign has started and can no longer be edited. Cancel it and create a new one."
   },
   "mockups": {
     "exists": "Mockup exists"
@@ -641,5 +643,18 @@
   },
   "validation": {
     "failed": "Some fields need fixing — see the message under each."
+  },
+  "rewards": {
+    "coupon_used": "This coupon has been used and cannot be cancelled.",
+    "not_cancellable": "This one cannot be cancelled.",
+    "code_taken": "A reward already uses this code.",
+    "item_active": "Code and type cannot change while the reward is active. Pause it first.",
+    "cancel_window_closed": "The time to cancel this redemption has passed.",
+    "cost_changed": "The points needed just changed. Close and open this reward again.",
+    "account_held": "Your account is being reviewed. You can redeem once the review is done.",
+    "frequency_limit": "This reward can be redeemed again later.",
+    "insufficient_points": "Not enough points for this reward.",
+    "open_limit": "You already hold the most unused coupons of this reward.",
+    "tier_required": "This reward is for a higher membership tier."
   }
 }

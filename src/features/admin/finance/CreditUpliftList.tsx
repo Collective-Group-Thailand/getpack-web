@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
-import type { CreditUpliftRow } from "@/lib/api/requests/admin-loyalty-p3";
+import type { CreditUpliftRow } from "@/features/shared/loyalty-p3/types";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
 import { DataTable } from "@/ui/components/DataTable";
@@ -32,12 +32,12 @@ export function CreditUpliftList() {
   const [filter, setFilter] = useState<Filter>("all");
   const rows = useQuery({
     queryKey: queryKeys.list("admin", "credit_uplift", { filter }),
-    queryFn: async () =>
-      (
-        await adminBrowserApis().requests.call("GET /v1/admin/credit-uplifts", {
-          query: filter === "capped" ? { aboveCap: "true" } : {},
-        })
-      ).items,
+    queryFn: async () => {
+      const { data } = await adminBrowserApis().contract.GET("/v1/admin/credit-uplifts", {
+        params: { query: { perPage: 100, ...(filter === "capped" ? { aboveCap: true } : {}) } },
+      });
+      return data!.data;
+    },
   });
   if (rows.isError) return <QueryError error={rows.error} onRetry={() => void rows.refetch()} />;
 
@@ -82,10 +82,12 @@ export function CreditUpliftList() {
             header: t("columns.tier"),
             cell: (row) => (
               <div>
-                <p>{t(`tiers.${row.companyTier}`)}</p>
-                <p className="text-muted text-xs tabular-nums">
-                  {t("spend", { amount: format.thb(row.companySpend12m) })}
-                </p>
+                <p>{row.companyTier ? t(`tiers.${row.companyTier}`) : "—"}</p>
+                {row.companySpend12m ? (
+                  <p className="text-muted text-xs tabular-nums">
+                    {t("spend", { amount: format.thb(row.companySpend12m) })}
+                  </p>
+                ) : null}
               </div>
             ),
           },
@@ -107,9 +109,11 @@ export function CreditUpliftList() {
             cell: (row) => (
               <div>
                 <p className="font-semibold tabular-nums">{format.thb(row.newLimit)}</p>
-                <p className="text-muted text-xs tabular-nums">
-                  {t("previous", { amount: format.thb(row.previousLimit) })}
-                </p>
+                {row.previousLimit ? (
+                  <p className="text-muted text-xs tabular-nums">
+                    {t("previous", { amount: format.thb(row.previousLimit) })}
+                  </p>
+                ) : null}
               </div>
             ),
           },

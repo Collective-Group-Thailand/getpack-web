@@ -188,6 +188,8 @@ export function adminThreadDto(thread: Thread): Schemas["ConversationDto"] {
     customer: { id: thread.customerId, displayName: thread.customerName },
     lineDisplayName: null,
     lineFriendStatus: "unknown",
+    // Loyalty P3 (D-500): Gold and Platinum customers are answered first; the mock's threads are not.
+    prioritySupport: false,
     assignee: thread.assignee,
     lastMessage: last?.body ?? last?.file?.name ?? null,
     ticket: null,

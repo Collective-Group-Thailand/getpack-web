@@ -1573,17 +1573,23 @@ export const storeCheckoutHandlers = [
  * Loyalty P2 (`PointsPreviewDto`): the multipliers behind `toEarn` (payment method "1.00": none is declared before
  * payment) and the QR / transfer bonus (D-490, D-495). The mock's engine is a fake one; the web shows these figures as given.
  */
-function pointsP2Of(toEarn: number): CheckoutPointsP2Fields {
+function pointsP2Of(toEarn: number): CheckoutPointsP2Fields & Pick<Schemas["PointsPreviewDto"], "earlyPayBonus"> {
   return {
     multipliers: {
       tier: "1.25",
       paymentMethod: "1.00",
       reorderCampaign: "1.00",
       promotion: "1.00",
+      // Loyalty P3: the admin campaign, the anniversary month and early pay (credited later as an `earn_bonus`).
+      campaign: "1.00",
+      anniversary: "1.00",
+      earlyPay: "1.00",
       combined: "1.25",
       capped: false,
     },
     paymentBonus: { multiplier: "1.20", methods: ["scb_qr", "scb_qr_cross_bank", "bank_transfer_slip"] },
     toEarnWithPaymentBonus: Math.floor(toEarn * 1.2),
+    // Loyalty P3: early pay is a separate `earn_bonus` (API-CHANGES-P3 deviation 7); the mock offers none.
+    earlyPayBonus: null,
   };
 }

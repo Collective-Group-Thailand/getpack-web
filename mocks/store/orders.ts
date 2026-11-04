@@ -492,6 +492,8 @@ export const storeOrderHandlers = [
     const current = TIERS[at]!;
     const next = TIERS[at + 1] ?? null;
     const summary: Schemas["LoyaltySummaryDto"] = {
+      // Loyalty P3: perks, next tier's perk codes, active multipliers, anniversary month, open reward coupons.
+      ...loyaltyP3FieldsOf(customer, current.tier),
       availablePoints: customer.points,
       availableValue: baht(customer.points * 250),
       currency: "THB",
@@ -506,10 +508,9 @@ export const storeOrderHandlers = [
         "Counts orders once completed after delivery · before VAT, without shipping · last 12 months · updated daily",
       // The mock keeps no paid-but-not-completed spend.
       spendNotYetCounted: "0.00",
-      // Platinum (P3) is not in the published enum yet (CONTRACT-REQUEST store.loyalty.p3-fields).
-      tier: current.tier as Schemas["LoyaltyTier"],
+      tier: current.tier,
       // The next tier up (D-134) and the 12-month spend as a share of it; 100 at the top.
-      nextTier: (next?.tier ?? null) as Schemas["LoyaltyTier"] | null,
+      nextTier: next?.tier ?? null,
       nextTierMinSpend12m: next ? baht(next.from) : null,
       nextTierProgressPct: next ? Math.min(100, (spendOf(customer) / next.from) * 100).toFixed(2) : "100.00",
       // Loyalty P2: the review customer holds a 40-point win-back lot and one active reorder campaign.
@@ -517,8 +518,7 @@ export const storeOrderHandlers = [
         customer.ownerIndex === null ? [] : [{ points: 40, reason: "winback", expiresAt: bangkokIso(30 * DAY) }],
       activeCampaigns: customer.ownerIndex === null ? 0 : 1,
     };
-    // Loyalty P3: perks, active multipliers and open reward coupons (CONTRACT-REQUEST store.loyalty.p3-fields).
-    return HttpResponse.json({ ...summary, ...loyaltyP3FieldsOf(customer, current.tier) });
+    return HttpResponse.json(summary);
   }),
 
   // store.loyalty.ledger (published, U-F0.2), newest first.
@@ -546,6 +546,7 @@ export const storeOrderHandlers = [
       createdAt: bangkokIso(-createdMinutesAgo),
       bonusReason: null,
       multipliers: null,
+      reward: null,
       ...extra,
     });
     const earned = ordersOf(customer)

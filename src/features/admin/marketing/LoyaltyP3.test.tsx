@@ -8,23 +8,25 @@ import companies from "@/i18n/messages/th/admin/companies.json";
 import finance from "@/i18n/messages/th/admin/finance.json";
 import console_ from "@/i18n/messages/th/admin/console.json";
 import { ApiError } from "@/lib/api/problem";
-import type { RewardCatalogItem } from "@/lib/api/requests/admin-loyalty-p3";
+import type { RewardCatalogItem } from "@/features/shared/loyalty-p3/types";
 import type { Schemas } from "@/lib/api/types";
 
 import { CreditUpliftPanel } from "../companies/CreditUplift";
 import { CreditUpliftList } from "../finance/CreditUpliftList";
 import { benefitV2Body, withSchemaVersion } from "./benefit-v2";
-import { CapacityDealList } from "./CapacityDeals";
+import { CapacityDealList, canRequestPublish } from "./CapacityDeals";
 import { blankCampaignDraft, campaignInputOf, campaignProblems } from "./loyalty-campaign";
 import { LoyaltyCampaignForm } from "./LoyaltyCampaigns";
 import { blankRewardDraft, rewardActionsOf, rewardDraftProblems, rewardInputOf } from "./reward-item";
 import { RewardItemForm } from "./RewardItemForm";
 
-const call = vi.fn();
-const read = vi.fn();
+const get = vi.fn();
+const post = vi.fn();
+const put = vi.fn();
+const patch = vi.fn();
 vi.mock("../console", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../console")>()),
-  adminBrowserApis: () => ({ requests: { call, read }, contract: {} }),
+  adminBrowserApis: () => ({ requests: {}, contract: { GET: get, POST: post, PUT: put, PATCH: patch } }),
   useCan: () => true,
   useProductTypes: () => ({ options: [], types: [], labelOf: (code: string) => code }),
 }));
@@ -43,18 +45,20 @@ function renderTh(node: React.ReactNode) {
 }
 
 beforeEach(() => {
-  call.mockReset();
-  read.mockReset();
+  for (const mock of [get, post, put, patch]) mock.mockReset();
 });
+
+const page = <T,>(data: T[]) => ({ data: { data, meta: { page: 1, perPage: 100, total: data.length } } });
 
 const ITEM: RewardCatalogItem = {
   id: "0192f3a0-7c1e-7d2a-9b1f-0000000e0004",
   code: "free_shipping",
   kind: "free_shipping",
   name: { th: "ส่งฟรี 1 คำสั่งซื้อ", en: "Free shipping on one order" },
-  description: null,
+  description: { th: null, en: null },
   costPoints: 60,
   value: { type: "free_shipping" },
+  valueTextTh: "ส่งฟรี",
   constraints: { minOrderValue: "2000.00", productTypeCodes: null, perUserEveryMonths: null },
   tierRequired: null,
   validityDays: 90,
@@ -64,7 +68,6 @@ const ITEM: RewardCatalogItem = {
   status: "active",
   promotionId: "0192f3a0-7c1e-7d2a-9b1f-0000000f0204",
   redemptions30d: 58,
-  openCoupons: 19,
   updatedAt: "2026-10-25T10:00:00+07:00",
 };
 
@@ -108,12 +111,12 @@ describe("RewardItemForm", () => {
   it("names the fields to fix before asking the API", async () => {
     renderTh(<RewardItemForm item={null} editable productTypes={[]} onSaved={vi.fn()} />);
     await act(async () => fireEvent.click(screen.getAllByRole("button", { name: "สร้างรางวัล" })[0]!));
-    expect(call).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
     expect(screen.getByText("กรุณาใส่ชื่อภาษาไทย")).toBeTruthy();
   });
 
   it("locks code and kind once active and puts the API's cap_floor on the minimum", async () => {
-    read.mockRejectedValueOnce(
+    patch.mockRejectedValueOnce(
       new ApiError({
         status: 422,
         code: "validation.failed",
@@ -126,10 +129,11 @@ describe("RewardItemForm", () => {
     renderTh(<RewardItemForm item={ITEM} etag='W/"x.1"' editable productTypes={[]} onSaved={vi.fn()} />);
     expect((screen.getByRole("textbox", { name: /รหัส/ }) as HTMLInputElement).disabled).toBe(true);
     await act(async () => fireEvent.click(screen.getAllByRole("button", { name: "บันทึก" })[0]!));
-    const [key, init] = read.mock.calls[0]!;
-    expect(key).toBe("PATCH /v1/admin/loyalty/rewards/{itemId}");
+    const [path, init] = patch.mock.calls[0]!;
+    expect(path).toBe("/v1/admin/loyalty/rewards/{itemId}");
+    expect(init.params.path.itemId).toBe(ITEM.id);
     expect(init.body.code).toBeUndefined();
-    expect(init.etag).toBe('W/"x.1"');
+    expect(init.headers["If-Match"]).toBe('W/"x.1"');
     expect(screen.getByText("ยอดขั้นต่ำน้อยกว่า 5 เท่าของส่วนลด")).toBeTruthy();
   });
 });
@@ -183,7 +187,7 @@ describe("loyalty campaigns", () => {
   });
 
   it("creates through the form", async () => {
-    call.mockResolvedValueOnce({ id: "x" });
+    post.mockResolvedValueOnce({ data: { id: "x" } });
     const onSaved = vi.fn();
     renderTh(<LoyaltyCampaignForm campaign={null} productTypes={[]} onCancel={vi.fn()} onSaved={onSaved} />);
     fireEvent.change(screen.getByRole("textbox", { name: /ชื่อแคมเปญ/ }), { target: { value: "สะสมแต้มกล่อง" } });
@@ -191,7 +195,8 @@ describe("loyalty campaigns", () => {
     fireEvent.change(screen.getByLabelText(/^สิ้นสุด/), { target: { value: "2026-12-31" } });
     fireEvent.change(screen.getByRole("textbox", { name: /รหัสเหตุผล/ }), { target: { value: "box_dec_2026" } });
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "สร้างแคมเปญ" })));
-    expect(call.mock.calls[0]![0]).toBe("POST /v1/admin/loyalty/campaigns");
+    expect(post.mock.calls[0]![0]).toBe("/v1/admin/loyalty/campaigns");
+    expect(post.mock.calls[0]![1].body).toMatchObject({ kind: "admin_rule", name: "สะสมแต้มกล่อง" });
     expect(onSaved).toHaveBeenCalled();
   });
 });
@@ -225,7 +230,7 @@ describe("credit uplift", () => {
   });
 
   it("asks a reason before switching the mode", async () => {
-    call.mockResolvedValueOnce({ uplift: { ...(CREDIT as unknown as { uplift: object }).uplift, mode: "frozen" } });
+    put.mockResolvedValueOnce({ data: { ...CREDIT, uplift: { ...CREDIT.uplift, mode: "frozen" } } });
     const onChanged = vi.fn();
     renderTh(
       <CreditUpliftPanel companyId="c1" credit={CREDIT} canManage onRequestFull={vi.fn()} onChanged={onChanged} />,
@@ -233,13 +238,13 @@ describe("credit uplift", () => {
     fireEvent.click(screen.getByRole("radio", { name: "หยุดไว้" }));
     const dialog = screen.getByRole("dialog");
     await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "หยุดไว้" })));
-    expect(call).not.toHaveBeenCalled();
+    expect(put).not.toHaveBeenCalled();
     fireEvent.change(within(dialog).getByRole("textbox"), {
       target: { value: "รอตรวจงบการเงินปี 2569 ก่อนปรับวงเงิน" },
     });
     await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "หยุดไว้" })));
-    expect(call).toHaveBeenCalledWith("PUT /v1/admin/companies/{companyId}/credit/uplift", {
-      path: { companyId: "c1" },
+    expect(put).toHaveBeenCalledWith("/v1/admin/companies/{companyId}/credit/uplift", {
+      params: { path: { companyId: "c1" } },
       body: { mode: "frozen", reason: "รอตรวจงบการเงินปี 2569 ก่อนปรับวงเงิน" },
     });
     expect(onChanged).toHaveBeenCalled();
@@ -253,8 +258,8 @@ function withQuery(node: React.ReactNode) {
 
 describe("lists", () => {
   it("lists uplifts with the capped target and the deep link to request it", async () => {
-    call.mockResolvedValueOnce({
-      items: [
+    get.mockResolvedValueOnce(
+      page([
         {
           versionId: "v1",
           company: { id: "c1", legalName: "บริษัท ตัวอย่าง จำกัด" },
@@ -269,19 +274,19 @@ describe("lists", () => {
           aboveCapTarget: "1200000.00",
           effectiveFrom: "2026-11-04T03:10:00+07:00",
           mode: "auto",
+          origin: "tier_uplift",
           pendingRequest: null,
         },
-      ],
-    });
+      ]),
+    );
     renderTh(withQuery(<CreditUpliftList />));
     const link = await screen.findByRole("link", { name: "ขออนุมัติวงเงินเต็ม" });
     expect(link.getAttribute("href")).toBe("/companies/c1?tab=credit&uplift=request");
   });
 
   it("lists capacity deals per product type with the approval, and no factory word", async () => {
-    call.mockResolvedValueOnce({
-      provider: "capacity_bookings",
-      items: [
+    get.mockResolvedValueOnce(
+      page([
         {
           promotionId: "p1",
           productTypeCode: "corrugated_rsc",
@@ -290,14 +295,21 @@ describe("lists", () => {
           freePct: "41.50",
           discountPct: "5",
           visibility: "hidden",
-          status: "active",
+          status: "draft",
           approval: { id: "a1", status: "pending" },
           createdAt: "2026-11-04T07:20:00+07:00",
         },
-      ],
-    });
+      ]),
+    );
     const { container } = renderTh(withQuery(<CapacityDealList />));
     expect((await screen.findByRole("link", { name: "เปิดคำขอ" })).getAttribute("href")).toBe("/approvals/a1");
     expect(container.textContent).not.toMatch(/โรงงาน|factory/i);
+  });
+
+  it("offers request_publish on a draft with no request waiting or approved (D-502)", () => {
+    expect(canRequestPublish("draft", null)).toBe(true);
+    expect(canRequestPublish("draft", { id: "a1", status: "rejected" })).toBe(true);
+    expect(canRequestPublish("draft", { id: "a1", status: "pending" })).toBe(false);
+    expect(canRequestPublish("active", { id: "a1", status: "approved" })).toBe(false);
   });
 });

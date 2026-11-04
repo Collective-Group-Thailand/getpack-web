@@ -3,11 +3,10 @@
 import { useLocale, useTranslations } from "next-intl";
 
 import { pick } from "@/features/customer/catalog/localize";
-import type { LoyaltySummaryP3 } from "@/features/shared/loyalty-p3/read";
 import { shortMultiplier } from "@/features/shared/loyalty-p2/multipliers";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import type { ActiveMultiplier, LoyaltyPerk, PerkCode } from "@/lib/api/requests/store-loyalty-p3";
+import type { ActiveMultiplier, LoyaltyPerk, LoyaltySummaryP3, PerkCode } from "@/features/shared/loyalty-p3/types";
 import type { Schemas } from "@/lib/api/types";
 import { Meter } from "@/ui/components/Meter";
 import { Icon, type IconName } from "@/ui/icons";
@@ -23,6 +22,14 @@ const PERK_ICON: Record<PerkCode, IconName> = {
   priority_production_slot: "flag",
 };
 
+const isPerkCode = (code: string): code is PerkCode => Object.hasOwn(PERK_ICON, code);
+
+/** The next tier's perks are codes (API-CHANGES-P3 deviation 10): each reads as a perk with nothing granted yet. */
+const nextPerksOf = (codes: readonly string[]): LoyaltyPerk[] =>
+  codes
+    .filter(isPerkCode)
+    .map((code) => ({ code, status: "active", period: null, redemptionId: null, couponExpiresAt: null }));
+
 export interface TierPerksProps {
   /** `store.loyalty.get` as published (spend, thresholds, the API's percentage, the spend basis). */
   points: Pick<
@@ -35,8 +42,11 @@ export interface TierPerksProps {
     | "spendBasisEn"
     | "spendNotYetCounted"
   >;
-  /** Its P3 fields (`loyaltyP3Of`): the tier with Platinum, perks and active multipliers. */
-  loyalty: LoyaltySummaryP3;
+  /** Its P3 fields: the tier with Platinum, perks, the next tier's perk codes and the active multipliers. */
+  loyalty: Pick<
+    LoyaltySummaryP3,
+    "tier" | "nextTier" | "perks" | "nextTierPerks" | "activeMultipliers" | "maxCombinedMultiplier"
+  >;
   className?: string;
 }
 
@@ -54,8 +64,9 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
   const format = useFormat();
   const locale = useLocale();
   const tier = tTier(loyalty.tier);
+  const nextPerks = nextPerksOf(loyalty.nextTierPerks);
 
-  const quarterText = (period: string | undefined) => {
+  const quarterText = (period: string | null) => {
     const quarter = quarterOf(period);
     return quarter
       ? t("quarter", { quarter: quarter.quarter, year: String(quarter.year + (format.locale === "th" ? 543 : 0)) })
@@ -218,12 +229,12 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
         ) : (
           <p className="text-muted mt-1.5 text-[0.84375rem]">{t("none")}</p>
         )}
-        {loyalty.nextTier && loyalty.nextTierPerks.length > 0 ? (
+        {loyalty.nextTier && nextPerks.length > 0 ? (
           <>
             <h3 className="text-muted mt-[1.125rem] text-[0.8125rem] font-semibold">
               {t("nextTitle", { tier: tTier(loyalty.nextTier) })}
             </h3>
-            <div className="mt-0.5">{perkRows(loyalty.nextTierPerks, true)}</div>
+            <div className="mt-0.5">{perkRows(nextPerks, true)}</div>
           </>
         ) : null}
       </div>

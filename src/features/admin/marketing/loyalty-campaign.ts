@@ -4,7 +4,7 @@
  * `loyalty.campaign_started` once it has begun); the ×3.00 combined cap applies at earning, not here.
  */
 
-import type { AdminLoyaltyCampaignRule, LoyaltyCampaignInput } from "@/lib/api/requests/admin-loyalty-p3";
+import type { AdminLoyaltyCampaignRule, LoyaltyCampaignInput } from "@/features/shared/loyalty-p3/types";
 
 import { audienceDraftOf, audienceOf, type AudienceDraft } from "./audience";
 import { bangkokDayOf, bangkokMidnight } from "./time";
@@ -31,14 +31,14 @@ export const blankCampaignDraft = (): CampaignDraft => ({
 
 export function campaignDraftOf(campaign: AdminLoyaltyCampaignRule): CampaignDraft {
   return {
-    name: campaign.name,
+    name: campaign.name ?? "",
     multiplier: campaign.multiplier,
     startsOn: bangkokDayOf(campaign.startsAt),
     endsOn: bangkokDayOf(campaign.endsAt),
     productTypeCodes: campaign.productTypeCodes ?? [],
     // The campaign audience is conditions v2's (D-494); the picker is the promotion editor's.
-    audience: audienceDraftOf(campaign.audience as Parameters<typeof audienceDraftOf>[0]),
-    reason: campaign.reason,
+    audience: audienceDraftOf(campaign.audience),
+    reason: campaign.reason ?? "",
   };
 }
 
@@ -64,7 +64,7 @@ export function campaignInputOf(draft: CampaignDraft): LoyaltyCampaignInput {
     startsAt: bangkokMidnight(draft.startsOn),
     endsAt: bangkokMidnight(draft.endsOn, true),
     productTypeCodes: draft.productTypeCodes.length ? [...draft.productTypeCodes] : null,
-    audience: (audienceOf(draft.audience) ?? {}) as LoyaltyCampaignInput["audience"],
+    audience: audienceOf(draft.audience) ?? null,
     reason: draft.reason.trim(),
   };
 }

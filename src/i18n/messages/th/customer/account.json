@@ -443,7 +443,8 @@
     "bonusReasons": {
       "first_order": "โบนัสคำสั่งซื้อแรก",
       "winback": "แต้มโบนัส",
-      "promotion": "แต้มโบนัสจากดีล"
+      "promotion": "แต้มโบนัสจากดีล",
+      "early_pay": "โบนัสชำระก่อนกำหนด"
     }
   },
   "referral": {
@@ -961,7 +962,10 @@
       "tier": "ระดับสมาชิก ×{value}",
       "paymentMethod": "QR หรือโอนเงิน ×{value}",
       "reorderCampaign": "สั่งซ้ำ ×{value}",
-      "promotion": "ดีล ×{value}"
+      "promotion": "ดีล ×{value}",
+      "campaign": "แคมเปญ ×{value}",
+      "anniversary": "เดือนเกิดสมาชิก ×{value}",
+      "earlyPay": "ชำระก่อนกำหนด ×{value}"
     },
     "capped": "ตัวคูณรวมสูงสุดแล้ว",
     "paymentHint": "ชำระด้วย QR หรือโอนเงิน รับแต้ม ×{multiplier} เป็น {points} แต้ม"

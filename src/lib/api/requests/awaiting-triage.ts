@@ -20,26 +20,6 @@ export const AWAITING_TRIAGE: readonly string[] = [
   "POST /v1/store/newsletter/actions/subscribe",
   // U3.6 (2026-10-06): the staff a structural design request can be assigned to.
   "GET /v1/admin/structural-requests/designers",
-  // Loyalty P3 (2026-11-04, API-CHANGES-P3): reward catalogue, tier perks, admin campaigns, credit uplift and capacity
-  // deals, built in parallel on getpack-api `feat/loyalty-p3-catalogue-tiers`.
-  "GET /v1/store/rewards",
-  "POST /v1/store/rewards/{itemId}/actions/redeem",
-  "GET /v1/store/rewards/redemptions",
-  "POST /v1/store/rewards/redemptions/{redemptionId}/actions/cancel",
-  "GET /v1/admin/loyalty/rewards",
-  "POST /v1/admin/loyalty/rewards",
-  "GET /v1/admin/loyalty/rewards/{itemId}",
-  "PATCH /v1/admin/loyalty/rewards/{itemId}",
-  "POST /v1/admin/loyalty/rewards/{itemId}/actions/{action}",
-  "GET /v1/admin/loyalty/reward-redemptions",
-  "POST /v1/admin/loyalty/reward-redemptions/{redemptionId}/actions/cancel",
-  "POST /v1/admin/loyalty/campaigns",
-  "GET /v1/admin/loyalty/campaigns/{campaignId}",
-  "PATCH /v1/admin/loyalty/campaigns/{campaignId}",
-  "POST /v1/admin/loyalty/campaigns/{campaignId}/actions/cancel",
-  "PUT /v1/admin/companies/{companyId}/credit/uplift",
-  "GET /v1/admin/credit-uplifts",
-  "GET /v1/admin/promotions/capacity-deals",
 ];
 
 /**

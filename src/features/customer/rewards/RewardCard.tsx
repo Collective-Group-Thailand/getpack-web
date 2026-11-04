@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import type { LoyaltyTierP3, RewardItem } from "@/lib/api/requests/store-loyalty-p3";
+import type { LoyaltyTierP3, RewardItem } from "@/features/shared/loyalty-p3/types";
 import { Button } from "@/ui/components/Button";
 import { Ticket } from "@/ui/components/Ticket";
 import { Icon } from "@/ui/icons";

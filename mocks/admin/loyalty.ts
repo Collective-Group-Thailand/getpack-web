@@ -21,7 +21,7 @@ import { settingValue } from "./platform";
 /** A ledger line as the fixture keeps it (with the order it came from); served as `PointsEntryDto`. */
 type Entry = Omit<
   Schemas["PointsEntryDto"],
-  "orderId" | "orderCode" | "groupCode" | "reason" | "bonusReason" | "multipliers"
+  "orderId" | "orderCode" | "groupCode" | "reason" | "bonusReason" | "multipliers" | "reward"
 > & {
   order: { id: string; orderCode: string; groupCode: string } | null;
   note: string | null;
@@ -191,6 +191,13 @@ export const loyaltyHandlers = [
         : "100.00",
       bonusLots: [],
       activeCampaigns: 0,
+      // Loyalty P3 (`admin.loyalty.get` shares the store summary): nothing granted on the admin mock.
+      perks: [],
+      nextTierPerks: [],
+      activeMultipliers: [],
+      maxCombinedMultiplier: "3.00",
+      anniversaryMonth: 3,
+      rewardCoupons: 0,
     };
     return HttpResponse.json(body);
   }),
@@ -207,6 +214,7 @@ export const loyaltyHandlers = [
         reason: note,
         bonusReason: null,
         multipliers: null,
+        reward: null,
       }))
       // `?entryType` (v0.5.0).
       .filter((entry) => !url.searchParams.get("entryType") || entry.entryType === url.searchParams.get("entryType"));

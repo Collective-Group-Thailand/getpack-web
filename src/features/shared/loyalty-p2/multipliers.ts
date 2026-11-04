@@ -1,7 +1,17 @@
 import type { PointsMultipliers } from "@/features/shared/loyalty-p2/types";
 
-export type MultiplierPart = "tier" | "paymentMethod" | "reorderCampaign" | "promotion";
-const PARTS: readonly MultiplierPart[] = ["tier", "paymentMethod", "reorderCampaign", "promotion"];
+export type MultiplierPart =
+  "tier" | "paymentMethod" | "reorderCampaign" | "promotion" | "campaign" | "anniversary" | "earlyPay";
+/** P2's four, then P3's admin campaign, anniversary month and early pay (D-499). */
+const PARTS: readonly MultiplierPart[] = [
+  "tier",
+  "paymentMethod",
+  "reorderCampaign",
+  "promotion",
+  "campaign",
+  "anniversary",
+  "earlyPay",
+];
 
 /** A decimal string that is exactly one ("1", "1.0", "1.00"). */
 const isOne = (value: string) => /^1(\.0+)?$/.test(value.trim());

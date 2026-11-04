@@ -3,8 +3,8 @@
  * what a coupon's stub says, and whether a coupon may still be cancelled. Everything else is the API's: costs, the
  * balance, whether an item can be redeemed and why not, the dates.
  *
- * The one figure the web works out is the confirm sheet's "คงเหลือ": the balance less the cost, two integers the API
- * sent, shown before the redeem; the success state shows the API's own `balanceAfter` (WEB-P3-NOTES §3).
+ * The confirm sheet's "คงเหลือ" is `store.rewards.preview`'s `balanceAfter` and the success state the redeem's own: the
+ * web subtracts nothing (WEB-P3-NOTES §7).
  */
 
 import type {
@@ -13,7 +13,7 @@ import type {
   RewardItem,
   RewardKind,
   RewardRedemption,
-} from "@/lib/api/requests/store-loyalty-p3";
+} from "@/features/shared/loyalty-p3/types";
 
 export const REWARD_GROUPS = ["cash", "perks"] as const;
 export type RewardGroup = (typeof REWARD_GROUPS)[number];
@@ -33,6 +33,15 @@ export function blockedReasonOf(item: RewardItem): RewardBlockedReason | null {
   return item.blockedReason ?? "held";
 }
 
+/** The sheet's problem line for a preview that says the item cannot be redeemed now (the redeem's own codes). */
+export const PROBLEM_OF_REASON = {
+  insufficient_points: "rewards.insufficient_points",
+  tier: "rewards.tier_required",
+  frequency: "rewards.frequency_limit",
+  open_limit: "rewards.open_limit",
+  held: "rewards.account_held",
+} as const satisfies Record<RewardBlockedReason, string>;
+
 /** The icon beside each reason: never `warning` (a reason is information, not an error). */
 export const BLOCKED_ICON = {
   insufficient_points: "info",
@@ -41,11 +50,6 @@ export const BLOCKED_ICON = {
   open_limit: "wallet",
   held: "shield",
 } as const satisfies Record<RewardBlockedReason, string>;
-
-/** The confirm sheet's preview of the balance after the redeem (two API integers); never below zero. */
-export function balanceAfter(balance: number, cost: number): number {
-  return Math.max(0, balance - cost);
-}
 
 /** The coupon's stub word per kind — short enough for the 64 px stub. */
 export const STUB_WORD: Record<RewardKind, string> = {

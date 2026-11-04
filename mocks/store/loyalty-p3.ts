@@ -2,8 +2,9 @@
  * Loyalty P3 (API-CHANGES-P3): the reward catalogue, redeeming, my reward coupons and the 7-day cancel, kept in memory
  * per persona; and the fields P3 adds to `store.loyalty.get` (perks, active multipliers, open coupons).
  *
- * Every catalogue handler is a contract request (`mockRequest`), so its answer is validated against
- * `src/lib/api/requests/store-loyalty-p3.ts`. The eight items are the UAT seed's (API-CHANGES-P3 "Seed"). The review
+ * Every handler answers in the generated shapes (getpack-api `feat/loyalty-p3-catalogue-tiers`, pinned in
+ * `contract.lock.json`), including `store.rewards.preview` — the balance after a redeem is worked out here, as the API
+ * does, never by a screen. The eight items are the UAT seed's (API-CHANGES-P3 "Seed"). The review
  * customer holds one open free-shipping coupon (redeemed two days ago, still cancellable) and redeemed a free sample
  * 50 days ago, so that item says when it can be redeemed again. A newcomer has 0 points and nothing redeemed.
  *
@@ -11,15 +12,19 @@
  * puts them back. The mock never offers a cash or transfer path (D-498).
  */
 
+import { http, HttpResponse } from "msw";
+
 import type {
-  LoyaltySummaryP3Fields,
+  LoyaltyPerk,
+  LoyaltySummaryP3,
   LoyaltyTierP3,
   RewardItem,
   RewardKind,
+  RewardPreview,
   RewardRedemption,
-} from "@/lib/api/requests/store-loyalty-p3";
+} from "@/features/shared/loyalty-p3/types";
+import type { Schemas } from "@/lib/api/types";
 
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 
@@ -257,22 +262,18 @@ function itemOf(fixture: Fixture, customer: MockCustomer | null, lang: Lang): Re
     blockedReason: blocked?.reason ?? null,
     missingPoints: blocked?.reason === "insufficient_points" ? blocked.missingPoints : 0,
     nextAvailableAt: blocked?.reason === "frequency" ? blocked.nextAvailableAt : null,
+    cancelWindowDays: CANCEL_WINDOW / DAY,
   };
 }
 
-function redemptionOf(held: Held, lang: Lang, balanceAfter?: number): RewardRedemption {
+function redemptionOf(held: Held, lang: Lang, balanceAfter: number | null = null): RewardRedemption {
   const fixture = REWARD_FIXTURES.find((candidate) => candidate.code === held.code)!;
   return {
     id: held.id,
-    item: {
-      code: fixture.code,
-      name: fixture.name[lang],
-      kind: fixture.kind,
-      valueText: fixture.valueText[lang],
-    },
+    item: { code: fixture.code, name: fixture.name[lang], kind: fixture.kind },
     source: held.source,
     pointsSpent: held.pointsSpent,
-    ...(balanceAfter === undefined ? {} : { balanceAfter }),
+    balanceAfter,
     status: held.status,
     coupon: { code: held.couponCode, expiresAt: held.expiresAt },
     // Past the window the API still sends the date; the web stops offering the cancel itself.
@@ -284,30 +285,37 @@ function redemptionOf(held: Held, lang: Lang, balanceAfter?: number): RewardRede
 }
 
 /** The tier perks the persona's tier carries this quarter (D-500), as `store.loyalty.get` lists them. */
-export function loyaltyP3FieldsOf(customer: MockCustomer, tier: LoyaltyTierP3): LoyaltySummaryP3Fields {
-  const quarterly = (code: "quarterly_free_shipping" | "quarterly_free_rush") => ({
-    code,
-    status: "next_quarter" as const,
-    period: "2026-Q4",
-  });
-  const byTier: Record<LoyaltyTierP3, LoyaltySummaryP3Fields["perks"]> = {
+export type LoyaltyP3Fields = Pick<
+  LoyaltySummaryP3,
+  "perks" | "nextTierPerks" | "activeMultipliers" | "maxCombinedMultiplier" | "anniversaryMonth" | "rewardCoupons"
+>;
+
+const perk = (code: LoyaltyPerk["code"], extra: Partial<LoyaltyPerk> = {}): LoyaltyPerk => ({
+  code,
+  status: "active",
+  period: null,
+  redemptionId: null,
+  couponExpiresAt: null,
+  ...extra,
+});
+
+export function loyaltyP3FieldsOf(customer: MockCustomer, tier: LoyaltyTierP3): LoyaltyP3Fields {
+  const quarterly = (code: "quarterly_free_shipping" | "quarterly_free_rush") =>
+    perk(code, { status: "next_quarter", period: "2026-Q4" });
+  const byTier: Record<LoyaltyTierP3, LoyaltyPerk[]> = {
     member: [],
     silver: [quarterly("quarterly_free_shipping")],
-    gold: [
-      { code: "free_shipping_every_order", status: "active" },
-      { code: "priority_support", status: "active" },
-    ],
+    gold: [perk("free_shipping_every_order"), perk("priority_support")],
     platinum: [
-      { code: "free_shipping_every_order", status: "active" },
-      { code: "priority_support", status: "active" },
-      { code: "priority_production_slot", status: "active" },
-      {
-        code: "quarterly_free_rush",
+      perk("free_shipping_every_order"),
+      perk("priority_support"),
+      perk("priority_production_slot"),
+      perk("quarterly_free_rush", {
         status: "granted",
         period: "2026-Q4",
         redemptionId: mockId("rwr", 9),
         couponExpiresAt: "2027-01-31T23:59:59+07:00",
-      },
+      }),
     ],
   };
   const next: Record<LoyaltyTierP3, LoyaltyTierP3 | null> = {
@@ -317,10 +325,11 @@ export function loyaltyP3FieldsOf(customer: MockCustomer, tier: LoyaltyTierP3): 
     platinum: null,
   };
   const nextTier = next[tier];
+  // The next tier's perks are codes (API-CHANGES-P3 deviation 10).
   const nextPerks = nextTier
     ? byTier[nextTier]
-        .filter((perk) => !byTier[tier].some((own) => own.code === perk.code))
-        .map((perk) => ({ code: perk.code, status: "next_quarter" as const }))
+        .filter((candidate) => !byTier[tier].some((own) => own.code === candidate.code))
+        .map((candidate) => candidate.code)
     : [];
   const multiplier = { member: "1.00", silver: "1.25", gold: "1.50", platinum: "2.00" }[tier];
   const reviewCase = customer.ownerIndex !== null;
@@ -342,7 +351,8 @@ export function loyaltyP3FieldsOf(customer: MockCustomer, tier: LoyaltyTierP3): 
         : []),
     ],
     maxCombinedMultiplier: "3.00",
-    anniversaryMonth: reviewCase ? 11 : null,
+    // Every member has one: the month the account was opened (the review case's is this month).
+    anniversaryMonth: reviewCase ? 11 : 3,
     rewardCoupons: stateOf(customer).held.filter(isOpen).length,
   };
 }
@@ -356,23 +366,69 @@ const couponCode = () => {
   return `GP-RW-${couponSeq.toString(36).toUpperCase().padStart(4, "0")}-M${(couponSeq % 97).toString().padStart(2, "0")}X`;
 };
 
+const json = <T>(body: T, status = 200) => HttpResponse.json(body as never, { status });
+
 export const loyaltyP3Handlers = [
-  // CONTRACT-REQUEST store.rewards — public: a guest sees costs, no balance, no verdict
-  mockRequest("GET /v1/store/rewards", ({ request }) => {
+  // store.rewards.list — public: a guest sees costs, no balance, no verdict
+  http.get("*/v1/store/rewards", ({ request }) => {
     const customer = customerOf(request);
     const lang = langOf(request);
-    return {
+    return json<Schemas["RewardListDto"]>({
       balance: customer ? customer.points : null,
       items: REWARD_FIXTURES.map((fixture) => itemOf(fixture, customer, lang)),
-      cancelWindowDays: CANCEL_WINDOW / DAY,
-    };
+    });
   }),
-  // CONTRACT-REQUEST store.rewards
-  mockRequest("POST /v1/store/rewards/{itemId}/actions/redeem", ({ request, params, body }) => {
+  // store.rewards.listMine — newest first, with the tier perk coupons of the persona's tier (paginated)
+  http.get("*/v1/store/rewards/redemptions", ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const lang = langOf(request);
+    const query = new URL(request.url).searchParams;
+    const status = query.get("status");
+    const perks: Held[] =
+      tierOf(customer) === "platinum"
+        ? [
+            {
+              id: mockId("rwr", 9),
+              code: "free_rush",
+              source: "tier_perk",
+              pointsSpent: 0,
+              status: "issued",
+              couponCode: "GP-TP-3HX8-QW71",
+              createdAt: "2026-10-01T00:05:00+07:00",
+              expiresAt: "2027-01-31T23:59:59+07:00",
+              cancellableUntil: null,
+              usedOrderCode: null,
+              perkPeriod: "2026-Q4",
+            },
+          ]
+        : [];
+    const rows = [...stateOf(customer).held, ...perks]
+      .filter((held) => !status || held.status === status)
+      .map((held) => redemptionOf(held, lang));
+    return json(paginate(rows, { page: Number(query.get("page") ?? 1), perPage: Number(query.get("perPage") ?? 50) }));
+  }),
+  // store.rewards.preview — the API's balance after; nothing is written
+  http.get("*/v1/store/rewards/:itemId/preview", ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const fixture = REWARD_FIXTURES.find((candidate) => itemId(candidate) === params.itemId);
     if (!fixture) return problem(404, "http.not_found", "ไม่พบรายการนี้");
+    const blocked = blockedOf(fixture, customer);
+    return json<RewardPreview>({
+      costPoints: fixture.costPoints,
+      balanceAfter: blocked ? null : customer.points - fixture.costPoints,
+      eligible: blocked === null,
+      reason: blocked?.reason ?? null,
+    });
+  }),
+  // store.rewards.redeem
+  http.post("*/v1/store/rewards/:itemId/actions/redeem", async ({ request, params }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const fixture = REWARD_FIXTURES.find((candidate) => itemId(candidate) === params.itemId);
+    if (!fixture) return problem(404, "http.not_found", "ไม่พบรายการนี้");
+    const body = (await request.json().catch(() => null)) as Schemas["RedeemRewardDto"] | null;
     if (body?.expectedCostPoints !== undefined && body.expectedCostPoints !== fixture.costPoints)
       return problem(409, "rewards.cost_changed", "จำนวนแต้มที่ใช้แลกเปลี่ยนไปแล้ว");
     const blocked = blockedOf(fixture, customer);
@@ -403,38 +459,10 @@ export const loyaltyP3Handlers = [
       perkPeriod: null,
     };
     state.held.unshift(held);
-    return redemptionOf(held, langOf(request), customer.points);
+    return json(redemptionOf(held, langOf(request), customer.points), 201);
   }),
-  // CONTRACT-REQUEST store.rewards — newest first, with the tier perk coupons of the persona's tier
-  mockRequest("GET /v1/store/rewards/redemptions", ({ request, query }) => {
-    const customer = customerOf(request);
-    if (!customer) return unauthenticated();
-    const lang = langOf(request);
-    const perks: Held[] =
-      tierOf(customer) === "platinum"
-        ? [
-            {
-              id: mockId("rwr", 9),
-              code: "free_rush",
-              source: "tier_perk",
-              pointsSpent: 0,
-              status: "issued",
-              couponCode: "GP-TP-3HX8-QW71",
-              createdAt: "2026-10-01T00:05:00+07:00",
-              expiresAt: "2027-01-31T23:59:59+07:00",
-              cancellableUntil: null,
-              usedOrderCode: null,
-              perkPeriod: "2026-Q4",
-            },
-          ]
-        : [];
-    const rows = [...stateOf(customer).held, ...perks]
-      .filter((held) => !query?.status || held.status === query.status)
-      .map((held) => redemptionOf(held, lang));
-    return paginate(rows, { page: query?.page ?? 1, perPage: query?.perPage ?? 50 });
-  }),
-  // CONTRACT-REQUEST store.rewards — only an issued catalogue coupon, before its window closes
-  mockRequest("POST /v1/store/rewards/redemptions/{redemptionId}/actions/cancel", ({ request, params }) => {
+  // store.rewards.cancel — only an issued catalogue coupon, before its window closes
+  http.post("*/v1/store/rewards/redemptions/:redemptionId/actions/cancel", ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const held = stateOf(customer).held.find((candidate) => candidate.id === params.redemptionId);
@@ -445,6 +473,6 @@ export const loyaltyP3Handlers = [
       return problem(409, "rewards.cancel_window_closed", "พ้นช่วงที่ยกเลิกได้แล้ว");
     held.status = "cancelled";
     customer.points += held.pointsSpent;
-    return redemptionOf(held, langOf(request));
+    return json(redemptionOf(held, langOf(request)));
   }),
 ];

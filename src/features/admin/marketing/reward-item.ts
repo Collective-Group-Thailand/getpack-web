@@ -5,8 +5,8 @@
  * ranges, the code's shape) and never works out the cash-off floor — it is the API's rule, shown as a hint.
  */
 
-import type { BenefitV2, RewardCatalogInput, RewardCatalogItem } from "@/lib/api/requests/admin-loyalty-p3";
-import type { LoyaltyTierP3, RewardKind } from "@/lib/api/requests/store-loyalty-p3";
+import type { BenefitV2, RewardCatalogInput, RewardCatalogItem } from "@/features/shared/loyalty-p3/types";
+import type { LoyaltyTierP3, RewardKind } from "@/features/shared/loyalty-p3/types";
 
 import { bangkokDayOf, bangkokMidnight } from "./time";
 
@@ -72,12 +72,13 @@ const text = (value: string | number | null | undefined) =>
   value === null || value === undefined ? "" : String(value);
 
 export function rewardDraftOf(item: RewardCatalogItem): RewardDraft {
-  const value = item.value;
+  // The item's benefit (`AdminRewardItemDto.value` is an open object in the contract).
+  const value = item.value as BenefitV2;
   return {
     code: item.code,
     kind: item.kind,
     nameTh: item.name.th,
-    nameEn: item.name.en,
+    nameEn: item.name.en ?? "",
     descriptionTh: item.description?.th ?? "",
     descriptionEn: item.description?.en ?? "",
     costPoints: text(item.costPoints),
@@ -173,7 +174,7 @@ export function rewardInputOf(draft: RewardDraft): RewardCatalogInput {
   const description =
     draft.descriptionTh.trim() || draft.descriptionEn.trim()
       ? { th: draft.descriptionTh.trim(), en: draft.descriptionEn.trim() }
-      : null;
+      : undefined;
   return {
     code: draft.code.trim(),
     kind: draft.kind,
@@ -188,7 +189,8 @@ export function rewardInputOf(draft: RewardDraft): RewardCatalogInput {
     },
     tierRequired: draft.tierRequired || null,
     validityDays: int(draft.validityDays) ?? 90,
-    activeFrom: draft.activeFrom ? bangkokMidnight(draft.activeFrom) : null,
+    // No start date: from now (the API requires one).
+    activeFrom: draft.activeFrom ? bangkokMidnight(draft.activeFrom) : new Date().toISOString(),
     activeTo: draft.activeTo ? bangkokMidnight(draft.activeTo, true) : null,
     sortOrder: int(draft.sortOrder) ?? 0,
   };

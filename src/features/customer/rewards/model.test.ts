@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { BLOCKED_REWARDS, SAMPLE_REDEMPTIONS, SAMPLE_REWARDS } from "./fixtures";
 import {
-  balanceAfter,
   blockedReasonOf,
   countByStatus,
   groupRewards,
   isCancellable,
+  PROBLEM_OF_REASON,
   quarterOf,
   redeemHref,
 } from "./model";
@@ -26,9 +26,10 @@ describe("the redeem page's rules", () => {
     expect(blockedReasonOf({ ...SAMPLE_REWARDS[0]!, canRedeem: false, blockedReason: null })).toBe("held");
   });
 
-  it("previews the balance after a redeem, never below zero", () => {
-    expect(balanceAfter(1250, 60)).toBe(1190);
-    expect(balanceAfter(40, 60)).toBe(0);
+  it("words a preview's refusal with the redeem's own problem code", () => {
+    expect(PROBLEM_OF_REASON.insufficient_points).toBe("rewards.insufficient_points");
+    expect(PROBLEM_OF_REASON.tier).toBe("rewards.tier_required");
+    expect(PROBLEM_OF_REASON.held).toBe("rewards.account_held");
   });
 
   it("offers a cancel on an unused catalogue coupon before its window closes", () => {

@@ -3,8 +3,14 @@
  * screen (the mock API has its own, `mocks/store/loyalty-p3.ts`).
  */
 
-import type { LoyaltySummaryP3 } from "@/features/shared/loyalty-p3/read";
-import type { RewardItem, RewardList, RewardRedemption } from "@/lib/api/requests/store-loyalty-p3";
+import type {
+  LoyaltyPerk,
+  LoyaltySummaryP3,
+  RewardItem,
+  RewardList,
+  RewardPreview,
+  RewardRedemption,
+} from "@/features/shared/loyalty-p3/types";
 
 const base = {
   description: null,
@@ -14,6 +20,7 @@ const base = {
   blockedReason: null,
   missingPoints: 0,
   nextAvailableAt: null,
+  cancelWindowDays: 7,
 } satisfies Partial<RewardItem>;
 
 const id = (n: number) => `0192f3a0-7c1e-7d2a-9b1f-0000000e${String(n).padStart(4, "0")}`;
@@ -82,16 +89,20 @@ export const BLOCKED_REWARDS: RewardItem[] = [
   { ...SAMPLE_REWARDS[0]!, id: id(24), canRedeem: false, blockedReason: "held" },
 ];
 
-export const SAMPLE_LIST: RewardList = { balance: 1250, items: SAMPLE_REWARDS, cancelWindowDays: 7 };
+export const SAMPLE_LIST: RewardList = { balance: 1250, items: SAMPLE_REWARDS };
+
+/** `store.rewards.preview` of the free-shipping item at the sample balance (the API's figure, not the web's). */
+export const SAMPLE_PREVIEW: RewardPreview = { costPoints: 60, balanceAfter: 1190, eligible: true, reason: null };
 
 export const SAMPLE_REDEMPTIONS: RewardRedemption[] = [
   {
     id: "0192f3a0-7c1e-7d2a-9b1f-0000000e1001",
-    item: { code: "free_shipping", name: "ส่งฟรี 1 คำสั่งซื้อ", kind: "free_shipping", valueText: "ส่งฟรี" },
+    item: { code: "free_shipping", name: "ส่งฟรี 1 คำสั่งซื้อ", kind: "free_shipping" },
     source: "catalogue",
     pointsSpent: 60,
     status: "issued",
     coupon: { code: "GP-RW-7Q4K-M2XD", expiresAt: "2027-02-02T23:59:59+07:00" },
+    balanceAfter: null,
     cancellableUntil: "2026-11-11T14:05:00+07:00",
     usedOrderCode: null,
     perkPeriod: null,
@@ -99,9 +110,10 @@ export const SAMPLE_REDEMPTIONS: RewardRedemption[] = [
   },
   {
     id: "0192f3a0-7c1e-7d2a-9b1f-0000000e1002",
-    item: { code: "free_rush", name: "ผลิตด่วนฟรี (ตามคิว)", kind: "free_rush", valueText: "ผลิตด่วน" },
+    item: { code: "free_rush", name: "ผลิตด่วนฟรี (ตามคิว)", kind: "free_rush" },
     source: "tier_perk",
     pointsSpent: 0,
+    balanceAfter: null,
     status: "issued",
     coupon: { code: "GP-TP-3HX8-QW71", expiresAt: "2027-01-31T23:59:59+07:00" },
     cancellableUntil: null,
@@ -111,9 +123,10 @@ export const SAMPLE_REDEMPTIONS: RewardRedemption[] = [
   },
   {
     id: "0192f3a0-7c1e-7d2a-9b1f-0000000e1003",
-    item: { code: "free_sample", name: "ตัวอย่างฟรี 1 ชิ้นงาน", kind: "free_sample", valueText: "ตัวอย่างฟรี" },
+    item: { code: "free_sample", name: "ตัวอย่างฟรี 1 ชิ้นงาน", kind: "free_sample" },
     source: "catalogue",
     pointsSpent: 80,
+    balanceAfter: null,
     status: "used",
     coupon: { code: "GP-RW-2HDA-91KE", expiresAt: "2026-12-14T23:59:59+07:00" },
     cancellableUntil: null,
@@ -136,20 +149,40 @@ export const SAMPLE_POINTS = {
   spendNotYetCounted: "0.00",
 };
 
-export const PLATINUM: LoyaltySummaryP3 = {
+const perk = (code: LoyaltyPerk["code"], extra: Partial<LoyaltyPerk> = {}): LoyaltyPerk => ({
+  code,
+  status: "active",
+  period: null,
+  redemptionId: null,
+  couponExpiresAt: null,
+  ...extra,
+});
+
+type TierPanel = Pick<
+  LoyaltySummaryP3,
+  | "tier"
+  | "nextTier"
+  | "perks"
+  | "nextTierPerks"
+  | "activeMultipliers"
+  | "maxCombinedMultiplier"
+  | "anniversaryMonth"
+  | "rewardCoupons"
+>;
+
+export const PLATINUM: TierPanel = {
   tier: "platinum",
   nextTier: null,
   perks: [
-    { code: "free_shipping_every_order", status: "active" },
-    { code: "priority_support", status: "active" },
-    { code: "priority_production_slot", status: "active" },
-    {
-      code: "quarterly_free_rush",
+    perk("free_shipping_every_order"),
+    perk("priority_support"),
+    perk("priority_production_slot"),
+    perk("quarterly_free_rush", {
       status: "granted",
       period: "2026-Q4",
       redemptionId: "0192f3a0-7c1e-7d2a-9b1f-0000000e1002",
       couponExpiresAt: "2027-01-31T23:59:59+07:00",
-    },
+    }),
   ],
   nextTierPerks: [],
   activeMultipliers: [
@@ -170,17 +203,12 @@ export const GOLD_POINTS = {
   nextTierProgressPct: "65.00",
 };
 
-export const GOLD: LoyaltySummaryP3 = {
+export const GOLD: TierPanel = {
   ...PLATINUM,
   tier: "gold",
   nextTier: "platinum",
-  perks: [
-    { code: "free_shipping_every_order", status: "active" },
-    { code: "priority_support", status: "active" },
-  ],
-  nextTierPerks: [
-    { code: "priority_production_slot", status: "next_quarter" },
-    { code: "quarterly_free_rush", status: "next_quarter" },
-  ],
+  perks: [perk("free_shipping_every_order"), perk("priority_support")],
+  // The next tier's perks are codes (API-CHANGES-P3 deviation 10).
+  nextTierPerks: ["priority_production_slot", "quarterly_free_rush"],
   activeMultipliers: [{ source: "tier", multiplier: "1.50" }],
 };

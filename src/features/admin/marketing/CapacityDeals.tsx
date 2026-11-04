@@ -3,17 +3,20 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
-import type { CapacityDealRef, CapacityDealRow } from "@/lib/api/requests/admin-loyalty-p3";
+import type { CapacityDealRef, CapacityDealRow } from "@/features/shared/loyalty-p3/types";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable } from "@/ui/components/DataTable";
 import { DeskSection } from "@/ui/components/DeskPage";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, QueryError, useProductTypes } from "../console";
+import { adminBrowserApis, problemMessage, QueryError, useProductTypes } from "../console";
 
 type ApprovalStatus = NonNullable<CapacityDealRow["approval"]>["status"];
 const APPROVAL_TONE: Record<ApprovalStatus, "neutral" | "success" | "danger" | "info"> = {
@@ -21,7 +24,12 @@ const APPROVAL_TONE: Record<ApprovalStatus, "neutral" | "success" | "danger" | "
   approved: "success",
   rejected: "danger",
   withdrawn: "neutral",
+  expired: "neutral",
 };
+
+/** Whether Marketing may ask for publication: a draft with no request waiting or approved (D-502). */
+export const canRequestPublish = (status: string, approval: CapacityDealRef["approval"]) =>
+  status === "draft" && (approval === null || !["pending", "approved"].includes(approval.status));
 
 /** The approval of a capacity deal as a chip; "ไม่มีคำขอ" when none is open. */
 function ApprovalChip({ approval }: { approval: CapacityDealRow["approval"] }) {
@@ -44,7 +52,9 @@ function ApprovalChip({ approval }: { approval: CapacityDealRow["approval"] }) {
 /**
  * Capacity deals (loyalty P3, D-502; `admin.capacityDeals.list`): the drafts the worker made where a product type has
  * room next week — product type, week, its free share, the discount, whether it shows and its
- * `capacity_deal_publish` approval (decided in the approvals inbox; the drafter cannot approve). The free share is the
+ * `capacity_deal_publish` approval. A draft stays `draft` (it never applies at checkout) until Marketing asks for
+ * publication (`request_publish`, in the editor's note) and another Marketing user approves it in the approvals inbox;
+ * the approval activates it (API-CHANGES-P3 deviations 2–3). The free share is the
  * product type's as a whole; nothing here names or counts a production site.
  */
 export function CapacityDealList() {
@@ -52,7 +62,12 @@ export function CapacityDealList() {
   const format = useFormat();
   const deals = useQuery({
     queryKey: queryKeys.list("admin", "capacity_deal", {}),
-    queryFn: () => adminBrowserApis().requests.call("GET /v1/admin/promotions/capacity-deals"),
+    queryFn: async () => {
+      const { data } = await adminBrowserApis().contract.GET("/v1/admin/promotions/capacity-deals", {
+        params: { query: { perPage: 100 } },
+      });
+      return data!.data;
+    },
   });
   if (deals.isError) return <QueryError error={deals.error} onRetry={() => void deals.refetch()} />;
 
@@ -60,7 +75,7 @@ export function CapacityDealList() {
     <DeskSection title={t("title")} description={t("description")}>
       <DataTable<CapacityDealRow>
         caption={t("title")}
-        rows={deals.data?.items ?? []}
+        rows={deals.data ?? []}
         loading={deals.isPending}
         getRowId={(row) => row.promotionId}
         empty={<EmptyState icon="calendar" title={t("empty")} description={t("emptyBody")} />}
@@ -113,12 +128,44 @@ export function CapacityDealList() {
 /**
  * The capacity deal's note in the promotion editor: what it is (product type, week, free share), that its benefit and
  * conditions are the worker's (read-only) and only the display is edited — an edit withdraws the open approval and
- * opens a new one — and where the approval stands.
+ * opens a new one — and where the approval stands. A draft with no open request offers "ขออนุมัติเผยแพร่"
+ * (`request_publish`): the person asking becomes the requester and cannot approve it.
  */
-export function CapacityDealNote({ deal }: { deal: CapacityDealRef }) {
+export function CapacityDealNote({
+  deal,
+  promotionId,
+  status,
+  canManage = false,
+  onRequested,
+}: {
+  deal: CapacityDealRef;
+  promotionId?: string;
+  status?: string;
+  canManage?: boolean;
+  /** After `request_publish`: the editor reads the promotion again. */
+  onRequested?: () => void;
+}) {
   const t = useTranslations("marketing.capacityDeals");
   const format = useFormat();
   const productTypes = useProductTypes();
+  const [busy, setBusy] = useState(false);
+  const offer = Boolean(canManage && promotionId && status && canRequestPublish(status, deal.approval));
+
+  const requestPublish = async () => {
+    if (!promotionId) return;
+    setBusy(true);
+    try {
+      await adminBrowserApis().contract.POST("/v1/admin/promotions/{promotionId}/actions/{action}", {
+        params: { path: { promotionId, action: "request_publish" } },
+      });
+      toast.success(t("requested"));
+      onRequested?.();
+    } catch (error) {
+      toast.error(problemMessage(error, t("requestFailed")));
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <Callout
       tone="info"
@@ -129,8 +176,13 @@ export function CapacityDealNote({ deal }: { deal: CapacityDealRef }) {
       })}
     >
       <p>{t("note.body")}</p>
-      <div className="mt-2">
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         <ApprovalChip approval={deal.approval} />
+        {offer ? (
+          <Button size="sm" variant="secondary" loading={busy} onClick={() => void requestPublish()}>
+            {t("requestPublish")}
+          </Button>
+        ) : null}
       </div>
     </Callout>
   );

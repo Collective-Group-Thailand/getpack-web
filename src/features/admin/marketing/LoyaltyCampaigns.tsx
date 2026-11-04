@@ -4,11 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { campaignP3Of } from "@/features/shared/loyalty-p3/read";
 import { shortMultiplier } from "@/features/shared/loyalty-p2/multipliers";
 import { useFormat } from "@/features/shared/format";
 import { isApiError } from "@/lib/api/problem";
-import type { AdminLoyaltyCampaignRule } from "@/lib/api/requests/admin-loyalty-p3";
+import type { AdminLoyaltyCampaignRule, CampaignAudience } from "@/features/shared/loyalty-p3/types";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
@@ -75,8 +74,8 @@ export function LoyaltyCampaigns() {
     }
     setBusy(true);
     try {
-      await adminBrowserApis().requests.call("POST /v1/admin/loyalty/campaigns/{campaignId}/actions/cancel", {
-        path: { campaignId: cancelling.id },
+      await adminBrowserApis().contract.POST("/v1/admin/loyalty/campaigns/{campaignId}/actions/cancel", {
+        params: { path: { campaignId: cancelling.id } },
         body: { reason: reason.trim() },
       });
       toast.success(t("cancel.done"));
@@ -117,13 +116,12 @@ export function LoyaltyCampaigns() {
             id: "name",
             header: t("columns.campaign"),
             cell: (row) => {
-              const p3 = campaignP3Of(row);
               return (
                 <div className="min-w-0">
-                  <p className="font-medium">{p3.name ?? t(`kinds.${p3.kind}`)}</p>
+                  <p className="font-medium">{row.name ?? t(`kinds.${row.kind}`)}</p>
                   <p className="text-muted text-xs">
-                    {p3.name ? t(`kinds.${p3.kind}`) : null}
-                    {row.customer ? `${p3.name ? " · " : ""}${row.customer.displayName}` : null}
+                    {row.name ? t(`kinds.${row.kind}`) : null}
+                    {row.customer ? `${row.name ? " · " : ""}${row.customer.displayName}` : null}
                   </p>
                 </div>
               );
@@ -148,10 +146,9 @@ export function LoyaltyCampaigns() {
             id: "types",
             header: t("columns.types"),
             cell: (row) => {
-              const p3 = campaignP3Of(row);
               return (
                 <span className="text-sm">
-                  {typesText(p3.productTypeCodes ?? (row.productTypeCode ? [row.productTypeCode] : null))}
+                  {typesText(row.productTypeCodes ?? (row.productTypeCode ? [row.productTypeCode] : null))}
                 </span>
               );
             },
@@ -160,7 +157,8 @@ export function LoyaltyCampaigns() {
             id: "audience",
             header: t("columns.audience"),
             cell: (row) => {
-              const audience = campaignP3Of(row).audience;
+              // The contract types the audience as an open object or conditions v2's audience (D-494).
+              const audience = row.audience as CampaignAudience | null;
               const tiers = audience?.tiers ?? [];
               return tiers.length ? (
                 <span className="text-sm">{tiers.map((tier) => t(`tiers.${tier}`)).join(", ")}</span>
@@ -187,7 +185,7 @@ export function LoyaltyCampaigns() {
             id: "actions",
             header: <span className="sr-only">{t("columns.actions")}</span>,
             cell: (row) => {
-              const kind = campaignP3Of(row).kind;
+              const kind = row.kind;
               if (!canManage || kind !== "admin_rule" || row.status !== "active") return null;
               return (
                 <span className="flex justify-end gap-1.5">
@@ -228,7 +226,7 @@ export function LoyaltyCampaigns() {
         open={cancelling !== null}
         onOpenChange={(open) => (open ? null : setCancelling(null))}
         title={t("cancel.title")}
-        description={cancelling ? t("cancel.body", { name: campaignP3Of(cancelling).name ?? "" }) : undefined}
+        description={cancelling ? t("cancel.body", { name: cancelling.name ?? "" }) : undefined}
         closeLabel={t("close")}
         footer={
           <>
@@ -264,10 +262,12 @@ function CampaignSheet({
   const t = useTranslations("marketing.loyaltyCampaigns");
   const read = useQuery({
     queryKey: queryKeys.detail("admin", "loyalty_campaign", campaignId ?? "new"),
-    queryFn: () =>
-      adminBrowserApis().requests.read("GET /v1/admin/loyalty/campaigns/{campaignId}", {
-        path: { campaignId: campaignId! },
-      }),
+    queryFn: async () => {
+      const { data, response } = await adminBrowserApis().contract.GET("/v1/admin/loyalty/campaigns/{campaignId}", {
+        params: { path: { campaignId: campaignId! } },
+      });
+      return { data: data!, etag: response.headers.get("ETag") };
+    },
     enabled: Boolean(campaignId),
   });
   return (
@@ -334,17 +334,17 @@ export function LoyaltyCampaignForm({
     if (problems.length) return;
     setSaving(true);
     try {
-      const requests = adminBrowserApis().requests;
-      const body = campaignInputOf(draft);
-      const saved = campaign
-        ? await requests.call("PATCH /v1/admin/loyalty/campaigns/{campaignId}", {
-            path: { campaignId: campaign.id },
-            body,
-            etag: etag ?? undefined,
+      const contract = adminBrowserApis().contract;
+      const { kind, ...edits } = campaignInputOf(draft);
+      const { data: saved } = campaign
+        ? await contract.PATCH("/v1/admin/loyalty/campaigns/{campaignId}", {
+            params: { path: { campaignId: campaign.id } },
+            ...(etag ? { headers: { "If-Match": etag } } : {}),
+            body: edits,
           })
-        : await requests.call("POST /v1/admin/loyalty/campaigns", { body });
+        : await contract.POST("/v1/admin/loyalty/campaigns", { body: { kind, ...edits } });
       toast.success(campaign ? t("saved") : t("created"));
-      onSaved(saved);
+      onSaved(saved!);
     } catch (failure) {
       if (isApiError(failure)) {
         const mapped: Partial<Record<CampaignProblem, string>> = {};

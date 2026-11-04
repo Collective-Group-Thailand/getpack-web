@@ -443,7 +443,8 @@
     "bonusReasons": {
       "first_order": "First order bonus",
       "winback": "Bonus points",
-      "promotion": "Deal bonus points"
+      "promotion": "Deal bonus points",
+      "early_pay": "Early payment bonus"
     }
   },
   "referral": {
@@ -961,7 +962,10 @@
       "tier": "Tier ×{value}",
       "paymentMethod": "QR or transfer ×{value}",
       "reorderCampaign": "Reorder ×{value}",
-      "promotion": "Deal ×{value}"
+      "promotion": "Deal ×{value}",
+      "campaign": "Campaign ×{value}",
+      "anniversary": "Anniversary month ×{value}",
+      "earlyPay": "Early payment ×{value}"
     },
     "capped": "Combined multiplier at its maximum",
     "paymentHint": "Pay by QR or bank transfer for points ×{multiplier}: {points} points"

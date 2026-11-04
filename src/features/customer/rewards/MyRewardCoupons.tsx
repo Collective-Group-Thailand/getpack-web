@@ -5,9 +5,9 @@ import { useState } from "react";
 
 import { CodeBox } from "@/features/shared/deals/DealCard";
 import { useFormat } from "@/features/shared/format/useFormat";
+import type { RedemptionStatus, RewardRedemption } from "@/features/shared/loyalty-p3/types";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { RedemptionStatus, RewardRedemption } from "@/lib/api/requests/store-loyalty-p3";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -61,9 +61,10 @@ export function MyRewardCoupons({
   const cancel = async (row: RewardRedemption) => {
     setBusy(true);
     try {
-      const updated = await browserRequests().call("POST /v1/store/rewards/redemptions/{redemptionId}/actions/cancel", {
-        path: { redemptionId: row.id },
+      const { data } = await browserApi().POST("/v1/store/rewards/redemptions/{redemptionId}/actions/cancel", {
+        params: { path: { redemptionId: row.id } },
       });
+      const updated = data!;
       setRows((current) => current.map((candidate) => (candidate.id === updated.id ? updated : candidate)));
       toast.success(t("cancelled", { points: format.number(row.pointsSpent) }));
       onChanged?.(updated);

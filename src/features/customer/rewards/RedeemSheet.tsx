@@ -1,15 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CodeBox } from "@/features/shared/deals/DealCard";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
+import type { RewardItem, RewardPreview, RewardRedemption } from "@/features/shared/loyalty-p3/types";
+import { browserApi } from "@/lib/api/browser";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { RewardItem, RewardRedemption } from "@/lib/api/requests/store-loyalty-p3";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { IconButton } from "@/ui/components/IconButton";
@@ -17,7 +17,7 @@ import { Sheet, SheetClose } from "@/ui/components/Sheet";
 import { Ticket } from "@/ui/components/Ticket";
 import { Icon } from "@/ui/icons";
 
-import { balanceAfter } from "./model";
+import { PROBLEM_OF_REASON } from "./model";
 import { RewardStub } from "./RewardCard";
 
 /** The problem codes the sheet words itself; anything else is the generic line. */
@@ -33,31 +33,29 @@ const KNOWN_ERRORS = new Set([
 
 export interface RedeemSheetProps {
   item: RewardItem | null;
-  /** The balance the page was read with (`store.rewards.list`). */
-  balance: number;
-  /** `loyalty.rewards.cancelWindowDays` when the API sends it; otherwise the rule is worded without a number. */
-  cancelWindowDays?: number | null;
   onOpenChange: (open: boolean) => void;
   /** After a redeem: the page refreshes the catalogue and "คูปองของฉัน". */
   onRedeemed: (redemption: RewardRedemption) => void;
   /** Storybook / tests: open on the success state with this coupon. */
   initialResult?: RewardRedemption | null;
+  /** Storybook / tests: the preview instead of reading `store.rewards.preview`. */
+  initialPreview?: RewardPreview | null;
 }
 
 /**
  * Confirm a redeem (loyalty P3; prototype `p3-redeem.html`): a 440 px dialog from 768 px, a bottom sheet below. The
- * sentence that matters — "ใช้ 60 แต้ม · คงเหลือ 1,190 แต้ม" — then two quiet facts (how long the coupon lasts, the
+ * sentence that matters — "ใช้ 60 แต้ม · คงเหลือ 1,190 แต้ม", the balance after from `store.rewards.preview` (the web
+ * subtracts nothing; until the preview answers, the sentence states the cost alone) — then two quiet facts (how long the coupon lasts, the
  * cancel rule), "ไว้ก่อน" and the filled "ยืนยันแลก 60 แต้ม". One idempotency key per opening, so a retry after a
  * timeout replays the same redeem. Success replaces the content: the coupon as a ticket with its code, the API's
  * balance after, and "ใช้กับตะกร้า". No checkbox, no second confirmation, no countdown.
  */
 export function RedeemSheet({
   item,
-  balance,
-  cancelWindowDays = null,
   onOpenChange,
   onRedeemed,
   initialResult = null,
+  initialPreview = null,
 }: RedeemSheetProps) {
   const t = useTranslations("account.rewards.sheet");
   const format = useFormat();
@@ -65,6 +63,23 @@ export function RedeemSheet({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RewardRedemption | null>(initialResult);
+  const [preview, setPreview] = useState<RewardPreview | null>(initialPreview);
+  const itemId = item?.id ?? null;
+
+  useEffect(() => {
+    if (itemId === null || initialPreview) return;
+    let live = true;
+    browserApi()
+      .GET("/v1/store/rewards/{itemId}/preview", { params: { path: { itemId } } })
+      .then(({ data }) => {
+        if (live && data) setPreview(data);
+      })
+      // Without a preview the sheet states the cost alone; the redeem itself still decides.
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [itemId, initialPreview]);
 
   const close = (open: boolean) => {
     if (open) return;
@@ -73,6 +88,7 @@ export function RedeemSheet({
     setKey(newIdempotencyKey());
     setError(null);
     setResult(null);
+    setPreview(initialPreview);
   };
 
   const redeem = async () => {
@@ -80,11 +96,11 @@ export function RedeemSheet({
     setBusy(true);
     setError(null);
     try {
-      const redemption = await browserRequests().call("POST /v1/store/rewards/{itemId}/actions/redeem", {
-        path: { itemId: item.id },
-        body: { expectedCostPoints: item.costPoints },
-        idempotencyKey: key,
+      const { data } = await browserApi().POST("/v1/store/rewards/{itemId}/actions/redeem", {
+        params: { path: { itemId: item.id }, header: { "Idempotency-Key": key } },
+        body: { expectedCostPoints: preview?.costPoints ?? item.costPoints },
       });
+      const redemption = data!;
       setResult(redemption);
       onRedeemed(redemption);
     } catch (problem) {
@@ -95,7 +111,9 @@ export function RedeemSheet({
     }
   };
 
-  const cost = item ? format.number(item.costPoints) : "";
+  const cost = item ? format.number(preview?.costPoints ?? item.costPoints) : "";
+  const refusal = preview && !preview.eligible && preview.reason ? PROBLEM_OF_REASON[preview.reason] : null;
+  const cancelWindowDays = item?.cancelWindowDays ?? null;
   const conditions = item?.conditions.join(" · ") ?? "";
 
   return (
@@ -122,7 +140,7 @@ export function RedeemSheet({
               </div>
               <div className="px-5 pt-3 pb-5">
                 <p className="text-lg leading-snug font-semibold">{t("doneTitle")}</p>
-                {result.balanceAfter !== undefined ? (
+                {result.balanceAfter !== null ? (
                   <p className="text-muted mt-0.5 text-sm tabular-nums">
                     {t("left", { points: format.number(result.balanceAfter) })}
                   </p>
@@ -135,7 +153,7 @@ export function RedeemSheet({
                   bodyClassName="min-w-0 gap-2 px-4 py-3.5"
                   stub={
                     <>
-                      <span className="text-lg font-semibold">{result.item.valueText ?? result.item.name}</span>
+                      <span className="text-lg font-semibold">{item.valueText}</span>
                     </>
                   }
                 >
@@ -181,10 +199,14 @@ export function RedeemSheet({
                 </div>
                 <p className="mt-[1.125rem] text-[1.1875rem] font-semibold tracking-[-0.005em] tabular-nums">
                   {t("spend", { points: cost })}
-                  <span aria-hidden="true" className="text-subtle mx-1.5 font-normal">
-                    ·
-                  </span>
-                  {t("after", { points: format.number(balanceAfter(balance, item.costPoints)) })}
+                  {preview?.balanceAfter != null ? (
+                    <>
+                      <span aria-hidden="true" className="text-subtle mx-1.5 font-normal">
+                        ·
+                      </span>
+                      {t("after", { points: format.number(preview.balanceAfter) })}
+                    </>
+                  ) : null}
                 </p>
                 <ul className="text-muted m-0 mt-2.5 flex list-none flex-col gap-1.5 p-0 text-[0.84375rem]">
                   <li className="flex items-start gap-2">
@@ -196,9 +218,9 @@ export function RedeemSheet({
                     {cancelWindowDays ? t("cancelRule", { days: cancelWindowDays }) : t("cancelRuleGeneric")}
                   </li>
                 </ul>
-                {error ? (
+                {error || refusal ? (
                   <Callout tone="danger" className="mt-4" live>
-                    {error}
+                    {error ?? t(`errors.${refusal!.replace(".", "_")}`)}
                   </Callout>
                 ) : null}
                 <div className="mt-[1.375rem] flex flex-col-reverse gap-2 md:flex-row md:justify-end">
@@ -207,7 +229,12 @@ export function RedeemSheet({
                       {t("notNow")}
                     </Button>
                   </SheetClose>
-                  <Button loading={busy} className="max-md:h-12" onClick={() => void redeem()}>
+                  <Button
+                    loading={busy}
+                    disabled={refusal !== null}
+                    className="max-md:h-12"
+                    onClick={() => void redeem()}
+                  >
                     {t("confirm", { points: cost })}
                   </Button>
                 </div>

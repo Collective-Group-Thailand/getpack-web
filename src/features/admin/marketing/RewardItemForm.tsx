@@ -5,8 +5,8 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
 import { isApiError } from "@/lib/api/problem";
-import type { RewardCatalogItem } from "@/lib/api/requests/admin-loyalty-p3";
-import type { LoyaltyTierP3, RewardKind } from "@/lib/api/requests/store-loyalty-p3";
+import type { RewardCatalogItem } from "@/features/shared/loyalty-p3/types";
+import type { LoyaltyTierP3, RewardKind } from "@/features/shared/loyalty-p3/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -76,21 +76,21 @@ export function RewardItemForm({ item, etag = null, editable, productTypes, onSa
     }
     setSaving("save");
     try {
-      const requests = adminBrowserApis().requests;
+      const contract = adminBrowserApis().contract;
       const body = rewardInputOf(draft);
       if (!item) {
-        const created = await requests.call("POST /v1/admin/loyalty/rewards", { body });
+        const { data: created } = await contract.POST("/v1/admin/loyalty/rewards", { body });
         toast.success(t("created"));
-        onSaved(created, null);
+        onSaved(created!, null);
       } else {
         const { code, kind, ...rest } = body;
-        const { data, etag: next } = await requests.read("PATCH /v1/admin/loyalty/rewards/{itemId}", {
-          path: { itemId: item.id },
+        const { data, response } = await contract.PATCH("/v1/admin/loyalty/rewards/{itemId}", {
+          params: { path: { itemId: item.id } },
+          ...(etag ? { headers: { "If-Match": etag } } : {}),
           body: locked ? rest : { code, kind, ...rest },
-          etag: etag ?? undefined,
         });
         toast.success(t("saved"));
-        onSaved(data, next);
+        onSaved(data!, response.headers.get("ETag"));
       }
     } catch (failure) {
       if (isApiError(failure)) {
@@ -113,12 +113,12 @@ export function RewardItemForm({ item, etag = null, editable, productTypes, onSa
     if (!item) return;
     setSaving(action);
     try {
-      const updated = await adminBrowserApis().requests.call(
-        "POST /v1/admin/loyalty/rewards/{itemId}/actions/{action}",
-        { path: { itemId: item.id, action } },
+      const { data: updated } = await adminBrowserApis().contract.POST(
+        "/v1/admin/loyalty/rewards/{itemId}/actions/{action}",
+        { params: { path: { itemId: item.id, action } } },
       );
       toast.success(t(`actions.${action}.done`));
-      onSaved(updated, null);
+      onSaved(updated!, null);
     } catch (failure) {
       toast.error(problemMessage(failure, t("failed")));
     } finally {

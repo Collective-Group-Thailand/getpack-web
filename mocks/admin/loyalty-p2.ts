@@ -328,9 +328,13 @@ export const loyaltyP2AdminHandlers = [
         endsAt: bangkokIso(6 * 24 * 60),
         convertedOrderCode: null,
         reason: "reorder_reminder",
+        name: null,
+        productTypeCodes: ["corrugated"],
+        audience: null,
+        createdBy: null,
       },
-      // Loyalty P3: admin rule campaigns with their P3 fields (CONTRACT-REQUEST admin.loyalty.p3-fields).
-      ...(adminRuleCampaignRows() as unknown as Schemas["AdminLoyaltyCampaignDto"][]),
+      // Loyalty P3: the admin rule campaigns (`./loyalty-p3.ts`).
+      ...adminRuleCampaignRows(),
     ]),
   ),
   // admin.promotions.estimateAudience: a fake count from how narrow the audience is; rounded to tens, null under 10

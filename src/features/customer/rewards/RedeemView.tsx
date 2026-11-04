@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { RewardItem, RewardList, RewardRedemption } from "@/lib/api/requests/store-loyalty-p3";
+import type { RewardItem, RewardList, RewardRedemption } from "@/features/shared/loyalty-p3/types";
+import { browserApi } from "@/lib/api/browser";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -35,6 +35,8 @@ export function RedeemView({ list: initialList, redemptions: initialRedemptions,
   const [redemptions, setRedemptions] = useState(initialRedemptions);
   const [chosen, setChosen] = useState<RewardItem | null>(null);
   const balance = list.balance ?? 0;
+  // `loyalty.rewards.cancelWindowDays`, the same on every item (API-CHANGES-P3 deviation 12).
+  const cancelWindowDays = list.items[0]?.cancelWindowDays ?? null;
   const open = redemptions.filter((row) => row.status === "issued").length;
 
   useEffect(() => {
@@ -53,11 +55,11 @@ export function RedeemView({ list: initialList, redemptions: initialRedemptions,
 
   const refresh = async () => {
     const [nextList, nextMine] = await Promise.all([
-      browserRequests().call("GET /v1/store/rewards"),
-      browserRequests().call("GET /v1/store/rewards/redemptions", { query: { perPage: 100 } }),
+      browserApi().GET("/v1/store/rewards"),
+      browserApi().GET("/v1/store/rewards/redemptions", { params: { query: { perPage: 100 } } }),
     ]).catch(() => [null, null] as const);
-    if (nextList) setList(nextList);
-    if (nextMine) setRedemptions(nextMine.data);
+    if (nextList?.data) setList(nextList.data);
+    if (nextMine?.data) setRedemptions(nextMine.data.data);
   };
 
   return (
@@ -155,9 +157,9 @@ export function RedeemView({ list: initialList, redemptions: initialRedemptions,
             </span>
             <h3 className="text-sm font-semibold">{t(`how.${step}.title`)}</h3>
             <p className="text-muted mt-1 text-[0.84375rem]">
-              {step === "change" && !list.cancelWindowDays
+              {step === "change" && !cancelWindowDays
                 ? t("how.change.bodyGeneric")
-                : t(`how.${step}.body`, { days: list.cancelWindowDays ?? 0 })}
+                : t(`how.${step}.body`, { days: cancelWindowDays ?? 0 })}
             </p>
           </div>
         ))}
@@ -165,8 +167,6 @@ export function RedeemView({ list: initialList, redemptions: initialRedemptions,
 
       <RedeemSheet
         item={chosen}
-        balance={balance}
-        cancelWindowDays={list.cancelWindowDays ?? null}
         onOpenChange={(next) => (next ? null : setChosen(null))}
         onRedeemed={() => void refresh()}
       />

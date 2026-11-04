@@ -999,12 +999,16 @@
       "approved": "Approved",
       "rejected": "Rejected",
       "withdrawn": "Withdrawn",
-      "open": "Open request"
+      "open": "Open request",
+      "expired": "Request expired"
     },
     "note": {
       "title": "Capacity deal · {type}, week from {date} · {free} free",
       "body": "The benefit and conditions are the system's; only the display can be edited. An edit withdraws the open request and opens a new approval. It can be published only once approved."
-    }
+    },
+    "requestPublish": "Request publication",
+    "requested": "Approval requested. Another Marketing user approves it.",
+    "requestFailed": "Could not request approval. Try again."
   },
   "rewards": {
     "title": "Point rewards",
@@ -1029,7 +1033,6 @@
       "tier": "Tier",
       "status": "Status",
       "redemptions30d": "Redeemed (30 d)",
-      "open": "Unused",
       "actions": "Actions"
     },
     "statuses": {

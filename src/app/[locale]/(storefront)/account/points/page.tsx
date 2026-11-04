@@ -19,7 +19,6 @@ import { Icon } from "@/ui/icons";
 import { multiplierParts } from "@/features/shared/loyalty-p2/multipliers";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { TierPerks } from "@/features/customer/rewards/TierPerks";
-import { loyaltyP3Of } from "@/features/shared/loyalty-p3/read";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.points");
@@ -57,8 +56,6 @@ export default async function Page() {
     multiplierParts(entry.multipliers)
       .map(({ part, value }) => tLifecycle(`multipliers.${part}`, { value }))
       .join(" · ");
-  // Loyalty P3: Platinum, perks and the multipliers in force (CONTRACT-REQUEST store.loyalty.p3-fields).
-  const loyalty = loyaltyP3Of(points);
   const lineOaId = clientEnv.NEXT_PUBLIC_LINE_OA_ID?.trim() || support?.lineOaId?.trim() || null;
 
   return (
@@ -113,7 +110,7 @@ export default async function Page() {
           {
             key: "tier",
             label: t("tier"),
-            value: tHome(`tiers.${loyalty.tier}`),
+            value: tHome(`tiers.${points.tier}`),
             hint: t("tierHint", { multiplier: points.multiplier, spend: format.thb(points.spend12m) }),
             icon: "gift",
           },
@@ -121,7 +118,7 @@ export default async function Page() {
       />
       {/* Loyalty P1: the earn checklist between the figures and the tier (PLAN §3); hidden when the read fails. */}
       {tasks ? <EarnChecklist className="mt-4" initial={tasks} lineOaId={lineOaId} /> : null}
-      <TierPerks className="mt-4" points={points} loyalty={loyalty} />
+      <TierPerks className="mt-4" points={points} loyalty={points} />
       {points.expiringSoon.length > 0 ? (
         <div className="mt-4 flex flex-col gap-2">
           {points.expiringSoon.map((lot) => (

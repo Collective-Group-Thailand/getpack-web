@@ -284,15 +284,18 @@ const promotions: PromotionRow[] = [
 ];
 
 /**
- * Loyalty P3 (D-502): the capacity deal the worker drafted for next week — hidden, automatic, its
- * `capacity_deal_publish` approval pending. Free capacity is the product type's, never a factory's.
+ * Loyalty P3 (D-502): the capacity deal the worker drafted for next week — hidden, automatic and `draft` until its
+ * `capacity_deal_publish` approval (API-CHANGES-P3 deviation 2: an active automatic promotion would apply at checkout
+ * before Marketing approves). Marketing has already asked for publication (`request_publish`), so the request waits
+ * in the approvals inbox; approving activates the draft, rejecting ends it. Free capacity is the product type's,
+ * never a factory's.
  */
 promotions.push({
   ...promotion(
     40,
     "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5% (ข้อมูลจำลอง)",
     "automatic",
-    "active",
+    "draft",
     null,
     { productTypeCodes: ["corrugated_rsc"] },
     { type: "percent", pct: "5" },
@@ -304,8 +307,36 @@ promotions.push({
     weekStart: "2026-11-09",
     productTypeCode: "corrugated_rsc",
     freePct: "41.50",
-    approval: { id: mockId("apr", 901), status: "pending" },
+    approval: null,
   },
+});
+
+/** `request_publish`: the Marketing user asking becomes the requester (and so cannot approve it, D-502). */
+function requestCapacityPublish(row: PromotionRow, requester: (typeof PERSONAS)[number]) {
+  const opened = openApproval({
+    policy: "capacity_deal_publish",
+    subjectType: "promotion",
+    subjectId: row.id,
+    requester,
+    pct: row.benefit.pct ?? null,
+    payload: {
+      promotion: row.name,
+      productTypeCode: row.capacityDeal!.productTypeCode,
+      weekStart: row.capacityDeal!.weekStart,
+      freePct: row.capacityDeal!.freePct,
+      discountPct: row.benefit.pct ?? null,
+    },
+  });
+  row.capacityDeal = { ...row.capacityDeal!, approval: { id: opened.id, status: "pending" } };
+  return opened;
+}
+for (const row of promotions.filter((candidate) => candidate.origin === "capacity_deal"))
+  requestCapacityPublish(
+    row,
+    PERSONAS.find((persona) => persona.key === "marketing")!,
+  );
+onApprovalDecided("capacity_deal_publish", (approval, outcome) => {
+  decideCapacityDeal(approval.id, outcome);
 });
 
 /** Loyalty P3: the capacity-deal drafts, for `admin.capacityDeals.list` (`./loyalty-p3.ts`). */
@@ -318,7 +349,8 @@ export function decideCapacityDeal(approvalId: string, status: "approved" | "rej
   const row = promotions.find((candidate) => candidate.capacityDeal?.approval?.id === approvalId);
   if (!row?.capacityDeal?.approval) return false;
   row.capacityDeal = { ...row.capacityDeal, approval: { ...row.capacityDeal.approval, status } };
-  if (status === "rejected") row.status = "ended";
+  // The approval activates the draft; a rejection ends it (API-CHANGES-P3 deviation 2).
+  row.status = status === "approved" ? "active" : "ended";
   return true;
 }
 
@@ -389,7 +421,7 @@ function conditionsV2Of(row: PromotionRow): boolean {
 
 function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
   const { origin, capacityDeal, ...stored } = row;
-  // Loyalty P3 (CONTRACT-REQUEST admin.loyalty.p3-fields): benefit v2, origin and a capacity deal's week.
+  // Loyalty P3: benefit v2, origin and a capacity deal's week.
   return Object.assign(toPromotionDtoV2(stored), {
     benefitSchemaVersion:
       BENEFIT_V2_TYPES.has(row.benefit.type as string) ||
@@ -403,7 +435,9 @@ function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
 
 const BENEFIT_V2_TYPES = new Set<string>(["free_sample", "free_rush", "free_addon", "revision_round"]);
 
-function toPromotionDtoV2(row: PromotionRow): Schemas["PromotionDto"] {
+function toPromotionDtoV2(
+  row: PromotionRow,
+): Omit<Schemas["PromotionDto"], "benefitSchemaVersion" | "origin" | "capacityDeal"> {
   const campaign = campaigns.find((candidate) => candidate.id === row.campaignId);
   // The spend is the discount given: what the promotion's own budget is measured against.
   return {
@@ -817,7 +851,7 @@ export const marketingContractHandlers = [
       .filter((row) => !kind || row.kind === kind)
       .filter((row) => !status || row.status === status)
       .filter((row) => !campaignId || row.campaignId === campaignId)
-      // Loyalty P3: `?origin=` (CONTRACT-REQUEST admin.loyalty.p3-fields).
+      // Loyalty P3: `?origin=`.
       .filter((row) => !origin || (row.origin ?? "manual") === origin)
       .filter((row) => matchesQuery(q, row.name, campaignOf(row.campaignId)?.code))
       .sort((a, b) => a.priority - b.priority)
@@ -954,6 +988,22 @@ export const marketingContractHandlers = [
     const row = promotionOf(params.promotionId);
     if (!row) return noPromotion();
     if (row.kind === "referral") return systemManaged();
+    // Loyalty P3 (D-502): a capacity deal goes to its approval; it is activated by the approval, never by hand.
+    if (params.action === "request_publish") {
+      if (row.origin !== "capacity_deal" || row.status !== "draft")
+        return problem(409, "promotions.invalid_transition", "ทำรายการนี้กับโปรโมชันในสถานะนี้ไม่ได้");
+      if (row.capacityDeal?.approval?.status !== "pending") requestCapacityPublish(row, staffPersonaOf(request)!);
+      touch(row);
+      return withEtag(toPromotionDto(row), etagOf(row));
+    }
+    if (
+      params.action === "activate" &&
+      row.origin === "capacity_deal" &&
+      row.capacityDeal?.approval?.status !== "approved"
+    )
+      return problem(422, "promotions.not_publishable", "ต้องได้รับอนุมัติก่อนเปิดใช้", [
+        { path: "status", code: "approval_required", message: "approve it in the approvals inbox first" },
+      ]);
     const next = nextPromotionStatus(row, String(params.action));
     if (!next) return problem(409, "promotions.invalid_transition", "ทำรายการนี้กับโปรโมชันในสถานะนี้ไม่ได้");
     if (params.action === "activate" && row.kind === "coupon" && !codes.some((code) => code.promotionId === row.id))

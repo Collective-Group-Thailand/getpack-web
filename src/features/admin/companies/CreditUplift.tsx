@@ -3,9 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { creditUpliftOf, creditVersionP3Of } from "@/features/shared/loyalty-p3/read";
 import { useFormat } from "@/features/shared/format";
-import type { CreditUplift, CreditUpliftMode } from "@/lib/api/requests/admin-loyalty-p3";
+import type { CreditUplift, CreditUpliftMode } from "@/features/shared/loyalty-p3/types";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -21,13 +20,13 @@ const MODES: readonly CreditUpliftMode[] = ["auto", "frozen", "off"];
 
 export interface CreditUpliftPanelProps {
   companyId: string;
-  /** `admin.companyCredit.get` as the API answered it (P3 fields read here). */
+  /** `admin.companyCredit.get` as the API answered it (`uplift`, version origins). */
   credit: Schemas["AdminCompanyCreditDto"];
   canManage: boolean;
   /** Opens the credit-limit request prefilled with the full target (D-501, through `credit_limit`). */
   onRequestFull: (amount: string) => void;
-  /** After a mode change: the credit is read again. */
-  onChanged: (uplift: CreditUplift) => void;
+  /** After a mode change: the credit is read again (`setUpliftMode` answers the whole credit). */
+  onChanged: (credit: Schemas["AdminCompanyCreditDto"]) => void;
   /** Arrived from `/finance/credit-uplifts` to file the full amount: that button leads. */
   requestLeads?: boolean;
 }
@@ -49,7 +48,7 @@ export function CreditUpliftPanel({
 }: CreditUpliftPanelProps) {
   const t = useTranslations("companies.credit.uplift");
   const format = useFormat();
-  const uplift = creditUpliftOf(credit);
+  const uplift: CreditUplift | null = credit.uplift ?? null;
   const [asking, setAsking] = useState<CreditUpliftMode | null>(null);
   const [reason, setReason] = useState("");
   const [refused, setRefused] = useState<string | null>(null);
@@ -64,13 +63,13 @@ export function CreditUpliftPanel({
     }
     setBusy(true);
     try {
-      const answer = await adminBrowserApis().requests.call("PUT /v1/admin/companies/{companyId}/credit/uplift", {
-        path: { companyId },
+      const { data } = await adminBrowserApis().contract.PUT("/v1/admin/companies/{companyId}/credit/uplift", {
+        params: { path: { companyId } },
         body: { mode: asking, reason: reason.trim() },
       });
       toast.success(t(`modeSet.${asking}`));
       setAsking(null);
-      onChanged(answer.uplift);
+      onChanged(data!);
     } catch (error) {
       setRefused(problemMessage(error, t("failed")));
     } finally {
@@ -180,9 +179,12 @@ export function CreditUpliftPanel({
 }
 
 /** The origin of a credit-limit version as a badge: nothing for a request, the factor for an uplift. */
-export function CreditOriginBadge({ version }: { version: object }) {
+export function CreditOriginBadge({
+  version: origin,
+}: {
+  version: Pick<Schemas["CreditLimitVersionDto"], "origin" | "companyTier" | "upliftFactor">;
+}) {
   const t = useTranslations("companies.credit.uplift");
-  const origin = creditVersionP3Of(version);
   if (origin.origin === "request") return null;
   return (
     <Badge size="sm" tone={origin.origin === "tier_uplift" ? "primary" : "neutral"}>

@@ -336,5 +336,13 @@
         "role": "marketing"
       }
     ]
+  },
+  {
+    "key": "capacity_deal_publish",
+    "subjectType": "promotion",
+    "description": "A capacity-driven deal the worker drafted (D-502): Marketing approves before it goes live or is published; the person who requested publication cannot approve",
+    "decisions": ["D-502"],
+    "reason": "Seed from D-502 — Marketing approves capacity deals (plans/P3-PLAN.md §4)",
+    "steps": [{ "name": "Marketing approval", "role": "marketing" }]
   }
 ]

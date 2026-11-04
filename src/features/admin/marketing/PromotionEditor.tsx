@@ -10,8 +10,8 @@ import { adminPromotionActions, type AdminLifecycleAction } from "@/domain/next-
 import { PROMOTION_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { benefitV2FieldsOf, promotionP3Of } from "@/features/shared/loyalty-p3/read";
-import { BENEFIT_V2_KINDS, type BenefitV2Kind } from "@/lib/api/requests/admin-loyalty-p3";
+import { benefitV2FieldsOf } from "@/features/shared/loyalty-p3/types";
+import { BENEFIT_V2_KINDS, type BenefitV2Kind } from "@/features/shared/loyalty-p3/types";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -49,7 +49,7 @@ import type { Promotion } from "./resources";
 import { bangkokDayOf, bangkokMidnight } from "./time";
 
 type Benefit = Schemas["PromotionBenefitDto"];
-/** Loyalty P3 (D-497): the published kinds plus benefit v2's (CONTRACT-REQUEST admin.loyalty.p3-fields). */
+/** Loyalty P3 (D-497): the published kinds plus benefit v2's. */
 type BenefitType = Schemas["PromotionBenefitType"] | BenefitV2Kind;
 type Conditions = Schemas["PromotionConditionsDto"];
 
@@ -228,13 +228,12 @@ function conditionsBody(draft: Draft["conditions"]): Conditions {
 
 /**
  * The benefit as `PromotionBenefitDto`: only the fields its type uses. A v2 kind (D-497) is sent in its v2 shape with
- * `benefitSchemaVersion: 2` beside it (`withSchemaVersion`); the published type does not know it yet, hence the cast
- * (CONTRACT-REQUEST admin.loyalty.p3-fields).
+ * `benefitSchemaVersion: 2` beside it (`withSchemaVersion`).
  */
 function benefitBody(benefit: Draft["benefit"]): Benefit {
   const { type } = benefit;
   const v2 = benefitV2Body(benefit);
-  if (v2) return v2 as unknown as Benefit;
+  if (v2) return v2;
   const decimal = (value: string) => (filled(value) ? value.trim() : null);
   switch (type) {
     case "percent":
@@ -325,9 +324,8 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
     on ? [...values, value] : values.filter((entry) => entry !== value);
   // Loyalty P3: system promotions (reward.*, tier.free_shipping) are read-only like referral; a capacity deal keeps
   // its benefit and conditions (the worker's) and only its display is edited — which restarts its approval (D-502).
-  const p3 = item ? promotionP3Of(item) : null;
-  const systemManaged = item?.kind === "referral" || p3?.origin === "system";
-  const capacityDeal = p3?.origin === "capacity_deal" ? p3.capacityDeal : null;
+  const systemManaged = item?.kind === "referral" || item?.origin === "system";
+  const capacityDeal = item?.origin === "capacity_deal" ? item.capacityDeal : null;
   // Loyalty P2 (D-494): a bundle's stack group is `bundle`, set from the bundle tab only.
   const bundleLocked = item ? (item.conditions.cartProductTypeCountGte ?? 0) >= 2 : false;
   const editable = can("promotions.manage") && (!item || item.status !== "ended") && !systemManaged && !capacityDeal;
@@ -501,7 +499,15 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
         />
       ) : null}
       {systemManaged ? <Callout tone="info" title={t("systemManaged")} /> : null}
-      {capacityDeal ? <CapacityDealNote deal={capacityDeal} /> : null}
+      {capacityDeal ? (
+        <CapacityDealNote
+          deal={capacityDeal}
+          promotionId={item!.id}
+          status={item!.status}
+          canManage={can("promotions.manage")}
+          onRequested={() => void queryClient.invalidateQueries({ queryKey: key })}
+        />
+      ) : null}
 
       {/* Loyalty P1.5: how the promotion appears on the deals surface is its own tab. */}
       {item && !systemManaged ? (
