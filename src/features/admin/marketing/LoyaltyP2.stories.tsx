@@ -2,15 +2,19 @@ import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import { NextIntlClientProvider } from "next-intl";
 import { useState } from "react";
 
+import finance from "@/i18n/messages/th/admin/finance.json";
 import marketing from "@/i18n/messages/th/admin/marketing.json";
 import common from "@/i18n/messages/th/common/common.json";
 
+import { AGENT_ROWS } from "../../../../mocks/admin/loyalty-p2";
+import { PointsLiabilityMemo } from "../finance/PointsLiabilityMemo";
+import { AgentLinksTable } from "./AgentLinksTable";
 import { audienceDraftOf } from "./audience";
 import { MovementChart } from "./MovementChart";
 import { SegmentPicker } from "./SegmentPicker";
 
 const withMessages: Decorator = (Story) => (
-  <NextIntlClientProvider locale="th" messages={{ marketing, common } as never} timeZone="Asia/Bangkok">
+  <NextIntlClientProvider locale="th" messages={{ marketing, finance, common } as never} timeZone="Asia/Bangkok">
     <div className="bg-bg max-w-[60rem] p-4 sm:p-6">
       <Story />
     </div>
@@ -36,7 +40,8 @@ const meta = {
       description: {
         component:
           "Loyalty P2 admin pieces (prototypes p2-loyalty-analytics.html, p2-promotion-audience.html): the monthly " +
-          "movement chart in the admin chart style (one green series, greys below the line) and the segment picker.",
+          "movement chart in the admin chart style (one green series, greys below the line), the segment picker, the " +
+          "per-agent link table and the executive P&L points memo.",
       },
     },
   },
@@ -78,3 +83,32 @@ function Picker() {
 }
 
 export const Audience: Story = { render: () => <Picker /> };
+
+/** The promotion report's per-agent share-link table (D-495: from `promotion_ref_attributions`). */
+export const AgentLinks: Story = {
+  render: () => <AgentLinksTable rows={AGENT_ROWS.map(({ agentName: _name, ...row }) => row)} />,
+};
+
+/** Before the API sends the P2 columns: dashes, never zeros. */
+export const AgentLinksBeforeP2: Story = {
+  render: () => <AgentLinksTable rows={[{ agentCode: "AGT0001", visitors: 4, visits: 5 }]} />,
+};
+
+/** The executive P&L memo line under the statement: the estimate at the D-480 rate against ledger 2330. */
+export const PnlMemo: Story = {
+  render: () => (
+    <PointsLiabilityMemo
+      memo={{
+        asOf: "2026-10-31",
+        outstandingPoints: 182400,
+        faceValue: "456000.00",
+        expectedRedemptionRatePct: "60",
+        rateConfirmation: "pending_cpa",
+        estimatedLiability: "273600.00",
+        ledgerBalance2330: "270150.00",
+        pointsExpenseInPeriod: "4860.00",
+        source: "loyalty.expected_redemption_rate_pct",
+      }}
+    />
+  ),
+};
