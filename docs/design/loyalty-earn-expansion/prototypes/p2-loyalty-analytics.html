@@ -1,0 +1,469 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>วิเคราะห์แต้มสะสม — getpack admin (P2 prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>/* getpack light theme — values copied from src/ui/generated/tokens.css (:root, light). Semantic names only. */
+:root{
+  --bg: oklch(96.98% 0.0054 95.1);
+  --bg-subtle: oklch(94.85% 0.0067 97.35);
+  --surface: oklch(100% 0 0);
+  --surface-subtle: oklch(96.98% 0.0054 95.1);
+  --overlay: oklch(26.2% 0.011 72 / 0.55);
+  --border: oklch(90.94% 0.0097 93.58);
+  --border-strong: oklch(58.8% 0.022 72);
+  --fg: oklch(23.19% 0.0173 163.01);
+  --muted: oklch(43.79% 0.017 161.84);
+  --subtle: oklch(59.63% 0.013 161.81);
+  --primary: oklch(40.97% 0.0759 163.95);
+  --primary-hover: oklch(34.61% 0.0657 163.79);
+  --primary-fg: oklch(100% 0 0);
+  --primary-subtle: oklch(93.61% 0.0142 162.46);
+  --primary-subtle-fg: oklch(34.61% 0.0657 163.79);
+  --accent: oklch(70.79% 0.1524 65.49);
+  --accent-fg: oklch(23.19% 0.0173 163.01);
+  --success: oklch(52.73% 0.1371 150.07);
+  --success-subtle: oklch(98.5% 0.009 150);
+  --success-subtle-fg: oklch(35.2% 0.102 150);
+  --warning: oklch(55.53% 0.1455 49);
+  --neutral-subtle: oklch(96.2% 0.0031 72);
+  --neutral-subtle-fg: oklch(42.8% 0.018 72);
+  --focus-ring: oklch(40.97% 0.0759 163.95);
+  --r-control: 10px; --r-card: 14px; --r-panel: 16px;
+  --shadow-overlay: 0 8px 24px rgb(30 27 24 / 0.1);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Anuphan',ui-sans-serif,system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+
+/* site frame (simplified from the real header) */
+.site{background:var(--surface);border-bottom:1px solid var(--border)}
+.site-in{max-width:1320px;margin:0 auto;height:64px;display:flex;align-items:center;gap:32px;padding:0 48px}
+.brand{font-weight:600;font-size:20px;letter-spacing:-.015em}
+.site nav{display:flex;gap:26px;font-size:14.5px;color:var(--muted)}
+.site nav a.on{color:var(--fg);font-weight:600}
+.site .end{margin-left:auto;display:flex;align-items:center;gap:18px;font-size:14px;color:var(--muted)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.foot{border-top:1px solid var(--border);margin-top:72px}
+.foot-in{max-width:1180px;margin:0 auto;padding:22px 20px 28px;display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--r-control);font-weight:600;font-size:14.5px;border:0;cursor:pointer;white-space:nowrap;background:var(--primary);color:var(--primary-fg)}
+.btn:hover{background:var(--primary-hover)}
+.btn.sec{background:transparent;color:var(--fg);border:1px solid var(--fg)}
+.btn.sec:hover{background:oklch(23.19% 0.0173 163.01 / .05)}
+.btn.lg{height:52px;padding:0 24px;font-size:15.5px}
+.btn.nav{height:44px}
+.btn.block{width:100%}
+.lnk{color:var(--primary);font-weight:500;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.ib{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.ib:hover{background:var(--bg-subtle);color:var(--fg)}
+.ic{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--neutral-subtle);color:var(--neutral-subtle-fg);font-size:12px;font-weight:500;white-space:nowrap}
+.chip.best{background:var(--primary-subtle);color:var(--primary-subtle-fg)}
+.feat{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--accent);color:var(--accent-fg);font-size:12px;font-weight:600;white-space:nowrap}
+.warn{color:var(--warning);font-weight:500}
+.ok{color:var(--success);font-weight:500;display:inline-flex;align-items:center;gap:6px}
+
+/* ── Ticket primitive ───────────────────────────────────────────────────────────
+   The wrapper is the 1px border (bg = border) and the inner face is the ticket; both carry the same
+   cut-outs, the wrapper's 1px larger and concentric, so the hairline follows every notch and bite.
+   Every cut is a mask (radial-gradient), never a circle painted in the page colour. */
+.tk{--r:8px;--cut:116px;--edge:5px;--step:13px;position:relative;background:var(--border);padding:1px;border-radius:var(--r-card);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.tk>.face{position:relative;height:100%;border-radius:calc(var(--r-card) - 1px);background:var(--surface);overflow:hidden;display:flex;
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+/* vertical, notches on both long edges at the tear line */
+.tk.v{display:flex}
+.tk.v>.face{flex-direction:column;width:100%}
+.tk.v.both{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000)}
+.tk.v.both>.face{-webkit-mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000);
+  mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000)}
+/* horizontal, notches top and bottom at the tear line */
+.tk.h>.face{flex-direction:row}
+.tk.h.both{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000)}
+.tk.h.both>.face{-webkit-mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000);
+  mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000)}
+/* stamp edge on the leading edge of a horizontal ticket (left), added to the notches */
+.tk.h.both.stamp{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 0 50%,#0000 96%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 0 50%,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,100% var(--step);mask-size:100% 100%,100% 100%,100% var(--step);
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-y;mask-repeat:no-repeat,no-repeat,repeat-y;
+  -webkit-mask-position:0 0,0 0,0 0;mask-position:0 0,0 0,0 0}
+.tk.h.both.stamp>.face{-webkit-mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at -1px 50%,#0000 96%,#000);
+  mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at -1px 50%,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,100% var(--step);mask-size:100% 100%,100% 100%,100% var(--step);
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-y;mask-repeat:no-repeat,no-repeat,repeat-y;
+  -webkit-mask-position:0 0,0 0,0 -1px;mask-position:0 0,0 0,0 -1px}
+/* stamp edge on the top of a vertical ticket (phone hero), added to the notches */
+.tk.v.both.stamp{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 50% 0,#0000 96%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 50% 0,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,var(--step) 100%;mask-size:100% 100%,100% 100%,var(--step) 100%;
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-x;mask-repeat:no-repeat,no-repeat,repeat-x;
+  -webkit-mask-position:0 0,0 0,0 0;mask-position:0 0,0 0,0 0}
+.tk.v.both.stamp>.face{-webkit-mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at 50% -1px,#0000 96%,#000);
+  mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at 50% -1px,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,var(--step) 100%;mask-size:100% 100%,100% 100%,var(--step) 100%;
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-x;mask-repeat:no-repeat,no-repeat,repeat-x;
+  -webkit-mask-position:0 0,0 0,-1px 0;mask-position:0 0,0 0,-1px 0}
+/* one notch on the end edge — the mini-stub of a compact row */
+.tk.end{--r:6px;border-radius:10px}
+.tk.end>.face{border-radius:9px}
+.tk.end{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at 100% 50%,#0000 98%,#000);mask-image:radial-gradient(circle calc(var(--r) + 1px) at 100% 50%,#0000 98%,#000)}
+.tk.end>.face{-webkit-mask-image:radial-gradient(circle var(--r) at calc(100% + 1px) 50%,#0000 98%,#000);mask-image:radial-gradient(circle var(--r) at calc(100% + 1px) 50%,#0000 98%,#000)}
+
+/* stub tones */
+.stub{position:relative;flex:none;background:var(--primary-subtle);color:var(--primary-subtle-fg)}
+.stub.feat-tone{background:var(--primary);color:var(--primary-fg)}
+.stub.spent{background:var(--neutral-subtle);color:var(--subtle)}
+/* perforation: a dashed hairline across the tear line, stopping short of the notches */
+.perf-h{position:absolute;left:14px;right:14px;bottom:0;border-top:1px dashed var(--border-strong);opacity:.55}
+.perf-v{position:absolute;top:14px;bottom:14px;right:0;border-left:1px dashed var(--border-strong);opacity:.55}
+
+/* value set */
+.val{display:flex;align-items:baseline;gap:8px;line-height:1;font-variant-numeric:tabular-nums}
+.val .w{font-size:13px;font-weight:500;letter-spacing:0}
+.val .n{font-size:52px;font-weight:600;letter-spacing:-.035em}
+.val .n.word{font-size:30px;letter-spacing:-.01em}
+.val .cap{font-size:13px;font-weight:500}
+
+/* code box */
+.code{display:inline-flex;align-items:center;gap:2px;height:40px;padding:0 4px 0 12px;border:1px dashed var(--border-strong);border-radius:var(--r-control);font-weight:600;font-size:14px;letter-spacing:.06em;font-variant-numeric:tabular-nums;background:var(--surface)}
+.code .ib{width:32px;height:32px}
+.code.muted{color:var(--subtle);border-color:var(--border)}
+
+/* section headings */
+.h2{font-size:22px;font-weight:600;line-height:1.3;letter-spacing:-.005em}
+.lede{color:var(--muted);font-size:14.5px}
+
+/* review states block, below the page */
+.review{max-width:1180px;margin:0 auto;padding:8px 20px 80px}
+.review>h3{font-size:13px;font-weight:600;color:var(--muted);margin:56px 0 16px;padding-top:24px;border-top:1px dashed var(--border-strong)}
+.cap-k{font-size:12px;color:var(--subtle);margin:0 0 8px}
+
+/* DealCard — vertical ticket */
+.dc{min-width:0;display:flex}
+.dc>.tk{flex:1}
+.dc .stub{padding:14px 18px 0;display:flex;flex-direction:column}
+.dc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;height:22px}
+.dc-top .w{font-size:13px;font-weight:500}
+.dc .val{margin-top:10px}
+.dc-body{flex:1;display:flex;flex-direction:column;padding:16px 18px 18px;gap:4px;min-height:186px}
+.dc-body .feat{align-self:flex-start;margin-bottom:6px}
+.dc-h{font-size:16px;font-weight:600;line-height:1.45;letter-spacing:-.003em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dc-c{font-size:13.5px;color:var(--muted);line-height:1.5}
+.valid{font-size:13px;color:var(--muted)}
+.valid.warn{color:var(--warning)}
+.reason{display:flex;gap:6px;align-items:flex-start;font-size:13px;color:var(--muted);margin-top:4px}
+.reason .ic{margin-top:3px}
+.dc-foot{margin-top:auto;padding-top:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px}
+.dc-foot .auto,.auto{font-size:13px;color:var(--muted)}
+.lnk.sm{font-size:13.5px}
+.saved{display:inline-flex;flex-direction:column;align-items:flex-end;gap:0;font-size:14px;line-height:1.35}
+.dc.spent .dc-h,.dc.spent .dc-c,.dc.spent .valid{color:var(--subtle)}
+.dc.spent .chip{background:var(--neutral-subtle);color:var(--neutral-subtle-fg)}
+.dc.off .val,.dc.off .dc-top{opacity:1}
+
+/* the mini-stub of a compact row */
+.mini{width:64px;height:56px;flex:none}
+.mini .stub{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding-right:4px;line-height:1}
+.mini .w{font-size:11px;font-weight:500}
+.mini .n{font-size:20px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mini .n.word{font-size:15px;letter-spacing:0}
+
+/* compact rows in one hairline container */
+.rows{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card)}
+.cr{position:relative;display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:14px;padding:12px 14px;min-height:80px}
+.cr+.cr{border-top:1px solid var(--border)}
+.cr-hit{position:absolute;inset:0;border-radius:inherit}
+.cr-hit:hover{background:oklch(96.98% 0.0054 95.1 / .6)}
+.cr-t{min-width:0;position:relative;pointer-events:none}
+.cr-h{font-size:15px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-m{font-size:13px;color:var(--muted);line-height:1.45;margin-top:2px;display:flex;flex-direction:column}
+.cr-c{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-a{position:relative}
+.rowbtn{height:44px;min-width:64px;padding:0 14px}
+.rowok{font-size:14px;padding:0 4px}
+.rowauto{font-size:12.5px;color:var(--muted)}
+.cr.spent .cr-h,.cr.spent .cr-m{color:var(--subtle)}
+
+
+/* ── P2 shared (account frame, admin frame, review block) ── */
+.ic.lg{width:20px;height:20px}
+.btn.ghost{background:transparent;color:var(--muted);border:0}
+.btn.ghost:hover{background:var(--bg-subtle);color:var(--fg)}
+.btn.sm{height:36px;padding:0 12px;font-size:14px}
+.site-in.acc{max-width:1180px;padding:0 20px;height:60px}
+.site .end{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:14px;color:var(--muted)}
+.site .pts{font-variant-numeric:tabular-nums;color:var(--fg);font-weight:500}
+
+/* account frame */
+.frame{max-width:1180px;margin:0 auto;padding:28px 20px 64px;display:grid;grid-template-columns:232px minmax(0,1fr);gap:32px}
+.side{align-self:start;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-panel);padding:14px 10px}
+.side h6{margin:12px 10px 4px;font-size:12px;font-weight:500;color:var(--subtle)}
+.side a{display:flex;justify-content:space-between;padding:8px 10px;border-radius:var(--r-control);font-size:14px;color:var(--muted)}
+.side a.on{background:var(--primary-subtle);color:var(--primary-subtle-fg);font-weight:600}
+.ptabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:22px;font-size:14px}
+.ptabs a{white-space:nowrap;padding:10px 12px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ptabs a.on{color:var(--fg);font-weight:600;border-color:var(--primary)}
+.acc-h1{font-size:26px;line-height:1.3;font-weight:600;margin:0}
+.acc-lede{color:var(--muted);font-size:14px;margin:4px 0 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-panel)}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px}
+.sec-h h2{font-size:18px;font-weight:600}
+.sec-h a{font-size:14px;color:var(--primary);font-weight:500}
+.stack>*+*{margin-top:24px}
+.quiet{color:var(--muted);font-size:13.5px}
+.okline{display:flex;align-items:center;gap:12px;padding:14px 16px;font-size:14px;color:var(--muted)}
+.okline .dot{width:34px;height:34px;border-radius:999px;background:var(--success-subtle);color:var(--success-subtle-fg);display:grid;place-items:center;flex:none}
+
+/* admin frame (light, no dark surfaces) */
+.adm{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.adm-nav{background:var(--surface);border-right:1px solid var(--border);padding:18px 12px}
+.adm-nav .brand{display:block;padding:4px 10px 18px;font-size:17px}
+.adm-nav h6{margin:16px 10px 6px;font-size:11.5px;font-weight:500;color:var(--subtle);letter-spacing:.02em}
+.adm-nav a{display:block;padding:7px 10px;border-radius:8px;font-size:14px;color:var(--muted)}
+.adm-nav a.on{background:var(--primary-subtle);color:var(--primary-subtle-fg);font-weight:600}
+.adm-main{padding:28px 36px 72px;min-width:0;max-width:1320px}
+.crumb{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.adm-h1{font-size:24px;font-weight:600;letter-spacing:-.01em;margin-top:6px}
+.adm-desc{font-size:14px;color:var(--muted);margin-top:4px}
+.secnav{display:flex;gap:2px;margin-top:18px;border-bottom:1px solid var(--border);font-size:14px;overflow-x:auto;scrollbar-width:none}
+.secnav a{padding:10px 12px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.secnav a.on{color:var(--fg);font-weight:600;border-color:var(--primary)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-panel)}
+.panel-h{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px 0}
+.panel-h h2{font-size:16px;font-weight:600}
+.panel-h p{font-size:13.5px;color:var(--muted);margin-top:2px;max-width:62ch}
+.panel-b{padding:16px 20px 20px}
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;background:var(--neutral-subtle);color:var(--neutral-subtle-fg)}
+.badge.ok{background:var(--success-subtle);color:var(--success-subtle-fg)}
+.badge.pri{background:var(--primary-subtle);color:var(--primary-subtle-fg)}
+.badge.warnb{background:oklch(97.4% 0.022 70);color:oklch(42% 0.11 52)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-weight:500;color:var(--muted);font-size:12.5px;text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl tfoot td{font-weight:600;border-top:1px solid var(--border-strong);border-bottom:0}
+
+/* form controls */
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld>label,.lbl{font-size:14px;font-weight:500}
+.hint{font-size:12.5px;color:var(--muted)}
+.inp{height:40px;border:1px solid var(--border);border-radius:var(--r-control);background:var(--surface);padding:0 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
+.inp.num{font-variant-numeric:tabular-nums}
+.inp .u{color:var(--muted);font-size:13px}
+.inp.dis{background:var(--bg-subtle);color:var(--muted)}
+.cb{display:inline-flex;align-items:center;gap:10px;font-size:14px;min-height:28px}
+.cb i{width:18px;height:18px;border:1.5px solid var(--border-strong);border-radius:5px;display:grid;place-items:center;flex:none;background:var(--surface)}
+.cb.on i{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
+.cb.on i .ic{width:13px;height:13px;stroke-width:2.6}
+.rd{display:inline-flex;align-items:flex-start;gap:10px;font-size:14px}
+.rd i{width:18px;height:18px;border:1.5px solid var(--border-strong);border-radius:999px;flex:none;margin-top:2px;position:relative;background:var(--surface)}
+.rd.on i{border-color:var(--primary)}
+.rd.on i:after{content:"";position:absolute;inset:3px;border-radius:999px;background:var(--primary)}
+.sw{width:36px;height:22px;border-radius:999px;background:var(--border-strong);position:relative;flex:none}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:999px;background:var(--surface)}
+.sw.on{background:var(--primary)}
+.sw.on:after{left:17px}
+.tog{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;background:var(--surface);color:var(--fg)}
+.tog.on{border-color:var(--primary);background:var(--primary-subtle);color:var(--primary-subtle-fg);font-weight:500}
+.tog.on .ic{width:14px;height:14px;stroke-width:2.4}
+
+/* overlays */
+.scrim{background:var(--overlay)}
+.dialog{background:var(--surface);border-radius:var(--r-panel);box-shadow:var(--shadow-overlay)}
+.sheet{background:var(--surface);border-radius:18px 18px 0 0;box-shadow:var(--shadow-overlay)}
+.handle{width:36px;height:4px;border-radius:999px;background:var(--border);margin:8px auto 0}
+
+/* review block below the page */
+.review{max-width:1180px;margin:0 auto;padding:8px 20px 80px}
+.review>h3{font-size:13px;font-weight:600;color:var(--muted);margin:56px 0 16px;padding-top:24px;border-top:1px dashed var(--border-strong)}
+.cap-k{font-size:12px;color:var(--subtle);margin:0 0 8px}
+.phones{display:grid;grid-template-columns:repeat(3,360px);gap:28px;justify-content:start}
+.phone{width:360px;height:720px;border:1px solid var(--border);border-radius:28px;overflow:hidden;position:relative;background:var(--bg)}
+.phone .scrim{position:absolute;inset:0}
+.phone .sheet{position:absolute;left:0;right:0;bottom:0}
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+
+@media (max-width:760px){
+  .site-in.acc{padding:0 16px;height:56px}
+  .site-in.acc nav{display:none}
+  .frame{display:block;padding:20px 16px 48px}
+  .side{display:none}
+  .acc-h1{font-size:22px}
+  .adm{display:block}
+  .adm-nav{display:none}
+  .adm-main{padding:18px 16px 56px}
+  .adm-h1{font-size:21px}
+  .panel-h{padding:16px 16px 0}
+  .panel-b{padding:14px 16px 16px}
+  .review{padding:8px 16px 56px}
+  .phones{grid-template-columns:1fr;justify-content:center}
+  .phone{width:100%;max-width:375px}
+  .duo{grid-template-columns:1fr}
+}
+.avatar{width:32px;height:32px;border-radius:999px;background:var(--primary-subtle);color:var(--primary-subtle-fg);display:grid;place-items:center;font-size:12.5px;font-weight:600}
+
+/* ── this page ── */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tools{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:22px}
+.period{display:flex;gap:12px}
+.tools .tr{display:flex;align-items:center;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+.kp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:16px 18px}
+.kp.hi{background:var(--primary-subtle);border-color:transparent}
+.kp .l{font-size:13px;color:var(--muted)}
+.kp .v{font-size:26px;font-weight:600;line-height:1.25;margin:6px 0 4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kp.hi .v{color:var(--primary-subtle-fg)}
+.kp .h{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.panel{margin-top:16px}
+.lg{display:flex;gap:16px;font-size:13px;color:var(--fg);white-space:nowrap;padding-top:2px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.mv{width:100%;height:auto;display:block;margin-top:4px}
+.mv .grid{stroke:var(--border);stroke-dasharray:3 3}
+.mv .axis{stroke:var(--border-strong)}
+.mv .tick{font-size:12px;fill:var(--muted);font-family:inherit;font-variant-numeric:tabular-nums}
+.mv .dl{font-size:12px;fill:var(--fg);font-weight:600;font-family:inherit;font-variant-numeric:tabular-nums}
+.mv .b-earn{fill:var(--primary)}
+.mv .b-red{fill:var(--muted)}
+.mv .b-exp{fill:var(--border-strong)}
+.mv g:hover path{opacity:.85}
+.tw{overflow-x:auto;margin-top:12px;border-top:1px solid var(--border)}
+.mvt td.strong{font-weight:600}
+.mvt th,.mvt td{padding:9px 10px}
+.two{display:grid;grid-template-columns:5fr 7fr;gap:16px}
+.two .panel{margin-top:16px}
+.comp{display:flex;gap:2px;height:10px;border-radius:4px;overflow:hidden;background:var(--surface-subtle);margin-top:2px}
+.sw2{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.bv{display:inline-flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:120px}
+.bv i{display:block;width:120px;height:4px;border-radius:2px;background:var(--surface-subtle);overflow:hidden}
+.bv b{display:block;height:100%;border-radius:2px;margin-left:auto}
+.p{background:var(--primary)}.m{background:var(--border-strong)}
+.ret{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:32px;align-items:start}
+.rep{margin:4px 0 0;display:flex;flex-direction:column;gap:18px}
+.rep dt{font-size:14px;font-weight:500;display:flex;justify-content:space-between}
+.rep dd{margin:8px 0 0;display:flex;align-items:center;gap:12px}
+.rep .track{flex:1;height:8px;border-radius:4px;background:var(--surface-subtle);overflow:hidden;display:block}
+.rep .track b{display:block;height:100%;border-radius:4px}
+.rep .pct{font-variant-numeric:tabular-nums;font-weight:600;width:64px;text-align:right}
+.cw,.ox{overflow-x:auto}
+.mvt td:first-child{white-space:nowrap}
+.q{color:var(--muted);cursor:help}
+.foot{margin-top:20px;font-size:14px}
+@media (max-width:760px){
+  .period{width:100%}.period .fld{flex:1}.period .inp{min-width:0!important}
+  .tools .tr{width:100%;justify-content:space-between}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kp.hi{grid-column:1/-1}
+  .kp:last-child{grid-column:1/-1}
+  .mv{min-width:640px}
+  .ox .tbl{min-width:520px}
+  .kp .v{font-size:21px}
+  .panel-h{flex-direction:column}
+  .two,.ret{grid-template-columns:1fr}
+  .ret{gap:20px}
+  .bv i{width:72px}.bv{min-width:72px}
+}
+</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+ <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+ <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+ <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+ <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4Z"/><path d="M14 6v12" stroke-dasharray="2 2.2"/></symbol>
+ <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></symbol>
+ <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1Z"/><path d="M4 7l11-3v3M16 13.5h.01"/></symbol>
+ <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+ <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+ <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11h11l2-8H6.2"/><circle cx="9" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></symbol>
+ <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+ <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+ <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z"/></symbol>
+ <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17.5" cy="17.5" r="1.6"/></symbol>
+ <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M5 8h14M7 8l-3 6a3 3 0 0 0 6 0Zm10 0-3 6a3 3 0 0 0 6 0Z"/></symbol>
+ <symbol id="i-save" viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z"/><path d="M9 4v5h6"/></symbol>
+ <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+ <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></symbol>
+ <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+
+ <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+ <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+ <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.6L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.6L20 16M20 20v-4h-4"/></symbol>
+ <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+ <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9S10 4 7.5 5.2 9 9 12 9Zm0 0s2-5 4.5-3.8S15 9 12 9Z"/></symbol>
+ <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-8l-4 3v-3H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></symbol>
+ <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></symbol>
+ <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 4.5a3.5 3.5 0 0 1 0 7M21 20a6 6 0 0 0-4-5.6"/></symbol>
+ <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M5 6h9M18 6h1M5 12h3M12 12h7M5 18h11M20 18h-1"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+ <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/></symbol>
+ <symbol id="i-pen" viewBox="0 0 24 24"><path d="M15 5l4 4L8 20H4v-4Z"/></symbol>
+ <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6Z"/></symbol>
+</svg>
+
+<!--title:วิเคราะห์แต้มสะสม — getpack admin (P2 prototype)-->
+<div class="adm">
+<nav class="adm-nav"><span class="brand">getpack <span style="color:var(--subtle);font-weight:500">admin</span></span>
+<h6>งานขาย</h6><a href="#">คำสั่งซื้อ</a><a href="#">ใบเสนอราคา</a><a href="#">ลูกค้า</a>
+<h6>การตลาด</h6><a href="#" class="on">การตลาด</a><a href="#">รีวิว</a><a href="#">เนื้อหา</a>
+<h6>การเงิน</h6><a href="#">รายงาน</a><a href="#">บัญชีแยกประเภท</a></nav>
+<main class="adm-main">
+  <p class="crumb">การตลาด</p>
+  <h1 class="adm-h1">วิเคราะห์แต้มสะสม</h1>
+  <p class="adm-desc">ภาระแต้ม การหมดอายุ แหล่งที่ได้แต้ม และผลของโปรแกรมรักษาลูกค้า ตัวเลขทั้งหมดมาจากบัญชีแต้มสะสม</p>
+  <nav class="secnav"><a href="#">แคมเปญ</a><a href="#">โปรโมชัน</a><a href="#">แนะนำเพื่อน</a><a href="#">ตั้งค่าแต้มสะสม</a><a href="#" class="on" aria-current="page">วิเคราะห์</a><a href="#">แบบสอบถาม</a></nav>
+
+  <div class="tools">
+    <div class="period"><div class="fld"><span class="lbl">ตั้งแต่เดือน</span><span class="inp" style="min-width:160px">พ.ค. 2569<svg class="ic"><use href="#i-down"/></svg></span></div>
+    <div class="fld"><span class="lbl">ถึงเดือน</span><span class="inp" style="min-width:160px">ต.ค. 2569<svg class="ic"><use href="#i-down"/></svg></span></div></div>
+    <div class="tr"><span class="quiet">ข้อมูล ณ 4 พ.ย. 2569 10:00 น.</span><button class="btn sec"><svg class="ic"><use href="#i-download"/></svg>ส่งออก CSV</button></div>
+  </div>
+
+  <section class="kpis" aria-label="ตัวเลขหลัก">
+    <div class="kp hi"><p class="l">ภาระแต้มสะสม (ประมาณการ)</p><p class="v">฿273,600.00</p><p class="h">ที่อัตราใช้แต้ม 60% <span class="badge warnb">รอ CPA ยืนยัน</span></p><p class="h">มูลค่าเต็ม ฿456,000.00</p></div>
+    <div class="kp"><p class="l">แต้มคงค้าง</p><p class="v">182,400</p><p class="h">ณ 4 พ.ย. 2569</p></div>
+    <div class="kp"><p class="l">แต้มหมดอายุจริง 12 เดือน</p><p class="v">38.20%</p><p class="h">สมมติไว้ 40.00%</p><p class="h"><span class="badge">ข้อมูล 7 จาก 12 เดือน</span></p></div>
+    <div class="kp"><p class="l">ส่วนต่างกับบัญชี 2330</p><p class="v">฿3,450.00</p><p class="h">ยอดบัญชี ฿270,150.00</p><p class="h"><a class="lnk" href="#">ดูบัญชีแยกประเภท</a></p></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-h"><div><h2>ความเคลื่อนไหวรายเดือน</h2><p>แต้มที่ได้รับเหนือเส้นศูนย์ แต้มที่ใช้และหมดอายุใต้เส้น นับแต้มจากวันที่ใช้ได้ (รวมแต้มจากกิจกรรม)</p></div>
+      <div class="lg"><span><i style="background:var(--primary)"></i>ได้รับ</span><span><i style="background:var(--muted)"></i>ใช้</span><span><i style="background:var(--border-strong)"></i>หมดอายุ</span></div></div>
+    <div class="panel-b"><div class="cw"><svg viewBox="0 0 1000 260" class="mv" role="img" aria-label="ความเคลื่อนไหวแต้มรายเดือน"><line x1="56" x2="1000" y1="30.0" y2="30.0" class="grid"/><text x="48" y="34.0" class="tick" text-anchor="end">14,000</text><line x1="56" x2="1000" y1="90.0" y2="90.0" class="grid"/><text x="48" y="94.0" class="tick" text-anchor="end">7,000</text><line x1="56" x2="1000" y1="150.0" y2="150.0" class="axis"/><text x="48" y="154.0" class="tick" text-anchor="end">0</text><line x1="56" x2="1000" y1="210.0" y2="210.0" class="grid"/><text x="48" y="214.0" class="tick" text-anchor="end">7,000</text><g><title>พ.ค. 2569 · ได้รับ 9,800 · ใช้ 4,100 · หมดอายุ 900</title><path d="M97.3,150 v-80.0 q0,-4 4,-4 h36 q4,0 4,4 v80.0 z" class="b-earn"/><path d="M147.3,150 v35.1 h44 v-35.1 z" class="b-red"/><path d="M147.3,187.1 v3.7 q0,4 4,4 h36 q4,0 4,-4 v-3.7 z" class="b-exp"/></g><text x="144.3" y="254" class="tick" text-anchor="middle">พ.ค.</text><g><title>มิ.ย. 2569 · ได้รับ 11,020 · ใช้ 4,600 · หมดอายุ 980</title><path d="M254.0,150 v-90.5 q0,-4 4,-4 h36 q4,0 4,4 v90.5 z" class="b-earn"/><path d="M304.0,150 v39.4 h44 v-39.4 z" class="b-red"/><path d="M304.0,191.4 v4.4 q0,4 4,4 h36 q4,0 4,-4 v-4.4 z" class="b-exp"/></g><text x="301.0" y="254" class="tick" text-anchor="middle">มิ.ย.</text><g><title>ก.ค. 2569 · ได้รับ 11,640 · ใช้ 5,000 · หมดอายุ 1,010</title><path d="M410.7,150 v-95.8 q0,-4 4,-4 h36 q4,0 4,4 v95.8 z" class="b-earn"/><path d="M460.7,150 v42.9 h44 v-42.9 z" class="b-red"/><path d="M460.7,194.9 v4.7 q0,4 4,4 h36 q4,0 4,-4 v-4.7 z" class="b-exp"/></g><text x="457.7" y="254" class="tick" text-anchor="middle">ก.ค.</text><g><title>ส.ค. 2569 · ได้รับ 12,120 · ใช้ 4,800 · หมดอายุ 1,060</title><path d="M567.3,150 v-99.9 q0,-4 4,-4 h36 q4,0 4,4 v99.9 z" class="b-earn"/><path d="M617.3,150 v41.1 h44 v-41.1 z" class="b-red"/><path d="M617.3,193.1 v5.1 q0,4 4,4 h36 q4,0 4,-4 v-5.1 z" class="b-exp"/></g><text x="614.3" y="254" class="tick" text-anchor="middle">ส.ค.</text><g><title>ก.ย. 2569 · ได้รับ 12,920 · ใช้ 5,100 · หมดอายุ 1,090</title><path d="M724.0,150 v-106.7 q0,-4 4,-4 h36 q4,0 4,4 v106.7 z" class="b-earn"/><path d="M774.0,150 v43.7 h44 v-43.7 z" class="b-red"/><path d="M774.0,195.7 v5.3 q0,4 4,4 h36 q4,0 4,-4 v-5.3 z" class="b-exp"/></g><text x="771.0" y="254" class="tick" text-anchor="middle">ก.ย.</text><g><title>ต.ค. 2569 · ได้รับ 12,940 · ใช้ 5,200 · หมดอายุ 1,120</title><path d="M880.7,150 v-106.9 q0,-4 4,-4 h36 q4,0 4,4 v106.9 z" class="b-earn"/><path d="M930.7,150 v44.6 h44 v-44.6 z" class="b-red"/><path d="M930.7,196.6 v5.6 q0,4 4,4 h36 q4,0 4,-4 v-5.6 z" class="b-exp"/></g><text x="927.7" y="254" class="tick" text-anchor="middle">ต.ค.</text><text x="902.7" y="31.1" class="dl" text-anchor="middle">12,940</text></svg></div>
+      <div class="tw"><table class="tbl mvt"><caption class="sr">ความเคลื่อนไหวแต้มรายเดือน</caption>
+      <thead><tr><th>เดือน</th><th class="n">ยกมา</th><th class="n">คำสั่งซื้อ</th><th class="n">กิจกรรม</th><th class="n">แนะนำเพื่อน</th><th class="n">โบนัส</th><th class="n">ใช้</th><th class="n">คืน</th><th class="n">ยกเลิก</th><th class="n">หมดอายุ</th><th class="n">ยกไป</th></tr></thead>
+      <tbody><tr><td>พ.ค. 2569</td><td class="n">148,110</td><td class="n">8,200</td><td class="n">1,400</td><td class="n">200</td><td class="n">0</td><td class="n">−4,100</td><td class="n">40</td><td class="n">−220</td><td class="n">−900</td><td class="n strong">152,730</td></tr><tr><td>มิ.ย. 2569</td><td class="n">152,730</td><td class="n">8,900</td><td class="n">1,600</td><td class="n">400</td><td class="n">120</td><td class="n">−4,600</td><td class="n">60</td><td class="n">−180</td><td class="n">−980</td><td class="n strong">158,050</td></tr><tr><td>ก.ค. 2569</td><td class="n">158,050</td><td class="n">9,300</td><td class="n">1,900</td><td class="n">200</td><td class="n">240</td><td class="n">−5,000</td><td class="n">20</td><td class="n">−260</td><td class="n">−1,010</td><td class="n strong">163,440</td></tr><tr><td>ส.ค. 2569</td><td class="n">163,440</td><td class="n">9,100</td><td class="n">2,300</td><td class="n">400</td><td class="n">320</td><td class="n">−4,800</td><td class="n">80</td><td class="n">−240</td><td class="n">−1,060</td><td class="n strong">169,540</td></tr><tr><td>ก.ย. 2569</td><td class="n">169,540</td><td class="n">9,600</td><td class="n">2,600</td><td class="n">200</td><td class="n">520</td><td class="n">−5,100</td><td class="n">40</td><td class="n">−310</td><td class="n">−1,090</td><td class="n strong">176,000</td></tr><tr><td>ต.ค. 2569</td><td class="n">176,000</td><td class="n">9,800</td><td class="n">2,100</td><td class="n">400</td><td class="n">640</td><td class="n">−5,200</td><td class="n">80</td><td class="n">−300</td><td class="n">−1,120</td><td class="n strong">182,400</td></tr></tbody></table></div>
+    </div>
+  </section>
+
+  <div class="two">
+    <section class="panel"><div class="panel-h"><div><h2>แต้มที่ได้ตามแหล่ง</h2><p>รวมช่วงที่เลือก</p></div></div>
+      <div class="panel-b"><div class="comp" aria-hidden="true"><span style="flex:98000;background:var(--primary)"></span><span style="flex:21000;background:var(--muted)"></span><span style="flex:6400;background:var(--border-strong)"></span><span style="flex:4000;background:var(--border)"></span></div><table class="tbl" style="margin-top:12px"><thead><tr><th>แหล่ง</th><th class="n">แต้ม</th></tr></thead><tbody><tr><td><span class="sw2" style="background:var(--primary)"></span>คำสั่งซื้อ</td><td class="n"><span class="bv"><span>98,000</span><i><b style="width:100.0%" class="p"></b></i></span></td></tr><tr><td><span class="sw2" style="background:var(--muted)"></span>กิจกรรม</td><td class="n"><span class="bv"><span>21,000</span><i><b style="width:21.4%" class="m"></b></i></span></td></tr><tr><td><span class="sw2" style="background:var(--border-strong)"></span>โบนัส</td><td class="n"><span class="bv"><span>6,400</span><i><b style="width:6.5%" class="m"></b></i></span></td></tr><tr><td><span class="sw2" style="background:var(--border)"></span>แนะนำเพื่อน</td><td class="n"><span class="bv"><span>4,000</span><i><b style="width:4.1%" class="m"></b></i></span></td></tr></tbody></table></div></section>
+    <section class="panel"><div class="panel-h"><div><h2>ได้และใช้ตามระดับสมาชิก</h2><p>สมาชิกที่มีความเคลื่อนไหวในช่วงที่เลือก</p></div></div>
+      <div class="panel-b"><table class="tbl"><thead><tr><th>ระดับ</th><th class="n">สมาชิก</th><th class="n">ได้รับ</th><th class="n">ใช้</th><th class="n">สัดส่วนที่ใช้</th></tr></thead><tbody><tr><td>Gold</td><td class="n">12</td><td class="n">31,000</td><td class="n">14,000</td><td class="n">45.16%</td></tr><tr><td>Silver</td><td class="n">48</td><td class="n">52,000</td><td class="n">18,900</td><td class="n">36.35%</td></tr><tr><td>สมาชิก</td><td class="n">645</td><td class="n">47,000</td><td class="n">9,100</td><td class="n">19.36%</td></tr></tbody></table></div></section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-h"><div><h2>การกลับมาสั่งซื้อ</h2><p>สั่งซื้ออีกครั้งภายใน 180 วัน เทียบลูกค้าที่เคยใช้แต้มกับที่ไม่เคยใช้ และผลของแต่ละโปรแกรม (อัตราซ่อนเมื่อมีลูกค้าน้อยกว่า 10 ราย)</p></div></div>
+    <div class="panel-b ret">
+      <dl class="rep">
+        <div><dt>ลูกค้าที่เคยใช้แต้ม <span class="quiet">95 ราย</span></dt><dd><span class="track"><b class="p" style="width:42.1%"></b></span><span class="pct">42.10%</span></dd></div>
+        <div><dt>ลูกค้าที่ไม่เคยใช้แต้ม <span class="quiet">610 ราย</span></dt><dd><span class="track"><b class="m" style="width:18.3%"></b></span><span class="pct">18.30%</span></dd></div>
+      </dl>
+      <div class="ox"><table class="tbl"><thead><tr><th>โปรแกรม</th><th class="n">นับผลภายใน</th><th class="n">ส่ง</th><th class="n">สำเร็จ</th><th class="n">อัตรา</th></tr></thead><tbody><tr><td>แจ้งเตือนสั่งซ้ำ</td><td class="n">7 วัน</td><td class="n">140</td><td class="n">37</td><td class="n"><span class="bv"><span>26.43%</span><i><b class="p" style="width:26.4%"></b></i></span></td></tr><tr><td>แต้มโบนัสต้อนรับกลับ</td><td class="n">30 วัน</td><td class="n">88</td><td class="n">9</td><td class="n"><span class="bv"><span>10.23%</span><i><b class="p" style="width:10.2%"></b></i></span></td></tr><tr><td>ติดตามใบเสนอราคา</td><td class="n">14 วัน</td><td class="n">64</td><td class="n">11</td><td class="n"><span class="bv"><span>17.19%</span><i><b class="p" style="width:17.2%"></b></i></span></td></tr><tr><td>แบบสอบถาม</td><td class="n">30 วัน</td><td class="n">210</td><td class="n">96</td><td class="n"><span class="bv"><span>45.71%</span><i><b class="p" style="width:45.7%"></b></i></span></td></tr></tbody></table></div>
+    </div>
+  </section>
+  <p class="foot"><a class="lnk" href="#">ผลโปรโมชันและลิงก์ของตัวแทน</a></p>
+</main></div>
+</body></html>
