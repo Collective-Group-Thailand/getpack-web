@@ -5,6 +5,10 @@ https://stitch.withgoogle.com/projects/10188146144340170426
 **Input:** `DESIGN.md` (this folder), translated from `src/ui/tokens/{primitives,semantic,scale}.ts`.
 **Plan:** `../PLAN.md` §3 (earn checklist, P1) and §3.5 (deals surface, P1.5).
 
+> **Read round 2 first** (end of this file). The owner's coupon references (2026-11-04) changed DealCard, /deals and
+> /liff/deals to a **ticket form in getpack's own colours**. Round 2 supersedes sections a, b and f below. Sections
+> c, d and e still stand; their compact rows pick up the mini-stub from round 2.
+
 Stitch output is a proposal only. The tokens, `GLOBAL-RULES.md` and PLAN.md win. **No Stitch code goes into the repo.**
 Every name, code, amount and date in these images is sample data (BOX10, "คุณมณีรัตน์", ฿1,331.00 …).
 
@@ -37,6 +41,11 @@ stitch/
   cart-coupon-picker/ a-inline-summary-{desktop,phone}.png   b-popover-sheet-{desktop,phone}.png
   points-checklist/   a-checklist-rows-{desktop,phone}.png   b-next-best-grouped-{desktop,phone}.png
   liff-deals/         a-compact-cards-phone.png              b-list-sheet-phone.png
+  round-2/            ticket form (supersedes deal-card, deals, liff-deals above)
+    deal-card/        a-horizontal-ticket-{desktop,phone}.png  b-vertical-ticket-{desktop,phone}.png
+    deals/            a-ticket-grid-desktop.png  b-ticket-list-aside-desktop.png
+                      a-ticket-stack-phone.png   b-hero-compact-rows-phone.png
+    liff-deals/       a-ticket-stack-phone.png   b-rows-ticket-sheet-phone.png
 ```
 
 ## Stitch screen ids
@@ -297,3 +306,167 @@ reach the build:
 Summary: "ทันที"/"อัตโนมัติ" appear on 11 screens, "โรงงาน" on 5, and certifications or lab values on 4. Stitch adds
 these unprompted, even when the brief forbids them, so the copy for every surface comes from `messages/*.json`,
 reviewed against GLOBAL-RULES §1 and §3. Do not copy it from these images.
+
+---
+
+# Round 2 — ticket form (2026-11-04, after the owner's coupon references)
+
+**Input:** two sheets of coupon designs the owner likes (stock "gift voucher / discount coupon" sets in blue). Owner's
+rule: **take the form, not the colours.** Colours stay on getpack tokens.
+
+**What the references taught (and we kept):**
+- Two zones: a **stub** carries the value only, and the **body** says what it is and until when. A perforation and
+  semicircle notches mark the tear line.
+- The value is the hero: very large numerals with a small word stacked beside them.
+- One colour family in two strengths, solid on the featured coupon and light on the rest.
+- A dashed inner frame, which becomes our code box.
+- A postage-stamp scalloped edge, used **only on the featured ticket's stub**.
+
+**What we left in the references:** blue; halftone dots, stars and outline lettering; barcodes, which imply a scan
+we don't support; rotated text (vertical Thai is unreadable); "SUPER DISCOUNT"; and several coupon shapes in one set.
+The system uses one ticket form at different sizes.
+
+**Colour mapping (`semantic.ts`):**
+
+| Part | Token | Value |
+|---|---|---|
+| Stub, normal ticket | `accent-subtle` / text `accent-subtle-fg` | #FDF0E3 / #5F2B00 |
+| Stub, featured ticket | `accent` / text `fg` (never white on amber, 2.69:1) | #E08A18 / #16201B |
+| Stub, used or expired | `neutral-subtle` / text `subtle` | #F4F2F0 / #79827D |
+| Ticket body | `surface`, edge `border` | #FFFFFF / #E3E1DA |
+| Notches | cut-outs that show `bg` | #F6F5F1 |
+| Perforation and code-box dash | `border-strong` | #857B6F |
+| "เก็บโค้ด" | `primary` (the only green on the ticket) | #17573F |
+| "เหลือ 2 วัน" | `warning` text | #B45309 |
+| "เก็บแล้ว" | `success` text with a line check | #15803D |
+
+## Stitch screen ids (round 2)
+
+| Screen | Variant | Desktop | Phone |
+|---|---|---|---|
+| DealCard | A horizontal ticket | 4782e5c8fc5b44d8a0e7474fb3b92840 | 746a813159444801b632d3eb36e877c1 |
+| DealCard | B vertical ticket | 91fb12b6c4324ab99b732b96b0c74201 | 874f52f68fd04b1f87e19e25cae4e5f8 |
+| /deals | A ticket grid / ticket stack | 9e647317492d484dbd2c0a40aaf86d29 | 34c1ed0fd3ee4861812446f5d6a7c92d |
+| /deals | B ticket list + aside / hero + compact rows | c7e34b012cb54f62b084e105eb933856 | 7f0ed4b0efed4d2982d2a78c88ea603a |
+| /liff/deals | A ticket stack | — | 688c08ffb9dd4a45a5ee90bf3636b2ac |
+| /liff/deals | B rows + ticket sheet | — | 151703d4bc994aecb284dccb48f8c034 |
+
+## R2-b. DealCard — **chosen: B vertical ticket** (grid cards), plus three parts of A
+
+**Take**
+- From B, the vertical ticket for every card grid (/deals, home strip, coupon wallet):
+  - a 112–120 px top stub in `accent-subtle`;
+  - "ลด" small above "10%" at 48–56 px/600 with "สูงสุด ฿1,500" on the same baseline;
+  - the product tag top-right in the stub;
+  - a horizontal perforation with 16 px notches on the left and right edges;
+  - a body with headline, one condition line and validity;
+  - a footer with the dashed code box and copy on the left and the action on the right.
+- From B, the 6 states as Storybook stories:
+  - guest: "คัดลอกโค้ด" + "เข้าสู่ระบบเพื่อเก็บโค้ด";
+  - เก็บได้;
+  - เก็บแล้ว: success line + "ดูในกระเป๋า";
+  - ใช้แล้ว: stub turns `neutral-subtle`, all text `subtle`, chip with the date;
+  - ไม่ตรงเงื่อนไข: disabled + reason;
+  - ใกล้หมดเวลา: `warning` validity.
+- From B, the **compact row**: a 64 px mini-stub with the value and one notch on its right edge, then headline + validity, then a 44 px action. The same component goes into the /deals phone list, the cart picker and LIFF.
+- From A:
+  - the **featured stub**: solid `accent` with a scalloped (postage-stamp) left edge, which is the most faithful echo of the references;
+  - the **value-type set** for stubs: "10%" numeral, "ส่งฟรี" word at 28 px, "฿300", "แต้ม ×2". The stub layout handles words as well as numbers.
+
+**Don't take**
+- **A's horizontal ticket as the grid card.** At 400 px the headline wraps to 2–3 lines next to a 120 px stub, and
+  the footer crowds code, copy, link and button into one row. Horizontal stays for the featured ticket and the compact row.
+- **A's ineligible text in `warning` orange.** It reads as urgency. An ineligible reason is `muted` text.
+- **B's featured ticket without the scallop.** Use A's stamp edge instead.
+
+## R2-a. /deals — **chosen: A ticket grid (desktop), phone = A's stamp hero + B's compact rows**
+
+**Take**
+- From A, desktop:
+  - the header (title + "12 ดีลที่ใช้ได้ · อัปเดต …");
+  - the featured horizontal ticket at full content width (stub 260 px solid `accent`, stamp edge, value 80 px);
+  - underline tabs with plain `muted` counts and a quiet product-type select;
+  - **3-column grid of vertical tickets**;
+  - "ใช้คูปองอย่างไร" 01–03 next to the FAQ;
+  - the light footer.
+- From B, desktop: the signed-in context **"คูปองของคุณ · เก็บไว้ 3 ใบ · ใช้ได้กับตะกร้าตอนนี้ 1 ใบ"**. Put it as a
+  one-line strip under the header, shown only when signed in, rather than as a sticky aside. The aside narrows the grid to 2 columns.
+- Phone:
+  - A's vertical stamp hero (amber top stub with scalloped top edge, value 56 px), because it is the strongest first screen;
+  - then B's **compact rows in one hairline container**, which give the most deals per scroll;
+  - A's horizontal ticket stack is the alternative if the list stays at 6 deals or fewer.
+
+**Don't take**
+- **Drift in B, desktop:**
+  - the renamed title "ดีลและคูปองส่วนลด";
+  - a different nav (wordmark "getpack.co", a cart pill with ฿0.00);
+  - a top utility bar.
+  The page keeps the site header and the title in PLAN §3.5.3.
+- **B, phone:** a bottom tab bar (หน้าแรก / แคตตาล็อก / โปรโมชัน / บัญชี). getpack's storefront has no app tab bar.
+- **Codes and amounts that Stitch invented in every screen** (SHIP3000, ROLL08, ฿2,500 vs ฿3,000 thresholds). The
+  data comes from `promotions.display`.
+
+## R2-f. /liff/deals — **chosen: B rows + ticket sheet**, plus A's featured ticket and bottom bar
+
+**Take**
+- From B:
+  - the points strip and a segmented control "ดีลทั้งหมด | คูปองของฉัน (n)";
+  - compact rows with mini-stubs;
+  - **the bottom sheet rendered as a ticket**: an amber stub band on top, a perforation with notches cut into the
+    sheet's edges, label/value conditions, the dashed code box, "เก็บโค้ด" and "ส่งดีลนี้ให้ทีม". This is the best
+    single moment in the round, because the deal "tears off" into the sheet.
+- From A:
+  - the featured ticket at the top of the list;
+  - the sticky bar "แชร์ให้เพื่อน | เปิดกระเป๋าคูปอง".
+- Both drop the fake status bar and LINE header (LINE draws its own).
+
+**Don't take**
+- A's "เหลืออีก 48 สิทธิ์" is a scarcity counter (GLOBAL-RULES §3, DEC-9). Show a remaining-uses count only if a real budget limit exists, and even then not as pressure copy.
+- A's "อัปเดตทุกวันจันทร์" is a promise of a cadence we have not decided.
+
+## Building the ticket (implementation notes)
+
+- **Notches:** build them as real cut-outs with `mask-image: radial-gradient(...)` on the ticket element, not as
+  circles painted in the page colour. Painted circles break on `bg-subtle` bands, in dark mode and on hover lift.
+  One `Ticket` primitive takes `orientation` (vertical | horizontal), `notch` (both | end) and `edge`
+  (plain | stamp), and DealCard, CompactDealRow and the LIFF sheet compose it.
+- **Stamp edge:** a repeating radial-gradient mask on the featured stub only, about 6 px bites. It must not clip the value numerals; keep the stub padding ≥ 16 px.
+- **Accessibility:** the stub is decorative structure, but its value is content. Give it a text equivalent
+  ("ส่วนลด 10% สูงสุด ฿1,500") and keep the reading order stub → headline → validity → code → action. The
+  perforation and notches are `aria-hidden`.
+- **Dark mode** (GLOBAL-RULES §7): the stub uses `accent-subtle` / `accent`, and the dark theme already defines
+  them (`accent` #F0A63A with ink, as the gate allows). The masks show whatever `bg` is.
+- **Sizes:**
+  - grid ticket min width 280, max 360;
+  - compact row 64–72 px tall;
+  - featured stub 200–260 px on desktop, a full-width top band on phone.
+- **Same truthfulness rules as round 1:** no "ทันที", "อัตโนมัติ", "โรงงาน", scarcity counters or time promises. Every string comes from `messages/*.json` and `promotions.display`.
+
+## Round 2 HTML audit
+
+All 10 HTML files were read.
+- **Fonts:** Anuphan only, with no `font-mono` and no icon fonts.
+- **Copy:** no "โรงงาน", "อัตโนมัติ", certifications, tax IDs, emoji, English tier names or blue. Both © lines read
+  "© 2569 Collective Group (Thailand)".
+- **"เหลือ 2 วัน":** this is the expiry label PLAN §3.5.3 allows, not a scarcity counter.
+
+| Screen | Must not ship |
+|---|---|
+| deals A desktop | FAQ "ภายใน 24 ชั่วโมง" (time promise) |
+| deals B desktop | "ลดทันทีทั้งยอดสั่ง"; off-palette panels #FCFCFA / #FAFAF8 / #F0FDF4 |
+| deals A phone | dark chip `#16201B` "สูงสุด ฿1,500" on the hero (use ink text on the amber stub, no dark chip) |
+| liff A phone | scarcity counters "เหลืออีก 48 สิทธิ์", "เหลือสิทธิ์ 12 ใบสุดท้าย" |
+| dealcard B desktop | disabled card #FAFAFA (use `surface` + `subtle` text) |
+| dealcard A/B phone | grey canvas around the phone frame (presentation only) |
+
+**Notches, which matter for the build.** No screen uses a real mask. Every notch is a circle painted the colour
+behind it. That looks right on the plain page, but it **breaks in three places**:
+- the deals A phone hero, where the stamp holes show white instead of the page;
+- the LIFF B sheet, where the notches are filled with the scrim colour and clipped by `overflow-hidden`;
+- the dealcard B desktop hero, where an invalid `height-[16px]` class means the notches never render.
+
+This is the evidence for the rule above: **build notches and the stamp edge with `mask-image`**, so they show
+whatever is really behind the ticket (page, band, sheet, dark theme).
+
+The LIFF B scrim `rgba(42,37,32,.45)` behind the sheet is fine as an overlay. In the build use the `overlay` token,
+not a hex.
