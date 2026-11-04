@@ -177,7 +177,29 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
                 {programme.examples.length ? (
                   <div className={cn(CARD, "overflow-hidden")}>
                     <p className="border-border border-b px-5 py-3 text-sm font-semibold">{t("commission.examples")}</p>
-                    <table className="w-full text-sm" aria-label={t("commission.examples")}>
+                    {/* A phone has no room for three money columns: each example is a row of two labelled figures. */}
+                    <ul className="divide-border divide-y sm:hidden" aria-label={t("commission.examples")}>
+                      {programme.examples.map((row) => (
+                        <li key={row.orderValue} className="px-5 py-3.5">
+                          <p className="text-sm font-medium tabular-nums">
+                            {t("commission.exampleRow", { value: format.thb(row.orderValue) })}
+                          </p>
+                          <dl className="mt-2 grid grid-cols-2 gap-3">
+                            <div>
+                              <dt className="text-muted text-xs">{t("commission.first")}</dt>
+                              <dd className="text-primary mt-0.5 font-semibold tabular-nums">
+                                {format.thb(row.firstOrder)}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-muted text-xs">{t("commission.repeat")}</dt>
+                              <dd className="text-muted mt-0.5 tabular-nums">{format.thb(row.repeatOrder)}</dd>
+                            </div>
+                          </dl>
+                        </li>
+                      ))}
+                    </ul>
+                    <table className="hidden w-full text-sm sm:table" aria-label={t("commission.examples")}>
                       <thead className="text-muted border-border border-b text-xs">
                         <tr>
                           <th scope="col" className="px-5 py-2 text-left font-medium">
@@ -194,7 +216,7 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
                       <tbody>
                         {programme.examples.map((row) => (
                           <tr key={row.orderValue} className="border-border border-b last:border-b-0">
-                            <th scope="row" className="px-5 py-3 text-left font-medium tabular-nums">
+                            <th scope="row" className="px-5 py-3 text-left font-medium whitespace-nowrap tabular-nums">
                               {t("commission.exampleRow", { value: format.thb(row.orderValue) })}
                             </th>
                             <td className="text-primary px-3 py-3 text-right font-semibold tabular-nums">
