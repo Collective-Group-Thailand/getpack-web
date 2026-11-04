@@ -353,8 +353,8 @@ figure is a fake example (API-CHANGES-P3 samples and the UAT seed's eight items)
 ## 4. Tier and perks on `/account/points`
 
 - Header actions: "ชวนเพื่อน" (outline) and **"แลกแต้ม" (filled — the page's one primary)**.
-- One panel, two columns (5 : 7). Left: eyebrow "ระดับสมาชิก", the tier name at 28 px (the panel's figure), "แต้ม ×2"
-  beside it; "ระดับสูงสุดแล้ว · ยอดซื้อ 12 เดือน …" at the top tier, or the 4 px meter and "ยอดซื้อ 12 เดือน ฿325,000 จาก
+- One panel, two columns (5 : 7). Left: the tier name at 28 px as the panel's heading and figure ("ระดับสมาชิก" for
+  screen readers only — the design-language gate forbids eyebrow labels), "แต้ม ×2" beside it; "ระดับสูงสุดแล้ว · ยอดซื้อ 12 เดือน …" at the top tier, or the 4 px meter and "ยอดซื้อ 12 เดือน ฿325,000 จาก
   ฿500,000 เพื่อเป็น Platinum". Below a hairline, "ตัวคูณแต้มที่ใช้อยู่ตอนนี้": one row per `activeMultipliers` item —
   a small tag "×2" (solid `primary` for the tier, `primary-subtle` for time-boxed ones) and its name with "· ถึง 30 พ.ย."
   (static). Footnote "รวมกันสูงสุด ×3 ต่อคำสั่งซื้อ แต้มที่ได้จริงแสดงตอนชำระเงิน" (the web never multiplies).
@@ -393,3 +393,8 @@ figure is a fake example (API-CHANGES-P3 samples and the UAT seed's eight items)
   have a word.
 - "แลกแต้ม" appeared twice on `/account/points` (header and a row under the panel) → the row went; the header button is
   the page's primary.
+- The tier panel opened with an eyebrow ("ระดับสมาชิก" above the name) → removed; the name is the heading. Tier names
+  are the customer zone's Thai words (ซิลเวอร์ · โกลด์ · แพลทินัม), as the existing tier copy.
+- "ส่วนลดเงินสด" → "ส่วนลดค่าสินค้า": no customer word says cash (owner: no cash-out wording). The confirm sheet states
+  the validity in days ("90 วันนับจากวันที่แลก") and the date only on the coupon the API returns — the web adds no days
+  to a date.

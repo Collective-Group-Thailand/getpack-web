@@ -337,6 +337,8 @@ h1,h2,h3,p{margin:0}
 .meter{height:4px;border-radius:999px;background:var(--bg-subtle);margin-top:14px;overflow:hidden}
 .meter i{display:block;height:100%;background:var(--primary)}
 .mults{margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.mh{font-size:13px;font-weight:600;margin:0}
+.tname{margin:0;font-weight:inherit}
 .mults ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
 .mults li{display:flex;align-items:baseline;gap:10px;font-size:14px}
 .mx{display:inline-flex;justify-content:center;min-width:46px;height:22px;align-items:center;border-radius:6px;background:var(--primary);color:var(--primary-fg);font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;flex:none}
@@ -454,14 +456,13 @@ h1,h2,h3,p{margin:0}
 
     <section class="card tp" aria-labelledby="tier-h">
       <div>
-        <p class="eb" id="tier-h">ระดับสมาชิก</p>
-        <p class="tname"><b>Platinum</b><span>แต้ม ×2</span></p>
+        <h2 class="tname" id="tier-h"><span class="sr">ระดับสมาชิก </span><b>แพลทินัม</b><span>แต้ม ×2</span></h2>
         <p class="tline">ระดับสูงสุดแล้ว · ยอดซื้อ 12 เดือน ฿612,400</p>
         <p class="tline" style="margin-top:2px;font-size:12.5px;color:var(--subtle)">นับจากคำสั่งซื้อที่เสร็จสมบูรณ์ใน 12 เดือนล่าสุด</p>
         <div class="mults">
-          <p class="eb">ตัวคูณแต้มที่ใช้อยู่ตอนนี้</p>
+          <h3 class="mh">ตัวคูณแต้มที่ใช้อยู่ตอนนี้</h3>
           <ul>
-            <li><span class="mx">×2</span><span>ระดับ Platinum</span></li>
+            <li><span class="mx">×2</span><span>ระดับแพลทินัม</span></li>
             <li><span class="mx q">×2</span><span>เดือนเกิดสมาชิก <span class="until">· ถึง 30 พ.ย.</span></span></li>
             <li><span class="mx q">×1.5</span><span>สะสมแต้มกล่องลูกฟูก <span class="until">· ถึง 30 พ.ย.</span></span></li>
           </ul>
@@ -491,16 +492,15 @@ h1,h2,h3,p{margin:0}
 </div>
 
 <div class="review">
-  <h3>ระดับ Gold: ความคืบหน้าไป Platinum และสิทธิ์ของระดับถัดไป</h3>
-  <section class="card tp" aria-label="ระดับสมาชิก Gold" style="margin-top:0">
+  <h3>ระดับโกลด์: ความคืบหน้าไปแพลทินัม และสิทธิ์ของระดับถัดไป</h3>
+  <section class="card tp" aria-label="ระดับสมาชิกโกลด์" style="margin-top:0">
     <div>
-      <p class="eb">ระดับสมาชิก</p>
-      <p class="tname"><b>Gold</b><span>แต้ม ×1.5</span></p>
-      <div class="meter" role="meter" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" aria-label="ความคืบหน้าสู่ Platinum"><i style="width:65%"></i></div>
-      <p class="tline">ยอดซื้อ 12 เดือน ฿325,000 จาก ฿500,000 เพื่อเป็น Platinum</p>
+      <h2 class="tname"><span class="sr">ระดับสมาชิก </span><b>โกลด์</b><span>แต้ม ×1.5</span></h2>
+      <div class="meter" role="meter" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" aria-label="ความคืบหน้าสู่ระดับแพลทินัม"><i style="width:65%"></i></div>
+      <p class="tline">ยอดซื้อ 12 เดือน ฿325,000 จาก ฿500,000 เพื่อเป็นแพลทินัม</p>
       <div class="mults">
-        <p class="eb">ตัวคูณแต้มที่ใช้อยู่ตอนนี้</p>
-        <ul><li><span class="mx">×1.5</span><span>ระดับ Gold</span></li></ul>
+        <h3 class="mh">ตัวคูณแต้มที่ใช้อยู่ตอนนี้</h3>
+        <ul><li><span class="mx">×1.5</span><span>ระดับโกลด์</span></li></ul>
         <p class="cap">รวมกันสูงสุด ×3 ต่อคำสั่งซื้อ แต้มที่ได้จริงแสดงตอนชำระเงิน</p>
       </div>
     </div>
@@ -514,7 +514,7 @@ h1,h2,h3,p{margin:0}
           <div><p class="t">ดูแลก่อนเมื่อทักแชต</p><p class="m">ข้อความของคุณขึ้นคิวแรกของทีมดูแลลูกค้า</p></div>
           <span></span></li>
       </ul>
-      <p class="next-h">เมื่อถึง Platinum</p>
+      <p class="next-h">เมื่อถึงระดับแพลทินัม</p>
       <ul class="pk">
         <li class="next"><span class="ti"><svg class="ic"><use href="#i-flag"/></svg></span><div><p class="t">คิวผลิตลำดับพิเศษ</p></div><span class="st"></span></li>
         <li class="next"><span class="ti"><svg class="ic"><use href="#i-bolt"/></svg></span><div><p class="t">ผลิตด่วนฟรี (ตามคิว) ไตรมาสละ 1 ครั้ง</p></div><span class="st"></span></li>
@@ -522,7 +522,7 @@ h1,h2,h3,p{margin:0}
     </div>
   </section>
 
-  <h3>ระดับ Silver: คูปองส่งฟรีรายไตรมาสใช้แล้ว / รอบถัดไป</h3>
+  <h3>ระดับซิลเวอร์: คูปองส่งฟรีรายไตรมาสใช้แล้ว / รอบถัดไป</h3>
   <div class="duo">
     <div class="card" style="padding:4px 20px">
       <ul class="pk">
