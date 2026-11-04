@@ -67,7 +67,7 @@ prototypes), weights 400/500/600 (700 only for the balance figure that already e
 | `heading-hierarchy` | Card title is an `h2` under the page `h1`; form groups are `fieldset/legend`. |
 | `input-labels`, `field-grouping` | Every tile is a `<label>`; groups are fieldsets with legends. |
 | `error-placement`, `aria-live-errors`, `focus-management` | Error under each group, linked with `aria-describedby`, `role="alert"`; the first invalid group gets focus (`useFocusFirstInvalid`). |
-| `required-indicators` | "จำเป็น" text next to the legend, not only an asterisk. |
+| `required-indicators` | The repo's `Field` marker: asterisk plus sr-only "จำเป็น"; optional groups say "(ไม่บังคับ)". (The prototype shows the word; the build follows `Field`.) |
 | `submit-feedback`, `loading-buttons` | Save button shows loading and is disabled while saving; toast on success. |
 | `toast-accessibility`, `toast-dismiss` | Sonner, polite, 5 s (`TOAST_DURATION_MS`). |
 | `contextual-live-badge-updates` | The checklist refetch does not move focus; the toast is the announcement. |
