@@ -4,9 +4,10 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import type { LoyaltyTasks } from "@/lib/api/requests/store-loyalty";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
+
+import type { LoyaltyTasks } from "./loyalty-types";
 
 /**
  * The account home's one-line nudge (loyalty P1): "รับแต้มเพิ่ม X แต้ม" → the checklist on `/account/points#earn`.

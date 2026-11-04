@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { cn } from "@/ui/lib/cn";
 
 import { dealHref } from "./paths";
@@ -14,18 +14,23 @@ import { dealHref } from "./paths";
 /**
  * The deal for this product, inside the price field (loyalty P1.5, STITCH-NOTES §c; prototype
  * `p15-pdp-ladder.html`): under a perforation, "มีโปร" with the offer and "ดูดีล", how to use it ("ใช้โค้ด BOX10 ใน
- * ตะกร้า"), and "ราคาหลังโปรโดยประมาณ" — the API's `estimatedTotal` for the recorded calculation, never computed here.
+ * ตะกร้า"), and "ราคาหลังโปรโดยประมาณ" — the API's `estimatedTotal`, never computed here.
  * Rendered only when a public deal names this product type (the API's `?productTypeCode=` filter).
+ *
+ * The hint comes from `store.quotes.ladder`, which reads a saved quotation (the API has no ladder for an unsaved
+ * calculation: the quantity rows already come from `store.quotes.calculate`). So the configurator passes the
+ * quotation it kept this visit, asked for at the quantity in view only when that quantity is one of its options;
+ * the PDP and an unsaved configuration show the deal without the hint.
  */
 export function DealPromoBox({
   productTypeCode,
-  calculationId,
+  quote = null,
   quantity,
   className,
 }: {
   productTypeCode: string;
-  /** The page's latest recorded calculation (`QuoteCalculationDto.calculationId`), for the ladder's deal hint. */
-  calculationId: string | null;
+  /** The quotation kept this visit, for the ladder's deal hint; `anonymousId` is the configurator session's. */
+  quote?: { id: string; quantities: readonly number[]; anonymousId?: string } | null;
   quantity: number;
   className?: string;
 }) {
@@ -33,14 +38,21 @@ export function DealPromoBox({
   const format = useFormat();
   const deals = useQuery({
     queryKey: queryKeys.list("customer", "deal", { productTypeCode }),
-    queryFn: () => browserRequests().call("GET /v1/store/promotions", { query: { productTypeCode } }),
+    queryFn: async () =>
+      (await browserApi().GET("/v1/store/promotions", { params: { query: { productTypeCode } } })).data!,
     staleTime: 60_000,
   });
   const ladder = useQuery({
-    queryKey: queryKeys.list("customer", "deal-ladder", { calculationId, quantity }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/store/pricing/ladder", { query: { calculationId: calculationId!, quantity } }),
-    enabled: Boolean(calculationId) && (deals.data?.items.length ?? 0) > 0,
+    queryKey: queryKeys.list("customer", "deal-ladder", { quoteId: quote?.id ?? null, quantity }),
+    queryFn: async () =>
+      (
+        await browserApi().GET("/v1/store/quotes/{quoteId}/ladder", {
+          params: { path: { quoteId: quote!.id }, query: { quantity, anonymousId: quote!.anonymousId } },
+        })
+      ).data!,
+    // `?quantity` must be one of the quotation's options (else 422); a lapsed quotation answers 409 and hides the hint.
+    enabled: Boolean(quote?.quantities.includes(quantity)) && (deals.data?.items.length ?? 0) > 0,
+    retry: false,
     staleTime: 60_000,
   });
 
@@ -81,7 +93,7 @@ export function DealPromoBox({
       <p className="text-muted m-0 text-[0.84375rem]">
         {deal.code ? t.rich("useCode", { code: deal.code, b }) : t("noCode")}
       </p>
-      {hint ? (
+      {hint?.estimatedTotal ? (
         <p className="border-border-strong/20 text-muted m-0 mt-1.5 flex items-baseline justify-between gap-3 border-t pt-2 text-[0.84375rem]">
           <span>{t("estimate")}</span>
           <b className="text-fg text-base font-semibold tabular-nums">{format.thb(hint.estimatedTotal)}</b>

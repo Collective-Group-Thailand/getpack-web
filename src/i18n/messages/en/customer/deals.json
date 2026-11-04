@@ -100,8 +100,14 @@
       "product_type": "For another product type",
       "segment": "For some customers only",
       "usage_limit": "Already used up",
+      "new_customer_only": "New customers only",
+      "returning_customer_only": "Returning customers only",
       "other": "Does not match this deal's conditions yet"
-    }
+    },
+    "upTo": "Up to",
+    "perk": "Perk",
+    "alreadySaved": "Already saved",
+    "notSaveable": "This deal's code can't be saved right now"
   },
   "detail": {
     "back": "All deals",
@@ -168,7 +174,8 @@
     "apply": "Use coupon {code}",
     "remove": "Stop using coupon {code}",
     "manual": "Have another code?",
-    "loading": "Loading coupons"
+    "loading": "Loading coupons",
+    "savingExVat": "before VAT"
   },
   "liff": {
     "points": "Your points <b>{points}</b>",

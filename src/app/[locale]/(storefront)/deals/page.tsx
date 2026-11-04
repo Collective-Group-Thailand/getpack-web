@@ -15,7 +15,7 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
-import { DEAL_TABS, type DealTab } from "@/lib/api/requests/store-deals";
+import { DEAL_TABS, type DealTab } from "@/features/shared/deals/types";
 import { alternateUrls, faqPageSchema, publicOrigin } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";

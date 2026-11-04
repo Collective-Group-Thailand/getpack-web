@@ -3,7 +3,7 @@
  * No MSW import here, so a story can load it in the browser bundle.
  */
 
-import type { LoyaltyTask, LoyaltyTaskCode, LoyaltyTasks } from "@/lib/api/requests/store-loyalty";
+import type { LoyaltyTask, LoyaltyTaskCode, LoyaltyTasks } from "@/features/customer/account/loyalty-types";
 
 /** `loyalty.activity_rewards` at ฿2.50 a point (PLAN §2.1). */
 export const TASK_POINTS: Record<LoyaltyTaskCode, number> = {

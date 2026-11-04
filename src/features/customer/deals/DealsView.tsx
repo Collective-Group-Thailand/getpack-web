@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { DealCard } from "@/features/shared/deals/DealCard";
 import { useDealSaves } from "@/features/shared/deals/useDealSaves";
-import type { Deal } from "@/lib/api/requests/store-deals";
+import type { Deal } from "@/features/shared/deals/types";
 import { cn } from "@/ui/lib/cn";
 
 import { dealHref } from "./paths";

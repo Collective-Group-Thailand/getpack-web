@@ -6,11 +6,11 @@ import { useState } from "react";
 
 import { DealCard } from "@/features/shared/deals/DealCard";
 import { uploadFile } from "@/features/shared/files/upload";
-import type { PromotionDisplay as Display, PromotionVisibility } from "@/lib/api/requests/admin-promotions";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { isApiError, type ProblemFieldError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { Field, FormSection } from "@/ui/components/Field";
 import { EDGE_BAR, FormColumns, FormSummary } from "@/ui/components/FormLayout";
 import { FilePickButton } from "@/ui/components/FilePickButton";
@@ -22,15 +22,26 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, problemMessage } from "../console";
-import { canPublish, previewDeal, publicFieldsOf, publishChecks, type PublishCheck } from "./promotion-display";
+import {
+  canPublish,
+  displayInput,
+  previewDeal,
+  publicFieldsOf,
+  publishChecks,
+  type DisplayDraft as Display,
+  type PromotionVisibility,
+  type PublishCheck,
+} from "./promotion-display";
 
 type Localized = { th: string; en: string };
 
 /**
  * The promotion editor's "การแสดงผล" tab (loyalty P1.5, API-CHANGES-P15 Admin): who sees the promotion on the deals
  * surface (hidden by default, unlisted for a link only, public), the ticket's words in Thai and English, the slug,
- * "ดีลเด่น" and a hero image — with the storefront's own DealCard as the preview. Publishing waits until the API's
- * guard holds (active, slug, Thai headline and terms, no blocked words); the panel lists each condition.
+ * "ดีลเด่น" and a hero image — with the storefront's own DealCard as the preview. Publishing (public or unlisted)
+ * waits until the API's guard holds (active, slug, Thai headline and terms, no blocked words); the panel lists each
+ * condition. When the API still refuses — 422 `promotions.not_publishable` — its `errors[]` are listed under the
+ * button; 409 `promotions.slug_taken` sits under the slug.
  */
 export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionDto"]; editable: boolean }) {
   const t = useTranslations("marketing.promotion.display");
@@ -43,31 +54,56 @@ export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionD
   const [saving, setSaving] = useState(false);
   const [now] = useState(() => Date.now());
   const [uploading, setUploading] = useState(false);
+  /** The API's refusal of the last save: each failed rule (422 `errors[]`), and a slug another promotion holds. */
+  const [refusals, setRefusals] = useState<readonly ProblemFieldError[]>([]);
+  const [slugTaken, setSlugTaken] = useState(false);
   const set = (patch: Partial<Display>) => setDisplay((current) => ({ ...current, ...patch }));
   const setText = (key: "headline" | "subline" | "terms", lang: keyof Localized, value: string) =>
     set({ [key]: { ...display[key], [lang]: value } } as Partial<Display>);
   const checks = publishChecks(item.status, display);
   const publishable = canPublish(checks);
-  const blocked = visibility === "public" && !publishable;
+  const shown = visibility !== "hidden";
+  const blocked = shown && !publishable;
   const deal = previewDeal(item, display, locale);
+  /** One failed rule of the API's guard, in the panel's words; an unknown rule shows the API's own message. */
+  const refusalText = (refusal: ProblemFieldError) => {
+    if (refusal.code === "blocked_word") {
+      const [, key, lang] = refusal.path.split(".");
+      const field =
+        key === "badge"
+          ? t("fields.badge")
+          : key === "headline" || key === "subline" || key === "terms"
+            ? t(`fields.${key}.${lang === "en" ? "en" : "th"}`)
+            : refusal.path;
+      return t("refusals.blocked_word", { field });
+    }
+    if (refusal.path === "visibility" && refusal.code === "system_managed") return t("refusals.system_managed");
+    if (refusal.path === "status") return t("refusals.status");
+    if (refusal.path === "display.slug") return t("refusals.slug");
+    if (refusal.path === "display.headline.th") return t("refusals.headline");
+    if (refusal.path === "display.terms.th") return t("refusals.terms");
+    return refusal.message;
+  };
 
   const save = async () => {
     setSaving(true);
+    setRefusals([]);
+    setSlugTaken(false);
     try {
       const { response } = await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}", {
         params: { path: { promotionId: item.id } },
       });
       const etag = response.headers.get("ETag");
-      const body = { visibility, display: { ...display, slug: display.slug.trim() } };
-      // CONTRACT-REQUEST admin.promotions.display — the published PATCH takes these fields from P1.5 on.
       const { data } = await adminBrowserApis().contract.PATCH("/v1/admin/promotions/{promotionId}", {
         params: { path: { promotionId: item.id }, header: { "If-Match": etag ?? "" } },
-        body: body as unknown as Schemas["UpdatePromotionDto"],
+        body: { visibility, display: displayInput(display) },
       });
       queryClient.setQueryData(queryKeys.detail("admin", "promotion", item.id), data);
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "promotion") });
-      toast.success(visibility === "public" ? t("published") : t("saved"));
+      toast.success(shown ? t("published") : t("saved"));
     } catch (error) {
+      if (isApiError(error) && error.code === "promotions.not_publishable") setRefusals(error.errors);
+      if (isApiError(error) && error.code === "promotions.slug_taken") setSlugTaken(true);
       toast.error(problemMessage(error, t("failed")));
     } finally {
       setSaving(false);
@@ -78,12 +114,13 @@ export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionD
     setUploading(true);
     try {
       const uploaded = await uploadFile("admin", file, "image");
-      const result = await browserRequests().call("POST /v1/admin/promotions/{promotionId}/hero-image", {
-        path: { promotionId: item.id },
-        body: { fileId: uploaded.id },
+      // admin.promotions.setHeroImage answers the promotion, with its new `heroImageUrl`.
+      const { data } = await adminBrowserApis().contract.POST("/v1/admin/promotions/{promotionId}/hero-image", {
+        params: { path: { promotionId: item.id } },
+        body: { heroImageFileId: uploaded.id },
       });
-      set({ heroImageKey: result.heroImageKey });
-      setHeroUrl(result.heroImageUrl);
+      setHeroUrl(data!.heroImageUrl);
+      queryClient.setQueryData(queryKeys.detail("admin", "promotion", item.id), data);
       toast.success(t("heroSaved"));
     } catch (error) {
       toast.error(problemMessage(error, t("heroFailed")));
@@ -118,13 +155,13 @@ export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionD
 
   const action = editable ? (
     <Button
-      iconStart={visibility === "public" ? "megaphone" : "save"}
+      iconStart={shown ? "megaphone" : "save"}
       loading={saving}
       disabled={blocked}
       aria-describedby="display-checks"
       onClick={() => void save()}
     >
-      {visibility === "public" ? t("publish") : t("save")}
+      {shown ? t("publish") : t("save")}
     </Button>
   ) : null;
 
@@ -170,6 +207,15 @@ export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionD
                 ))}
               </ul>
             </section>
+            {refusals.length > 0 ? (
+              <Callout tone="danger" live title={t("refusals.title")}>
+                <ul className="m-0 flex list-disc flex-col gap-1 ps-4 text-[0.8125rem]">
+                  {refusals.map((refusal) => (
+                    <li key={`${refusal.path}:${refusal.code}`}>{refusalText(refusal)}</li>
+                  ))}
+                </ul>
+              </Callout>
+            ) : null}
           </div>
         </FormSummary>
       }
@@ -187,13 +233,20 @@ export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionD
             disabled: !editable,
           }))}
         />
-        <Field label={t("fields.slug")} hint={t("fields.slugHint")}>
+        <Field
+          label={t("fields.slug")}
+          hint={t("fields.slugHint")}
+          error={slugTaken ? t("refusals.slugTaken") : undefined}
+        >
           <Input
             value={display.slug}
             disabled={!editable}
             autoComplete="off"
             spellCheck={false}
-            onChange={(event) => set({ slug: event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
+            onChange={(event) => {
+              setSlugTaken(false);
+              set({ slug: event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") });
+            }}
           />
         </Field>
         <Switch

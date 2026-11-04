@@ -18,7 +18,7 @@ vi.mock("@/i18n/navigation", () => ({
     </a>
   ),
 }));
-vi.mock("@/lib/api/requests/browser", () => ({ browserRequests: () => ({ call: vi.fn() }) }));
+vi.mock("@/lib/api/browser", () => ({ browserApi: () => ({ POST: vi.fn() }) }));
 
 const NOW = Date.parse("2026-11-04T10:30:00+07:00");
 const five = ["box10-corrugated", "free-shipping-5000", "label8-5000", "welcome-300", "reorder-points-x2"].map((slug) =>

@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { HOME_WRAP, UNDERLINE } from "@/features/customer/home/parts";
 import { Link } from "@/i18n/navigation";
-import type { Deal } from "@/lib/api/requests/store-deals";
+import type { Deal } from "@/features/shared/deals/types";
 import { cn } from "@/ui/lib/cn";
 
 import { DealsView } from "./DealsView";

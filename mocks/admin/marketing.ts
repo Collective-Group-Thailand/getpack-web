@@ -16,9 +16,6 @@ import { http, HttpResponse } from "msw";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS } from "../personas";
-import { promotionPublicFields, type PromotionDisplay } from "@/lib/api/requests/admin-promotions";
-
-import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, precondition, problem, withEtag } from "../support";
 import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
@@ -288,28 +285,61 @@ const promotions: PromotionRow[] = [
 /** Words a public deal may not use (D-481, GLOBAL-RULES §1–§2): the API's publish guard, mirrored. */
 const BLOCKED_WORDS = /โรงงาน|factory|กำไร|margin|ทันที|นับถอยหลัง|countdown|flash sale/i;
 
-/** Why a promotion cannot go public, or null (API-CHANGES-P15 Admin). */
-function publishRefusal(row: PromotionRow, display: PromotionDisplay | null): string | null {
-  if (row.status !== "active") return "เปิดเป็นสาธารณะได้เมื่อโปรโมชันเปิดใช้งานอยู่";
-  if (!display?.slug.trim()) return "กรุณาตั้ง slug ก่อนเปิดเป็นสาธารณะ";
-  if (!display.headline.th.trim() || !display.terms.th.trim()) return "กรุณากรอกหัวข้อและเงื่อนไขภาษาไทย";
-  const text = [display.headline, display.subline, display.terms, display.badge]
-    .flatMap((entry) => (entry ? [entry.th, entry.en] : []))
-    .join(" ");
-  if (BLOCKED_WORDS.test(text)) return "ข้อความมีคำที่ใช้กับดีลสาธารณะไม่ได้";
-  return null;
+const EMPTY_DISPLAY: Schemas["PromotionDisplayDto"] = {
+  headline: null,
+  subline: null,
+  badge: null,
+  terms: null,
+  featured: false,
+  slug: null,
+};
+
+/**
+ * The API's publish guard (`publishErrors`): every rule a public or unlisted promotion fails, as `errors[]` of a 422
+ * `promotions.not_publishable`. Hidden always passes.
+ */
+function publishErrors(
+  row: PromotionRow,
+  visibility: Schemas["PromotionVisibility"],
+  display: Schemas["PromotionDisplayDto"],
+): { path: string; code: string; message: string }[] {
+  if (visibility === "hidden") return [];
+  const errors: { path: string; code: string; message: string }[] = [];
+  if (row.kind === "referral")
+    errors.push({ path: "visibility", code: "system_managed", message: "system promotions stay hidden" });
+  if (row.status !== "active") errors.push({ path: "status", code: "not_active", message: "activate it first" });
+  if (!display.slug) errors.push({ path: "display.slug", code: "required", message: "a deal page needs a slug" });
+  if (!display.headline?.th)
+    errors.push({ path: "display.headline.th", code: "required", message: "a Thai headline is required" });
+  if (!display.terms?.th)
+    errors.push({ path: "display.terms.th", code: "required", message: "Thai terms are required" });
+  for (const key of ["headline", "subline", "badge", "terms"] as const) {
+    for (const lang of ["th", "en"] as const) {
+      const value = display[key]?.[lang];
+      if (value && BLOCKED_WORDS.test(value))
+        errors.push({
+          path: `display.${key}.${lang}`,
+          code: "blocked_word",
+          message: "must not contain a blocked word",
+        });
+    }
+  }
+  return errors;
 }
 
 function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
   const campaign = campaigns.find((candidate) => candidate.id === row.campaignId);
   // The spend is the discount given: what the promotion's own budget is measured against.
   return {
-    // CONTRACT-REQUEST admin.promotions.display — hidden with no display copy until Marketing sets them.
+    // Loyalty P1.5: hidden with no display copy until Marketing sets them.
     visibility: "hidden",
-    display: null,
+    display: EMPTY_DISPLAY,
+    heroImageFileId: null,
     heroImageUrl: null,
     ...row,
-    usage: { ...row.usage },
+    displaySchemaVersion: 1,
+    systemKey: null,
+    usage: { ...row.usage, views: row.usage.redemptions * 12, saves: row.usage.redemptions * 2 },
     spentAmount: row.usage.discountAmount,
     campaign: campaign ? { id: campaign.id, code: campaign.code, name: campaign.name } : null,
     benefitSummaryTh: benefitSummary(row.benefit).th,
@@ -402,6 +432,10 @@ function reportOf(rows: readonly PromotionRow[]): Schemas["PromotionReportDto"] 
     orderGroups: redemptions,
     grossAmount: baht(discountSatang * 9.4),
     customers: Math.round(redemptions * 0.9),
+    uses: redemptions,
+    views: redemptions * 12,
+    saves: redemptions * 2,
+    refAgents: [],
     currency: "THB",
   };
 }
@@ -757,15 +791,30 @@ export const marketingContractHandlers = [
       campaignId?: unknown;
     };
     void [kind, campaignId];
-    // CONTRACT-REQUEST admin.promotions.display: a change to public passes the publish guard first.
-    const shown = promotionPublicFields.partial().safeParse(body);
-    if (!shown.success) return invalid("display", "ข้อมูลการแสดงผลไม่ถูกต้อง");
-    if (shown.data.visibility === "public") {
-      const display = shown.data.display ?? row.display ?? null;
-      const refusal = publishRefusal(row, display);
-      if (refusal) return problem(409, "promotions.not_publishable", refusal);
-    }
-    Object.assign(row, changes);
+    // Loyalty P1.5: `display` keys given replace the stored ones; a public or unlisted promotion passes the guard.
+    const { display: displayInput, ...rest } = changes;
+    const display = { ...(row.display ?? EMPTY_DISPLAY), ...(displayInput ?? {}) } as Schemas["PromotionDisplayDto"];
+    const visibility = rest.visibility ?? row.visibility ?? "hidden";
+    if (display.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(display.slug))
+      return invalid("display.slug", "slug ใช้ได้เฉพาะตัวพิมพ์เล็ก ตัวเลข และขีด");
+    const failed = publishErrors(row, visibility, display);
+    if (failed.length)
+      return problem(
+        422,
+        "promotions.not_publishable",
+        "ตรวจสถานะ ลิงก์ หัวข้อและเงื่อนไขภาษาไทย และคำที่ห้ามใช้ ตามรายการใน errors",
+        failed,
+      );
+    if (
+      display.slug &&
+      visibility !== "hidden" &&
+      promotions.some(
+        (other) =>
+          other.id !== row.id && other.display?.slug === display.slug && (other.visibility ?? "hidden") !== "hidden",
+      )
+    )
+      return problem(409, "promotions.slug_taken", "เลือกลิงก์ (slug) อื่นสำหรับโปรโมชันนี้");
+    Object.assign(row, rest, displayInput ? { display } : {});
     touch(row);
     return withEtag(toPromotionDto(row), etagOf(row));
   }),
@@ -889,17 +938,18 @@ function toCouponBatchDto(batch: Batch): Schemas["CouponBatchDto"] {
 
 /** The priority reorder and coupon batches (published in v0.5.0), and the referral queue. */
 export const marketingHandlers = [
-  // CONTRACT-REQUEST admin.promotions.display — the uploaded image becomes the deal's hero image.
-  mockRequest("POST /v1/admin/promotions/{promotionId}/hero-image", ({ params, body, request }) => {
+  // admin.promotions.setHeroImage — an uploaded file (purpose image) becomes the deal's hero image; null removes it.
+  http.post("*/v1/admin/promotions/:promotionId/hero-image", async ({ params, request }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
     const row = promotionOf(params.promotionId);
     if (!row) return noPromotion();
-    const heroImageKey = `promotions/${row.id}/hero/${body.fileId}`;
-    const heroImageUrl = `/v1/admin/files/${body.fileId}/preview`;
-    row.display = row.display ? { ...row.display, heroImageKey } : row.display;
-    row.heroImageUrl = heroImageUrl;
+    if (row.kind === "referral") return systemManaged();
+    const body = (await request.json().catch(() => null)) as Schemas["PromotionHeroImageDto"] | null;
+    if (!body || !("heroImageFileId" in body)) return invalid("heroImageFileId", "ระบุไฟล์ภาพ");
+    row.heroImageFileId = body.heroImageFileId;
+    row.heroImageUrl = body.heroImageFileId ? `/v1/admin/files/${body.heroImageFileId}/preview` : null;
     touch(row);
-    return { heroImageKey, heroImageUrl };
+    return withEtag(toPromotionDto(row), etagOf(row));
   }),
   // admin.promotions.reorder (`promotions.manage`, optional Idempotency-Key): priorities 10, 20, …
   http.put("*/v1/admin/promotions/priority", async ({ request }) => {

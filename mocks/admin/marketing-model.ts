@@ -5,7 +5,6 @@
  * (usage, the owner, the batch of a code) because the mock has to compute it from something.
  */
 
-import type { PromotionPublicFields } from "@/lib/api/requests/admin-promotions";
 import type { Schemas } from "@/lib/api/types";
 
 export interface CampaignRow {
@@ -52,9 +51,11 @@ export interface PromotionRow {
   budgetAmount: string | null;
   usage: PromotionUsage;
   updatedAt: string;
-  /** Loyalty P1.5 (CONTRACT-REQUEST admin.promotions.display): off every store surface until made public. */
-  visibility?: PromotionPublicFields["visibility"];
-  display?: PromotionPublicFields["display"];
+  /** Loyalty P1.5 (`admin.promotions.update` → `visibility`, `display`): off every store surface until shown. */
+  visibility?: Schemas["PromotionVisibility"];
+  display?: Schemas["PromotionDisplayDto"];
+  /** `admin.promotions.setHeroImage`: the uploaded file, and the URL the API answers for it. */
+  heroImageFileId?: string | null;
   heroImageUrl?: string | null;
 }
 

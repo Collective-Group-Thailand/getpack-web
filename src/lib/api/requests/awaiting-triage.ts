@@ -20,20 +20,6 @@ export const AWAITING_TRIAGE: readonly string[] = [
   "POST /v1/store/newsletter/actions/subscribe",
   // U3.6 (2026-10-06): the staff a structural design request can be assigned to.
   "GET /v1/admin/structural-requests/designers",
-  // Loyalty P1 (2026-11-04, API-CHANGES-P1): the earn checklist and the packaging profile, built in parallel on
-  // getpack-api `feat/loyalty-p1-activity-rewards`.
-  "GET /v1/store/loyalty/tasks",
-  "GET /v1/store/loyalty/packaging-profile",
-  "PUT /v1/store/loyalty/packaging-profile",
-  // Loyalty P1.5 (2026-11-04, API-CHANGES-P15): the deals surface, built in parallel on getpack-api
-  // `feat/loyalty-p15-deals-surface`.
-  "GET /v1/store/promotions",
-  "GET /v1/store/promotions/{slug}",
-  "POST /v1/store/promotions/{promotionId}/actions/save",
-  "GET /v1/store/cart/applicable-codes",
-  "GET /v1/store/quotations/{quotationId}/ladder",
-  "GET /v1/store/pricing/ladder",
-  "POST /v1/admin/promotions/{promotionId}/hero-image",
 ];
 
 /**

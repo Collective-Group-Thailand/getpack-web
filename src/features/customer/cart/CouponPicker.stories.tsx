@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { useState } from "react";
 
 import deals from "@/i18n/messages/th/customer/deals.json";
-import type { ApplicableCodes } from "@/lib/api/requests/store-deals";
+import type { ApplicableCodes } from "@/features/shared/deals/types";
 
 import { fixtureDeal } from "../../../../mocks/store/deals-fixtures";
 
@@ -33,6 +33,8 @@ const DATA: ApplicableCodes = {
       stackGroup: "shipping",
       conflictsWith: [],
       best: false,
+      stacking: "stackable",
+      onCart: false,
     },
     {
       code: "LABEL8",
@@ -43,6 +45,8 @@ const DATA: ApplicableCodes = {
       stackGroup: "product",
       conflictsWith: ["BOX10"],
       best: false,
+      stacking: "stackable",
+      onCart: false,
     },
     {
       code: "BOX10",
@@ -53,12 +57,21 @@ const DATA: ApplicableCodes = {
       stackGroup: "product",
       conflictsWith: ["LABEL8"],
       best: true,
+      stacking: "stackable",
+      onCart: false,
     },
   ],
   notYet: [
-    { code: "MATTEFREE", headline: "เคลือบด้านฟรี", reason: "min_quantity", reasonText: "สั่งกล่องเพิ่มอีก 1,000 ใบ" },
+    {
+      code: "MATTEFREE",
+      promotionId: "00000000-0000-4000-8000-000000000090",
+      headline: "เคลือบด้านฟรี",
+      reason: "min_quantity",
+      reasonText: "สั่งกล่องเพิ่มอีก 1,000 ใบ",
+    },
     {
       code: "WELCOME300",
+      promotionId: "00000000-0000-4000-8000-000000000091",
       headline: "คำสั่งซื้อแรก ลด ฿300",
       reason: "first_order_only",
       reasonText: "ใช้ได้เฉพาะคำสั่งซื้อแรก",

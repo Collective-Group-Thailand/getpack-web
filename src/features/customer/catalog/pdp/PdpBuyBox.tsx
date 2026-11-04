@@ -177,12 +177,9 @@ export function PdpBuyBox({
             <p className="text-muted m-0 text-sm">{t("price.incomplete")}</p>
           )}
         </div>
-        {/* Loyalty P1.5: the deal for this product type sits in the price field, under a perforation. */}
-        <DealPromoBox
-          productTypeCode={configurator.productTypeCode}
-          calculationId={price.data?.calculationId ?? null}
-          quantity={selection.quantity}
-        />
+        {/* Loyalty P1.5: the deal for this product type sits in the price field, under a perforation. No quotation
+            is kept on the PDP, so no ladder hint (store.quotes.ladder reads a saved quotation). */}
+        <DealPromoBox productTypeCode={configurator.productTypeCode} quantity={selection.quantity} />
       </div>
 
       {sizes.length > 0 ? (

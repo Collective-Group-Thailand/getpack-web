@@ -1,13 +1,14 @@
 /**
- * Loyalty P1.5 (API-CHANGES-P15): the deals the mock serves — the same set as the Stitch review copy and the UAT
+ * Loyalty P1.5 (`store.promotions.listPublic` / `getPublic`): the deals the mock serves — the same set as the Stitch review copy and the UAT
  * seed (which ships `hidden`; here they are public so the screens have something to show). All fake. One deal is
  * `hidden` and one has ended, so the mock proves neither is ever served (PLAN §8 Phase 1.5).
  *
- * The list is built the way the API builds it: shown = public ∧ active ∧ now in [startsAt, endsAt); `endingSoon` =
- * less than 72 h left; text in the request's locale; `myStatus` per signed-in persona.
+ * The list is built the way the API builds it: listed = public ∧ active ∧ now in [startsAt, endsAt); an `unlisted`
+ * deal is served only by its link (`getPublic`); `endingSoon` = less than 72 h left; text in the request's locale;
+ * `myStatus` per signed-in persona. Benefits cover every `DealBenefitKind`, `tiered` and `perk` included.
  */
 
-import type { Deal, DealDetail, DealList, DealMyStatus } from "@/lib/api/requests/store-deals";
+import type { Deal, DealBenefit, DealDetail, DealList, DealMyStatus } from "@/features/shared/deals/types";
 
 import { bangkokIso, mockId } from "../support";
 
@@ -22,17 +23,17 @@ export interface DealFixture {
   headline: Text;
   subline: Text | null;
   badge: Text | null;
-  benefit: { kind: Deal["benefit"]["kind"]; value: string; maxDiscount: string | null; summary: Text };
+  benefit: Omit<DealBenefit, "summary"> & { summary: Text };
   conditions: { label: Text; value: Text }[];
   productTypeCodes: string[];
   code: string | null;
   /** Days from now; negative = already over. */
   startsInDays: number;
   endsInDays: number | null;
-  terms: Text;
+  terms: Text | null;
   /** What a signed-in customer sees when they have not saved it. */
   forCustomer: DealMyStatus | null;
-  notEligibleReason?: string;
+  notEligibleReason?: Deal["notEligibleReason"];
 }
 
 const t = (th: string, en: string): Text => ({ th, en });
@@ -77,7 +78,7 @@ export const DEAL_FIXTURES: DealFixture[] = [
     headline: t("ส่งฟรีเมื่อสั่งครบ ฿5,000", "Free shipping on orders of ฿5,000"),
     subline: t("ค่าจัดส่งมาตรฐานทุกปลายทาง", "Standard delivery to any address"),
     badge: null,
-    benefit: { kind: "free_shipping", value: "", maxDiscount: null, summary: t("ส่งฟรี", "Free shipping") },
+    benefit: { kind: "free_shipping", value: null, maxDiscount: null, summary: t("ส่งฟรี", "Free shipping") },
     conditions: [
       { label: MIN, value: t("ยอดสินค้า ฿5,000", "฿5,000 of goods") },
       { label: t("สิทธิ์", "Uses"), value: t("1 ครั้งต่อบัญชี", "Once per account") },
@@ -245,18 +246,82 @@ export const DEAL_FIXTURES: DealFixture[] = [
     terms: t("หมดเวลาแล้ว", "Over"),
     forCustomer: "claimable",
   },
+  {
+    n: 10,
+    slug: "rigid-box-tiered",
+    visibility: "public",
+    featured: false,
+    headline: t("กล่องแข็ง ยิ่งสั่งมากยิ่งลด สูงสุด 15%", "Rigid boxes: order more, save up to 15%"),
+    subline: t("1,000 ใบลด 8% · 3,000 ใบลด 15%", "8% off 1,000 · 15% off 3,000"),
+    badge: null,
+    benefit: {
+      kind: "tiered",
+      value: "15",
+      maxDiscount: null,
+      summary: t("1,000 ชิ้น+ ลด 8%, 3,000 ชิ้น+ ลด 15%", "1,000 pcs+: 8% off; 3,000 pcs+: 15% off"),
+    },
+    conditions: [{ label: MIN, value: t("1,000 ใบ", "1,000 pcs") }],
+    productTypeCodes: ["rigid_box"],
+    code: null,
+    startsInDays: -2,
+    endsInDays: 60,
+    terms: t(
+      "ลดตามจำนวนในรายการเดียว 1,000 ใบขึ้นไปลด 8% และ 3,000 ใบขึ้นไปลด 15% ไม่ต้องใช้โค้ด",
+      "By quantity on one line: 8% off from 1,000 pieces and 15% off from 3,000. No code needed.",
+    ),
+    forCustomer: null,
+  },
+  {
+    n: 11,
+    slug: "free-design-first-order",
+    visibility: "public",
+    featured: false,
+    headline: t("ออกแบบฟรีสำหรับงานสั่งพิมพ์", "Free design with your print order"),
+    subline: null,
+    badge: null,
+    benefit: { kind: "perk", value: null, maxDiscount: null, summary: t("ออกแบบฟรี", "Free design") },
+    conditions: [],
+    productTypeCodes: [],
+    code: "DESIGNFREE",
+    startsInDays: -5,
+    endsInDays: null,
+    terms: t("ทีมออกแบบช่วยจัดหน้าให้ 1 แบบต่อคำสั่งซื้อ", "Our design team lays out one design per order."),
+    forCustomer: "claimable",
+  },
+  {
+    n: 12,
+    slug: "agent-link-only",
+    visibility: "unlisted",
+    featured: false,
+    headline: t("ดีลสำหรับลูกค้าที่ตัวแทนแนะนำ", "A deal for customers our agents refer"),
+    subline: null,
+    badge: null,
+    benefit: { kind: "amount", value: "200.00", maxDiscount: null, summary: t("ลด ฿200", "฿200 off") },
+    conditions: [],
+    productTypeCodes: [],
+    code: "AGENT200",
+    startsInDays: -1,
+    endsInDays: 30,
+    terms: t("เปิดได้จากลิงก์ที่ตัวแทนส่งให้เท่านั้น", "Opened only from the link an agent sends."),
+    forCustomer: "claimable",
+  },
 ];
 
 const DAY_MINUTES = 24 * 60;
 const SOON_MS = 72 * 60 * 60 * 1000;
 
-/** Shown = public ∧ active ∧ now in [startsAt, endsAt). */
+/** Live = active ∧ now in [startsAt, endsAt). */
+const isLive = (fixture: DealFixture) =>
+  fixture.startsInDays <= 0 && (fixture.endsInDays === null || fixture.endsInDays > 0);
+
+/** Listed (`listPublic`, the home strip, the PDP filter) = public ∧ live. */
 export function isShown(fixture: DealFixture): boolean {
-  return (
-    fixture.visibility === "public" &&
-    fixture.startsInDays <= 0 &&
-    (fixture.endsInDays === null || fixture.endsInDays > 0)
-  );
+  return fixture.visibility === "public" && isLive(fixture);
+}
+
+/** Served by its link (`getPublic`) = public or unlisted ∧ live; `hidden` is served nowhere. */
+export function isLinkable(fixture: DealFixture): boolean {
+  return fixture.visibility !== "hidden" && isLive(fixture);
 }
 
 export function toDeal(
@@ -282,7 +347,7 @@ export function toDeal(
     startsAt: bangkokIso(fixture.startsInDays * DAY_MINUTES),
     endsAt,
     endingSoon: fixture.endsInDays !== null && fixture.endsInDays * DAY_MINUTES * 60_000 < SOON_MS,
-    terms: fixture.terms[lang],
+    terms: fixture.terms?.[lang] ?? null,
     heroImageUrl: null,
     myStatus,
     notEligibleReason: myStatus === "not_eligible" ? (fixture.notEligibleReason ?? null) : null,
@@ -311,7 +376,9 @@ export function toDealDetail(fixture: DealFixture, lang: Lang, options: Paramete
   return {
     ...toDeal(fixture, lang, options),
     faq: [
-      { q: lang === "th" ? "เงื่อนไขของดีลนี้คืออะไร" : "What are this deal's terms?", a: fixture.terms[lang] },
+      ...(fixture.terms
+        ? [{ q: lang === "th" ? "เงื่อนไขของดีลนี้คืออะไร" : "What are this deal's terms?", a: fixture.terms[lang] }]
+        : []),
       ...GLOBAL_FAQ.map((entry) => ({ q: entry.q[lang], a: entry.a[lang] })),
     ],
   };
@@ -340,10 +407,29 @@ export function buildDealList(
 }
 
 /** What the cart picker offers, per persona: the codes held and the fake engine's savings (a mock is a fake engine). */
-export const HELD_CODES: Record<string, { saving: string; stackGroup: string | null; benefitSummary: Text }> = {
-  BOX10: { saving: "1331.00", stackGroup: "product", benefitSummary: t("ลด 10% กล่องลูกฟูก", "10% off corrugated") },
-  FREESHIP: { saving: "250.00", stackGroup: "shipping", benefitSummary: t("ส่งฟรีทั่วประเทศ", "Free shipping") },
-  LABEL8: { saving: "340.00", stackGroup: "product", benefitSummary: t("ลด 8% สติกเกอร์ฉลาก", "8% off labels") },
+/** `saving` is ex-VAT, as `checkCode` / apply compute it (the API's applicable-codes contract). */
+export const HELD_CODES: Record<
+  string,
+  { saving: string; stackGroup: string | null; stacking: "exclusive" | "stackable" | "best_of"; benefitSummary: Text }
+> = {
+  BOX10: {
+    saving: "1243.93",
+    stackGroup: "product",
+    stacking: "stackable",
+    benefitSummary: t("ลด 10% กล่องลูกฟูก", "10% off corrugated"),
+  },
+  FREESHIP: {
+    saving: "233.64",
+    stackGroup: "shipping",
+    stacking: "stackable",
+    benefitSummary: t("ส่งฟรีทั่วประเทศ", "Free shipping"),
+  },
+  LABEL8: {
+    saving: "317.76",
+    stackGroup: "product",
+    stacking: "stackable",
+    benefitSummary: t("ลด 8% สติกเกอร์ฉลาก", "8% off labels"),
+  },
 };
 
 export const NOT_YET: Record<string, { reason: string; reasonText: Text }> = {
@@ -359,6 +445,6 @@ export function fixtureDeal(slug: string, myStatus: DealMyStatus | null = "claim
   return {
     ...deal,
     myStatus: signedIn ? myStatus : null,
-    notEligibleReason: myStatus === "not_eligible" ? (fixture.notEligibleReason ?? "other") : null,
+    notEligibleReason: myStatus === "not_eligible" ? (fixture.notEligibleReason ?? "first_order_only") : null,
   };
 }

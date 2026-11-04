@@ -8,7 +8,7 @@ import { dealState, featuredDeal } from "@/features/shared/deals/model";
 import { useDealSaves } from "@/features/shared/deals/useDealSaves";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import type { Deal } from "@/lib/api/requests/store-deals";
+import type { Deal } from "@/features/shared/deals/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";

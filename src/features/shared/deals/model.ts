@@ -6,14 +6,14 @@
 
 import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
-import type { ApplicableCode, Deal } from "@/lib/api/requests/store-deals";
+import type { ApplicableCode, Deal } from "./types";
 
 /** What the stub shows: a small word, the figure, and the cap on the same baseline. */
 export interface StubValue {
-  /** "ลด", "แต้ม", or none for a word value ("ส่งฟรี"). */
-  word: "off" | "points" | null;
-  /** The figure as text, already formatted: "10%", "฿300", "×2", or a word. */
-  figure: { kind: "number"; text: string } | { kind: "word"; key: "freeShipping" };
+  /** "ลด", "ลดสูงสุด" (tiered: the top tier), "แต้ม", or none for a word value ("ส่งฟรี"). */
+  word: "off" | "upTo" | "points" | null;
+  /** The figure as text, already formatted: "10%", "฿300", "×2", or a word ("ส่งฟรี", "สิทธิพิเศษ"). */
+  figure: { kind: "number"; text: string } | { kind: "word"; key: "freeShipping" | "perk" };
   /** "สูงสุด ฿1,500": the formatted cap amount, or null. */
   cap: string | null;
 }
@@ -28,16 +28,33 @@ export function stubValue(
   format: { thbWhole: (amount: string) => string; percent: (value: string) => string },
 ): StubValue {
   const cap = benefit.maxDiscount ? format.thbWhole(benefit.maxDiscount) : null;
+  const value = benefit.value;
   switch (benefit.kind) {
     case "percent":
-      return { word: "off", figure: { kind: "number", text: format.percent(benefit.value) }, cap };
+      if (value === null) break;
+      return { word: "off", figure: { kind: "number", text: format.percent(value) }, cap };
     case "amount":
-      return { word: "off", figure: { kind: "number", text: format.thbWhole(benefit.value) }, cap };
+      if (value === null) break;
+      return { word: "off", figure: { kind: "number", text: format.thbWhole(value) }, cap };
+    case "tiered":
+      // The API's value is the top tier: a percent ("15") or an amount ("500.00").
+      if (value === null) break;
+      return {
+        word: "upTo",
+        figure: { kind: "number", text: value.includes(".") ? format.thbWhole(value) : format.percent(value) },
+        cap,
+      };
     case "points_multiplier":
-      return { word: "points", figure: { kind: "number", text: `×${benefit.value}` }, cap: null };
+      if (value === null) break;
+      return { word: "points", figure: { kind: "number", text: `×${value}` }, cap: null };
     case "free_shipping":
       return { word: null, figure: { kind: "word", key: "freeShipping" }, cap };
+    case "perk":
+      break;
   }
+  // A perk (special unit price, free design / mock-up / revision rounds, bonus points), or a figure the API left
+  // out: a word on the stub; the ticket's headline and `summary` say which.
+  return { word: null, figure: { kind: "word", key: "perk" }, cap: null };
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

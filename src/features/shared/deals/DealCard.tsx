@@ -5,7 +5,6 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import type { Deal } from "@/lib/api/requests/store-deals";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Ticket } from "@/ui/components/Ticket";
@@ -13,6 +12,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { daysLeft, dealState, stubValue, thbCompact, type DealState } from "./model";
+import type { Deal } from "./types";
 
 export type DealCardVariant = "grid" | "compact" | "featured" | "hero";
 
@@ -80,12 +80,7 @@ export function DealCard({
     </Badge>
   ) : null;
   const validity = (
-    <p
-      className={cn(
-        "m-0 text-[0.8125rem]",
-        days !== null ? "text-warning font-medium" : "text-muted",
-      )}
-    >
+    <p className={cn("m-0 text-[0.8125rem]", days !== null ? "text-warning font-medium" : "text-muted")}>
       {days !== null ? `${t("daysLeft", { days })} · ${until}` : until}
     </p>
   );
@@ -313,11 +308,7 @@ export function DealCard({
             deal.headline
           )}
         </Heading>
-        {condition ? (
-          <p className={cn("m-0 text-[0.84375rem] leading-normal", "text-muted")}>
-            {condition}
-          </p>
-        ) : null}
+        {condition ? <p className={cn("m-0 text-[0.84375rem] leading-normal", "text-muted")}>{condition}</p> : null}
         {validity}
         {reason}
         <div className="mt-auto flex min-h-14 items-center justify-between gap-2.5 pt-4">{footer}</div>
@@ -343,7 +334,16 @@ export function useDealStub(benefit: Deal["benefit"]) {
 }
 
 function reasonKey(reason: string | null): string {
-  const known = ["first_order_only", "min_quantity", "min_order_value", "product_type", "segment", "usage_limit"];
+  const known = [
+    "first_order_only",
+    "new_customer_only",
+    "returning_customer_only",
+    "min_quantity",
+    "min_order_value",
+    "product_type",
+    "segment",
+    "usage_limit",
+  ];
   return reason && known.includes(reason) ? reason : "other";
 }
 

@@ -471,7 +471,11 @@
     "not_a_coupon": "ไม่ใช่โปรโมชันแบบคูปอง",
     "payment_method_required": "ช่องทางชำระไม่ตรงเงื่อนไข",
     "too_many_attempts": "ลองใส่รหัสบ่อยเกินไป",
-    "system_managed": "แก้ไขไม่ได้"
+    "system_managed": "แก้ไขไม่ได้",
+    "already_saved": "เก็บโค้ดนี้ไว้แล้ว",
+    "not_saveable": "เก็บโค้ดนี้ไม่ได้",
+    "not_publishable": "ยังเผยแพร่โปรโมชันนี้ไม่ได้",
+    "slug_taken": "ลิงก์นี้มีโปรโมชันอื่นใช้แล้ว"
   },
   "proofs": {
     "annotation_closed": "ปิดรับความเห็นแล้ว",

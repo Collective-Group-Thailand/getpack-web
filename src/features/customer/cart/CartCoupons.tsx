@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -44,13 +44,13 @@ export function CartCoupons({
   const [open, setOpen] = useState(false);
   const applicable = useQuery({
     queryKey: queryKeys.related("customer", "cart", "applicable-codes", cartVersion),
-    queryFn: () => browserRequests().call("GET /v1/store/cart/applicable-codes"),
+    queryFn: async () => (await browserApi().GET("/v1/store/cart/applicable-codes")).data!,
     staleTime: 30_000,
   });
   // The public deals' benefits, for each row's stub (a personal coupon has none and shows the ticket mark).
   const deals = useQuery({
     queryKey: queryKeys.list("customer", "deal", {}),
-    queryFn: () => browserRequests().call("GET /v1/store/promotions"),
+    queryFn: async () => (await browserApi().GET("/v1/store/promotions")).data!,
     staleTime: 60_000,
     enabled: (applicable.data?.applicable.length ?? 0) > 0,
   });

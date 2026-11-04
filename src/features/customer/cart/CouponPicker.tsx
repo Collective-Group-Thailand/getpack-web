@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { MiniStub, useDealStub } from "@/features/shared/deals/DealCard";
 import { pickerRowState, sortApplicable, type PickerRowState } from "@/features/shared/deals/model";
 import { useFormat } from "@/features/shared/format/useFormat";
-import type { ApplicableCode, ApplicableCodes, Deal } from "@/lib/api/requests/store-deals";
+import type { ApplicableCode, ApplicableCodes, Deal } from "@/features/shared/deals/types";
 import { Badge } from "@/ui/components/Badge";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Icon } from "@/ui/icons";
@@ -29,7 +29,8 @@ export interface CouponPickerProps {
 /**
  * "คูปองที่ใช้ได้กับตะกร้านี้" (loyalty P1.5, STITCH-NOTES §d; prototype `p15-cart-coupons.html`): the codes the
  * customer holds that `checkCode` accepts for this cart (`store.cart.applicableCodes`), as checkboxes — the cart holds
- * up to `maxCodes` (D-452). Each row: mini-stub · code (+ "คุ้มที่สุด") · benefit · the API's saving in `success`. A
+ * up to `maxCodes` (D-452). Each row: mini-stub · code (+ "คุ้มที่สุด") · benefit · the API's saving in `success`,
+ * labelled "ก่อน VAT" because `saving` is ex-VAT (the cart summary's own pre-VAT wording; the web converts nothing). A
  * code that cannot stack with a held one is disabled with "ใช้ร่วมกับ X ไม่ได้"; a full cart disables the rest. Then
  * "ยังใช้ไม่ได้" with each reason as text. Ticking applies the code to the cart, as typing it would; there is no
  * total — the web never adds money, the checkout shows the combined discount.
@@ -84,7 +85,7 @@ export function CouponPicker({
           <ul className="divide-border m-0 mt-1 flex list-none flex-col divide-y p-0">
             {data.notYet.map((row) => (
               <li key={row.code} className="grid grid-cols-[3.25rem_minmax(0,1fr)] items-center gap-3 py-2">
-                <StubFor benefit={null} spent />
+                <StubFor benefit={benefits?.get(row.promotionId) ?? null} spent />
                 <span className="flex min-w-0 flex-col leading-snug">
                   <span className="text-muted text-[0.8125rem] font-semibold tracking-[0.04em]">{row.code}</span>
                   <span className="text-muted truncate text-[0.8125rem]">{row.headline}</span>
@@ -163,13 +164,13 @@ function PickerRow({
                 </span>
               ) : null}
             </span>
-            <span
-              className={cn(
-                "self-start pt-0.5 text-[0.90625rem] font-semibold tabular-nums",
-                blocked ? "text-subtle" : "text-success",
-              )}
-            >
-              {t("saving", { amount: format.thb(row.saving) })}
+            <span className="flex flex-col items-end self-start pt-0.5 leading-tight">
+              <span
+                className={cn("text-[0.90625rem] font-semibold tabular-nums", blocked ? "text-subtle" : "text-success")}
+              >
+                {t("saving", { amount: format.thb(row.saving) })}
+              </span>
+              <span className="text-muted text-[0.6875rem] font-normal">{t("savingExVat")}</span>
             </span>
           </span>
         }

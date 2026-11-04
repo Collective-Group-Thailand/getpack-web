@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n/routing";
-import type { Deal } from "@/lib/api/requests/store-deals";
+import type { Deal } from "@/features/shared/deals/types";
 import { alternateUrls, itemListSchema, offerSchema } from "@/lib/seo";
 
 import { dealHref } from "./paths";

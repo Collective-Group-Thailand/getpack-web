@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 
 import deals from "@/i18n/messages/th/customer/deals.json";
-import type { ApplicableCodes } from "@/lib/api/requests/store-deals";
+import type { ApplicableCodes } from "@/features/shared/deals/types";
 
 import { CouponPicker } from "./CouponPicker";
 
@@ -19,6 +19,8 @@ const DATA: ApplicableCodes = {
       stackGroup: "shipping",
       conflictsWith: [],
       best: false,
+      stacking: "stackable",
+      onCart: false,
     },
     {
       code: "LABEL8",
@@ -29,6 +31,8 @@ const DATA: ApplicableCodes = {
       stackGroup: "product",
       conflictsWith: ["BOX10"],
       best: false,
+      stacking: "stackable",
+      onCart: false,
     },
     {
       code: "BOX10",
@@ -39,6 +43,8 @@ const DATA: ApplicableCodes = {
       stackGroup: "product",
       conflictsWith: ["LABEL8"],
       best: true,
+      stacking: "stackable",
+      onCart: false,
     },
     {
       code: "TAPE5",
@@ -49,10 +55,18 @@ const DATA: ApplicableCodes = {
       stackGroup: null,
       conflictsWith: [],
       best: false,
+      stacking: "stackable",
+      onCart: false,
     },
   ],
   notYet: [
-    { code: "MATTEFREE", headline: "เคลือบด้านฟรี", reason: "min_quantity", reasonText: "สั่งกล่องเพิ่มอีก 1,000 ใบ" },
+    {
+      code: "MATTEFREE",
+      promotionId: "00000000-0000-4000-8000-000000000090",
+      headline: "เคลือบด้านฟรี",
+      reason: "min_quantity",
+      reasonText: "สั่งกล่องเพิ่มอีก 1,000 ใบ",
+    },
   ],
   maxCodes: 3,
 };
@@ -81,6 +95,8 @@ describe("CouponPicker (loyalty P1.5)", () => {
     ]);
     expect(screen.getByText("คุ้มที่สุด")).toBeInTheDocument();
     expect(screen.getByText("−฿1,331.00")).toBeInTheDocument();
+    // `saving` is ex-VAT: every figure says so, the way the cart summary labels a pre-VAT amount.
+    expect(screen.getAllByText("ก่อน VAT")).toHaveLength(4);
   });
 
   it("ticks the codes the cart holds and says how many of the maximum are chosen", () => {

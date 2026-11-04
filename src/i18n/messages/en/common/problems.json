@@ -471,7 +471,11 @@
     "not_a_coupon": "Not a coupon promotion",
     "payment_method_required": "Payment method not allowed",
     "too_many_attempts": "Too many code attempts",
-    "system_managed": "Managed by the system"
+    "system_managed": "Managed by the system",
+    "already_saved": "Code already saved",
+    "not_saveable": "Code can't be saved",
+    "not_publishable": "Promotion can't be published yet",
+    "slug_taken": "Slug already used by another promotion"
   },
   "proofs": {
     "annotation_closed": "Annotations closed",

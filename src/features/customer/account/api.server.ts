@@ -1,11 +1,10 @@
 import "server-only";
 
 import { serverApi } from "@/lib/api/server";
-import { serverRequests } from "@/lib/api/requests/server";
-import type { LoyaltyTasks, PackagingProfile } from "@/lib/api/requests/store-loyalty";
 import type { Schemas } from "@/lib/api/types";
 
 import type { Address, TaxProfile } from "./address";
+import type { LoyaltyTasks, PackagingProfile } from "./loyalty-types";
 
 export type Points = Schemas["LoyaltySummaryDto"];
 export type PointsEntry = Schemas["PointsEntryDto"];
@@ -97,13 +96,11 @@ export async function getDefaults(): Promise<Defaults> {
   return data!;
 }
 
-/**
- * The earn checklist (`store.loyalty.tasks`, loyalty P1 — CONTRACT: API-CHANGES-P1, a contract request until the
- * getpack-api release is adopted). Null when the read fails: the checklist is a convenience and hides itself.
- */
+/** The earn checklist (`store.loyalty.tasks`, loyalty P1). Null when the read fails: it is a convenience and hides. */
 export async function getLoyaltyTasks(): Promise<LoyaltyTasks | null> {
   try {
-    return await (await serverRequests("customer")).call("GET /v1/store/loyalty/tasks");
+    const { data } = await (await serverApi("customer")).GET("/v1/store/loyalty/tasks");
+    return data!;
   } catch {
     return null;
   }
@@ -111,5 +108,6 @@ export async function getLoyaltyTasks(): Promise<LoyaltyTasks | null> {
 
 /** My packaging profile (`store.loyalty.getPackagingProfile`); null fields until first saved, never a 404. */
 export async function getPackagingProfile(): Promise<PackagingProfile> {
-  return (await serverRequests("customer")).call("GET /v1/store/loyalty/packaging-profile");
+  const { data } = await (await serverApi("customer")).GET("/v1/store/loyalty/packaging-profile");
+  return data!;
 }

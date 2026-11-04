@@ -384,6 +384,16 @@
         "met": "met",
         "unmet": "not met"
       },
+      "refusals": {
+        "title": "Can't publish yet. Fix these first",
+        "status": "Activate the promotion first",
+        "slug": "Set the link slug",
+        "headline": "Enter the Thai headline",
+        "terms": "Enter the Thai terms",
+        "blocked_word": "Remove the word deals can't use from {field}",
+        "system_managed": "System promotions always stay hidden",
+        "slugTaken": "Another promotion already uses this slug. Choose another"
+      },
       "save": "Save display",
       "publish": "Publish on the deals page",
       "saved": "Display saved",

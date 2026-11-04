@@ -825,7 +825,15 @@ export function Configurator({
         dealBox={
           <DealPromoBox
             productTypeCode={configurator.productTypeCode}
-            calculationId={price.data?.calculationId ?? null}
+            quote={
+              actions.lastQuote
+                ? {
+                    id: actions.lastQuote.quote.id,
+                    quantities: actions.lastQuote.quote.options.map((option) => option.quantity),
+                    anonymousId: advisor.anonymousId,
+                  }
+                : null
+            }
             quantity={state.quantity}
           />
         }

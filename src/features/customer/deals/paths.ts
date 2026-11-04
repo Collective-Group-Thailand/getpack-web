@@ -1,4 +1,4 @@
-import type { Deal } from "@/lib/api/requests/store-deals";
+import type { Deal } from "@/features/shared/deals/types";
 
 /** A deal's own page (`/deals/[slug]`). */
 export const dealHref = (deal: Pick<Deal, "slug">) => `/deals/${encodeURIComponent(deal.slug)}`;
