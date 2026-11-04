@@ -133,3 +133,48 @@ pnpm gen:api --adopt --tag vX.Y.Z   # registry.test.ts lists the 7 requests to r
 7. Admin report columns (`views`, `saves`, `uses`, `refAgent`) and the quote-recovery screens are not in this web
    slice.
 8. Storybook stories render `Link` from `@/i18n/navigation` under Vite (as P1): not verified here.
+
+## 6. Integration (2026-11-04, getpack-api `feat/loyalty-p15-deals-surface` 107949ee)
+
+- **Contract.** `contract/openapi.json` is the API branch's regenerated document, pinned unreleased in
+  `contract.lock.json` (commit 107949ee, still labelled 0.75.0 / v0.75.0 so `verifyLock` passes, as the D-462/D-463
+  pin was). `pnpm gen:api` regenerated `schema.d.ts`, the MSW examples/problems and `problem-codes.ts`. Re-adopt with
+  `pnpm gen:api --adopt --tag vX.Y.Z` once the API tags the release. The pin also brings main's D-463 follow-ups
+  (`carrierBooked`, partner POD `receiverRecorded` without the name or tracking number, `without_goods_receipt`,
+  `factoryCode`/`factoryName` on admin POs and statements, the P1 `earn_*` ledger types); their mocks and the partner
+  ship page follow, and the ledger has labels for the new entry types.
+- **Adopted (generated client).** All ten P1 + P1.5 request entries are retired from the registry,
+  `awaiting-triage.ts` and the open table of `docs/contract-requests.md` (moved to "Resolved"; the two ladder
+  entries were published differently as one operation): `store.loyalty.tasks`,
+  `getPackagingProfile` / `updatePackagingProfile`, `store.promotions.listPublic` / `getPublic` / `save`,
+  `store.cart.applicableCodes`, `store.quotes.ladder`, `admin.promotions.update` (`visibility`, `display`) and
+  `admin.promotions.setHeroImage`. Types are aliases of `Schemas` in `features/shared/deals/types.ts` and
+  `features/customer/account/loyalty-types.ts`; no contract request is left for P1/P1.5.
+- **Ladder.** `GET /v1/store/quotes/{quoteId}/ladder` reads a saved quotation (owner or `?anonymousId`), and
+  `?quantity` must be one of its options. The configurator passes the quotation it kept this visit (with the
+  advisor's `anonymousId`) and asks only when the quantity in view is one of its options; a lapsed one (409
+  `quotes.not_live`) just hides the hint. The PDP keeps no quotation, so its deal box shows the deal without the
+  hint; its VolumeLadder rows stay the calculation's own steps. `estimatedTotal` may be null (no estimate line).
+- **Errors.** Save: 409 `promotions.already_saved` marks the card "เก็บแล้ว" with a "เก็บไว้แล้ว" toast;
+  `promotions.not_saveable` has its own toast. Admin editor: the guard applies to `unlisted` too; 422
+  `promotions.not_publishable` lists each `errors[]` rule under the preview (in the panel's words, the API message
+  for an unknown rule); 409 `promotions.slug_taken` sits under the slug field. th/en problem copy added.
+- **Money.** Applicable-code `saving` is ex-VAT: the picker shows it with "ก่อน VAT" / "before VAT" (the cart's
+  pre-VAT wording); nothing is converted on the web.
+- **Stub.** `tiered` = "ลดสูงสุด" + the top tier (percent, or ฿ for an amount); `perk` = the word "สิทธิพิเศษ"
+  (special price, free design / mock-up / revision rounds, bonus points). `benefit.value`, `terms` and `subline` are
+  nullable now; a missing figure falls back to the perk word. `notEligibleReason` adds `new_customer_only` /
+  `returning_customer_only`. The admin preview maps every `PromotionBenefitType` the same way.
+- **Hero image.** Upload through `uploadFile(..., "image")`, then `setHeroImage { heroImageFileId }`; the response
+  is the `PromotionDto` (its `heroImageUrl` is shown and the cached promotion replaced).
+- **MSW.** Handlers for the adopted operations are plain `http.*` in the generated shapes: tiered, perk and an
+  unlisted fixture (served by its slug only), `saving` ex-VAT with `stacking` / `onCart`, `notYet.promotionId`,
+  the ladder by `quoteId`, the plural error codes, the admin guard as 422 `errors[]` + 409 slug, and the hero image.
+- **Decisions.** D-487 copied verbatim from getpack-api `docs/decisions.md` after D-486.
+- **Gates** (Linux VM, `$HOME/linuxbind` esbuild + rolldown): `gen:api --check` PASS; `tsc` on every changed file,
+  the files that read the changed shipment/finance/promotion schemas and their import graph (≈330 files, temporary
+  config, removed) PASS — it reported the 39 contract errors first; ESLint on the 42 changed TS/TSX files 0 problems;
+  Prettier PASS; Vitest `src/lib/api` (registry, mocks, deals mocks), `mocks`, `src/i18n` (problem copy, keys,
+  parity), `features/{shared/deals,customer/deals,customer/cart,customer/account,admin/marketing,customer/catalog/pdp,
+  customer/configurator,admin/logistics,admin/customers,admin/finance,shared}`, `src/app` PASS
+  (`server-imports.test.ts` timed out once under load, passes alone). Whole-repo `tsc` not run (> 170 s here).
