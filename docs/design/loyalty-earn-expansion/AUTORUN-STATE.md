@@ -1,15 +1,16 @@
 # AUTORUN-STATE — getpack Points & Deals
 
-- **Status:** PARTIAL. P1 code is complete; its gate runs on the owner's Mac.
-- **Current phase:** P1 · **step:** gate (Mac).
-- **Branches:** `feat/loyalty-p1-activity-rewards` in getpack-api (@ `60c5c23d`) and getpack-web (@ `e7ae2b85`). Both
-  exist in the main repos (fetched) and in the sibling clones `getpack-api-p1` / `getpack-web-p1`.
-- **Main:** api `27b947ce` → `b61cd4ae` (plan + autorun docs) · web `f4e0c781` → `24fd4035`.
-- **Not merged:** gates 2, 4, 5, 7 and 9 need Docker, Postgres, pnpm and Node 24.
-- **BLOCKED:** none (P1 is waiting on the Mac gate, not blocked).
-- **Skipped phases:** P1.5, P2 and P3 have not started, because P1.5 depends on P1 being merged.
-- **Decisions recorded:** D-473 … D-486.
-- **Open questions:** คะแนน vs แต้ม wording · pages for profile_completed / phone_verified · whether activity rewards
-  count in the points liability.
-- **Resume:** on the Mac, after the gate passes and both branches are merged, run Block B (resume) or C (rerun P1).
-  It continues from P1.5.
+- **Status:** DONE (Block A: P1 → P1.5 → P2 → P3), 2026-11-05.
+- **Main:**
+  - api `77c1c0a0`: P1 `417b5a47`, P1.5 `15e1ed60`, P2 `dd8d2c7f`, P3 `77c1c0a0`.
+  - web `51df1dcb`: P1 `fb9d1796`, P1.5 `136e3733`, P2 `baa9a8ec`, P3 `51df1dcb`.
+  - Plus the final docs commit.
+- **Branches kept:** `feat/loyalty-p1-activity-rewards`, `feat/loyalty-p15-deals-surface`, `feat/loyalty-p2-lifecycle`
+  and `feat/loyalty-p3-catalogue-tiers`, in both repos and in the sibling clones `getpack-*-p1`.
+- **Not done here:** full typecheck, migrations on a real database, seeds, `next build`, Storybook, Lighthouse and the
+  visual compare. These need the Mac; see REPORT "สิ่งที่คุณต้องทำ". e2e was skipped by the owner (D-503).
+- **BLOCKED:** none.
+- **Decisions recorded:** D-473 … D-505 (identical in both repos).
+- **Open contract requests:** `store.reviews.reward-preview`, `store.orders.reviewable` (P2 follow-ups).
+- **Next:** P4 (brief in REPORT.md). It starts only when the owner asks.
+- **Resume:** nothing to resume. To fix a Mac gate failure, branch from `main` as `fix/loyalty-<gate>`.

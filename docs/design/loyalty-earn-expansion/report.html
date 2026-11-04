@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>getpack แต้มและดีล — รายงานสรุป P1–P3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#17573F;--primary-strong:#0E4430;--primary-subtle:#E2EDE7;--bg:#F7F8F6;--surface:#FFFFFF;--text:#1B2420;--muted:#55605A;--border:#DDE3DF;--amber:#B26B00;--amber-subtle:#FBEFD9}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Anuphan',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 24px 64px}
+header{margin-bottom:32px}
+.eyebrow{color:var(--primary);font-weight:600;font-size:14px;letter-spacing:.02em}
+h1{font-size:32px;line-height:1.25;margin:6px 0 8px}
+h2{font-size:22px;margin:40px 0 14px}
+h3{font-size:17px;margin:0 0 6px}
+p{margin:0 0 10px}
+.lede{color:var(--muted);max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+.phase .tag{display:inline-block;background:var(--primary-subtle);color:var(--primary-strong);font-weight:600;font-size:13px;border-radius:999px;padding:2px 10px;margin-bottom:8px}
+.phase .tag.brief{background:var(--amber-subtle);color:#7A4A00}
+.phase code{font-size:13px;color:var(--muted)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-size:15px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--primary-subtle);color:var(--primary-strong);font-weight:600}
+tr:last-child td{border-bottom:0}
+.ok{color:var(--primary);font-weight:600}
+.mac{color:#7A4A00;font-weight:600}
+ol.todo{padding-left:22px;margin:0}
+ol.todo li{margin-bottom:10px}
+pre{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;overflow:auto;font-size:13px;line-height:1.5;margin:8px 0 0}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+figure{margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+figure img{display:block;width:100%;height:220px;object-fit:cover;object-position:top}
+figcaption{padding:10px 14px;font-size:14px;color:var(--muted)}
+ul.dec{margin:0;padding-left:20px}
+ul.dec li{margin-bottom:6px}
+.p4 li{margin-bottom:8px}
+footer{margin-top:48px;color:var(--muted);font-size:14px}
+@media (max-width:600px){h1{font-size:26px}.wrap{padding:28px 16px 48px}th,td{padding:8px 10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">getpack · แต้มและดีล · 5 พ.ย. 2026</div>
+  <h1>P1–P3 merge เข้า main ครบทั้งสอง repo แล้ว</h1>
+  <p class="lede">โค้ดเขียนครบตามแผน gate ที่รันใน workspace ผ่านทั้งหมด (lint, targeted typecheck, unit/Vitest และ contract) ยังไม่ได้ push หรือ deploy ส่วนที่ต้องมีฐานข้อมูลจริงและ build เต็มต้องรันบน Mac และ e2e ข้ามตามที่คุณสั่ง</p>
+</header>
+
+<section>
+  <div class="grid">
+    <div class="card phase"><span class="tag">MERGED</span><h3>P1 · รับแต้มจากกิจกรรม</h3><p>checklist "ทำสิ่งนี้รับแต้ม", แบนเนอร์บน /account, packaging profile, toast +N แต้ม, เพดาน 1,500 บาท</p><code>api 417b5a47 · web fb9d1796</code></div>
+    <div class="card phase"><span class="tag">MERGED</span><h3>P1.5 · หน้าดีล</h3><p>/deals, การ์ดดีลทรงตั๋ว, badge + volume ladder ใน PDP, ตัวเลือกคูปองในตะกร้า, /liff/deals</p><code>api 15e1ed60 · web 136e3733</code></div>
+    <div class="card phase"><span class="tag">MERGED</span><h3>P2 · Lifecycle</h3><p>ข้อความตามวงจรลูกค้า, กลุ่มเป้าหมาย, "สำหรับคุณ", แบบสอบถาม และ loyalty analytics</p><code>api dd8d2c7f · web baa9a8ec</code></div>
+    <div class="card phase"><span class="tag">MERGED</span><h3>P3 · แลกแต้มและระดับสมาชิก</h3><p>แคตตาล็อกแลกแต้ม, คูปองของฉัน, สิทธิ์รายไตรมาส, capacity deal ที่ต้องอนุมัติ และเพิ่มวงเงินเครดิต</p><code>api 77c1c0a0 · web 51df1dcb</code></div>
+    <div class="card phase"><span class="tag brief">BRIEF</span><h3>P4 · โรงงานร่วมสนับสนุน</h3><p>ยังไม่เริ่ม มีบรีฟอยู่ด้านล่าง จะเริ่มเมื่อคุณสั่ง</p><code>—</code></div>
+  </div>
+</section>
+
+<h2>หน้าจอหลัก</h2>
+<div class="shots">
+  <figure><img src="screenshots/P3/p3-redeem-1440.png" alt="หน้าแลกแต้ม /account/points/redeem"><figcaption>P3 · แลกแต้ม /account/points/redeem</figcaption></figure>
+  <figure><img src="screenshots/P3/p3-tier-perks-1440.png" alt="ระดับสมาชิกและสิทธิ์"><figcaption>P3 · ระดับสมาชิกและสิทธิ์</figcaption></figure>
+  <figure><img src="screenshots/P15/p15-deals-1440.png" alt="หน้า /deals"><figcaption>P1.5 · /deals</figcaption></figure>
+  <figure><img src="screenshots/P1/p1-earn-checklist-1440.png" alt="checklist ทำสิ่งนี้รับแต้ม"><figcaption>P1 · checklist ทำสิ่งนี้รับแต้ม</figcaption></figure>
+  <figure><img src="screenshots/P2/p2-loyalty-analytics-1440.png" alt="loyalty analytics"><figcaption>P2 · loyalty analytics (Finance อ่านอย่างเดียว)</figcaption></figure>
+</div>
+
+<h2>สถานะ gate</h2>
+<table>
+  <tr><th>Gate</th><th>ใน workspace</th><th>บน Mac</th></tr>
+  <tr><td>Lint, Prettier, typecheck เฉพาะไฟล์ที่แก้</td><td class="ok">ผ่านทุก phase</td><td>รัน <code>pnpm typecheck</code> เต็ม</td></tr>
+  <tr><td>Unit (API) / Vitest (web)</td><td class="ok">ผ่าน (web 681 tests)</td><td>รันซ้ำ</td></tr>
+  <tr><td>gen:api --check, registry, contract:lint</td><td class="ok">ผ่าน</td><td><code>contract:build</code> แล้ว commit ถ้าเปลี่ยน</td></tr>
+  <tr><td>Migration 03→09, seed ×2, UAT seed, drift check</td><td>ไม่ได้รัน (ไม่มี Postgres)</td><td class="mac">ต้องรัน</td></tr>
+  <tr><td>next build, Storybook, Lighthouse, เทียบกับ prototype</td><td>ไม่ได้รัน</td><td class="mac">ต้องรัน</td></tr>
+  <tr><td>e2e</td><td>ข้ามตามที่คุณสั่ง</td><td>ไม่บังคับ</td></tr>
+</table>
+
+<h2>สิ่งที่คุณต้องทำ</h2>
+<div class="card">
+<ol class="todo">
+  <li><strong>getpack-api บน main</strong> (Node 24 และ Docker เปิดอยู่)
+<pre>pnpm install && pnpm prisma:generate
+pnpm typecheck && pnpm lint && pnpm test
+pnpm contract:build && pnpm contract:lint
+pnpm db:migrate && pnpm db:seed && pnpm db:seed
+UAT_SEED_CONFIRM=uat-only pnpm db:seed:uat
+pnpm launch:settings && pnpm build</pre></li>
+  <li><strong>getpack-web บน main</strong>
+<pre>pnpm install && pnpm gen:api --check
+pnpm typecheck && pnpm lint && pnpm test
+pnpm build && pnpm build-storybook
+pnpm dev:mock   # เปิดหน้าตาม WEB-P3-NOTES §6 แล้วเทียบกับ prototypes/</pre></li>
+  <li><strong>ถ้ามีอะไรล้ม</strong> ส่ง log มา ผมจะแก้บน branch <code>fix/loyalty-*</code> แล้ว merge ให้</li>
+  <li><strong>ก่อนเปิดใช้จริง</strong>
+    <ul>
+      <li>ยืนยันอัตรา redemption 60 % กับ CPA</li>
+      <li>ให้ Marketing มีสิทธิ์ใน approval <code>loyalty_reward_review</code> และ <code>capacity_deal_publish</code></li>
+      <li>สร้างรางวัล <code>free_shipping</code> และ <code>free_rush</code> ใน production</li>
+      <li>ให้ Finance ตรวจค่า settings</li>
+    </ul>
+  </li>
+</ol>
+</div>
+
+<h2>การตัดสินใจที่ผมทำแทนในฐานะหัวหน้าทีม</h2>
+<div class="card">
+<ul class="dec">
+  <li>ใช้คำว่า "แต้ม" ทั้งระบบ ส่วนดาวรีวิวยังใช้ "คะแนน"</li>
+  <li>นับแต้มจากกิจกรรมในหนี้สินแต้ม</li>
+  <li>แสดงแบนเนอร์บน /account ครั้งละอันเดียว</li>
+  <li>Finance อ่าน analytics ได้อย่างเดียว (D-496)</li>
+  <li><strong>Margin guard (D-504):</strong> ไม่อนุญาตดีลที่ราคาต่ำกว่าต้นทุนจริงบวกโปรโมชันทั้งหมดที่ซ้อนกัน</li>
+  <li><strong>คืนคูปองเมื่อยกเลิก (D-505):</strong> ถ้ายกเลิกออเดอร์ก่อนเริ่มผลิต คูปองจะกลับมาใช้ได้ ถ้าคูปองหมดอายุแล้วจะคืนเป็นแต้มแทน</li>
+  <li>web ไม่คำนวณแต้มเอง ยอด "คงเหลือ" มาจาก API</li>
+  <li>ตั๋วใช้สีเขียวของระบบ สีอำพันใช้แค่ badge เล็ก</li>
+</ul>
+</div>
+
+<h2>บรีฟ P4 · โรงงานร่วมสนับสนุนและการคุมโปรแกรม</h2>
+<div class="card">
+<p>ค่าเริ่มต้น: getpack ออกค่าส่วนลดและแต้มเอง 100 % โรงงานไม่ต้องร่วมจ่าย</p>
+<ol class="p4">
+  <li><strong>โรงงานร่วมสนับสนุนแบบสมัครใจ เฉพาะ capacity deal</strong>
+    <ul>
+      <li>โรงงานกำหนดสัดส่วน (% หรือบาทต่อออเดอร์ มีเพดาน) และยอมรับเงื่อนไขในพอร์ทัลพาร์ทเนอร์</li>
+      <li>ส่วนของโรงงานหักจาก payout และแสดงเป็นบรรทัดแยก ถ้ายกเลิกหรือคืนเงินจะคืนส่วนนี้ด้วย</li>
+      <li>CPA ต้องตรวจเรื่องการบันทึกบัญชี VAT และภาษีหัก ณ ที่จ่าย</li>
+      <li>ลูกค้าไม่เห็นว่าโรงงานไหนสนับสนุน</li>
+    </ul>
+  </li>
+  <li><strong>งบโปรแกรมรายเดือน</strong> แจ้งเตือนที่ 80 % และ 100 % เมื่อถึง 100 % แคมเปญใหม่จะหยุด แต่แต้มและคูปองที่ออกไปแล้วไม่ถูกยึดคืน</li>
+  <li><strong>รางวัลครั้งแรกนับต่อบริษัท</strong> (เลขผู้เสียภาษี) เพื่อกันการเปิดหลายบัญชี</li>
+  <li><strong>Feature flag แยกตามหน้า</strong> ปิดได้โดยไม่ต้อง deploy</li>
+  <li><strong>เปิดใช้ทีละขั้น</strong> ภายใน → UAT → ~10 % → ทั้งหมด แต่ละขั้นดูจาก analytics ก่อนไปขั้นถัดไป</li>
+</ol>
+</div>
+
+<footer>รายละเอียดเต็มอยู่ใน <code>docs/design/loyalty-earn-expansion/REPORT.md</code> ของทั้งสอง repo · การตัดสินใจ D-473 … D-505</footer>
+</div>
+</body>
+</html>
