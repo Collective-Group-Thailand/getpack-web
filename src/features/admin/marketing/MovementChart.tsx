@@ -79,7 +79,7 @@ export function MovementChart({
           ] as const
         ).map(([fill, text]) => (
           <span key={text} className="inline-flex items-center gap-1.5">
-            <span className={`${fill} size-2.5 rounded-[3px]`} />
+            <span className={`${fill} rounded-thumb size-2.5`} />
             {text}
           </span>
         ))}

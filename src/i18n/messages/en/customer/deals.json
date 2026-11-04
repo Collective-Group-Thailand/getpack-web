@@ -216,7 +216,6 @@
   },
   "bundle": {
     "title": "Bundle",
-    "eyebrow": "Bundle · {count} items",
     "close": "Close",
     "unitPrice": "{price} per {unit} (incl. VAT)",
     "design": "Design for {item}",
@@ -232,6 +231,7 @@
     "unavailable": "This set can't be priced right now. Please try again later.",
     "stale": "Your cart just changed. Please add the set again.",
     "gone": "This deal is no longer open",
-    "failed": "That didn't add to your cart. Please try again."
+    "failed": "That didn't add to your cart. Please try again.",
+    "itemCount": "Bundle · {count} items"
   }
 }

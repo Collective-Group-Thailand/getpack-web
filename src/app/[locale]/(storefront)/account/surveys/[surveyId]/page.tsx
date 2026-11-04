@@ -30,7 +30,7 @@ export default async function Page({ params }: { params: Promise<{ surveyId: str
         lede={
           open
             ? [
-                survey.orderCode ? t("eyebrow", { code: survey.orderCode }) : null,
+                survey.orderCode ? t("orderRef", { code: survey.orderCode }) : null,
                 survey.rewardPoints > 0
                   ? t("rewardPlain", { count: survey.questions.length, points: format.number(survey.rewardPoints) })
                   : null,

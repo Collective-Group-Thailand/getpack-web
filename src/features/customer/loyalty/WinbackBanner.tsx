@@ -42,7 +42,7 @@ export function WinbackBanner({
     >
       <span
         aria-hidden="true"
-        className="bg-primary-subtle text-primary-subtle-fg grid size-9 place-items-center rounded-[0.625rem] md:size-10"
+        className="bg-primary-subtle text-primary-subtle-fg rounded-control grid size-9 place-items-center md:size-10"
       >
         <Icon name="gift" size={liff ? 18 : 20} />
       </span>

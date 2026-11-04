@@ -850,7 +850,6 @@
   },
   "surveys": {
     "pageTitle": "Survey",
-    "eyebrow": "Survey · {code}",
     "titleOrder": "How was this order?",
     "questions": "{count} short questions",
     "rewardShort": "Answer them all for <b>{points} points</b>",
@@ -880,7 +879,8 @@
     "earned": "<b>{points}</b> points added",
     "backToAccount": "Back to your account",
     "closedTitle": "This survey is closed",
-    "closedBody": "Thanks for your interest. We'll send a new survey after your next order."
+    "closedBody": "Thanks for your interest. We'll send a new survey after your next order.",
+    "orderRef": "Survey · {code}"
   },
   "confirmData": {
     "title": "Confirm your company and addresses",

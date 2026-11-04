@@ -87,11 +87,11 @@ export function BundleSheet({
       className="md:inset-y-0 md:start-auto md:end-0 md:max-h-dvh md:w-[30rem]"
     >
       {deal && bundle ? (
-        <div className="bg-surface shadow-overlay flex max-h-[92dvh] flex-col rounded-t-[1.125rem] md:h-dvh md:max-h-dvh md:rounded-none">
-          <span aria-hidden="true" className="bg-border mx-auto mt-2 block h-1 w-9 shrink-0 rounded-full md:hidden" />
+        <div className="bg-surface shadow-overlay rounded-t-card flex max-h-[92dvh] flex-col md:h-dvh md:max-h-dvh md:rounded-none">
+          <span aria-hidden="true" className="bg-border rounded-thumb mx-auto mt-2 block h-1 w-9 shrink-0 md:hidden" />
           <div className="border-border flex items-start justify-between gap-3 border-b px-5 pt-3 pb-4 md:px-[1.375rem] md:pt-5">
             <div className="min-w-0">
-              <p className="text-muted text-[0.8125rem]">{t("eyebrow", { count: bundle.items.length })}</p>
+              <p className="text-muted text-[0.8125rem]">{t("itemCount", { count: bundle.items.length })}</p>
               <p className="mt-0.5 text-[1.1875rem] leading-snug font-semibold">{deal.headline}</p>
             </div>
             <SheetClose asChild>

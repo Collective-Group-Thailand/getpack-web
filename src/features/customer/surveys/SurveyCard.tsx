@@ -81,14 +81,14 @@ export function SurveyCard({
       >
         <span
           aria-hidden="true"
-          className="bg-primary-subtle text-primary-subtle-fg grid size-9 place-items-center self-start rounded-[0.625rem] md:size-10 md:self-center"
+          className="bg-primary-subtle text-primary-subtle-fg rounded-control grid size-9 place-items-center self-start md:size-10 md:self-center"
         >
           <Icon name="chat" size={variant === "liff" ? 18 : 20} />
         </span>
         <div className="min-w-0">
           {survey.orderCode && variant !== "order" ? (
             <p className="text-muted text-[0.8125rem] tabular-nums">
-              {variant === "liff" ? survey.orderCode : t("eyebrow", { code: survey.orderCode })}
+              {variant === "liff" ? survey.orderCode : t("orderRef", { code: survey.orderCode })}
             </p>
           ) : null}
           <h2 id={`survey-${survey.id}`} className="mt-px text-[0.96875rem] leading-snug font-semibold">
@@ -144,13 +144,15 @@ export function SurveyCard({
         appearance="bare"
         className="md:inset-x-auto md:top-[6dvh] md:bottom-auto md:left-1/2 md:max-h-[88dvh] md:w-[37.5rem] md:-translate-x-1/2"
       >
-        <div className="bg-surface shadow-overlay md:rounded-panel rounded-t-[1.125rem]">
-          <span aria-hidden="true" className="bg-border mx-auto mt-2 block h-1 w-9 rounded-full md:hidden" />
+        <div className="bg-surface shadow-overlay md:rounded-panel rounded-t-card">
+          <span aria-hidden="true" className="bg-border rounded-thumb mx-auto mt-2 block h-1 w-9 md:hidden" />
           {finished ? null : (
             <div className="border-border flex items-start justify-between gap-4 px-5 pt-3 md:border-b md:px-6 md:pt-5 md:pb-4">
               <div className="min-w-0 max-md:hidden">
                 {survey.orderCode ? (
-                  <p className="text-muted text-[0.8125rem] tabular-nums">{t("eyebrow", { code: survey.orderCode })}</p>
+                  <p className="text-muted text-[0.8125rem] tabular-nums">
+                    {t("orderRef", { code: survey.orderCode })}
+                  </p>
                 ) : null}
                 <p className="mt-0.5 text-xl leading-snug font-semibold">{survey.title}</p>
                 {survey.rewardPoints > 0 ? (
