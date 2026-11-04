@@ -25,6 +25,15 @@ export const AWAITING_TRIAGE: readonly string[] = [
   "GET /v1/store/loyalty/tasks",
   "GET /v1/store/loyalty/packaging-profile",
   "PUT /v1/store/loyalty/packaging-profile",
+  // Loyalty P1.5 (2026-11-04, API-CHANGES-P15): the deals surface, built in parallel on getpack-api
+  // `feat/loyalty-p15-deals-surface`.
+  "GET /v1/store/promotions",
+  "GET /v1/store/promotions/{slug}",
+  "POST /v1/store/promotions/{promotionId}/actions/save",
+  "GET /v1/store/cart/applicable-codes",
+  "GET /v1/store/quotations/{quotationId}/ladder",
+  "GET /v1/store/pricing/ladder",
+  "POST /v1/admin/promotions/{promotionId}/hero-image",
 ];
 
 /**

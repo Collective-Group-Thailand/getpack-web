@@ -32,6 +32,7 @@ import { contentHandlers } from "./content";
 import { assistantHandlers } from "./assistant";
 import { heroHandlers } from "./hero";
 import { homeHandlers } from "./home";
+import { dealsHandlers } from "./deals";
 import { loyaltyHandlers } from "./loyalty";
 import { styleLibraryHandlers } from "./style-library";
 
@@ -54,6 +55,8 @@ export const storeHandlers = [
   ...quoteToolHandlers,
   ...specsHandlers,
   ...storeQuoteHandlers,
+  // After the quotations: `/promotions/mine` is answered there before `/promotions/{slug}` (loyalty P1.5).
+  ...dealsHandlers,
   ...storeRfqHandlers,
   ...storeCartHandlers,
   ...storeBookHandlers,

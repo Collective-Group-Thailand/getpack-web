@@ -10,6 +10,8 @@ import { storeAssistantRequests } from "./store-assistant";
 import { storeContentRequests } from "./store-content";
 import { storeHomeRequests } from "./store-home";
 import { storeLoyaltyRequests } from "./store-loyalty";
+import { storeDealsRequests } from "./store-deals";
+import { adminPromotionsRequests } from "./admin-promotions";
 import { adminStructuralRequests } from "./admin-structural";
 import { storeSupportRequests } from "./store-support";
 
@@ -19,6 +21,8 @@ export const REQUESTS = {
   ...storeAssistantRequests,
   ...storeHomeRequests,
   ...storeLoyaltyRequests,
+  ...storeDealsRequests,
+  ...adminPromotionsRequests,
   ...adminStructuralRequests,
 } as const;
 

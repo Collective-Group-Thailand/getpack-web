@@ -41,7 +41,9 @@ function asSurface(key: RequestKey) {
 }
 
 /** A valid query for each GET that needs one. */
-const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {};
+const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
+  "GET /v1/store/pricing/ladder": { calculationId: "0192f3a0-7c1e-7d2a-9b1f-0000000c1001", quantity: 500 },
+};
 
 /** The partner zone's own factory: every partner read is under `/factories/{factoryId}`. */
 const F001 = "00000000-0000-4000-8000-0000000000f1";
