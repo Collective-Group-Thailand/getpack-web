@@ -3,6 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getPoints } from "@/features/customer/account/api.server";
 import { LiffHeader } from "@/features/customer/liff/LiffHeader";
+import { getNextSurvey } from "@/features/customer/surveys/api.server";
+import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
@@ -26,12 +28,13 @@ export default async function Page() {
   const me = await liffCustomer();
   if (!me) return <LiffSignIn />;
   const locale = await getLocale();
-  const [t, format, orders, points, names] = await Promise.all([
+  const [t, format, orders, points, names, survey] = await Promise.all([
     getTranslations("liff.home"),
     getFormat(),
     listMyOrders("active"),
     getPoints(),
     getProductTypeNames(locale),
+    getNextSurvey(),
   ]);
   const todo = orders
     .map((row) => ({ ...row, actions: visibleActions(row.order, row.actions) }))
@@ -57,6 +60,8 @@ export default async function Page() {
         <span className="text-2xl font-semibold tabular-nums">{format.number(points.availablePoints)}</span>
         <Icon name="chevron-right" size={18} aria-hidden="true" />
       </Link>
+      {/* Loyalty P2: the one open survey (D-491). */}
+      <SurveyCard survey={survey} variant="liff" />
       <section aria-labelledby="liff-todo" className="flex flex-col gap-3">
         <h2 id="liff-todo" className="flex items-center gap-2 text-lg font-semibold">
           {t("todo")}

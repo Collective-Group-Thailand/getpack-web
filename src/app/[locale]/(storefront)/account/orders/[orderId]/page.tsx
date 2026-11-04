@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { getNextSurvey } from "@/features/customer/surveys/api.server";
+import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { StageTracker } from "@/features/customer/orders/list/StageTracker";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -129,7 +131,7 @@ export default async function Page({
 }) {
   await requireCustomer();
   const [{ orderId }, query] = await Promise.all([params, searchParams]);
-  const [t, tList, tCatalog, tShipping, format, locale, detail, design, samples] = await Promise.all([
+  const [t, tList, tCatalog, tShipping, format, locale, detail, design, samples, survey] = await Promise.all([
     getTranslations("myOrders"),
     getTranslations("myOrders.list"),
     getTranslations("catalog"),
@@ -143,6 +145,8 @@ export default async function Page({
     listMySamples()
       .then((list) => list.filter((sample) => sample.orderId === orderId))
       .catch(() => []),
+    // Loyalty P2: the post-delivery survey of this order, when it is the one open now (a convenience read).
+    getNextSurvey(),
   ]);
   if (!detail) notFound();
   const { order, group, instalments } = detail;
@@ -330,6 +334,7 @@ export default async function Page({
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_21.25rem]">
         <div className="flex min-w-0 flex-col gap-4">
+          {survey && survey.orderCode === order.orderCode ? <SurveyCard survey={survey} variant="order" /> : null}
           <Box id="progress" title={t("detail.timeline")}>
             {/* The six stages across the card on a wide screen (the list's tracker), the dated journey under it. */}
             <StageTracker

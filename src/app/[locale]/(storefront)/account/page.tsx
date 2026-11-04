@@ -11,6 +11,8 @@ import {
   getStoreCredit,
 } from "@/features/customer/account/api.server";
 import { EarnBanner } from "@/features/customer/account/EarnBanner";
+import { getNextSurvey } from "@/features/customer/surveys/api.server";
+import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -70,7 +72,7 @@ function Section({
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, latest, active, points, credit, launchpad, defaults, quotes, company, tasks] =
+  const [t, tNav, format, latest, active, points, credit, launchpad, defaults, quotes, company, tasks, survey] =
     await Promise.all([
       getTranslations("account.home"),
       getTranslations("account.nav"),
@@ -84,6 +86,7 @@ export default async function Page() {
       getSavedQuotes().catch(() => []),
       getMyCompany().catch(() => null),
       getLoyaltyTasks(),
+      getNextSurvey(),
     ]);
   // A company approver's queue leads (round 2, B2).
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
@@ -129,6 +132,9 @@ export default async function Page() {
           </p>
         }
       />
+
+      {/* Loyalty P2: the one open survey, shown once (D-491). */}
+      <SurveyCard survey={survey} />
 
       {/* Loyalty P1: one line to the earn checklist; hidden when nothing is left to earn. */}
       <EarnBanner tasks={tasks} />
