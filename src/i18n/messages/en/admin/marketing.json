@@ -4,7 +4,8 @@
     "campaigns": "Campaigns",
     "promotions": "Promotions",
     "referrals": "Referrals",
-    "loyalty": "Loyalty"
+    "loyalty": "Loyalty",
+    "analytics": "Points analytics"
   },
   "budget": {
     "text": "{spent} of {budget} spent · alert at {threshold}",
@@ -723,5 +724,92 @@
       }
     }
   },
-  "hubTitle": "Marketing"
+  "hubTitle": "Marketing",
+  "analytics": {
+    "title": "Loyalty analytics",
+    "description": "Points liability, expiry, where points come from and how the retention programmes perform. Every figure comes from the points ledger.",
+    "from": "From",
+    "to": "To",
+    "asOf": "As of {at}",
+    "kpis": {
+      "label": "Loyalty key figures",
+      "liability": "Points liability (estimate)",
+      "atRate": "At a {rate} redemption rate",
+      "pendingCpa": "Awaiting CPA",
+      "faceValue": "Face value {amount}",
+      "outstanding": "Outstanding points",
+      "outstandingHint": "As of {date}",
+      "breakage": "Actual expiry, {months} months",
+      "assumed": "Assumed {pct}",
+      "monthsOfData": "{have} of {need} months of data",
+      "difference": "Difference to account 2330",
+      "ledger": "Ledger {amount}",
+      "ledgerLink": "See the account roll-forward"
+    },
+    "movement": {
+      "title": "Monthly movement",
+      "note": "Points earned above the zero line; redeemed and expired below. Earnings count from the day they become usable (activity rewards included).",
+      "table": "Monthly points movement",
+      "month": "Month",
+      "opening": "Opening",
+      "earned": "Earned",
+      "redeemed": "Redeemed",
+      "returned": "Returned",
+      "reversed": "Reversed",
+      "expired": "Expired",
+      "adjusted": "Adjusted",
+      "closing": "Closing",
+      "hover": "{month} · earned {earned} · redeemed {redeemed} · expired {expired}"
+    },
+    "sources": {
+      "title": "Points earned by source",
+      "note": "Over the chosen period",
+      "source": "Source",
+      "earned": "Points",
+      "order": "Orders",
+      "activity": "Activities",
+      "referral": "Referrals",
+      "bonus": "Bonuses"
+    },
+    "tiers": {
+      "title": "Earned and redeemed by tier",
+      "note": "Members with movement in the period",
+      "tier": "Tier",
+      "members": "Members",
+      "earned": "Earned",
+      "redeemed": "Redeemed",
+      "pct": "Share redeemed",
+      "names": {
+        "member": "Member",
+        "silver": "Silver",
+        "gold": "Gold"
+      }
+    },
+    "retention": {
+      "title": "Repeat orders",
+      "note": "Customers who have redeemed against those who have not, and each programme's results. Rates are withheld below 10 customers.",
+      "redeemers": "Have redeemed points",
+      "nonRedeemers": "Have not redeemed",
+      "customers": "{count, number} customers",
+      "window": "Ordered again within {days} days",
+      "programmes": "Retention programme results",
+      "programme": "Programme",
+      "windowCol": "Counted within",
+      "days": "{days} days",
+      "sent": "Sent",
+      "converted": "Converted",
+      "rate": "Rate",
+      "withheld": "Fewer than 10 customers: rate withheld"
+    },
+    "programmes": {
+      "reorder_reminder": "Reorder reminder",
+      "winback": "Welcome-back bonus",
+      "quote_recovery": "Quote follow-up",
+      "survey": "Survey"
+    },
+    "links": {
+      "promotions": "Promotion results and agents' links",
+      "export": "Export the points liability report (CSV)"
+    }
+  }
 }
