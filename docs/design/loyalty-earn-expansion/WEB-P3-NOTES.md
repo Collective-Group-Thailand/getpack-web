@@ -154,3 +154,69 @@ pnpm dev:mock
 # When getpack-api publishes P3:
 pnpm gen:api --adopt --tag vX.Y.Z   # registry.test.ts lists the 18 P3 requests to retire
 ```
+
+## 7. Integration (2026-11-05, getpack-api `feat/loyalty-p3-catalogue-tiers` 2f0248f9)
+
+- **Contract.** `contract/openapi.json` is the API branch's document at 2f0248f9 (1516 paths: P3's 18 operations from
+  5ea8927f plus the integration's `store.rewards.preview`), pinned unreleased in `contract.lock.json` (still labelled
+  0.75.0 / v0.75.0 so `verifyLock` passes, as P1.5 / P2). `pnpm gen:api` regenerated `schema.d.ts`, the MSW
+  examples/problems, `problem-codes.ts` and `docs/contract-requests.openapi.json`; `API-CHANGES-P3.md` here is the API's
+  copy with its deviation notes. Re-adopt with `pnpm gen:api --adopt --tag vX.Y.Z` once the API tags a release.
+- **Adopted (generated client).** All 18 P3 operations and both `…p3-fields` requests left the registry
+  (`store-loyalty-p3.ts` / `admin-loyalty-p3.ts` deleted), `awaiting-triage.ts` and the open table of
+  `docs/contract-requests.md` (two "Resolved" rows). Screens call `browserApi` / `serverApi` /
+  `adminBrowserApis().contract`; types are `Schemas` aliases in `features/shared/loyalty-p3/types.ts`. The readers of
+  `features/shared/loyalty-p3/read.ts` (and its test) are gone: `store.loyalty.get`, `PromotionDto`, credit versions,
+  `admin.companyCredit.get` and the campaign list are read as published. The one open-object read left is
+  `benefitV2FieldsOf` (`daysSaved` / `addonCode` are not declared on `PromotionBenefitDto`). No contract request
+  remains open for P3.
+- **API-CHANGES-P3 deviations followed.** (1) `notYet` `rush_unavailable` — the web shows the API's `reasonText`, so no
+  code change. (2–4) Capacity deals are drafted `status: draft` with `approval: null`; Marketing asks with
+  `admin.promotions.action` **`request_publish`** ("ขออนุมัติเผยแพร่" in the editor's capacity-deal note; offered on a
+  draft whose request is not pending or approved); the approval activates the draft, a rejection ends it; the mock
+  refuses `activate` before approval (`approval_required`). (5) Admin lists are `{ data, meta }`
+  (`rewardCatalog.list`, `rewardRedemptions.list`, `creditUplifts.list`, `capacityDeals.list`; `meta.provider` is not
+  in the contract and is not read), as is `store.rewards.listMine`. (6) Deal cards carry `kind` / `benefitText` /
+  `reward` / `href` (fixtures and the editor preview). (7) Early pay is an `earn_bonus` with `bonusReason: early_pay`
+  ("โบนัสชำระก่อนกำหนด"); `EntryMultipliersDto` gains `campaign` / `anniversary` / `earlyPay`, named in the points
+  breakdown when not ×1; the checkout preview's `earlyPayBonus` is null in the mock. (10) `nextTierPerks` is a list of
+  perk codes — the tier panel reads them as perks with nothing granted. Also: `AdminRewardItemDto` (localized names
+  with optional `en`, `description` always an object, `value` open, `valueTextTh`, no `openCoupons` — the column is
+  gone), `AdminRedemptionDto` (`customer` = `UserRefDto` without a code, `coupon` object, `bahtValue`), campaign status
+  `active | ended | cancelled` ("รอเริ่ม" stays the web's reading of a future `startsAt`), campaign cancel reason
+  optional (the form still asks ≥ 10 characters), `setUpliftMode` answers the whole `AdminCompanyCreditDto`,
+  `CreditUpliftDto.previousLimit` / `companySpend12m` nullable, `ConversationDto.prioritySupport`,
+  `ApprovalStatus` `expired`.
+- **No points math in the web (§3.3 resolved).** The confirm sheet reads `store.rewards.preview` when it opens
+  (`{ costPoints, balanceAfter, eligible, reason }`, added to getpack-api at this integration with a unit test,
+  regenerated contract and `contract:lint`): "คงเหลือ" is the API's `balanceAfter`; until the preview answers (or if
+  it fails) the sentence states the cost alone; a preview that is not eligible words the reason with the redeem's own
+  problem copy and disables the confirm. `balanceAfter()` left `model.ts`. `expectedCostPoints` is the preview's cost.
+- **`cancelWindowDays` (§3.2 resolved).** Every `RewardItemDto` carries it (`loyalty.rewards`); the sheet and "how it
+  works" use the item's / the first item's value.
+- **D-505 (coupon return on order cancel).** Decided in getpack-api (an order cancelled before production gives its
+  catalogue / perk coupon back, same expiry; past its end the redemption is reversed). No shape change: "คูปองของฉัน"
+  shows it under "ยังไม่ใช้" again. D-504 and D-505 are copied verbatim into `docs/decisions.md` (D-497…D-505 identical
+  in both repos).
+- **Settings (open issue 4 resolved).** `LoyaltySettings` now lists `loyalty.rewards`, `loyalty.tier_perks`,
+  `loyalty.order_multipliers`, `promotions.free_rush`, `promotions.capacity_deal` and `b2b.credit_tier_uplift`. Nested
+  values are edited leaf by leaf (labels from the segments, "แพลทินัม · คูปองรายไตรมาส · 1 · จำนวน"; array lengths and
+  word fields such as `spendBasis` / `best` fixed; booleans as เปิด / ปิด). Each card shows only for its owner role's
+  change button (D-063), as before; the settings mock holds the six keys with the API seed's values.
+- **Approvals mock (open issue 3 resolved).** `approval-policies.json` has `capacity_deal_publish` (Marketing, one
+  step); the seeded capacity draft's request is opened by the Marketing persona at start-up, `request_publish` opens a
+  new one, and `onApprovalDecided` → `decideCapacityDeal` activates or ends the draft.
+- **`dead-ends.test.ts` (open issue 5 resolved).** The LIFF deals empty states were real dead ends from P1.5 / P2:
+  "ไม่มีดีล" now offers "ดูสินค้าและราคา", and "คูปองของฉัน" / "สำหรับคุณ" empty offer "ดูดีลทั้งหมด". `PageError`
+  (shared, 2026-10-30) is drawn only by partner console pages — pre-existing and outside the customer zone — and is on
+  the allow-list with that reason.
+- **Problem copy.** th/en titles for `rewards.*` (11 codes), `loyalty.campaign_started`,
+  `companies.uplift_not_eligible`.
+- **Gates** (Linux VM, `$HOME/linuxbind` esbuild + rolldown, nothing installed into the repo): `gen:api --check` PASS;
+  `tsc` over `src/features/**`, `src/lib/**`, `src/app/**`, `src/ui/**`, `src/i18n/**`, `mocks/**` in five temporary
+  configs (removed) PASS; ESLint on the 50 changed TS/TSX files PASS; Prettier PASS; Vitest `src/lib/api` (incl.
+  `registry.test.ts`, `rewards-mocks.test.ts` with the preview), `src/i18n`, `mocks`, `src/ui/design-language`,
+  `features/customer/{rewards,account,deals,loyalty,liff,shell,cart,checkout,orders,repeat,surveys}`,
+  `features/shared`, `features/admin/{marketing,finance,companies,approvals,console,customers,inbox}`, `src/app`,
+  `src/proxy.test.ts` — 90 files / 681 tests PASS. Storybook build, `next build` and e2e: SKIPPED (the Mac; no e2e for
+  P3, D-503).

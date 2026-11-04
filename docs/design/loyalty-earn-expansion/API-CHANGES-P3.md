@@ -1,5 +1,40 @@
 # API changes — P3 Catalogue, tiers, campaigns, capacity deals (contract both sides build against)
 
+> **2026-11-05 — API build notes (deviations the codebase required; full list in `API-P3-NOTES.md`):**
+> 1. **`notYet` reason `capacity` is `rush_unavailable`**: D-440 / the storefront confidentiality spec forbid a
+>    capacity-named value in any store response. The other new reasons are as written.
+> 2. **Capacity deals are drafted `status: draft`, not `active`**: an active automatic promotion applies at checkout
+>    whatever its visibility, so the discount would run before Marketing approves. The approval activates the draft;
+>    a rejection ends it; `activate` and publishing are refused before (`approval_required`).
+> 3. **The worker is not the approval requester** (`approval_requests.requester_user_id` is NOT NULL and there is no
+>    system user): a draft has `approval: null` until a Marketing user calls `admin.promotions.action` with the new
+>    action **`request_publish`** (or edits its display); that person is the requester and cannot approve.
+> 4. **No `publish` action exists**: publishing is `admin.promotions.update` `visibility` (P1.5); `approval_required`
+>    is enforced there and on `activate`.
+> 5. **Admin lists use the paginated envelope `{ data, meta }`** like every admin list (`admin.rewardCatalog.list`,
+>    `admin.rewardRedemptions.list`, `admin.creditUplifts.list`, `admin.capacityDeals.list` with `meta.provider`);
+>    `store.rewards.listMine` too. `store.rewards.list` keeps `{ balance, items }`.
+> 6. **Reward cards are full `DealDto`s**: every card field is present (`slug` `reward-<code>`, `conditions` as
+>    `{ label, value }`), plus `kind`, `benefitText`, `reward` and `href` on every card (null on promotion cards).
+> 7. **Early pay is an `earn_bonus` (`bonusReason: early_pay`)** credited with the order's points: the ledger is
+>    append-only, so `earn_order.multipliers.earlyPay` stays `"1.00"`; the bonus entry's `multipliers` carry it.
+> 8. **P11 has no new version**: there is no `rewardRedemption` ledger dimension; a catalogue P11 journal carries the
+>    customer dimension and the points entry as source. P09 got a new version (`points_reward` → 4930, seed
+>    amendment for existing databases). P12C's source is the redemption.
+> 9. **Coupons cancelled or expired become `disabled`** (`coupon_status` has no cancelled / expired); the redemption
+>    carries the status. A cancel whose every lot has expired answers `rewards.not_cancellable`; a partly expired one
+>    gives back the unexpired share and posts the rest through P12C.
+> 10. `nextTierPerks` is an array of perk codes. The UAT corrugated code is `corrugated` (examples say
+>     `corrugated_rsc`). `promotions.free_rush` is owned by `partner_manager` (no operations role exists).
+> 11. **Added (owner, D-504):** the checkout refuses a discount stack that breaches the margin floor with
+>     `promotions.margin_floor` (422); reorders use the produced job's actual buy cost.
+> 12. **Added at integration (2026-11-05, web asks WEB-P3-NOTES §3.2 / §3.3):** `store.rewards.preview`
+>     (`GET /v1/store/rewards/{itemId}/preview` → `{ costPoints, balanceAfter, eligible, reason }`) so the confirm sheet
+>     never subtracts, and `cancelWindowDays` on every `RewardItemDto` of `store.rewards.list`.
+> 13. **Added at integration (owner, D-505):** a reward coupon used on an order cancelled before production comes back
+>     (`issued`, same expiry); past its end the redemption is reversed (`redeem_reversal`) instead. No shape change.
+
+
 Source: PLAN §2.3 (Phase 3 rows), §3.5.6, §4, §5, §7 Phase 3, §9.7; decisions D-478, D-479, D-485 and
 **D-497…D-503**. Plan: `plans/P3-PLAN.md`. Conventions are unchanged:
 - money is a decimal string, points are integers;
