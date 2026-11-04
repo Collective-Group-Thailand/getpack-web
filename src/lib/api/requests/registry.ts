@@ -9,6 +9,7 @@
 import { storeAssistantRequests } from "./store-assistant";
 import { storeContentRequests } from "./store-content";
 import { storeHomeRequests } from "./store-home";
+import { storeLoyaltyRequests } from "./store-loyalty";
 import { adminStructuralRequests } from "./admin-structural";
 import { storeSupportRequests } from "./store-support";
 
@@ -17,6 +18,7 @@ export const REQUESTS = {
   ...storeContentRequests,
   ...storeAssistantRequests,
   ...storeHomeRequests,
+  ...storeLoyaltyRequests,
   ...adminStructuralRequests,
 } as const;
 

@@ -32,6 +32,7 @@ import { contentHandlers } from "./content";
 import { assistantHandlers } from "./assistant";
 import { heroHandlers } from "./hero";
 import { homeHandlers } from "./home";
+import { loyaltyHandlers } from "./loyalty";
 import { styleLibraryHandlers } from "./style-library";
 
 export const storeHandlers = [
@@ -44,6 +45,7 @@ export const storeHandlers = [
   ...contentHandlers,
   ...assistantHandlers,
   ...homeHandlers,
+  ...loyaltyHandlers,
   ...styleLibraryHandlers,
   ...heroHandlers,
   ...structuralHandlers,
