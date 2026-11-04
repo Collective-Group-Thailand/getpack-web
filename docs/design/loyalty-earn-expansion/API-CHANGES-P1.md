@@ -2,6 +2,8 @@
 
 All amounts are decimal strings; points are integers. Store surface, customer audience only (403 for anyone else).
 Errors use the existing `DomainException` codes.
+Date-times are ISO 8601 with the Bangkok offset (`+07:00`), as every other API date (api-conventions §2); the examples
+below were updated from `Z` to match (same instants are equally valid ISO 8601 for the web parser).
 
 ## GET /v1/store/loyalty/tasks — `store.loyalty.tasks`
 
@@ -20,7 +22,7 @@ The earn checklist, derived from settings and the ledger (no new table). It is s
       "recommended": true
     },
     { "code": "address", "points": 8, "status": "held", "doneAt": null, "heldReason": "duplicate_identity", "recommended": false },
-    { "code": "phone_verified", "points": 8, "status": "done", "doneAt": "2026-11-02T03:10:00.000Z", "heldReason": null, "recommended": false }
+    { "code": "phone_verified", "points": 8, "status": "done", "doneAt": "2026-11-02T10:10:00+07:00", "heldReason": null, "recommended": false }
   ],
   "earnedPoints": 56,
   "remainingPoints": 136,
@@ -38,9 +40,19 @@ The earn checklist, derived from settings and the ledger (no new table). It is s
 - A task whose reward is 0 in settings is omitted. `line_oa_friend` is omitted when the LINE OA is not configured.
 - `held` only when DEC-5 applies (the entry is `pending` with meta reason `held_duplicate_identity`).
   `heldReason` is the enum `duplicate_identity`, and the UI shows only "รอตรวจสอบ".
+- A held reward Marketing **rejects** can never be earned again (one per account), so its task is omitted from the
+  list (API decision, P1 build). A `done` task shows the points actually written, which may differ from today's
+  setting if the value changed since.
+- `line_link` is `done` for customers rewarded before P1 (`earn_line_link`) as well as for `earn_identity_link`
+  with `meta.provider = line`.
 
-## GET /v1/store/loyalty/packaging-profile — `store.loyalty.packagingProfile.get`
-## PUT /v1/store/loyalty/packaging-profile — `store.loyalty.packagingProfile.put`
+## GET /v1/store/loyalty/packaging-profile — `store.loyalty.getPackagingProfile`
+## PUT /v1/store/loyalty/packaging-profile — `store.loyalty.updatePackagingProfile`
+
+> **Operation ids changed by the API (2026-11-04, P1 build).** The requested ids `store.loyalty.packagingProfile.get`
+> / `.put` have four segments; `@ApiEndpoint` only accepts `<surface>.<tag>.<action>` (`OPERATION_ID_PATTERN`,
+> api-conventions §5) and refuses to boot otherwise. They follow `admin.styleLibrary.getSettings` /
+> `updateSettings`. Paths, methods, bodies and responses are unchanged; only generated client method names differ.
 
 ```json
 {
@@ -49,8 +61,8 @@ The earn checklist, derived from settings and the ledger (no new table). It is s
   "shipToRegions": ["bangkok_metro", "north"],
   "peakMonths": [11, 12],
   "purposeAccepted": true,
-  "completedAt": "2026-11-04T08:00:00.000Z",
-  "updatedAt": "2026-11-04T08:00:00.000Z"
+  "completedAt": "2026-11-04T15:00:00+07:00",
+  "updatedAt": "2026-11-04T15:00:00+07:00"
 }
 ```
 
@@ -68,10 +80,20 @@ The earn checklist, derived from settings and the ledger (no new table). It is s
 
 ## Realtime — `loyalty.points_awarded` (user channel)
 
-`{ "entryType": "earn_tax_profile", "taskCode": "tax_profile", "points": 40, "status": "available" | "pending" }`.
-The web shows a toast "+40 แต้ม — เพิ่มข้อมูลผู้เสียภาษี" and refetches the tasks. If no realtime gateway for the
-user channel exists, the API agent records a CONTRACT-REQUEST, and the web refetches on focus or after the form
-saves instead.
+> **Changed by the API (2026-11-04, P1 build).** The user channel exists (`user:<customer public id>`, SSE through
+> `RealtimePublisher`), but `docs/contract/api-conventions.md` §6 allows **type + id only** in realtime payloads ("no
+> business data; the client refetches"). The signal is therefore:
+>
+> `{ "type": "loyalty.points_awarded", "id": "<points entry public id>" }`
+>
+> sent after commit when an onboarding reward is credited (`points.issued`) or held (`points.reward_held`). The web
+> refetches `GET /v1/store/loyalty/tasks`, diffs it with the list it had, and shows the toast for the task that
+> became `done` ("+40 แต้ม — เพิ่มข้อมูลผู้เสียภาษี") or `held` ("รอตรวจสอบ"). Points, task code and status come from
+> the tasks response, never from the signal. Without a live stream the web still refetches on focus and after the
+> form saves.
+
+Original request (kept for reference, not implemented): `{ "entryType": "earn_tax_profile", "taskCode":
+"tax_profile", "points": 40, "status": "available" | "pending" }`.
 
 ## Settings
 

@@ -9,7 +9,7 @@ in this pass.**
 
 | # | Item | Repo |
 |---|---|---|
-| 1 | Schema: new `points_entry_type` values, `points_ledger.meta jsonb`, partial unique index for one-off rewards (per provider), sign check, `customer_profiles.profile_completed_at`, `packaging_profiles` table. Hand-written migration `20261104000001_loyalty_activity_rewards` with a documented down path. | api |
+| 1 | Schema: new `points_entry_type` values, `points_ledger.meta jsonb`, partial unique index for one-off rewards (per provider), sign check, `customer_profiles.profile_completed_at`, `packaging_profiles` table. Hand-written migration `20270101000003_loyalty_activity_rewards` with a documented down path. | api |
 | 2 | Settings: new effective-dated version of `loyalty.activity_rewards` (all §2.1 keys) + `loyalty.activity_cap` `{bahtPer12m: '1500.00'}`; shape validation; admin `LoyaltySettings.tsx` fields. | api + web |
 | 3 | Events: verify or emit `customer.profile_completed`, `customer.phone_verified`, `customer.packaging_profile_completed`, `studio.brand_kit_created`, `design.saved`, `company.member_accepted`, `customer.line_oa_followed` (from `line-webhook.service.ts` `follow` when the LINE user maps to a customer). | api |
 | 4 | Handler: generic `onActivity(entryType, event)` with a rules map; DEC-4 cap (600 pts / rolling 12 m, activity + bonus only); DEC-5 hold on duplicate tax ID / phone → `pending` + `held_duplicate_identity`, reusing the referral review queue (Marketing). | api |
