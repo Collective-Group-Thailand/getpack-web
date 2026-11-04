@@ -140,7 +140,8 @@ export function PackagingProfileForm({
         >
           <RadioCards<Volume>
             columns={4}
-            value={draft.monthlyBoxVolume ?? undefined}
+            // "" keeps the group controlled before a choice (no item has that value).
+            value={(draft.monthlyBoxVolume ?? "") as Volume}
             onValueChange={(value) => set("monthlyBoxVolume", value)}
             options={MONTHLY_BOX_VOLUMES.map((value) => ({ value, label: t(`volumes.${value}`) }))}
           />
