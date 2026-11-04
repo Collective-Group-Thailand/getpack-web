@@ -41,6 +41,7 @@ const CHALLENGES: Record<CustomerPersona, string> = {
   creditbuyer: "00000000-0000-4000-8000-0000000000cc",
   agent: "00000000-0000-4000-8000-0000000000cd",
   agentended: "00000000-0000-4000-8000-0000000000ce",
+  agentpilot: "00000000-0000-4000-8000-0000000000cf",
   // The scorecard round's participants (`./uat.ts`, only with MOCK_DATASET=uat).
   ...Object.fromEntries(
     uatParticipants().map((participant, n) => [

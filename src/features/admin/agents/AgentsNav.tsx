@@ -2,11 +2,13 @@
 
 import { useTranslations } from "next-intl";
 
-import { SectionNav } from "../console";
+import { SectionNav, useCan } from "../console";
 
 /** The sales agent desk's sections (D-416 – D-423). */
 export function AgentsNav() {
   const t = useTranslations("agents.nav");
+  // The waiting list is personal data (`agent_waitlist.read`, P7): only the roles that may read it see its tab.
+  const canSeeWaitlist = useCan("agent_waitlist.read");
   return (
     <SectionNav
       label={t("label")}
@@ -21,6 +23,7 @@ export function AgentsNav() {
         { href: "/agents/leads", label: t("leads") },
         { href: "/agents/factories", label: t("factories") },
         { href: "/agents/plans", label: t("plans") },
+        ...(canSeeWaitlist ? [{ href: "/agents/waitlist", label: t("waitlist") }] : []),
       ]}
     />
   );

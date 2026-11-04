@@ -19,6 +19,7 @@ export type AgentPlanTerms = Schemas["AgentPlanTermsDto"];
 export type AgentKind = Schemas["AgentKind"];
 export type AgentTaxDeclaration = Schemas["AdminAgentTaxDeclarationDto"];
 export type AgentPayoutProfile = Schemas["AdminAgentPayoutProfileDto"];
+export type AgentWaitlistEntry = Schemas["AdminAgentWaitlistEntryDto"];
 
 export const AGENT_KINDS = ["freelance", "employee"] as const satisfies readonly AgentKind[];
 export const AGENT_STATUSES = ["active", "suspended", "ended"] as const satisfies readonly Schemas["AgentStatus"][];
@@ -163,4 +164,14 @@ export const payoutProfilesList = defineList<AgentPayoutProfile>({
   getRowName: (row) => row.agent.legalName,
   defaults: { filterKeys: ["status"] },
   staleTime: STALE_TIME.live,
+});
+
+/** The programme's waiting list (P7 pilot switch, `admin.agentWaitlist.list`): newest first, searched by `q`. */
+export const waitlistList = defineList<AgentWaitlistEntry>({
+  key: "agent_waitlist",
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/agent-waitlist", { params: { query: query as never } })).data!,
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.name,
+  defaults: { filterKeys: [] },
 });

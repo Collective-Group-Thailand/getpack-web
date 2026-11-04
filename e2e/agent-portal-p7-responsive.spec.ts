@@ -147,6 +147,7 @@ test.describe("agent portal P7 — responsive QA at 360–1920", () => {
       ["/sales/reports/lost-to-price", "report lost to price"],
       ["/sales/reports/negotiations", "report negotiations"],
       ["/sales/reports/post-deal", "report post-deal"],
+      ["/agents/waitlist", "agents waitlist"],
     ]);
     await gotoHydrated(page, `${HOSTS.admin}/sales/pipeline`);
     const lead = await firstHref(page, /^\/sales\/leads\/[^/?#]+$/);

@@ -17,6 +17,8 @@ const isAgent = (request: Request) => customerOf(request)?.persona === "agent";
 const isEndedAgent = (request: Request) => customerOf(request)?.persona === "agentended";
 /** Who holds an agent's record, ended or not: the programme says "agent" for both. */
 const hasAgentRecord = (request: Request) => isAgent(request) || isEndedAgent(request);
+/** The pilot customer (phone 0861234569, P7): on the `agents.pilot` list, so they may apply while sign-up is closed. */
+const isPilot = (request: Request) => customerOf(request)?.persona === "agentpilot";
 
 const TERMS: Schemas["StoreAgentTermsDto"] = {
   firstOrderPct: "5",
@@ -58,24 +60,57 @@ let preferences = freshPreferences();
 /** Sessions this mock knows of: the agent's storefront session and this device's getpack Agent one. */
 let revokedOtherAgentSessions = false;
 
+/**
+ * The pilot switch as the mock runs it (P7, API-CHANGES-P7 §1): `waitlist` — the flag is off, the waiting list takes
+ * sign-ups (the default, as production starts); `closed` — neither (no consent text published); `open` — the flag is
+ * on for everyone. Moved by the mock-only job `POST /v1/store/mock-jobs/agents.programme_state` so e2e can walk each.
+ */
+type ProgrammeState = "waitlist" | "closed" | "open";
+let programmeState: ProgrammeState = "waitlist";
+/** The pilot customer's application, once sent (state `applied`). */
+let pilotApplied = false;
+
+/** The waiting list as the API keeps it: one row per contact, a repeat refreshes it (neutral answer either way). */
+export type WaitlistEntry = Schemas["AdminAgentWaitlistEntryDto"];
+let waitlist: WaitlistEntry[] = [];
+const WAITLIST_CONSENT: Schemas["AgentWaitlistConsentDto"] = {
+  versionNo: 1,
+  textTh:
+    "ข้าพเจ้ายินยอมให้ getpack เก็บชื่อและช่องทางติดต่อนี้ เพื่อแจ้งเมื่อเปิดรับสมัครตัวแทนขาย (ข้อความจำลองสำหรับทดสอบ ไม่ใช่ข้อความจริง ฝ่ายกฎหมายเป็นผู้กำหนด)",
+  textEn:
+    "I agree that getpack may keep this name and contact to tell me when agent sign-up opens (mock text for testing — not the real text; Legal writes it).",
+  summaryTh: "เก็บไว้เพื่อแจ้งการเปิดรับสมัครตัวแทนเท่านั้น",
+  summaryEn: "Kept only to tell you when agent sign-up opens.",
+};
+
+/** The waiting list for the admin mock (`mocks/admin`), newest first. */
+export function agentWaitlist(): WaitlistEntry[] {
+  return [...waitlist].sort((a, b) => b.lastJoinedAt.localeCompare(a.lastJoinedAt));
+}
+
+const E164 = (phone: string) => (phone.startsWith("+") ? phone : `+66${phone.slice(1)}`);
+
 export function resetAgentMock(): void {
   declaration = null;
   payoutProfile = null;
   otpPhone = null;
   preferences = freshPreferences();
   revokedOtherAgentSessions = false;
+  programmeState = "waitlist";
+  pilotApplied = false;
+  waitlist = [];
   resetAgentLeadsMock();
 }
 
-/** The public programme the landing reads (D-466) — open for applications in the mock so the flow can be walked. */
+/** The public programme the landing reads (D-466); `applyOpen` / `waitlistOpen` / consent follow `programmeState`. */
 const PUBLIC_PROGRAMME: Schemas["PublicAgentProgrammeDto"] = {
   terms: TERMS,
   linkCookieDays: 90,
   leadProtectionDays: 60,
   paymentTermsDays: 15,
-  applyOpen: true,
-  waitlistOpen: false,
-  waitlistConsent: null,
+  applyOpen: false,
+  waitlistOpen: true,
+  waitlistConsent: WAITLIST_CONSENT,
   agreement: {
     key: "sales_agent_agreement",
     versionNo: 1,
@@ -195,7 +230,59 @@ export const storeAgentHandlers = [
     if (body.client === "agent") revokedOtherAgentSessions = true;
     return HttpResponse.json({ revoked } satisfies Schemas["RevokedSessionsDto"]);
   }),
-  http.get("*/v1/store/agent/programme/public", () => HttpResponse.json(PUBLIC_PROGRAMME)),
+  http.get("*/v1/store/agent/programme/public", () =>
+    HttpResponse.json({
+      ...PUBLIC_PROGRAMME,
+      applyOpen: programmeState === "open",
+      waitlistOpen: programmeState === "waitlist",
+      waitlistConsent: programmeState === "waitlist" ? WAITLIST_CONSENT : null,
+    } satisfies Schemas["PublicAgentProgrammeDto"]),
+  ),
+  // The waiting list (P7): public, neutral 200 for a new and a known contact alike.
+  http.post("*/v1/store/agent/programme/waitlist", async ({ request }) => {
+    if (programmeState !== "waitlist") return problem(409, "agents.waitlist_closed", "ยังไม่เปิดรายชื่อรอเปิดรับ");
+    const body = (await request.json()) as Schemas["JoinAgentWaitlistDto"];
+    if (body.consentVersionNo !== WAITLIST_CONSENT.versionNo)
+      return problem(409, "agents.waitlist_consent_outdated", "กรุณาอ่านและยอมรับข้อความฉบับใหม่");
+    const phone = body.phone?.trim() || null;
+    const email = body.email?.trim().toLowerCase() || null;
+    const fields: { path: string; code: string; message: string }[] = [];
+    if (!body.name?.trim() || body.name.trim().length > 120)
+      fields.push({ path: "name", code: "invalid", message: "name" });
+    if (!phone && !email) fields.push({ path: "phone", code: "required", message: "phone or email" });
+    if (phone && !/^(0\d{8,9}|\+[1-9]\d{7,14})$/.test(phone))
+      fields.push({ path: "phone", code: "pattern", message: "phone" });
+    if (fields.length) return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", fields);
+    const now = new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 19) + "+07:00";
+    const known = waitlist.find((row) => (phone && row.phone === E164(phone)) || (email && row.email === email));
+    if (known) {
+      known.joinCount += 1;
+      known.lastJoinedAt = now;
+      known.name = body.name.trim();
+      known.salesChannel = body.salesChannel ?? known.salesChannel;
+    } else {
+      waitlist.push({
+        id: `00000000-0000-4000-8000-77${String(waitlist.length + 1).padStart(10, "0")}`,
+        name: body.name.trim(),
+        phone: phone ? E164(phone) : null,
+        email,
+        salesChannel: body.salesChannel ?? null,
+        joinCount: 1,
+        createdAt: now,
+        lastJoinedAt: now,
+      });
+    }
+    return HttpResponse.json({ status: "received" } satisfies Schemas["AgentWaitlistReceiptDto"]);
+  }),
+  // Mock-only job: moves the pilot switch so e2e can walk the waiting list, the closed state and an open programme.
+  http.post("*/v1/store/mock-jobs/agents.programme_state", async ({ request }) => {
+    const body = (await request.json()) as { state?: ProgrammeState; resetPilot?: boolean };
+    if (body.resetPilot) pilotApplied = false;
+    if (body.state !== "waitlist" && body.state !== "closed" && body.state !== "open")
+      return problem(422, "validation.failed", "state: waitlist | closed | open");
+    programmeState = body.state;
+    return HttpResponse.json({ state: programmeState });
+  }),
   // The API computes the example; the mock does the same so the calculator shows a figure (never the web).
   http.get("*/v1/store/agent/programme/example", ({ request }) => {
     const value = new URL(request.url).searchParams.get("orderValue") ?? "0";
@@ -270,6 +357,27 @@ export const storeAgentHandlers = [
       rowVersion: payoutProfile.rowVersion + 1,
     };
     return HttpResponse.json(payoutProfile);
+  }),
+  // Signed-in, not an agent (P7): the pilot customer may apply; everyone else only when the flag is on for all.
+  http.get("*/v1/store/agent/programme", ({ request }) => {
+    if (hasAgentRecord(request) || !customerOf(request)) return undefined;
+    return HttpResponse.json({
+      agreement: PUBLIC_PROGRAMME.agreement,
+      plan: TERMS,
+      linkCookieDays: 90,
+      leadProtectionDays: 60,
+      paymentTermsDays: 15,
+      applyOpen: isPilot(request) || programmeState === "open",
+      state: isPilot(request) && pilotApplied ? "applied" : "none",
+    } satisfies Schemas["AgentProgrammeDto"]);
+  }),
+  // `store.agent.apply` follows the same rule (409 `agents.programme_closed` otherwise).
+  http.post("*/v1/store/agent/application", ({ request }) => {
+    if (hasAgentRecord(request) || !customerOf(request)) return undefined;
+    if (!isPilot(request) && programmeState !== "open")
+      return problem(409, "agents.programme_closed", "ขณะนี้ยังไม่เปิดรับสมัครตัวแทน ลงทะเบียนรอเปิดรับได้");
+    if (isPilot(request)) pilotApplied = true;
+    return undefined;
   }),
   http.get("*/v1/store/agent/programme", ({ request }) => {
     if (!hasAgentRecord(request)) return undefined;

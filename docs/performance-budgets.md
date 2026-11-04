@@ -471,8 +471,8 @@ mode; script transfer without GTM (the build had a test GTM id; CI's has none):
 
 | Set | Heaviest page | Measured | Ratchet |
 |---|---|---|---|
-| agent-landing | `/agent` (`/en/agent` the same) | 293,118 | **293,600** |
-| agent-apply | `/agent/apply` | 299,605 | **300,100** |
+| agent-landing | `/agent` (`/en/agent` the same) | 293,118; 297,344 with the waiting-list form | 293,600 → **297,800** |
+| agent-apply | `/agent/apply` | 299,605 (299,736 showing the waiting list) | **300,100** |
 | agent-zone | `/leads` (`/quotes/new` 309,293; the rest 281–294 K) | 315,408 | **315,900** |
 
 The set's target is still the documented one for its route type (150 KB marketing, 180 KB PWA); the ratchets stop

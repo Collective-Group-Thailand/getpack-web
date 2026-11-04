@@ -7,6 +7,8 @@ import { gotoHydrated, MOCK_OTP } from "./session";
 export const AGENT_PHONE = "0861234567";
 /** The mock persona `agentended`: an agent whose agreement has ended (statements and 50 ทวิ only). */
 export const ENDED_AGENT_PHONE = "0861234568";
+/** The mock persona `agentpilot` (P7): a customer on the `agents.pilot` list, who may apply while sign-up is closed. */
+export const PILOT_PHONE = "0861234569";
 
 /** Signs in on getpack Agent's own sign-in page (D-467) and lands on `path` there. */
 export async function signInToAgentZone(page: Page, path = "/", phone = AGENT_PHONE): Promise<void> {

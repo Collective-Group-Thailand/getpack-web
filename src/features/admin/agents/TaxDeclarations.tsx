@@ -43,7 +43,10 @@ export function TaxDeclarationsQueue({ initial }: { initial: InitialPage<AgentTa
       header: t("columns.agent"),
       cell: (row) => (
         <div className="flex min-w-0 flex-col">
-          <Link href={`/agents/tax-declarations/${row.id}`} className="text-primary truncate font-medium hover:underline">
+          <Link
+            href={`/agents/tax-declarations/${row.id}`}
+            className="text-primary truncate font-medium hover:underline"
+          >
             {row.agent.legalName}
           </Link>
           <span className="text-muted text-xs tabular-nums">{row.agent.code}</span>

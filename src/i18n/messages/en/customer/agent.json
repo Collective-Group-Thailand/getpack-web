@@ -47,7 +47,8 @@
     "rejected": "Your last application was not approved; you can correct it and apply again",
     "noAgreement": "We are not taking agent applications right now",
     "applyOpen": "Apply to be an agent",
-    "moreAbout": "More about the agent programme"
+    "moreAbout": "More about the agent programme",
+    "waitlist": "Join the waiting list"
   },
   "application": {
     "withdraw": "Withdraw application",
@@ -178,7 +179,9 @@
       "closed": "Agent applications aren't open right now",
       "closedBody": "Check the programme page for the next intake.",
       "back": "Back to the agent programme",
-      "noAgreement": "The current agent agreement hasn't been published yet, so applications can't be taken."
+      "noAgreement": "The current agent agreement hasn't been published yet, so applications can't be taken.",
+      "waitlistTitle": "Join the waiting list",
+      "waitlistLede": "Agent applications aren't open yet. Leave your name and a way to reach you, and we'll let you know when they open."
     }
   },
   "terms": {
@@ -375,7 +378,8 @@
         "noStock": "No stock to buy",
         "wht": "Withholding certificate with every payment"
       },
-      "signedInAgent": "Open my agent pages"
+      "signedInAgent": "Open my agent pages",
+      "waitlist": "Join the waiting list"
     },
     "story": {
       "label": "How getpack Agent works",
@@ -502,7 +506,16 @@
       "body": "Apply for free; once approved, your link is ready",
       "apply": "Become an agent"
     },
-    "partners": "A packaging manufacturer? See the programme for manufacturers"
+    "partners": "A packaging manufacturer? See the programme for manufacturers",
+    "closed": {
+      "title": "Agent applications aren't open right now",
+      "body": "Everything about the programme is on this page. If you have a question, the getpack team is happy to help.",
+      "contact": "Contact us"
+    },
+    "waitlist": {
+      "title": "Join the waiting list",
+      "lead": "Agent applications aren't open yet. Leave your name and a way to reach you, and we'll let you know when they open."
+    }
   },
   "payout": {
     "title": "Payout details",
@@ -535,5 +548,32 @@
     "notApplicable": "Agents who are getpack employees are paid through payroll and don't need this page.",
     "banner": "Fill in your payout details before your first commission payout",
     "bannerCta": "Add payout details"
+  },
+  "waitlist": {
+    "formLabel": "Join the agent waiting list",
+    "name": "Name",
+    "phone": "Mobile number",
+    "email": "E-mail",
+    "contactHint": "A mobile number or an e-mail — at least one",
+    "channel": "How you sell (optional)",
+    "channelNone": "Not specified",
+    "consentTitle": "Consent (version {version})",
+    "consentAccept": "I have read and agree to this text",
+    "submit": "Join",
+    "privacyNote": "Used only to tell you when agent applications open, as you agreed.",
+    "doneTitle": "Thank you — we have your details",
+    "doneBody": "When agent applications open, we'll let you know through the contact you gave.",
+    "consentChanged": "The consent text has been updated. Please read it and confirm again.",
+    "tooMany": "Too many tries — please wait a moment and try again",
+    "checkFields": "Some details aren't valid. Check them and try again.",
+    "failed": "Couldn't send. Please try again.",
+    "errors": {
+      "title": "{count, plural, one {# field needs} other {# fields need}} attention",
+      "name": "Enter your name",
+      "contact": "Enter a mobile number or an e-mail",
+      "phone": "This mobile number isn't valid",
+      "email": "This e-mail isn't valid",
+      "consent": "Tick the consent box before sending"
+    }
   }
 }

@@ -3,6 +3,7 @@
  * published surface; see each module for what it stands in for.
  */
 
+import { agentWaitlistHandlers } from "./agent-waitlist";
 import { analyticsContractHandlers } from "./analytics";
 import { artworkContractHandlers } from "./artwork";
 import { catalogueHandlers } from "./catalogue";
@@ -50,6 +51,7 @@ export const adminHandlers = [
   ...companyHandlers,
   ...financeHandlers,
   ...pnlHandlers,
+  ...agentWaitlistHandlers,
   ...loyaltyHandlers,
   ...shipmentHandlers,
   ...logisticsHandlers,

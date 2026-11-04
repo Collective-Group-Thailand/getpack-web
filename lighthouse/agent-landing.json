@@ -28,11 +28,11 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 293600
+            "maxNumericValue": 297800
           }
         ]
       }
     }
   },
-  "$comment": "Agent portal P7 — the programme's public landing (th, en) on the mobile preset, as an anonymous visitor who answered the cookie banner. SEO is an error at 1.0 (indexable, JSON-LD). Performance is a warning like every field-type metric in this repo (lighthouse/shared.json: a shared runner cannot stand in for a p75 measurement honestly); the target is 0.9 (the agent portal <responsive> contract) and the measured numbers are in docs/design/agent-portal/DESIGN-NOTES.md (P7). Accessibility is the shared error at 1.0 — stricter than the contract's 0.95; every page measures 100. RATCHET: script size pinned just above the P7 measurement (docs/performance-budgets.md, Agent portal P7)."
+  "$comment": "Agent portal P7 — the programme's public landing (th, en) on the mobile preset, as an anonymous visitor who answered the cookie banner. SEO is an error at 1.0 (indexable, JSON-LD). Performance is a warning like every field-type metric in this repo (lighthouse/shared.json: a shared runner cannot stand in for a p75 measurement honestly); the target is 0.9 (the agent portal <responsive> contract) and the measured numbers are in docs/design/agent-portal/DESIGN-NOTES.md (P7). Accessibility is the shared error at 1.0 — stricter than the contract's 0.95; every page measures 100. RATCHET: script size pinned just above the P7 measurement — 293,600 after the message trim, raised to 297,800 the same day by the waiting-list form (297,344) (docs/performance-budgets.md, Agent portal P7)."
 }

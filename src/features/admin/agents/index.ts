@@ -8,3 +8,4 @@ export { PayoutProfileReview, PayoutProfilesQueue } from "./PayoutProfiles";
 export { PlanDetail, PlansList } from "./Plans";
 export { StatementDetail, StatementsList } from "./Statements";
 export { TaxDeclarationReview, TaxDeclarationsQueue } from "./TaxDeclarations";
+export { WaitlistList } from "./Waitlist";

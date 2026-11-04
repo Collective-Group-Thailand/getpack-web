@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { AGENT_PHONE, signInToAgentZone } from "./helpers/agent";
+import { AGENT_PHONE, PILOT_PHONE, signInToAgentZone } from "./helpers/agent";
 import { acceptCookies, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
@@ -41,7 +41,8 @@ test.describe("agent portal P1 — entry and two-step apply (D-466)", () => {
     await expect(page.locator('script[type="application/ld+json"]').first()).toBeAttached();
     const text = await page.locator("main").innerText();
     expect(text).not.toMatch(/โรงงาน|factory|กำไร|margin|profit|฿0(?![0-9.,])|เร็ว ๆ นี้|coming soon/i);
-    await expect(page.getByRole("link", { name: /สมัคร/ }).first()).toHaveAttribute("href", /\/agent\/apply$/);
+    // P7: sign-up is closed to the public until the owner opens it — the landing offers the waiting list.
+    await expect(page.getByRole("link", { name: "ลงทะเบียนรอเปิดรับ" }).first()).toHaveAttribute("href", /#waitlist$/);
     // The calculator asks the API (the mock computes like the API); the web only formats.
     const amount = page.getByLabel(/ยอดสินค้าก่อน VAT/);
     await amount.fill("40000");
@@ -58,7 +59,8 @@ test.describe("agent portal P1 — entry and two-step apply (D-466)", () => {
   });
 
   test("step 1: a customer verifies a new phone with a code, accepts the agreement and applies", async ({ page }) => {
-    await signInAsCustomer(page, "/agent/apply");
+    // P7: only a customer on the pilot list (or everyone once sign-up opens) gets the form.
+    await signInAsCustomer(page, "/agent/apply", PILOT_PHONE);
     await expect(page.getByRole("list", { name: "ขั้นตอนการสมัคร" })).toBeVisible();
     await shoot(page, "apply");
     // Submitting empty explains every problem at once.

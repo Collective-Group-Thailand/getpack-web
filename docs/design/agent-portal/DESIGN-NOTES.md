@@ -566,6 +566,36 @@ charts; getpack tokens, Anuphan and the existing admin console patterns win ever
 - Admin desks at phone widths: they hold together (no page scroll, cards instead of tables, section tabs scroll inside
   their strip, actions reachable); they remain desktop tools by design.
 
+### Pilot switch and waiting list (API-CHANGES-P7 §1–2)
+- **Who sees what.** The landing works out one way in (`wayIn` in `agent/page.tsx`): *apply* when the public programme
+  is open, or the signed-in customer's `store.agent.programme.applyOpen` is true (pilot list), or they already are an
+  agent / applicant (apply sends them to their page); else the *waiting list* when `waitlistOpen` and a consent text
+  are published; else *closed*. Anonymous visitors never read the pilot list (the API's public answer is the flag
+  only), so the page cannot leak who is piloting.
+- **Waiting list on the landing.** The hero's primary button becomes "ลงทะเบียนรอเปิดรับ", an anchor to `#waitlist`
+  (the visitor stays on the page that explains the programme); the closing call-to-action becomes a two-column card
+  (why, then the form) instead of the apply band. The form: ชื่อ (required), เบอร์มือถือ and อีเมล side by side from
+  640 px with one hint — "at least one of the two" — under the phone, ช่องทางที่คุณขาย as the platform's own select
+  (no extra script on a marketing page, the phone's own picker), and the consent block on the subtle ground: version
+  number, the API's summary in medium weight, the full text, then the tick. Errors are listed together in one alert
+  at the top (as the apply form) and focused. `inputMode` / `autocomplete` on every field.
+- **Neutral answer.** Every accepted submission shows the same thank-you in place of the form ("ได้รับข้อมูลแล้ว
+  ขอบคุณที่สนใจ" — we will tell you through the contact you gave), announced as a status; a repeat contact gets the
+  identical message (the API answers `received` either way). A newer consent version (409) clears the tick, says the
+  text changed and refreshes the page to show it; a closed list refreshes into the closed state; 429 asks to wait.
+- **Closed.** No form and no promise of a date: a short line with an info icon under the hero lede
+  ("ตอนนี้ไม่ได้เปิดรับสมัครตัวแทน"), "ดูวิธีคิดค่าคอม" becomes the primary hero action, and the closing card says the
+  page holds everything about the programme with a "ติดต่อทีมงาน" link. No "coming soon", no countdown.
+- **/agent/apply** for a signed-in customer who may not apply: the title becomes "ลงทะเบียนรอเปิดรับ", the apply steps
+  are not shown (there is nothing to step through), and the same form starts from the account's name, phone and
+  e-mail. The account page's programme card says "ลงทะเบียนรอเปิดรับ" and goes to the same page.
+- **Admin.** "รายชื่อรอเปิดรับ" is the last tab of the agents desk, drawn only for `agent_waitlist.read` (Sales
+  Manager, C-Level, Superadmin); the page answers anyone else with the 403 state. Table: name, contact (local phone
+  over e-mail), how they sell, sign-ups (a repeat raises it), first and latest sign-up in Bangkok time; search by name,
+  e-mail or phone; "ส่งออก CSV" downloads the API's signed link (5 minutes) and says how many rows went out.
+- Mock: persona `agentpilot` (0861234569) is on the pilot list; the switch moves with the mock-only job
+  `POST /v1/store/mock-jobs/agents.programme_state` (`waitlist` default · `closed` · `open`).
+
 ### Real-device pass (Safari iOS, Chrome Android) — NOT PERFORMED here
 This workspace has no phones or device cloud; nothing below has been done. Checklist for the owner / QA on UAT
 (`agent.<uat-host>` and the storefront), one iPhone (iOS 17+, Safari, with a notch / Dynamic Island) and one Android
