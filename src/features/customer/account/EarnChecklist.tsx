@@ -359,6 +359,10 @@ function TaskRow({
         </span>
         <span className="text-muted block text-[0.8125rem]">
           {held ? t("earn.heldNote") : t("earn.doneOn", { date: format.date(task.doneAt) })}
+          {/* Loyalty P2: a confirmation that comes back yearly says when. */}
+          {!held && task.code === "data_refresh" && task.nextDueAt
+            ? ` · ${t("tasks.data_refresh.nextDue", { date: format.date(task.nextDueAt) })}`
+            : null}
         </span>
       </span>
       {points}

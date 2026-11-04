@@ -766,7 +766,9 @@
     "privacy": "Privacy",
     "team": "Team & approvers",
     "all": "All",
-    "packagingProfile": "Packaging use"
+    "packagingProfile": "Packaging use",
+    "confirmData": "Confirm details",
+    "showcase": "Show our work"
   },
   "packagingProfile": {
     "title": "Packaging use",
@@ -866,5 +868,60 @@
     "backToAccount": "Back to your account",
     "closedTitle": "This survey is closed",
     "closedBody": "Thanks for your interest. We'll send a new survey after your next order."
+  },
+  "confirmData": {
+    "title": "Confirm your company and addresses",
+    "intro": "Check that the details on your documents and deliveries are still right. If anything changed, edit it from each section's link.",
+    "company": "Company",
+    "taxProfiles": "Tax details",
+    "addresses": "Delivery addresses",
+    "default": "Default",
+    "none": "Nothing yet",
+    "edit": "Edit",
+    "reward": "Confirm for <b>{points} points</b>",
+    "noReward": "You can confirm whenever your details change",
+    "confirm": "Confirm these details are correct",
+    "confirmAgain": "Confirm again",
+    "confirmed": "Confirmation saved",
+    "confirmedReward": "+{points} points — details confirmed",
+    "failed": "That didn't save. Please try again.",
+    "upToDate": "Last confirmed {date}",
+    "nextDue": "next due {date}"
+  },
+  "showcase": {
+    "title": "Let us show your work",
+    "intro": "Allow getpack to use your brand name, logo or packaging photos as examples of our work on our website and materials. Our team reviews every request before using anything.",
+    "scopeTitle": "What we may show",
+    "scopeHint": "Choose one or more",
+    "scopes": {
+      "brand_name": "Brand name",
+      "logo": "Logo",
+      "packaging_photos": "Packaging photos",
+      "review_quote": "A quote from your review"
+    },
+    "consentTitle": "Consent",
+    "consentText": "I allow getpack to show what I selected above as examples of its work on its website, online channels and presentations. I can withdraw this consent at any time from this page, and getpack will stop using new material after I do.",
+    "version": "Version {version}",
+    "agree": "I have read and agree to the text above",
+    "reward": "Get <b>{points} points</b> once our team approves",
+    "submit": "Send request",
+    "sent": "Request sent. We'll email you the outcome.",
+    "withdraw": "Withdraw consent",
+    "withdrawHint": "You can withdraw at any time; points already received stay yours",
+    "withdrawn": "Consent withdrawn",
+    "pickScope": "Choose at least one thing we may show",
+    "agreeFirst": "Please read and agree before sending",
+    "pending": "Your earlier request is still being reviewed",
+    "outdated": "The consent text has a newer version. Please reload this page.",
+    "failed": "That didn't send. Please try again.",
+    "requestedOn": "Requested {date}",
+    "decidedOn": "Updated {date}",
+    "status": {
+      "none": "No consent given",
+      "requested": "Under review",
+      "approved": "Approved",
+      "rejected": "Not approved",
+      "withdrawn": "Withdrawn"
+    }
   }
 }

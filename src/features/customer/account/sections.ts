@@ -96,6 +96,9 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     tabs: [
       { key: "addresses", href: "/account/addresses" },
       { key: "packagingProfile", href: "/account/packaging-profile" },
+      // Loyalty P2: the yearly data confirmation and the showcase consent.
+      { key: "confirmData", href: "/account/confirm-data" },
+      { key: "showcase", href: "/account/showcase" },
       { key: "notifications", href: "/account/notifications" },
       { key: "privacy", href: "/account/privacy" },
     ],
