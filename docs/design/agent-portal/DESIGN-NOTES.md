@@ -667,3 +667,11 @@ at `/agent-sw.js`). Real installs need phones:
   icon, name "getpack Agent" → opens standalone; safe areas on a notched phone; web push only after adding to the
   home screen and allowing notifications in the app.
 - Record pass / fail with device and OS versions in the UAT sheet.
+
+### Screenshots (`screenshots/P7`)
+`p7-waitlist-form-390/1440`, `p7-waitlist-done-390`, `p7-closed-390/1440`, `p7-pilot-landing-390`,
+`p7-pilot-apply-390/1440`, `p7-admin-waitlist-1440`, and the responsive contact sheets
+`p7-responsive-contact-sheet-360` / `-1920` (landing, apply, agent sign-in, agent home, leads, a lead, sales inbox,
+sales dashboard, an approval, P&L). Reviewed by eye: no clipping or overlap; at 360 the leads FAB floats over the list
+by design (the list ends above it when scrolled). The admin desks at 360 stack their filters and cards and stay usable.
+
