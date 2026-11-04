@@ -17,6 +17,7 @@ import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, problemMessage, QueryError, useCan } from "../console";
+import { SurveyTemplateEditor } from "./SurveyTemplateEditor";
 
 type Action = "publish" | "retire" | "new-version";
 
@@ -24,8 +25,8 @@ type Action = "publish" | "retire" | "new-version";
  * `/marketing/surveys` (loyalty P2, D-491): the survey templates — trigger, version, status, response rate — with
  * publish, retire and new version (`admin.surveys.templateAction`; one published template per trigger, 409
  * `surveys.trigger_taken`), and a template's results: counts per option, rating averages, completion, and free text
- * with the customer masked (counts only below 10 responses, as the API sends). Writing a template's questions is the
- * API's `createTemplate` / `updateTemplate`; this slice reads and runs them (WEB-P2-NOTES §5).
+ * with the customer masked (counts only below 10 responses, as the API sends). "สร้างชุดคำถาม" and a draft's "แก้ไข"
+ * open the template editor (`createTemplate` / `updateTemplate`).
  */
 export function SurveysAdmin() {
   const t = useTranslations("marketing.surveys");
@@ -35,6 +36,8 @@ export function SurveysAdmin() {
   const canManage = useCan("promotions.manage");
   const [selected, setSelected] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  /** The template in the editor: `"new"` for a new one, nothing when the editor is closed. */
+  const [editing, setEditing] = useState<SurveyTemplate | "new" | null>(null);
   const listKey = queryKeys.list("admin", "survey_template", {});
   const templates = useQuery({
     queryKey: listKey,
@@ -69,7 +72,17 @@ export function SurveysAdmin() {
 
   return (
     <div className="flex flex-col gap-6">
-      <DeskSection title={t("templates")} description={t("templatesNote")}>
+      <DeskSection
+        title={t("templates")}
+        description={t("templatesNote")}
+        actions={
+          canManage ? (
+            <Button size="sm" iconStart="plus" onClick={() => setEditing("new")}>
+              {t("editor.new")}
+            </Button>
+          ) : null
+        }
+      >
         <DataTable<SurveyTemplate>
           caption={t("templates")}
           rows={templates.data ?? []}
@@ -123,6 +136,11 @@ export function SurveysAdmin() {
               cell: (row) =>
                 canManage ? (
                   <span className="flex justify-end gap-1.5">
+                    {row.status === "draft" ? (
+                      <Button size="sm" variant="ghost" onClick={() => setEditing(row)}>
+                        {t("editor.edit")}
+                      </Button>
+                    ) : null}
                     {(row.status === "draft"
                       ? (["publish"] as const)
                       : row.status === "published"
@@ -145,6 +163,21 @@ export function SurveysAdmin() {
           ]}
         />
       </DeskSection>
+
+      {editing ? (
+        <SurveyTemplateEditor
+          key={editing === "new" ? "new" : editing.id}
+          open
+          template={editing === "new" ? null : editing}
+          onClose={() => setEditing(null)}
+          onSaved={(saved) => {
+            toast.success(t(editing === "new" ? "editor.created" : "editor.saved"));
+            setEditing(null);
+            setSelected(saved.id);
+            void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "survey_template") });
+          }}
+        />
+      ) : null}
 
       {chosen ? (
         <DeskSection title={t("results.title")} description={t("results.note")}>

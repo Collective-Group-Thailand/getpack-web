@@ -390,4 +390,5 @@ export type PointsLiabilityMemo = z.infer<typeof pointsLiabilityMemo>;
 export type LoyaltyAnalytics = z.infer<typeof loyaltyAnalytics>;
 export type AgentPerformanceRow = z.infer<typeof agentPerformanceRow>;
 export type SurveyTemplate = z.infer<typeof surveyTemplate>;
+export type SurveyTemplateInput = z.infer<typeof surveyTemplateInput>;
 export type SurveyResults = z.infer<typeof surveyResults>;

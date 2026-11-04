@@ -891,6 +891,58 @@
       "outOf5": "out of 5",
       "noText": "No text yet"
     },
-    "codeVersion": "{code} · v{version}"
+    "codeVersion": "{code} · v{version}",
+    "editor": {
+      "new": "New survey",
+      "edit": "Edit",
+      "created": "Draft created. Review it, then publish when ready.",
+      "saved": "Draft saved",
+      "titleNew": "New survey",
+      "titleEdit": "Edit {code} · version {version}",
+      "description": "3–5 questions a customer can answer in a minute. Every text needs Thai and English.",
+      "create": "Create draft",
+      "basics": "Survey details",
+      "code": "Code",
+      "codeHint": "Lower-case letters, digits and _ only; unique, e.g. post_delivery_v2",
+      "trigger": "Sent",
+      "triggerHint": "One published survey per trigger",
+      "titleTh": "Title (Thai)",
+      "titleEn": "Title (English)",
+      "reward": "Give points when completed",
+      "rewardHint": "The amount comes from the loyalty.activity_rewards setting and counts toward the monthly cap",
+      "questions": "Questions",
+      "count": "{count} questions · {min}–{max} required",
+      "addQuestion": "Add question",
+      "full": "{max} questions reached",
+      "questionN": "Question {n}",
+      "kind": "Question type",
+      "kinds": {
+        "rating": "Satisfaction 1–5",
+        "single": "Single choice",
+        "multi": "Multiple choice",
+        "text": "Short text"
+      },
+      "required": "Required",
+      "removeQuestion": "Remove question {n}",
+      "labelTh": "Question (Thai)",
+      "labelEn": "Question (English)",
+      "ratingNote": "The customer picks 1 to 5, with the end labels \"Unhappy\" and \"Very happy\"",
+      "maxLength": "Up to",
+      "characters": "characters",
+      "options": "Options (2–6)",
+      "optionTh": "Option {n} (Thai)",
+      "optionEn": "Option {n} (English)",
+      "removeOption": "Remove option {n}",
+      "addOption": "Add option",
+      "errors": {
+        "code": "Lower-case letters, digits and _ only",
+        "title": "Enter a title",
+        "label": "Enter the question in both languages",
+        "optionLabel": "Fill in every option in both languages",
+        "maxLength": "Between 1 and {max} characters",
+        "published": "This survey is published and can't be edited. Create a new version.",
+        "failed": "Couldn't save"
+      }
+    }
   }
 }
