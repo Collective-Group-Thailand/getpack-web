@@ -27,6 +27,7 @@ export { Callout, type CalloutProps } from "./Callout";
 export { CouponDivider, CouponFrame, CouponSavingRow, type CouponFrameProps } from "./CouponFrame";
 export { Card, CardDescription, CardFooter, CardHeader, CardTitle, type CardProps } from "./Card";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
+export { CheckboxTiles, type CheckboxTileOption, type CheckboxTilesProps } from "./CheckboxTiles";
 export { ColumnToggle, type ColumnToggleProps } from "./ColumnToggle";
 export { Combobox, type ComboboxOption, type ComboboxProps } from "./Combobox";
 export { ColorField, type ColorFieldProps } from "./ColorField";

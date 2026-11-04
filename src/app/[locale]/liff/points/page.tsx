@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { getPoints, getPointsEntries } from "@/features/customer/account/api.server";
+import { getLoyaltyTasks, getPoints, getPointsEntries } from "@/features/customer/account/api.server";
+import { EarnChecklist } from "@/features/customer/account/EarnChecklist";
+import { getSupportChannels } from "@/features/customer/catalog/api.server";
 import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { LiffHeader } from "@/features/customer/liff/LiffHeader";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
@@ -9,6 +11,7 @@ import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
+import { clientEnv } from "@/lib/env";
 import { cn } from "@/ui/lib/cn";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,13 +22,16 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Points in LINE (D-151): the balance and the latest movements; the rest on the site. */
 export default async function Page() {
   if (!(await liffCustomer())) return <LiffSignIn />;
-  const [t, tLiff, format, points, entries] = await Promise.all([
+  const [t, tLiff, format, points, entries, tasks, support] = await Promise.all([
     getTranslations("account.points"),
     getTranslations("liff.points"),
     getFormat(),
     getPoints(),
     getPointsEntries(10),
+    getLoyaltyTasks(),
+    getSupportChannels().catch(() => null),
   ]);
+  const lineOaId = clientEnv.NEXT_PUBLIC_LINE_OA_ID?.trim() || support?.lineOaId?.trim() || null;
   // Project D: the balance and the tier as summary cards (the balance on the tint), the latest movements as one
   // card of rows, and the full history on the web as a button.
   return (
@@ -46,6 +52,8 @@ export default async function Page() {
           { key: "tier", label: tLiff("tier"), value: tLiff(`tiers.${points.tier}`), icon: "gift" },
         ]}
       />
+      {/* Loyalty P1: the earn checklist, compact (first rows + "ดูทั้งหมด" on the web). */}
+      {tasks ? <EarnChecklist variant="compact" initial={tasks} lineOaId={lineOaId} /> : null}
       <section aria-labelledby="liff-entries" className="border-border bg-surface rounded-card border p-4">
         <h2 id="liff-entries" className="font-semibold">
           {tLiff("latest")}

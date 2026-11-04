@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { AccountHeader } from "@/features/customer/account/AccountHeader";
-import { getPoints, getPointsEntries } from "@/features/customer/account/api.server";
+import { getLoyaltyTasks, getPoints, getPointsEntries } from "@/features/customer/account/api.server";
+import { EarnChecklist } from "@/features/customer/account/EarnChecklist";
 import { PortalTable } from "@/features/customer/account/PortalTable";
 import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { getSupportChannels } from "@/features/customer/catalog/api.server";
+import { clientEnv } from "@/lib/env";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { POINTS_STATUS } from "@/domain/status";
@@ -26,14 +29,18 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function Page() {
   await requireCustomer();
-  const [t, tHome, tReferral, format, points, entries] = await Promise.all([
+  const [t, tHome, tReferral, format, points, entries, tasks, support] = await Promise.all([
     getTranslations("account.points"),
     getTranslations("account.home"),
     getTranslations("account.referral"),
     getFormat(),
     getPoints(),
     getPointsEntries(50),
+    getLoyaltyTasks(),
+    getSupportChannels().catch(() => null),
   ]);
+  // The same order as the floating LINE button: the build's id, else staff's (GLOBAL-RULES §5).
+  const lineOaId = clientEnv.NEXT_PUBLIC_LINE_OA_ID?.trim() || support?.lineOaId?.trim() || null;
 
   return (
     <div>
@@ -74,6 +81,8 @@ export default async function Page() {
           },
         ]}
       />
+      {/* Loyalty P1: the earn checklist between the figures and the tier (PLAN §3); hidden when the read fails. */}
+      {tasks ? <EarnChecklist className="mt-4" initial={tasks} lineOaId={lineOaId} /> : null}
       <div className="border-border bg-surface rounded-card mt-4 border p-4 text-sm sm:p-5">
         <TierProgress points={points} />
       </div>

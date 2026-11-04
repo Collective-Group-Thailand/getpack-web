@@ -5,10 +5,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 import {
   getDefaults,
   getLaunchpad,
+  getLoyaltyTasks,
   getPoints,
   getSavedQuotes,
   getStoreCredit,
 } from "@/features/customer/account/api.server";
+import { EarnBanner } from "@/features/customer/account/EarnBanner";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -68,19 +70,21 @@ function Section({
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, latest, active, points, credit, launchpad, defaults, quotes, company] = await Promise.all([
-    getTranslations("account.home"),
-    getTranslations("account.nav"),
-    getFormat(),
-    listOrderPage("active", "", 1, 3).catch(() => null),
-    listOrderPage("active", "", 1, 100).catch(() => null),
-    getPoints().catch(() => null),
-    getStoreCredit().catch(() => null),
-    getLaunchpad().catch(() => null),
-    getDefaults().catch(() => null),
-    getSavedQuotes().catch(() => []),
-    getMyCompany().catch(() => null),
-  ]);
+  const [t, tNav, format, latest, active, points, credit, launchpad, defaults, quotes, company, tasks] =
+    await Promise.all([
+      getTranslations("account.home"),
+      getTranslations("account.nav"),
+      getFormat(),
+      listOrderPage("active", "", 1, 3).catch(() => null),
+      listOrderPage("active", "", 1, 100).catch(() => null),
+      getPoints().catch(() => null),
+      getStoreCredit().catch(() => null),
+      getLaunchpad().catch(() => null),
+      getDefaults().catch(() => null),
+      getSavedQuotes().catch(() => []),
+      getMyCompany().catch(() => null),
+      getLoyaltyTasks(),
+    ]);
   // A company approver's queue leads (round 2, B2).
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
   const latestOrders = (latest?.groups ?? [])
@@ -125,6 +129,9 @@ export default async function Page() {
           </p>
         }
       />
+
+      {/* Loyalty P1: one line to the earn checklist; hidden when nothing is left to earn. */}
+      <EarnBanner tasks={tasks} />
 
       <Section id="account-latest" title={t("latest")} more={{ href: "/account/orders", label: t("allOrders") }}>
         {latestOrders.length === 0 ? (
