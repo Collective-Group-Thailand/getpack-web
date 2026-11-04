@@ -114,7 +114,7 @@ export async function DealTabs({
                   className={
                     on
                       ? "text-muted text-[0.8125rem] font-normal tabular-nums"
-                      : "text-subtle text-[0.8125rem] font-normal tabular-nums"
+                      : "text-muted text-[0.8125rem] font-normal tabular-nums"
                   }
                 >
                   {counts[key]}

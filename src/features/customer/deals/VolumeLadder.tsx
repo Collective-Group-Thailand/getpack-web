@@ -114,7 +114,7 @@ export function VolumeLadder({
                   )}
                 </td>
                 <td className="text-success px-3.5 text-end tabular-nums">
-                  {saving(row) ?? <span className="text-subtle">{t("none")}</span>}
+                  {saving(row) ?? <span className="text-muted">{t("none")}</span>}
                 </td>
               </tr>
             );
@@ -167,7 +167,7 @@ export function VolumeLadder({
                   >
                     {price(row) ?? "—"}
                   </span>
-                  <small className={cn("text-xs", saving(row) ? "text-success" : "text-subtle")}>
+                  <small className={cn("text-xs", saving(row) ? "text-success" : "text-muted")}>
                     {saving(row) ?? t("start")}
                   </small>
                 </button>

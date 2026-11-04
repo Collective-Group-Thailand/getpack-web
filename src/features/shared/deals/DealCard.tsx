@@ -83,7 +83,7 @@ export function DealCard({
     <p
       className={cn(
         "m-0 text-[0.8125rem]",
-        days !== null ? "text-warning font-medium" : spent ? "text-subtle" : "text-muted",
+        days !== null ? "text-warning font-medium" : "text-muted",
       )}
     >
       {days !== null ? `${t("daysLeft", { days })} · ${until}` : until}
@@ -145,10 +145,10 @@ export function DealCard({
         ) : null}
         <MiniStub word={word} figure={figureText} wordFigure={value.figure.kind === "word"} spent={spent} />
         <div className="pointer-events-none relative min-w-0">
-          <Heading className={cn("m-0 truncate text-[0.9375rem] leading-snug font-semibold", spent && "text-subtle")}>
+          <Heading className={cn("m-0 truncate text-[0.9375rem] leading-snug font-semibold", spent && "text-muted")}>
             {deal.headline}
           </Heading>
-          <p className={cn("m-0 mt-0.5 truncate text-[0.8125rem]", spent ? "text-subtle" : "text-muted")}>{meta}</p>
+          <p className={cn("m-0 mt-0.5 truncate text-[0.8125rem]", "text-muted")}>{meta}</p>
           <div className="[&>p]:text-[0.8125rem]">{validity}</div>
         </div>
         <div className="relative">{actionNode}</div>
@@ -303,7 +303,7 @@ export function DealCard({
       >
         {badge ? <div className="mb-1.5">{badge}</div> : null}
         <Heading
-          className={cn("m-0 line-clamp-2 text-base leading-snug font-semibold text-pretty", spent && "text-subtle")}
+          className={cn("m-0 line-clamp-2 text-base leading-snug font-semibold text-pretty", spent && "text-muted")}
         >
           {href ? (
             <Link href={href} className="hover:underline focus-visible:underline">
@@ -314,7 +314,7 @@ export function DealCard({
           )}
         </Heading>
         {condition ? (
-          <p className={cn("m-0 text-[0.84375rem] leading-normal", spent ? "text-subtle" : "text-muted")}>
+          <p className={cn("m-0 text-[0.84375rem] leading-normal", "text-muted")}>
             {condition}
           </p>
         ) : null}
@@ -466,7 +466,7 @@ export function CodeBox({ code, muted = false, className }: { code: string; mute
     <span
       className={cn(
         "rounded-control bg-surface inline-flex h-10 items-center gap-0.5 border border-dashed ps-3 pe-1 text-sm font-semibold tracking-[0.06em] tabular-nums",
-        muted ? "border-border text-subtle" : "border-border-strong",
+        muted ? "border-border text-muted" : "border-border-strong",
         className,
       )}
     >
