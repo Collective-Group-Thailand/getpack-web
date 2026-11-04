@@ -6,7 +6,7 @@
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "dc4132bf", tag: "v0.75.0" } as const;
+export const RBAC_SOURCE = { commit: "007309a0", tag: "v0.75.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -17,6 +17,7 @@ export const STAFF_PERMISSIONS = [
   "agent_plans.manage",
   "agent_statements.approve",
   "agent_tax_declarations.review",
+  "agent_waitlist.read",
   "agents.manage",
   "agents.read",
   "agreements.manage",
@@ -216,6 +217,7 @@ export const SENSITIVE_PERMISSIONS: readonly StaffPermission[] = [
   "agent_plans.approve",
   "agent_statements.approve",
   "agent_tax_declarations.review",
+  "agent_waitlist.read",
   "discount_approvals.export",
   "discount_approvals.margin_pct",
   "discount_approvals.waterfall_full",
@@ -242,6 +244,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "agent_plans.manage",
     "agent_statements.approve",
     "agent_tax_declarations.review",
+    "agent_waitlist.read",
     "agents.manage",
     "agents.read",
     "agreements.manage",
@@ -433,6 +436,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
   c_level: [
     "agent_plans.approve",
     "agent_plans.manage",
+    "agent_waitlist.read",
     "agents.manage",
     "agents.read",
     "analytics.prospectus",
@@ -979,6 +983,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
   ],
   sales_manager: [
     "agent_plans.manage",
+    "agent_waitlist.read",
     "agents.manage",
     "agents.read",
     "analytics.read",

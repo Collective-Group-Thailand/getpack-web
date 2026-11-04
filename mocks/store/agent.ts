@@ -74,6 +74,8 @@ const PUBLIC_PROGRAMME: Schemas["PublicAgentProgrammeDto"] = {
   leadProtectionDays: 60,
   paymentTermsDays: 15,
   applyOpen: true,
+  waitlistOpen: false,
+  waitlistConsent: null,
   agreement: {
     key: "sales_agent_agreement",
     versionNo: 1,
@@ -277,6 +279,7 @@ export const storeAgentHandlers = [
       linkCookieDays: 90,
       leadProtectionDays: 60,
       paymentTermsDays: 15,
+      applyOpen: false,
       state: "agent",
     } satisfies Schemas["AgentProgrammeDto"]);
   }),
