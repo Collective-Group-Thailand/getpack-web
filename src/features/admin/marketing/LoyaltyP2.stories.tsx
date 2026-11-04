@@ -89,11 +89,6 @@ export const AgentLinks: Story = {
   render: () => <AgentLinksTable rows={AGENT_ROWS.map(({ agentName: _name, ...row }) => row)} />,
 };
 
-/** Before the API sends the P2 columns: dashes, never zeros. */
-export const AgentLinksBeforeP2: Story = {
-  render: () => <AgentLinksTable rows={[{ agentCode: "AGT0001", visitors: 4, visits: 5 }]} />,
-};
-
 /** The executive P&L memo line under the statement: the estimate at the D-480 rate against ledger 2330. */
 export const PnlMemo: Story = {
   render: () => (

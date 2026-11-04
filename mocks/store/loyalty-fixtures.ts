@@ -47,6 +47,7 @@ export function buildLoyaltyTasks(
       doneAt: state.status === "done" ? (state.doneAt ?? null) : null,
       heldReason: state.status === "held" ? "duplicate_identity" : null,
       recommended: false,
+      nextDueAt: null,
     };
   });
   const open = tasks

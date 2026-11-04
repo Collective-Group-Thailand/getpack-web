@@ -15,7 +15,6 @@ import { getDataRefresh } from "@/features/customer/loyalty/api.server";
 import { DataRefreshBanner } from "@/features/customer/loyalty/DataRefreshBanner";
 import { WinbackBanner } from "@/features/customer/loyalty/WinbackBanner";
 import { getNextSurvey } from "@/features/customer/surveys/api.server";
-import { loyaltySummaryP2Of } from "@/features/shared/loyalty-p2/read";
 import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { TierProgress } from "@/features/customer/account/TierProgress";
@@ -160,7 +159,7 @@ export default async function Page() {
       <EarnBanner tasks={tasks} />
 
       {/* Loyalty P2: bonus points waiting (win-back), in neutral words (D-493). */}
-      {points ? <WinbackBanner lots={loyaltySummaryP2Of(points).bonusLots} /> : null}
+      {points ? <WinbackBanner lots={points.bonusLots} /> : null}
 
       {/* Loyalty P2: the yearly confirmation once it is due again (the first one is a checklist task, D-490). */}
       <DataRefreshBanner refresh={refresh} />

@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { getLoyaltyTasks, getPoints, getPointsEntries } from "@/features/customer/account/api.server";
 import { EarnChecklist } from "@/features/customer/account/EarnChecklist";
 import { WinbackBanner } from "@/features/customer/loyalty/WinbackBanner";
-import { loyaltySummaryP2Of } from "@/features/shared/loyalty-p2/read";
 import { getSupportChannels } from "@/features/customer/catalog/api.server";
 import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { LiffHeader } from "@/features/customer/liff/LiffHeader";
@@ -56,7 +55,7 @@ export default async function Page() {
         ]}
       />
       {/* Loyalty P2: bonus points waiting (win-back). */}
-      <WinbackBanner variant="liff" lots={loyaltySummaryP2Of(points).bonusLots} />
+      <WinbackBanner variant="liff" lots={points.bonusLots} />
       {/* Loyalty P1: the earn checklist, compact (first rows + "ดูทั้งหมด" on the web). */}
       {tasks ? <EarnChecklist variant="compact" initial={tasks} lineOaId={lineOaId} /> : null}
       <section aria-labelledby="liff-entries" className="border-border bg-surface rounded-card border p-4">

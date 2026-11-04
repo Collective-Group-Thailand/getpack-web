@@ -1,4 +1,4 @@
-import type { PointsMultipliers } from "@/lib/api/requests/store-loyalty-p2";
+import type { PointsMultipliers } from "@/features/shared/loyalty-p2/types";
 
 export type MultiplierPart = "tier" | "paymentMethod" | "reorderCampaign" | "promotion";
 const PARTS: readonly MultiplierPart[] = ["tier", "paymentMethod", "reorderCampaign", "promotion"];

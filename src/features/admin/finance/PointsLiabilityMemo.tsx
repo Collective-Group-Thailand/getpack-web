@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format";
-import type { PointsLiabilityMemo as Memo } from "@/lib/api/requests/admin-loyalty-p2";
+import type { PointsLiabilityMemo as Memo } from "@/features/shared/loyalty-p2/types";
 import { Badge } from "@/ui/components/Badge";
 
 /**

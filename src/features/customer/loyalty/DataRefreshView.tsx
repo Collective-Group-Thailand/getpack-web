@@ -5,8 +5,8 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link, useRouter } from "@/i18n/navigation";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { DataRefresh } from "@/lib/api/requests/store-loyalty-p2";
+import type { DataRefresh } from "@/features/shared/loyalty-p2/types";
+import { browserApi } from "@/lib/api/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { toast } from "@/ui/components/Toast";
@@ -29,10 +29,12 @@ export function DataRefreshView({ initial }: { initial: DataRefresh }) {
     setSaving(true);
     try {
       const reward = data.rewardPoints;
-      const next = await browserRequests().call("POST /v1/store/loyalty/data-refresh/actions/confirm", {
+      // The reward is written in the confirmation's transaction (API-CHANGES-P2 deviation 1), so the balance the
+      // refresh reads already holds it; the reply's own `rewardPoints` is the next cycle's (0).
+      const { data: next } = await browserApi().POST("/v1/store/loyalty/data-refresh/actions/confirm", {
         body: { confirmed: true },
       });
-      setData(next);
+      setData(next!);
       toast.success(reward > 0 ? t("confirmedReward", { points: format.number(reward) }) : t("confirmed"));
       router.refresh();
     } catch {

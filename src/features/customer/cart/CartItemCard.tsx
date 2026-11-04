@@ -10,7 +10,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 import { ReorderBonusBadge } from "@/features/customer/loyalty/ReorderBonusBadge";
-import type { LoyaltyCampaign } from "@/lib/api/requests/store-loyalty-p2";
+import type { LoyaltyCampaign } from "@/features/shared/loyalty-p2/types";
 import { productFamilyOf, ProductThumb } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
 

@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
-import type { LoyaltyAnalytics as Analytics } from "@/lib/api/requests/admin-loyalty-p2";
+import type { LoyaltyAnalytics as Analytics } from "@/features/shared/loyalty-p2/types";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
 import { BarValue, Composition } from "@/ui/components/charts";
@@ -62,7 +62,8 @@ export function LoyaltyAnalytics() {
   const monthLabel = (month: string) => format.date(monthStart(month), { style: "month" });
   const query = useQuery({
     queryKey: queryKeys.list("admin", "loyalty_analytics", range),
-    queryFn: () => adminBrowserApis().requests.call("GET /v1/admin/loyalty/analytics", { query: range }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/loyalty/analytics", { params: { query: range } })).data!,
     staleTime: 5 * 60_000,
   });
   const data = query.data;
@@ -354,7 +355,7 @@ export function LoyaltyAnalytics() {
                   id: "converted",
                   header: t("retention.converted"),
                   numeric: true,
-                  cell: (row) => (row.converted === null ? "—" : points(row.converted)),
+                  cell: (row) => points(row.converted),
                 },
                 {
                   id: "rate",

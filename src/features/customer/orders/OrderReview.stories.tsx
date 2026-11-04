@@ -30,6 +30,8 @@ const review: Review = {
   reply: null,
   rewardPoints: 10,
   createdAt: "2026-11-04T10:00:00+07:00",
+  photos: [],
+  photoRewardPoints: 0,
 };
 // Neutral placeholder pictures (no customer artwork in the repo).
 const swatch = (fill: string) =>

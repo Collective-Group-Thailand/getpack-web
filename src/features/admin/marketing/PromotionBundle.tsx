@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
-import { promotionP2Of } from "@/features/shared/loyalty-p2/read";
 import { isApiError, type ProblemFieldError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
@@ -35,22 +34,27 @@ import {
  * a product type, its preset (the configurator's configuration, as JSON) and a quantity; the number of product types
  * the cart must hold; and `stackGroup` locked to `bundle` (the API refuses a bundle in any other group). Prices are
  * the API's — the publish guard reports a piece that does not price today (`bundle_unpriceable`), shown on its row.
- * Saved through the published `admin.promotions.update` with conditions v2 and display v2. CONTRACT-REQUEST
- * admin.promotions.audience: one cast, here.
+ * Saved through `admin.promotions.update` with conditions v2 and display v2. The items are required at publish, not at
+ * save (API-CHANGES-P2 deviation 3): a bundle with no items yet saves (`display.bundle: null`) and the publish guard
+ * refuses it with `bundle_items`; items, once listed, must be complete (the API checks their shape on save).
  */
 export function PromotionBundle({ item, editable }: { item: Schemas["PromotionDto"]; editable: boolean }) {
   const t = useTranslations("marketing.promotion.bundle");
   const queryClient = useQueryClient();
   const productTypes = useProductTypes();
-  const saved = promotionP2Of(item);
-  const isBundle = (saved.cartProductTypeCountGte ?? 0) >= 2;
-  const [rows, setRows] = useState<BundleRowDraft[]>(() => bundleDraftOf(saved.bundleItems));
-  const [minTypes, setMinTypes] = useState(String(saved.cartProductTypeCountGte ?? 2));
+  const minSaved = item.conditions.cartProductTypeCountGte;
+  const isBundle = (minSaved ?? 0) >= 2;
+  const [rows, setRows] = useState<BundleRowDraft[]>(() => bundleDraftOf(item.display.bundle?.items ?? []));
+  const [minTypes, setMinTypes] = useState(String(minSaved ?? 2));
   const [open, setOpen] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [refusals, setRefusals] = useState<readonly ProblemFieldError[]>([]);
   const checks = bundleChecks(rows, Number(minTypes));
   const ready = checks.count && checks.types && checks.rows;
+  /** No item filled in yet: the bundle settings save, and publishing waits for the items. */
+  const itemsLater = rows.every(
+    (row) => !row.productTypeCode && !row.quantity.trim() && ["", "{}"].includes(row.configuration.replace(/\s/g, "")),
+  );
   const rowRefusal = (index: number) =>
     refusals.find((refusal) => refusal.path.includes(`items[${index}]`) || refusal.path.endsWith(`.${index}`));
   const setRow = (index: number, patch: Partial<BundleRowDraft>) =>
@@ -69,13 +73,12 @@ export function PromotionBundle({ item, editable }: { item: Schemas["PromotionDt
       });
       const conditions = { ...(item.conditions as Record<string, unknown>) };
       delete conditions.cartProductTypeCountGte;
-      // CONTRACT-REQUEST admin.promotions.audience — conditions v2 and display v2 are not in the published body yet.
       const body = (bundle
         ? {
             stackGroup: "bundle",
             conditions: { ...conditions, cartProductTypeCountGte: Math.trunc(Number(minTypes)) },
             conditionsSchemaVersion: 2,
-            display: { bundle: { items: bundleItemsOf(rows) } },
+            display: { bundle: itemsLater ? null : { items: bundleItemsOf(rows) } },
             displaySchemaVersion: 2,
           }
         : {
@@ -107,7 +110,12 @@ export function PromotionBundle({ item, editable }: { item: Schemas["PromotionDt
           barClassName={EDGE_BAR}
           action={
             editable ? (
-              <Button iconStart="save" loading={saving} disabled={!ready} onClick={() => void send(true)}>
+              <Button
+                iconStart="save"
+                loading={saving}
+                disabled={!ready && !itemsLater}
+                onClick={() => void send(true)}
+              >
                 {t("save")}
               </Button>
             ) : null
@@ -127,7 +135,7 @@ export function PromotionBundle({ item, editable }: { item: Schemas["PromotionDt
                 </li>
               ))}
             </ul>
-            <p className="text-muted text-[0.8125rem]">{t("pricingNote")}</p>
+            <p className="text-muted text-[0.8125rem]">{itemsLater ? t("itemsLaterNote") : t("pricingNote")}</p>
             {refusals.length ? (
               <Callout tone="danger" live title={t("refused")}>
                 <ul className="m-0 flex list-disc flex-col gap-1 ps-4 text-[0.8125rem]">

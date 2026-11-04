@@ -9,7 +9,7 @@
  */
 
 import type { Deal, DealBenefit, DealDetail, DealList, DealMyStatus } from "@/features/shared/deals/types";
-import type { DealBundle, DealP2Fields, ForYouReason } from "@/lib/api/requests/store-loyalty-p2";
+import type { DealBundle, DealP2Fields, ForYouReason } from "@/features/shared/loyalty-p2/types";
 
 import { bangkokIso, mockId } from "../support";
 
@@ -47,7 +47,7 @@ export interface DealFixture {
       summary: Text;
       unit: Text;
     })[];
-    estimatedSaving: string | null;
+    estimatedSaving: string;
   };
 }
 

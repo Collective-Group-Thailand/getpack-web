@@ -4,7 +4,7 @@
  * validates again (unknown key, missing answer, out of range → 422); the reward is the API's figure, never computed.
  */
 
-import type { SurveyAnswers, SurveyInstance, SurveyQuestion } from "@/lib/api/requests/store-loyalty-p2";
+import type { SurveyAnswers, SurveyInstance, SurveyQuestion } from "@/features/shared/loyalty-p2/types";
 
 export type AnswerValue = number | string | string[];
 export type Answers = Partial<Record<string, AnswerValue>>;

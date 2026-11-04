@@ -15,7 +15,7 @@ import { trackCheckout } from "@/lib/analytics/checkout";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { LoyaltyCampaign } from "@/lib/api/requests/store-loyalty-p2";
+import type { LoyaltyCampaign } from "@/features/shared/loyalty-p2/types";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";

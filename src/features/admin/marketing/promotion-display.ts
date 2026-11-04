@@ -171,5 +171,9 @@ export function previewDeal(item: Schemas["PromotionDto"], display: DisplayDraft
     myStatus: null,
     notEligibleReason: null,
     shareUrl: `https://getpack.co/deals/${display.slug || "slug"}`,
+    // Loyalty P2: the preview is the public card (no "สำหรับคุณ" reason); the bundle line needs the store's pricing.
+    forYou: false,
+    forYouReason: null,
+    bundle: null,
   };
 }

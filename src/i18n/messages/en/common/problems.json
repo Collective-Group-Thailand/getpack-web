@@ -475,7 +475,9 @@
     "already_saved": "Code already saved",
     "not_saveable": "Code can't be saved",
     "not_publishable": "Promotion can't be published yet",
-    "slug_taken": "Slug already used by another promotion"
+    "slug_taken": "Slug already used by another promotion",
+    "bundle_unavailable": "Some set items can’t be priced now",
+    "not_bundle": "Deal is not a set"
   },
   "proofs": {
     "annotation_closed": "Annotations closed",
@@ -523,7 +525,9 @@
   },
   "reviews": {
     "exists": "Already reviewed",
-    "not_delivered": "Not delivered yet"
+    "not_delivered": "Not delivered yet",
+    "photo_limit": "Up to 4 photos per review",
+    "photo_window_closed": "Photo window closed"
   },
   "rfq": {
     "closed": "Request closed",
@@ -577,6 +581,10 @@
     "version_not_proposed": "Not in approval",
     "version_open": "Version already open"
   },
+  "showcase": {
+    "consent_pending": "Earlier request still in review",
+    "text_outdated": "Consent text has a new version"
+  },
   "specs": {
     "basis_not_accepted": "This product does not take that measurement basis",
     "caliper_missing": "The material's thickness is unknown, so the size cannot be converted — enter the inside size or choose another material",
@@ -619,6 +627,11 @@
     "contact_required": "Contact details required",
     "callback_unavailable": "A call back is not available then — pick one of the days and times offered",
     "ticket_not_found": "Request not found — check the number and the phone or e-mail you sent it with"
+  },
+  "surveys": {
+    "not_open": "Survey closed",
+    "template_published": "Published template can’t be edited",
+    "trigger_taken": "A template is already published for this trigger"
   },
   "tax": {
     "gl_difference": "Tax report does not agree with the GL",

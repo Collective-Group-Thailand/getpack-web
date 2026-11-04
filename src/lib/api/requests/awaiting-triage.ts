@@ -20,31 +20,6 @@ export const AWAITING_TRIAGE: readonly string[] = [
   "POST /v1/store/newsletter/actions/subscribe",
   // U3.6 (2026-10-06): the staff a structural design request can be assigned to.
   "GET /v1/admin/structural-requests/designers",
-  // Loyalty P2 (2026-11-04, API-CHANGES-P2): engagement, lifecycle, segments and analytics, built in parallel on
-  // getpack-api `feat/loyalty-p2-lifecycle`.
-  "POST /v1/store/promotions/{promotionId}/actions/add-bundle",
-  "GET /v1/store/loyalty/campaigns",
-  "POST /v1/store/orders/{orderId}/review/photos",
-  "GET /v1/store/loyalty/data-refresh",
-  "POST /v1/store/loyalty/data-refresh/actions/confirm",
-  "GET /v1/store/loyalty/showcase-consent",
-  "PUT /v1/store/loyalty/showcase-consent",
-  "GET /v1/store/surveys/next",
-  "GET /v1/store/surveys/{surveyId}",
-  "POST /v1/store/surveys/{surveyId}/actions/seen",
-  "POST /v1/store/surveys/{surveyId}/actions/dismiss",
-  "POST /v1/store/surveys/{surveyId}/responses",
-  "GET /v1/admin/loyalty/analytics",
-  "GET /v1/admin/loyalty/campaigns",
-  "GET /v1/admin/promotions/{promotionId}/audience-estimate",
-  "GET /v1/admin/promotions/agent-performance",
-  "GET /v1/admin/surveys/templates",
-  "POST /v1/admin/surveys/templates",
-  "GET /v1/admin/surveys/templates/{templateId}",
-  "PATCH /v1/admin/surveys/templates/{templateId}",
-  "POST /v1/admin/surveys/templates/{templateId}/actions/{action}",
-  "GET /v1/admin/surveys/templates/{templateId}/results",
-  "GET /v1/admin/showcase-consents",
 ];
 
 /**

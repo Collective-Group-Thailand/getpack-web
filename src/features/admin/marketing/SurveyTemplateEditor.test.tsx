@@ -4,15 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import marketing from "@/i18n/messages/th/admin/marketing.json";
 import common from "@/i18n/messages/th/common/common.json";
-import type { SurveyTemplate } from "@/lib/api/requests/admin-loyalty-p2";
+import type { SurveyTemplate } from "@/features/shared/loyalty-p2/types";
 
-import { draftOf, draftProblems, inputOf, nextKey, withKind } from "./survey-template";
+import { draftOf, draftProblems, inputOf, isCodeTaken, nextKey, withKind } from "./survey-template";
 import { SurveyTemplateEditor } from "./SurveyTemplateEditor";
 
-const call = vi.fn();
-const read = vi.fn();
+const GET = vi.fn();
+const POST = vi.fn();
+const PATCH = vi.fn();
 vi.mock("../console", () => ({
-  adminBrowserApis: () => ({ requests: { call, read } }),
+  adminBrowserApis: () => ({ contract: { GET, POST, PATCH } }),
   problemMessage: (_error: unknown, fallback: string) => fallback,
 }));
 
@@ -40,8 +41,11 @@ const published: SurveyTemplate = {
     { key: "comment", kind: "text", label: both("อื่น ๆ", "Anything else?"), required: false, maxLength: 300 },
   ],
   responseRatePct: null,
-  responses: 0,
-  updatedAt: "2026-11-01T10:00:00+07:00",
+  completed: 0,
+  opened: 0,
+  createdAt: "2026-11-01T10:00:00+07:00",
+  publishedAt: null,
+  retiredAt: null,
 };
 
 function renderTh(template: SurveyTemplate | null, onSaved = vi.fn()) {
@@ -54,8 +58,9 @@ function renderTh(template: SurveyTemplate | null, onSaved = vi.fn()) {
 }
 
 beforeEach(() => {
-  call.mockReset();
-  read.mockReset();
+  GET.mockReset();
+  POST.mockReset();
+  PATCH.mockReset();
 });
 
 describe("survey template rules", () => {
@@ -66,6 +71,25 @@ describe("survey template rules", () => {
       ["q3", "text"],
     ]);
     expect(nextKey("o", ["o1", "o3"])).toBe("o2");
+  });
+
+  it("reads the API's code-taken refusal (422 validation.failed, `code` · `taken`) and nothing else", async () => {
+    const { ApiError } = await import("@/lib/api/problem");
+    const refusal = (code: string, errors: { path: string; code: string; message: string }[]) =>
+      new ApiError({
+        type: "about:blank",
+        title: "x",
+        status: 422,
+        code,
+        detail: "x",
+        requestId: "r",
+        errors,
+      } as never);
+    expect(isCodeTaken(refusal("validation.failed", [{ path: "code", code: "taken", message: "x" }]))).toBe(true);
+    expect(isCodeTaken(refusal("validation.failed", [{ path: "title.th", code: "required", message: "x" }]))).toBe(
+      false,
+    );
+    expect(isCodeTaken(new Error("network"))).toBe(false);
   });
 
   it("names every problem: code, titles, labels, options, count", () => {
@@ -91,7 +115,7 @@ describe("SurveyTemplateEditor", () => {
   it("refuses to save an incomplete new template and says where", async () => {
     renderTh(null);
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "สร้างฉบับร่าง" })));
-    expect(call).not.toHaveBeenCalled();
+    expect(POST).not.toHaveBeenCalled();
     expect(screen.getByText("ใช้ตัวพิมพ์เล็ก ตัวเลข และ _ เท่านั้น")).toBeInTheDocument();
     expect(screen.getAllByText("ใส่หัวข้อ")).toHaveLength(2);
     expect(screen.getByText("ใส่ตัวเลือกให้ครบทั้งสองภาษา")).toBeInTheDocument();
@@ -108,29 +132,29 @@ describe("SurveyTemplateEditor", () => {
   });
 
   it("edits a draft under its ETag without resending the code", async () => {
-    read.mockResolvedValue({ data: published, etag: 'W/"7"' });
-    call.mockResolvedValue({ ...published, title: both("ไตรมาสนี้", "How was this quarter?") });
+    GET.mockResolvedValue({ data: published, response: new Response(null, { headers: { ETag: 'W/"7"' } }) });
+    PATCH.mockResolvedValue({ data: { ...published, title: both("ไตรมาสนี้", "How was this quarter?") } });
     const onSaved = renderTh(published);
     const question = screen.getByRole("listitem", { name: "คำถามที่ 2" });
     fireEvent.change(within(question).getByRole("textbox", { name: "ตัวเลือก 2 (ไทย)" }), {
       target: { value: "ไลน์" },
     });
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "บันทึก" })));
-    expect(read).toHaveBeenCalledWith("GET /v1/admin/surveys/templates/{templateId}", {
-      path: { templateId: published.id },
+    expect(GET).toHaveBeenCalledWith("/v1/admin/surveys/templates/{templateId}", {
+      params: { path: { templateId: published.id } },
     });
-    const [key, init] = call.mock.calls[0]!;
-    expect(key).toBe("PATCH /v1/admin/surveys/templates/{templateId}");
-    expect(init.etag).toBe('W/"7"');
+    const [key, init] = PATCH.mock.calls[0]!;
+    expect(key).toBe("/v1/admin/surveys/templates/{templateId}");
+    expect(init.params.header["If-Match"]).toBe('W/"7"');
     expect(init.body.code).toBeUndefined();
     expect(init.body.questions[1].options[1].label).toEqual({ th: "ไลน์", en: "LINE" });
     expect(onSaved).toHaveBeenCalled();
   });
 
   it("says a published template cannot be edited", async () => {
-    read.mockResolvedValue({ data: published, etag: null });
+    GET.mockResolvedValue({ data: published, response: new Response(null) });
     const { ApiError } = await import("@/lib/api/problem");
-    call.mockRejectedValue(
+    PATCH.mockRejectedValue(
       new ApiError({
         type: "about:blank",
         title: "x",

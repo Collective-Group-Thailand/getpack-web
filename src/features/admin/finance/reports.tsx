@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { pointsLiabilityOf } from "@/features/shared/loyalty-p2/read";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -626,7 +625,7 @@ export function ProfitAndLossView() {
         <Skeleton className="h-72" />
       ) : null}
       {/* Loyalty P2: the points-liability memo for the month `to` (never part of the lines or totals). */}
-      {data && pointsLiabilityOf(data) ? <PointsLiabilityMemo memo={pointsLiabilityOf(data)!} /> : null}
+      {data ? <PointsLiabilityMemo memo={data.pointsLiability} /> : null}
       {dimension !== "none" ? (
         <DeskSection title={t(`dimensions.${dimension}`)}>
           <DataTable

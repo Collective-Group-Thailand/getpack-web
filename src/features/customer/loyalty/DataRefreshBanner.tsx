@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import type { DataRefresh } from "@/lib/api/requests/store-loyalty-p2";
+import type { DataRefresh } from "@/features/shared/loyalty-p2/types";
 import { Icon } from "@/ui/icons";
 
 /**

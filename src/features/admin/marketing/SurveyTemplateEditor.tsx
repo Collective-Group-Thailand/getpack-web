@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { isApiError } from "@/lib/api/problem";
-import type { SurveyTemplate } from "@/lib/api/requests/admin-loyalty-p2";
+import type { SurveyTemplate } from "@/features/shared/loyalty-p2/types";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
@@ -25,6 +25,7 @@ import {
   draftOf,
   draftProblems,
   inputOf,
+  isCodeTaken,
   nextKey,
   withKind,
   type DraftQuestion,
@@ -56,6 +57,8 @@ export function SurveyTemplateEditor({
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  /** The API refused the code: another template has it (422 `validation.failed`, `code` · `taken`). */
+  const [codeTaken, setCodeTaken] = useState(false);
   const isNew = template === null;
   const problems = checked ? draftProblems(draft, isNew) : [];
   const has = (key: string) => (problems as string[]).includes(key);
@@ -73,29 +76,36 @@ export function SurveyTemplateEditor({
     if (draftProblems(draft, isNew).length) return;
     setBusy(true);
     try {
-      const { requests } = adminBrowserApis();
+      const api = adminBrowserApis().contract;
       const body = inputOf(draft);
       let saved: SurveyTemplate;
       if (isNew) {
-        saved = await requests.call("POST /v1/admin/surveys/templates", { body });
+        saved = (await api.POST("/v1/admin/surveys/templates", { body })).data!;
       } else {
         // A draft is edited under its ETag (412 if someone else saved it meanwhile).
-        const { etag } = await requests.read("GET /v1/admin/surveys/templates/{templateId}", {
-          path: { templateId: template.id },
+        const { response } = await api.GET("/v1/admin/surveys/templates/{templateId}", {
+          params: { path: { templateId: template.id } },
         });
         // The code is fixed once created: the edit sends everything else.
         const { trigger, rewardEnabled, title, questions } = body;
-        saved = await requests.call("PATCH /v1/admin/surveys/templates/{templateId}", {
-          path: { templateId: template.id },
-          body: { trigger, rewardEnabled, title, questions },
-          etag: etag ?? undefined,
-        });
+        saved = (
+          await api.PATCH("/v1/admin/surveys/templates/{templateId}", {
+            params: { path: { templateId: template.id }, header: { "If-Match": response.headers.get("ETag") ?? "" } },
+            body: { trigger, rewardEnabled, title, questions },
+          })
+        ).data!;
       }
       onSaved(saved);
     } catch (error) {
       const code = isApiError(error) ? error.code : "";
+      const taken = isCodeTaken(error);
+      setCodeTaken(taken);
       setFailure(
-        code === "surveys.template_published" ? t("errors.published") : problemMessage(error, t("errors.failed")),
+        code === "surveys.template_published"
+          ? t("errors.published")
+          : taken
+            ? null
+            : problemMessage(error, t("errors.failed")),
       );
     } finally {
       setBusy(false);
@@ -137,13 +147,21 @@ export function SurveyTemplateEditor({
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             {isNew ? (
-              <Field label={t("code")} hint={t("codeHint")} error={has("code") ? t("errors.code") : undefined} required>
+              <Field
+                label={t("code")}
+                hint={t("codeHint")}
+                error={has("code") ? t("errors.code") : codeTaken ? t("errors.codeTaken") : undefined}
+                required
+              >
                 <Input
                   value={draft.code}
                   autoComplete="off"
                   spellCheck={false}
                   className="font-mono"
-                  onChange={(event) => set({ code: event.target.value.trim().toLowerCase() })}
+                  onChange={(event) => {
+                    setCodeTaken(false);
+                    set({ code: event.target.value.trim().toLowerCase() });
+                  }}
                 />
               </Field>
             ) : null}

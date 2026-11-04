@@ -5,11 +5,9 @@ import { useState } from "react";
 
 import type { Deal } from "@/features/shared/deals/types";
 import { useFormat } from "@/features/shared/format/useFormat";
-import { dealP2Of } from "@/features/shared/loyalty-p2/read";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -41,7 +39,7 @@ export function BundleSheet({
   const [choices, setChoices] = useState<Record<string, DesignChoice>>({});
   const [adding, setAdding] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const bundle = deal ? dealP2Of(deal).bundle : null;
+  const bundle = deal?.bundle ?? null;
   const open = Boolean(deal && bundle);
 
   const add = async () => {
@@ -54,9 +52,8 @@ export function BundleSheet({
     setProblem(null);
     try {
       const { response } = await browserApi().GET("/v1/store/cart");
-      await browserRequests().call("POST /v1/store/promotions/{promotionId}/actions/add-bundle", {
-        path: { promotionId: deal.id },
-        etag: response.headers.get("etag") ?? undefined,
+      await browserApi().POST("/v1/store/promotions/{promotionId}/actions/add-bundle", {
+        params: { path: { promotionId: deal.id }, header: { "If-Match": response.headers.get("etag") ?? undefined } },
         body: { items: bundle.items.map((item) => ({ designOption: choices[item.productTypeCode] ?? "own_file" })) },
       });
       toast.success(t("added", { count: bundle.items.length }));

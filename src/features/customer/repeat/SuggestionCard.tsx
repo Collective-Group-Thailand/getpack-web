@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { pick } from "@/features/customer/catalog/localize";
 import { ReorderBonusBadge } from "@/features/customer/loyalty/ReorderBonusBadge";
-import { reorderSuggestionP2Of } from "@/features/shared/loyalty-p2/read";
 import { unitLabel } from "@/features/customer/catalog/unit-label";
 import { formatDate, formatNumber } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -21,7 +20,7 @@ import { toast } from "@/ui/components/Toast";
  * many, with the reasoning the API gives — how often they order, the last lead time, the last
  * order — a one-click reorder of that order, and "not now" (dismiss). Every date and figure is the API's.
  */
-export function SuggestionCard({ suggestion }: { suggestion: Schemas["ReorderSuggestionDto"] }) {
+export function SuggestionCard({ suggestion }: { suggestion: Schemas["StoreReorderSuggestionDto"] }) {
   const t = useTranslations("account.replenishment");
   const tCatalog = useTranslations("catalog");
   const locale = useLocale() as "th" | "en";
@@ -29,7 +28,7 @@ export function SuggestionCard({ suggestion }: { suggestion: Schemas["ReorderSug
   const [busy, setBusy] = useState(false);
   const { lastOrder } = suggestion;
   // Loyalty P2 (D-492): when it should run out, and the ×1.5 reorder campaign while one is open.
-  const { predictedStockOutOn, bonus } = reorderSuggestionP2Of(suggestion);
+  const { predictedStockOutOn, bonus } = suggestion;
 
   const dismiss = async () => {
     setBusy(true);

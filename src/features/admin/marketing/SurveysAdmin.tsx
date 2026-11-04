@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
-import type { SurveyResults, SurveyTemplate } from "@/lib/api/requests/admin-loyalty-p2";
+import type { SurveyResults, SurveyTemplate } from "@/features/shared/loyalty-p2/types";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -41,23 +41,27 @@ export function SurveysAdmin() {
   const listKey = queryKeys.list("admin", "survey_template", {});
   const templates = useQuery({
     queryKey: listKey,
-    queryFn: async () => (await adminBrowserApis().requests.call("GET /v1/admin/surveys/templates")).items,
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/surveys/templates", { params: { query: { perPage: 100 } } }))
+        .data!.data,
   });
   const chosen = selected ?? templates.data?.find((row) => row.status === "published")?.id ?? null;
   const results = useQuery({
     queryKey: queryKeys.related("admin", "survey_template", chosen ?? "none", "results"),
-    queryFn: () =>
-      adminBrowserApis().requests.call("GET /v1/admin/surveys/templates/{templateId}/results", {
-        path: { templateId: chosen! },
-      }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/surveys/templates/{templateId}/results", {
+          params: { path: { templateId: chosen! } },
+        })
+      ).data!,
     enabled: Boolean(chosen),
   });
 
   const run = async (row: SurveyTemplate, action: Action) => {
     setBusy(`${row.id}:${action}`);
     try {
-      await adminBrowserApis().requests.call("POST /v1/admin/surveys/templates/{templateId}/actions/{action}", {
-        path: { templateId: row.id, action },
+      await adminBrowserApis().contract.POST("/v1/admin/surveys/templates/{templateId}/actions/{action}", {
+        params: { path: { templateId: row.id, action } },
       });
       toast.success(t(`actions.${action}.done`));
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "survey_template") });
@@ -122,7 +126,7 @@ export function SurveysAdmin() {
               id: "responses",
               header: t("columns.responses"),
               numeric: true,
-              cell: (row) => format.number(row.responses),
+              cell: (row) => format.number(row.completed),
             },
             {
               id: "rate",
@@ -196,15 +200,15 @@ function Results({ data }: { data: SurveyResults }) {
     <div className="flex flex-col gap-4">
       <p className="text-muted text-sm tabular-nums">
         {t("completion", {
-          completed: format.number(data.completed),
+          completed: format.number(data.responses),
           opened: format.number(data.opened),
-          pct: data.completionPct === null ? "—" : format.percent(data.completionPct),
+          pct: data.completionRatePct === null ? "—" : format.percent(data.completionRatePct),
         })}
         {data.countsOnly ? ` · ${t("countsOnly")}` : null}
       </p>
       <ol className="m-0 grid list-none gap-4 p-0 lg:grid-cols-2">
         {data.questions.map((question, at) => {
-          const max = Math.max(0, ...(question.options ?? []).map((option) => option.count));
+          const max = Math.max(0, ...question.counts.map((option) => option.count));
           return (
             <li key={question.key} className="border-border bg-surface rounded-panel border p-4">
               <p className="flex items-baseline gap-2.5">
@@ -219,7 +223,7 @@ function Results({ data }: { data: SurveyResults }) {
                     <span className="text-muted ms-1.5 text-sm font-normal">{t("outOf5")}</span>
                   </p>
                 ) : question.kind === "text" ? (
-                  question.texts?.length ? (
+                  question.texts.length ? (
                     <ul className="m-0 flex list-none flex-col gap-2.5 p-0 text-sm">
                       {question.texts.map((entry, index) => (
                         <li key={index} className="border-border border-s-2 ps-3">
@@ -235,7 +239,7 @@ function Results({ data }: { data: SurveyResults }) {
                   )
                 ) : (
                   <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
-                    {(question.options ?? []).map((option) => (
+                    {question.counts.map((option) => (
                       <li key={option.key} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
                         <span className="min-w-0 truncate">{option.label}</span>
                         <BarValue value={option.count} max={max}>

@@ -10,9 +10,9 @@ import { loyaltyAnalyticsOf } from "../../../../mocks/admin/loyalty-p2";
 
 import { LoyaltyAnalytics, recentMonths } from "./LoyaltyAnalytics";
 
-const requests = { call: vi.fn() };
+const contract = { GET: vi.fn() };
 vi.mock("../console", () => ({
-  adminBrowserApis: () => ({ requests }),
+  adminBrowserApis: () => ({ contract }),
   QueryError: () => <p>error</p>,
 }));
 vi.mock("next/link", () => ({
@@ -34,7 +34,7 @@ function renderTh() {
   );
 }
 
-beforeEach(() => requests.call.mockReset().mockResolvedValue(loyaltyAnalyticsOf("2026-05", "2026-10")));
+beforeEach(() => contract.GET.mockReset().mockResolvedValue({ data: loyaltyAnalyticsOf("2026-05", "2026-10") }));
 
 describe("recentMonths", () => {
   it("lists whole months only, newest first, in Bangkok time", () => {
@@ -51,8 +51,8 @@ describe("LoyaltyAnalytics", () => {
     expect(screen.getByText("รอ CPA ยืนยัน")).toBeInTheDocument();
     expect(screen.getByText("ข้อมูล 7 จาก 12 เดือน")).toBeInTheDocument();
     expect(screen.getByText("฿3,450.00")).toBeInTheDocument();
-    expect(requests.call).toHaveBeenCalledWith("GET /v1/admin/loyalty/analytics", {
-      query: expect.objectContaining({ from: expect.stringMatching(/^\d{4}-\d{2}$/) }),
+    expect(contract.GET).toHaveBeenCalledWith("/v1/admin/loyalty/analytics", {
+      params: { query: expect.objectContaining({ from: expect.stringMatching(/^\d{4}-\d{2}$/) }) },
     });
   });
 

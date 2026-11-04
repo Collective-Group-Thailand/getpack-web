@@ -7,7 +7,6 @@ import { PhotoPicker, type PickedPhoto } from "@/features/customer/fulfilment/Ph
 import { useFormat } from "@/features/shared/format/useFormat";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
@@ -15,14 +14,7 @@ import { Textarea } from "@/ui/components/Input";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import {
-  REVIEW_PHOTO_ACCEPT,
-  REVIEW_PHOTO_MAX,
-  REVIEW_PHOTO_MAX_BYTES,
-  reviewPhotosOf,
-  type Review,
-  type ReviewPhoto,
-} from "./review";
+import { REVIEW_PHOTO_ACCEPT, REVIEW_PHOTO_MAX, REVIEW_PHOTO_MAX_BYTES, type Review, type ReviewPhoto } from "./review";
 
 const SCORES = [1, 2, 3, 4, 5] as const;
 const COMMENT_MAX = 1000;
@@ -65,7 +57,7 @@ function Photos({ photos, label }: { photos: ReviewPhoto[]; label: string }) {
 /**
  * The review of a delivered order (D-135, loyalty P2 D-490): a star rating, an optional comment and up to four photos
  * of what arrived. The review is sent first (`store.reviews.submit`, published), then the photos
- * (`store.reviews.addPhotos`, CONTRACT-REQUEST) — so a review never waits on an upload, and photos can be added
+ * (`store.reviews.addPhotos`) — so a review never waits on an upload, and photos can be added
  * later within the API's window. Reward figures are the API's `rewardPoints` (review + photo); none is shown at 0
  * (the D-476 cap may refuse it). Ratings say "ดาว", not points.
  */
@@ -74,7 +66,7 @@ export function OrderReview({ orderId, initial }: { orderId: string; initial: Re
   const format = useFormat();
   const id = useId();
   const [review, setReview] = useState(initial);
-  const [photosOnReview, setPhotosOnReview] = useState<ReviewPhoto[]>(() => (initial ? reviewPhotosOf(initial) : []));
+  const [photosOnReview, setPhotosOnReview] = useState<ReviewPhoto[]>(() => initial?.photos ?? []);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [picked, setPicked] = useState<PickedPhoto[]>([]);
@@ -94,13 +86,14 @@ export function OrderReview({ orderId, initial }: { orderId: string; initial: Re
         : t("errors.photos");
   };
 
-  const sendPhotos = async (base: Review) => {
-    const added = await browserRequests().call("POST /v1/store/orders/{orderId}/review/photos", {
-      path: { orderId },
+  /** `store.reviews.addPhotos` answers the whole review: its photos are every photo on it, not just the new ones. */
+  const sendPhotos = async () => {
+    const { data } = await browserApi().POST("/v1/store/orders/{orderId}/review/photos", {
+      params: { path: { orderId } },
       body: { photoFileIds: fileIds },
     });
-    setPhotosOnReview((current) => [...current, ...added.photos]);
-    setReview({ ...base, rewardPoints: added.rewardPoints });
+    setPhotosOnReview(data!.photos);
+    setReview(data!);
     setPicked([]);
   };
 
@@ -120,7 +113,7 @@ export function OrderReview({ orderId, initial }: { orderId: string; initial: Re
       });
       saved = data!;
       setReview(saved);
-      if (fileIds.length) await sendPhotos(saved);
+      if (fileIds.length) await sendPhotos();
     } catch (failure) {
       const code = isApiError(failure) ? failure.code : "";
       // The review went in; only its photos did not — say so and keep them to retry.
@@ -145,7 +138,7 @@ export function OrderReview({ orderId, initial }: { orderId: string; initial: Re
     setError(null);
     setBusy(true);
     try {
-      await sendPhotos(review);
+      await sendPhotos();
       setAdding(false);
     } catch (failure) {
       setError(photoFailure(failure));

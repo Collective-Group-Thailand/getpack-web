@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { SurveyInstance } from "@/lib/api/requests/store-loyalty-p2";
+import type { SurveyInstance } from "@/features/shared/loyalty-p2/types";
+import { browserApi } from "@/lib/api/browser";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
 import { Sheet, SheetClose } from "@/ui/components/Sheet";
@@ -44,8 +44,8 @@ export function SurveyCard({
   useEffect(() => {
     if (!survey || survey.status !== "open" || marked.current) return;
     marked.current = true;
-    void browserRequests()
-      .call("POST /v1/store/surveys/{surveyId}/actions/seen", { path: { surveyId: survey.id } })
+    void browserApi()
+      .POST("/v1/store/surveys/{surveyId}/actions/seen", { params: { path: { surveyId: survey.id } } })
       .catch(() => undefined);
   }, [survey]);
 
@@ -54,8 +54,8 @@ export function SurveyCard({
   const later = () => {
     setOpen(false);
     setHidden(true);
-    void browserRequests()
-      .call("POST /v1/store/surveys/{surveyId}/actions/dismiss", { path: { surveyId: survey.id } })
+    void browserApi()
+      .POST("/v1/store/surveys/{surveyId}/actions/dismiss", { params: { path: { surveyId: survey.id } } })
       .catch(() => undefined);
   };
   const title = variant === "order" ? t("titleOrder") : survey.title;

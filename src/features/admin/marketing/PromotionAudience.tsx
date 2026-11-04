@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { promotionP2Of } from "@/features/shared/loyalty-p2/read";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { isApiError, type ProblemFieldError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -29,16 +28,15 @@ type Listing = "everyone" | "matching_only";
  * picker, the live "ตรงกับลูกค้าประมาณ N ราย" (`admin.promotions.estimateAudience`, rounded, hidden under 10), who sees
  * the deal on the deals page, and a note on what customers are told. Saved through the published
  * `admin.promotions.update` with conditions v2 (`audience`; any legacy `segments` dropped — the API refuses both) and
- * display v2 (`listing`). CONTRACT-REQUEST admin.promotions.audience: one cast, here.
+ * display v2 (`listing`); the estimate is `admin.promotions.estimateAudience` (rounded to tens, null under 10).
  */
 export function PromotionAudience({ item, editable }: { item: Schemas["PromotionDto"]; editable: boolean }) {
   const t = useTranslations("marketing.promotion.audience");
   const format = useFormat();
   const queryClient = useQueryClient();
   const productTypes = useProductTypes();
-  const saved = promotionP2Of(item);
-  const [draft, setDraft] = useState<AudienceDraft>(() => audienceDraftOf(saved.audience));
-  const [listing, setListing] = useState<Listing>(saved.listing);
+  const [draft, setDraft] = useState<AudienceDraft>(() => audienceDraftOf(item.conditions.audience ?? null));
+  const [listing, setListing] = useState<Listing>(item.display.listing);
   const [saving, setSaving] = useState(false);
   const [refusals, setRefusals] = useState<readonly ProblemFieldError[]>([]);
   const audience = audienceOf(draft);
@@ -53,10 +51,11 @@ export function PromotionAudience({ item, editable }: { item: Schemas["Promotion
   const estimate = useQuery({
     queryKey: queryKeys.related("admin", "promotion", item.id, `audience:${asked}`),
     queryFn: async () =>
-      adminBrowserApis().requests.call("GET /v1/admin/promotions/{promotionId}/audience-estimate", {
-        path: { promotionId: item.id },
-        query: asked ? { audience: asked } : {},
-      }),
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}/audience-estimate", {
+          params: { path: { promotionId: item.id }, query: asked ? { audience: asked } : {} },
+        })
+      ).data!,
     enabled: Boolean(asked),
     staleTime: 60_000,
   });

@@ -11,7 +11,6 @@ import { Ticket } from "@/ui/components/Ticket";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { dealP2Of } from "../loyalty-p2/read";
 import { daysLeft, dealState, stubValue, thbCompact, type DealState } from "./model";
 import type { Deal } from "./types";
 
@@ -81,7 +80,7 @@ export function DealCard({
   const spent = state === "used";
   const stub = useDealStub(deal.benefit);
   // Loyalty P2: a bundle's stub is the API's estimated saving (ex-VAT), its body the pieces, its action the CTA.
-  const { bundle } = dealP2Of(deal);
+  const { bundle } = deal;
   const bundleSaving = bundle?.estimatedSaving ? thbCompact(bundle.estimatedSaving, format.locale) : null;
   const value = stub.value;
   const word = bundleSaving ? t("bundle.word") : stub.word;

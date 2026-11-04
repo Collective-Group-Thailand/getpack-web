@@ -6,12 +6,10 @@ import myOrders from "@/i18n/messages/th/customer/my-orders.json";
 import { ApiError } from "@/lib/api/problem";
 
 import { OrderReview } from "./OrderReview";
-import { canReview, reviewPhotosOf, type Review } from "./review";
+import { canReview, type Review } from "./review";
 
 const post = vi.fn();
-const call = vi.fn();
 vi.mock("@/lib/api/browser", () => ({ browserApi: () => ({ POST: post }) }));
-vi.mock("@/lib/api/requests/browser", () => ({ browserRequests: () => ({ call }) }));
 // The picker's upload is its own (claims); here a button stands in for "one photo uploaded".
 vi.mock("@/features/customer/fulfilment/PhotoPicker", () => ({
   PhotoPicker: ({
@@ -45,6 +43,8 @@ const review = (over: Partial<Review> = {}): Review => ({
   reply: null,
   rewardPoints: 10,
   createdAt: "2026-11-04T10:00:00+07:00",
+  photos: [],
+  photoRewardPoints: 0,
   ...over,
 });
 const problem = (status: number, code: string) =>
@@ -60,7 +60,6 @@ function renderTh(node: React.ReactNode) {
 
 beforeEach(() => {
   post.mockReset();
-  call.mockReset();
 });
 
 describe("review rules", () => {
@@ -68,14 +67,6 @@ describe("review rules", () => {
     expect(canReview({ cancelledAt: null, receipt: { deliveredAt: "2026-11-01T10:00:00+07:00" } })).toBe(true);
     expect(canReview({ cancelledAt: null, receipt: { deliveredAt: null } })).toBe(false);
     expect(canReview({ cancelledAt: "2026-11-01T10:00:00+07:00", receipt: { deliveredAt: "2026-11-01" } })).toBe(false);
-  });
-
-  it("reads the P2 photos when the API sends them, none otherwise", () => {
-    expect(reviewPhotosOf(review())).toEqual([]);
-    expect(reviewPhotosOf({ ...review(), photos: [{ id: FILE, url: "/p.jpg" }] })).toEqual([
-      { id: FILE, url: "/p.jpg" },
-    ]);
-    expect(reviewPhotosOf({ ...review(), photos: "nope" })).toEqual([]);
   });
 });
 
@@ -98,34 +89,40 @@ describe("OrderReview", () => {
       params: { path: { orderId: ORDER } },
       body: { rating: 5, comment: "ดีมาก" },
     });
-    expect(call).not.toHaveBeenCalled();
+    expect(post).toHaveBeenCalledTimes(1);
     expect(screen.getByText("รอตรวจสอบ")).toBeInTheDocument();
     expect(screen.getByText(/ได้รับ/)).toHaveTextContent("ได้รับ 10 แต้ม จากรีวิวนี้");
     expect(screen.getByRole("button", { name: "แนบรูป" })).toBeInTheDocument();
   });
 
   it("attaches the photos after the review and shows the combined reward", async () => {
-    post.mockResolvedValue({ data: review() });
-    call.mockResolvedValue({
-      photos: [{ id: FILE, url: "/v1/store/catalog/images/x" }],
-      rewardPoints: 20,
-      photoRewardPoints: 10,
-    });
+    const photo = { id: FILE, url: "/v1/store/catalog/images/x" };
+    post.mockImplementation((path: string) =>
+      Promise.resolve({
+        data: path.endsWith("/photos")
+          ? review({ photos: [photo], rewardPoints: 20, photoRewardPoints: 10 })
+          : review(),
+      }),
+    );
     renderTh(<OrderReview orderId={ORDER} initial={null} />);
     fireEvent.click(screen.getByRole("radio", { name: "4 จาก 5 ดาว" }));
     fireEvent.click(screen.getByRole("button", { name: "picker max 4" }));
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "ส่งรีวิว" })));
-    expect(call).toHaveBeenCalledWith("POST /v1/store/orders/{orderId}/review/photos", {
-      path: { orderId: ORDER },
+    expect(post).toHaveBeenLastCalledWith("/v1/store/orders/{orderId}/review/photos", {
+      params: { path: { orderId: ORDER } },
       body: { photoFileIds: [FILE] },
     });
-    expect(screen.getByRole("list", { name: "รูปในรีวิว" })).toBeInTheDocument();
+    // The reply is the whole review: its one photo is listed once.
+    expect(screen.getAllByRole("img", { name: /รูปในรีวิว/ })).toHaveLength(1);
     expect(screen.getByText(/ได้รับ/)).toHaveTextContent("ได้รับ 20 แต้ม");
   });
 
   it("keeps the review when only the photos fail, and says so", async () => {
-    post.mockResolvedValue({ data: review() });
-    call.mockRejectedValue(problem(422, "reviews.photo_window_closed"));
+    post.mockImplementation((path: string) =>
+      path.endsWith("/photos")
+        ? Promise.reject(problem(422, "reviews.photo_window_closed"))
+        : Promise.resolve({ data: review() }),
+    );
     renderTh(<OrderReview orderId={ORDER} initial={null} />);
     fireEvent.click(screen.getByRole("radio", { name: "3 จาก 5 ดาว" }));
     fireEvent.click(screen.getByRole("button", { name: "picker max 4" }));
@@ -146,16 +143,12 @@ describe("OrderReview", () => {
     renderTh(
       <OrderReview
         orderId={ORDER}
-        initial={
-          {
-            ...review({
-              status: "published",
-              rewardPoints: 0,
-              reply: { body: "ขอบคุณครับ", repliedAt: "2026-11-05T10:00:00+07:00" },
-            }),
-            photos: [{ id: FILE, url: "/p.jpg" }],
-          } as Review
-        }
+        initial={review({
+          status: "published",
+          rewardPoints: 0,
+          reply: { body: "ขอบคุณครับ", repliedAt: "2026-11-05T10:00:00+07:00" },
+          photos: [{ id: FILE, url: "/p.jpg" }],
+        })}
       />,
     );
     expect(screen.getByRole("img", { name: "4 จาก 5 ดาว" })).toBeInTheDocument();

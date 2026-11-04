@@ -9,7 +9,6 @@ import { useState } from "react";
 import { adminPromotionActions, type AdminLifecycleAction } from "@/domain/next-actions/admin";
 import { PROMOTION_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
-import { promotionP2Of } from "@/features/shared/loyalty-p2/read";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
@@ -301,7 +300,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
     on ? [...values, value] : values.filter((entry) => entry !== value);
   const systemManaged = item?.kind === "referral";
   // Loyalty P2 (D-494): a bundle's stack group is `bundle`, set from the bundle tab only.
-  const bundleLocked = item ? (promotionP2Of(item).cartProductTypeCountGte ?? 0) >= 2 : false;
+  const bundleLocked = item ? (item.conditions.cartProductTypeCountGte ?? 0) >= 2 : false;
   const editable = can("promotions.manage") && (!item || item.status !== "ended") && !systemManaged;
   const redeemed = (item?.usage.redemptions ?? 0) > 0;
   const actions = item && !systemManaged ? adminPromotionActions(item.status, can) : [];

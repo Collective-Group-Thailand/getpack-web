@@ -6,8 +6,8 @@ import { useId, useState } from "react";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { SurveyInstance, SurveyQuestion } from "@/lib/api/requests/store-loyalty-p2";
+import type { SurveyInstance, SurveyQuestion } from "@/features/shared/loyalty-p2/types";
+import { browserApi } from "@/lib/api/browser";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
 import { Textarea } from "@/ui/components/Input";
@@ -70,10 +70,12 @@ export function SurveyForm({
     }
     setSending(true);
     try {
-      const result = await browserRequests().call("POST /v1/store/surveys/{surveyId}/responses", {
-        path: { surveyId: survey.id },
+      const { data } = await browserApi().POST("/v1/store/surveys/{surveyId}/responses", {
+        params: { path: { surveyId: survey.id } },
         body: { answers: toSubmission(questions, answers) },
       });
+      // The reward is written with the answers (API-CHANGES-P2 deviation 1): this is what was credited.
+      const result = data!;
       setOutcome({ kind: "done", rewardPoints: result.rewardPoints });
       onSubmitted?.(result.rewardPoints);
     } catch (error) {

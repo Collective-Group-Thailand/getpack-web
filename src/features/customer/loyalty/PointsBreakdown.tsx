@@ -4,12 +4,14 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { multiplierParts, shortMultiplier } from "@/features/shared/loyalty-p2/multipliers";
-import type { CheckoutPointsP2Fields } from "@/lib/api/requests/store-loyalty-p2";
+import type { CheckoutPointsP2Fields } from "@/features/shared/loyalty-p2/types";
 
 /**
  * What the order earns at checkout (loyalty P2, D-490, D-495): "รับ 22 แต้มเมื่อคำสั่งซื้อเสร็จสิ้น" with the
- * multipliers that are not ×1 ("ระดับสมาชิก ×1.25 · สั่งซ้ำ ×1.5"), and — when the chosen method does not already
- * earn it — the QR / transfer hint with the API's `toEarnWithPaymentBonus`. Every figure is the API's.
+ * multipliers that are not ×1 ("ระดับสมาชิก ×1.25 · สั่งซ้ำ ×1.5"), and the QR / transfer hint with the API's
+ * `toEarnWithPaymentBonus`. No payment method is declared before payment, so `toEarn` never includes the payment bonus
+ * (`multipliers.paymentMethod` is "1.00", API-CHANGES-P2 deviation 2): the bonus is only ever the hint. Every figure is
+ * the API's.
  */
 export function PointsBreakdown({ toEarn, p2 }: { toEarn: number; p2: CheckoutPointsP2Fields }) {
   const t = useTranslations("account.lifecycle");

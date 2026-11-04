@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import { BUSINESS_TYPES, LOYALTY_TIERS } from "@/lib/api/requests/admin-loyalty-p2";
+import { BUSINESS_TYPES, LOYALTY_TIERS } from "@/features/shared/loyalty-p2/types";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { NumberInput } from "@/ui/components/Input";
 import { Icon } from "@/ui/icons";

@@ -17,7 +17,7 @@
  */
 
 import { http, HttpResponse } from "msw";
-import type { CheckoutPointsP2Fields } from "@/lib/api/requests/store-loyalty-p2";
+import type { CheckoutPointsP2Fields } from "@/features/shared/loyalty-p2/types";
 
 import type { Schemas } from "@/lib/api/types";
 
@@ -1570,8 +1570,8 @@ export const storeCheckoutHandlers = [
 ];
 
 /**
- * Loyalty P2 (CONTRACT-REQUEST store.loyalty.p2-fields): the multipliers behind `toEarn` and the QR / transfer bonus
- * (D-490, D-495). The mock's engine is a fake one; the web shows these figures as given.
+ * Loyalty P2 (`PointsPreviewDto`): the multipliers behind `toEarn` (payment method "1.00": none is declared before
+ * payment) and the QR / transfer bonus (D-490, D-495). The mock's engine is a fake one; the web shows these figures as given.
  */
 function pointsP2Of(toEarn: number): CheckoutPointsP2Fields {
   return {

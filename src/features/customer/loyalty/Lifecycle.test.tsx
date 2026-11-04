@@ -73,7 +73,7 @@ describe("WinbackBanner", () => {
     expect(screen.getByRole("link")).toHaveAttribute("href", "/liff/deals");
     rerender(
       <NextIntlClientProvider locale="th" messages={{ account, checkout }} timeZone="Asia/Bangkok">
-        <WinbackBanner lots={[{ ...lot, reason: "first_order" }]} />
+        <WinbackBanner lots={[]} />
       </NextIntlClientProvider>,
     );
     expect(container).toBeEmptyDOMElement();
@@ -96,11 +96,11 @@ describe("PointsBreakdown", () => {
     expect(screen.getByText(/ชำระด้วย QR หรือโอนเงิน/)).toHaveTextContent("×1.2 เป็น 27 แต้ม");
   });
 
-  it("leaves the hint out when the chosen payment already earns the bonus", () => {
+  it("leaves the hint out when the payment bonus would add nothing", () => {
     renderTh(
       <PointsBreakdown
-        toEarn={27}
-        p2={{ multipliers: null, paymentBonus: { multiplier: "1.20", methods: [] }, toEarnWithPaymentBonus: 27 }}
+        toEarn={1}
+        p2={{ multipliers, paymentBonus: { multiplier: "1.20", methods: ["scb_qr"] }, toEarnWithPaymentBonus: 1 }}
       />,
     );
     expect(screen.queryByText(/ชำระด้วย QR/)).not.toBeInTheDocument();

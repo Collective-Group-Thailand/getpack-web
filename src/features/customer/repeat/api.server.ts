@@ -4,7 +4,7 @@ import { isApiError } from "@/lib/api/problem";
 import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 
-export type Suggestion = Schemas["ReorderSuggestionDto"];
+export type Suggestion = Schemas["StoreReorderSuggestionDto"];
 export type CallOff = Schemas["StoreCallOffAgreementDto"];
 export type CustomerDocument = Schemas["CustomerDocumentDto"];
 

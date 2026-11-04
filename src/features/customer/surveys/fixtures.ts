@@ -3,7 +3,7 @@
  * story can load it in the browser bundle.
  */
 
-import type { SurveyInstance } from "@/lib/api/requests/store-loyalty-p2";
+import type { SurveyInstance } from "@/features/shared/loyalty-p2/types";
 
 export const SURVEY_FIXTURE: SurveyInstance = {
   id: "0192f3a0-7c1e-7d2a-9b1f-0000000d0001",

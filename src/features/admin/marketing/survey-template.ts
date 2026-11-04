@@ -1,4 +1,5 @@
-import type { SurveyTemplate, SurveyTemplateInput } from "@/lib/api/requests/admin-loyalty-p2";
+import type { SurveyTemplate, SurveyTemplateInput } from "@/features/shared/loyalty-p2/types";
+import { isApiError } from "@/lib/api/problem";
 
 /**
  * The survey template editor's draft and its rules (loyalty P2, D-491): 3–5 questions, each a rating 1–5, a single or
@@ -80,14 +81,18 @@ export function draftOf(template?: SurveyTemplate | null): TemplateDraft {
     trigger: template.trigger,
     rewardEnabled: template.rewardEnabled,
     titleTh: template.title.th,
-    titleEn: template.title.en,
+    titleEn: template.title.en ?? "",
     questions: template.questions.map((question) => ({
       key: question.key,
       kind: question.kind,
       th: question.label.th,
-      en: question.label.en,
+      en: question.label.en ?? "",
       required: question.required,
-      options: (question.options ?? []).map((option) => ({ key: option.key, ...option.label })),
+      options: (question.options ?? []).map((option) => ({
+        key: option.key,
+        th: option.label.th,
+        en: option.label.en ?? "",
+      })),
       maxLength: question.maxLength ?? TEXT_MAX,
     })),
   };
@@ -156,4 +161,16 @@ export function inputOf(draft: TemplateDraft): SurveyTemplateInput {
       ...(question.kind === "text" ? { maxLength: question.maxLength } : {}),
     })),
   };
+}
+
+/**
+ * Whether a refused create says another template has this code: getpack-api answers 422 `validation.failed` with the
+ * field error `code` · `taken` (no problem code of its own). The editor shows it under the code field.
+ */
+export function isCodeTaken(error: unknown): boolean {
+  return (
+    isApiError(error) &&
+    error.code === "validation.failed" &&
+    error.errors.some((entry) => entry.path === "code" && entry.code === "taken")
+  );
 }

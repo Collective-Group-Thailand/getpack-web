@@ -6,8 +6,8 @@ import { useState } from "react";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import { SHOWCASE_SCOPES, type ShowcaseConsent, type ShowcaseScope } from "@/lib/api/requests/store-loyalty-p2";
+import { SHOWCASE_SCOPES, type ShowcaseConsent, type ShowcaseScope } from "@/features/shared/loyalty-p2/types";
+import { browserApi } from "@/lib/api/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
@@ -21,7 +21,9 @@ export const SHOWCASE_TEXT_VERSION = "2026-11-v1";
  * Consent for getpack to show a customer's work (loyalty P2, D-490): what may be shown (brand name, logo, packaging
  * photos, a review quote), the versioned consent text, and the status — รอตรวจสอบ / อนุมัติแล้ว / ไม่อนุมัติ /
  * ถอนแล้ว. Marketing approves; the reward (the API's `rewardPoints`) is paid on approval, once. Withdrawing is always
- * possible and never takes the reward back.
+ * possible and never takes the reward back. An approved consent can be changed: a new grant withdraws the approved
+ * one and opens a new review (API-CHANGES-P2 deviation 6), and the reward is never paid twice — so the changing form
+ * says so and shows no reward line.
  */
 export function ShowcaseConsentForm({ initial }: { initial: ShowcaseConsent }) {
   const t = useTranslations("account.showcase");
@@ -32,7 +34,9 @@ export function ShowcaseConsentForm({ initial }: { initial: ShowcaseConsent }) {
   const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [changing, setChanging] = useState(false);
   const active = consent.status === "requested" || consent.status === "approved";
+  const showForm = !active || (changing && consent.status === "approved");
 
   const send = async (granted: boolean) => {
     setError(null);
@@ -42,11 +46,12 @@ export function ShowcaseConsentForm({ initial }: { initial: ShowcaseConsent }) {
     }
     setBusy(true);
     try {
-      const next = await browserRequests().call("PUT /v1/store/loyalty/showcase-consent", {
+      const { data: next } = await browserApi().PUT("/v1/store/loyalty/showcase-consent", {
         body: granted ? { granted: true, scope, consentTextVersion: SHOWCASE_TEXT_VERSION } : { granted: false },
       });
-      setConsent(next);
+      setConsent(next!);
       setAgreed(false);
+      setChanging(false);
       toast.success(granted ? t("sent") : t("withdrawn"));
       router.refresh();
     } catch (failure) {
@@ -85,7 +90,7 @@ export function ShowcaseConsentForm({ initial }: { initial: ShowcaseConsent }) {
         </p>
       ) : null}
 
-      {active ? null : (
+      {showForm ? (
         <form
           noValidate
           className="border-border bg-surface rounded-panel flex flex-col gap-5 border p-5 md:p-6"
@@ -128,31 +133,47 @@ export function ShowcaseConsentForm({ initial }: { initial: ShowcaseConsent }) {
             </p>
           ) : null}
 
+          {changing ? <p className="text-muted text-sm">{t("regrantNote")}</p> : null}
+
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-muted text-sm">
-              {consent.rewardPoints > 0
+              {!changing && consent.rewardPoints > 0
                 ? t.rich("reward", {
                     points: format.number(consent.rewardPoints),
                     b: (chunk) => <b className="text-primary-subtle-fg font-semibold">{chunk}</b>,
                   })
                 : null}
             </p>
-            <Button type="submit" loading={busy}>
-              {t("submit")}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {changing ? (
+                <Button type="button" variant="ghost" onClick={() => setChanging(false)}>
+                  {t("cancelChange")}
+                </Button>
+              ) : null}
+              <Button type="submit" loading={busy}>
+                {t("submit")}
+              </Button>
+            </div>
           </div>
         </form>
-      )}
+      ) : null}
 
-      {active ? (
+      {active && !showForm ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-muted text-sm">{t("withdrawHint")}</p>
-          <Button variant="secondary" loading={busy} onClick={() => void send(false)}>
-            {t("withdraw")}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {consent.status === "approved" ? (
+              <Button variant="ghost" onClick={() => setChanging(true)}>
+                {t("change")}
+              </Button>
+            ) : null}
+            <Button variant="secondary" loading={busy} onClick={() => void send(false)}>
+              {t("withdraw")}
+            </Button>
+          </div>
         </div>
       ) : null}
-      {active && error ? (
+      {active && !showForm && error ? (
         <p role="alert" className="text-danger text-sm">
           {error}
         </p>

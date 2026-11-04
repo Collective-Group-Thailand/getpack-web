@@ -11,15 +11,13 @@ import { fixtureDeal } from "../../../../mocks/store/deals-fixtures";
 import { BundleSheet } from "./BundleSheet";
 import { forYouReasonText } from "./for-you";
 
-const call = vi.fn();
+const post = vi.fn();
 let failWith: Error | null = null;
 const push = vi.fn();
-vi.mock("@/lib/api/requests/browser", () => ({
-  browserRequests: () => ({ call: (...args: unknown[]) => (failWith ? Promise.reject(failWith) : call(...args)) }),
-}));
 vi.mock("@/lib/api/browser", () => ({
   browserApi: () => ({
     GET: async () => ({ data: {}, response: new Response(null, { headers: { etag: 'W/"cart.3"' } }) }),
+    POST: (...args: unknown[]) => (failWith ? Promise.reject(failWith) : post(...args)),
   }),
 }));
 vi.mock("@/ui/components/Toast", () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
@@ -50,7 +48,7 @@ const bundle = fixtureDeal("starter-bundle");
 const NOW = Date.parse("2026-11-04T10:00:00+07:00");
 
 beforeEach(() => {
-  call.mockReset();
+  post.mockReset();
   push.mockReset();
   failWith = null;
 });
@@ -88,14 +86,13 @@ describe("a bundle deal", () => {
 
 describe("BundleSheet", () => {
   it("adds the set under the cart's ETag with each item's design choice, then goes to the cart", async () => {
-    call.mockResolvedValue({ id: "c", items: [] });
+    post.mockResolvedValue({ data: { id: "c", items: [] } });
     renderTh(<BundleSheet deal={bundle} signedIn onOpenChange={vi.fn()} />);
     expect(screen.getByText("฿14.79 ต่อใบ (รวม VAT)")).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole("radio", { name: "จ้างออกแบบ" })[1]!);
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "เพิ่ม 2 รายการลงตะกร้า" })));
-    expect(call).toHaveBeenCalledWith("POST /v1/store/promotions/{promotionId}/actions/add-bundle", {
-      path: { promotionId: bundle.id },
-      etag: 'W/"cart.3"',
+    expect(post).toHaveBeenCalledWith("/v1/store/promotions/{promotionId}/actions/add-bundle", {
+      params: { path: { promotionId: bundle.id }, header: { "If-Match": 'W/"cart.3"' } },
       body: { items: [{ designOption: "own_file" }, { designOption: "hired_design" }] },
     });
     expect(push).toHaveBeenCalledWith("/cart");
@@ -119,6 +116,6 @@ describe("BundleSheet", () => {
     renderTh(<BundleSheet deal={bundle} signedIn={false} onOpenChange={vi.fn()} />);
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "เข้าสู่ระบบเพื่อเพิ่มชุดนี้" })));
     expect(push).toHaveBeenCalledWith("/sign-in?next=%2Fdeals%2Fstarter-bundle");
-    expect(call).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
   });
 });

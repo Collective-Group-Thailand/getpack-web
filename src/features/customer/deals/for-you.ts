@@ -1,5 +1,4 @@
 import type { Deal } from "@/features/shared/deals/types";
-import { dealP2Of } from "@/features/shared/loyalty-p2/read";
 
 /**
  * The reason line of a deal in "สำหรับคุณ" (loyalty P2, D-494). Only the three reasons the API may disclose are
@@ -16,7 +15,7 @@ export function forYouReasonText(
   },
   typeNames: Record<string, string>,
 ): string | null {
-  const { forYou, forYouReason } = dealP2Of(deal);
+  const { forYou, forYouReason } = deal;
   if (!forYou || !forYouReason) return null;
   if (forYouReason === "new_customer") return words.newCustomer;
   if (forYouReason === "tier") return words.tier;

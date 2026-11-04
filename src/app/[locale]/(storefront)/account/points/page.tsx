@@ -17,7 +17,6 @@ import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 import { Button } from "@/ui/components/Button";
 import { Icon } from "@/ui/icons";
-import { ledgerEntryP2Of, loyaltySummaryP2Of } from "@/features/shared/loyalty-p2/read";
 import { multiplierParts } from "@/features/shared/loyalty-p2/multipliers";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -45,15 +44,15 @@ export default async function Page() {
   ]);
   // The same order as the floating LINE button: the build's id, else staff's (GLOBAL-RULES §5).
   // Loyalty P2: bonus lots (win-back) and, per entry, the bonus reason and the order's multipliers.
-  const { bonusLots } = loyaltySummaryP2Of(points);
+  const { bonusLots } = points;
   const bonusLot = [...bonusLots].sort((a, b) => a.expiresAt.localeCompare(b.expiresAt))[0] ?? null;
   const typeLabel = (entry: (typeof entries)[number]) => {
-    const { bonusReason } = ledgerEntryP2Of(entry);
+    const { bonusReason } = entry;
     if (entry.entryType === "earn_bonus" && bonusReason) return t(`bonusReasons.${bonusReason}`);
     return t.has(`types.${entry.entryType}`) ? t(`types.${entry.entryType}`) : t("types.other");
   };
   const multiplierLine = (entry: (typeof entries)[number]) =>
-    multiplierParts(ledgerEntryP2Of(entry).multipliers)
+    multiplierParts(entry.multipliers)
       .map(({ part, value }) => tLifecycle(`multipliers.${part}`, { value }))
       .join(" · ");
   const lineOaId = clientEnv.NEXT_PUBLIC_LINE_OA_ID?.trim() || support?.lineOaId?.trim() || null;

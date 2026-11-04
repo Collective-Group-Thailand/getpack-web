@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PointsBreakdown } from "@/features/customer/loyalty/PointsBreakdown";
-import { checkoutPointsP2Of } from "@/features/shared/loyalty-p2/read";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -1078,7 +1077,7 @@ export function CheckoutView({
               ) : null}
               {/* Loyalty P2: the points with their multipliers and the QR / transfer hint (D-490, D-495). */}
               {data?.points && data.points.toEarn > 0 ? (
-                <PointsBreakdown toEarn={data.points.toEarn} p2={checkoutPointsP2Of(data.points)} />
+                <PointsBreakdown toEarn={data.points.toEarn} p2={data.points} />
               ) : null}
               {/* Delivery the API refuses is a step-2 blocker; anything else it refuses is said here. */}
               {preview.isError && !ADDRESS_PROBLEMS.has(previewError ?? "") ? (

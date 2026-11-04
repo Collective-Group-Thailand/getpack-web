@@ -13,9 +13,9 @@ import { missingRequired, toSubmission } from "./survey-model";
 const call = vi.fn();
 /** A plain failing implementation: a rejected promise from a spy is reported as unhandled by the runner. */
 let failWith: Error | null = null;
-vi.mock("@/lib/api/requests/browser", () => ({
-  browserRequests: () => ({
-    call: (...args: unknown[]) => (failWith ? Promise.reject(failWith) : call(...args)),
+vi.mock("@/lib/api/browser", () => ({
+  browserApi: () => ({
+    POST: (...args: unknown[]) => (failWith ? Promise.reject(failWith) : call(...args)),
   }),
 }));
 vi.mock("@/i18n/navigation", () => ({
@@ -72,7 +72,7 @@ describe("SurveyForm", () => {
   });
 
   it("sends the answers and shows the points the API gave", async () => {
-    call.mockResolvedValue({ status: "completed", rewardPoints: 8 });
+    call.mockResolvedValue({ data: { status: "completed", rewardPoints: 8 } });
     const onSubmitted = vi.fn();
     renderTh(<SurveyForm survey={SURVEY_FIXTURE} onSubmitted={onSubmitted} />);
     fireEvent.click(screen.getByRole("radio", { name: "5" }));
@@ -80,8 +80,8 @@ describe("SurveyForm", () => {
     fireEvent.click(screen.getByLabelText("ตรงตามที่คาด"));
     fireEvent.click(screen.getByLabelText("ราคา"));
     await act(async () => fireEvent.click(submitButton()));
-    expect(call).toHaveBeenCalledWith("POST /v1/store/surveys/{surveyId}/responses", {
-      path: { surveyId: SURVEY_FIXTURE.id },
+    expect(call).toHaveBeenCalledWith("/v1/store/surveys/{surveyId}/responses", {
+      params: { path: { surveyId: SURVEY_FIXTURE.id } },
       body: { answers: { overall: 5, quality: "as_expected", improve: ["price"] } },
     });
     expect(screen.getByText("ขอบคุณสำหรับคำตอบ")).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe("SurveyForm", () => {
   });
 
   it("says nothing about points when the survey pays none", async () => {
-    call.mockResolvedValue({ status: "completed", rewardPoints: 0 });
+    call.mockResolvedValue({ data: { status: "completed", rewardPoints: 0 } });
     renderTh(<SurveyForm survey={{ ...SURVEY_FIXTURE, rewardPoints: 0 }} />);
     expect(screen.queryByText(/ตอบครบ 4 ข้อ รับ/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("radio", { name: "3" }));
@@ -118,15 +118,15 @@ describe("SurveyForm", () => {
 
 describe("SurveyCard", () => {
   it("marks the survey seen once and dismisses it for good on later", async () => {
-    call.mockResolvedValue(undefined);
+    call.mockResolvedValue({ data: { survey: null } });
     renderTh(<SurveyCard survey={SURVEY_FIXTURE} />);
     expect(screen.getByRole("heading", { name: "คำสั่งซื้อล่าสุดเป็นอย่างไรบ้าง" })).toBeInTheDocument();
-    expect(call).toHaveBeenCalledWith("POST /v1/store/surveys/{surveyId}/actions/seen", {
-      path: { surveyId: SURVEY_FIXTURE.id },
+    expect(call).toHaveBeenCalledWith("/v1/store/surveys/{surveyId}/actions/seen", {
+      params: { path: { surveyId: SURVEY_FIXTURE.id } },
     });
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "ไว้ทีหลัง" })));
-    expect(call).toHaveBeenCalledWith("POST /v1/store/surveys/{surveyId}/actions/dismiss", {
-      path: { surveyId: SURVEY_FIXTURE.id },
+    expect(call).toHaveBeenCalledWith("/v1/store/surveys/{surveyId}/actions/dismiss", {
+      params: { path: { surveyId: SURVEY_FIXTURE.id } },
     });
     expect(screen.queryByRole("heading", { name: "คำสั่งซื้อล่าสุดเป็นอย่างไรบ้าง" })).not.toBeInTheDocument();
   });

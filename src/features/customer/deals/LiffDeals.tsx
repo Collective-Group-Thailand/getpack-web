@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { CopyCodeButton, DealCard, useDealStub } from "@/features/shared/deals/DealCard";
-import { dealP2Of } from "@/features/shared/loyalty-p2/read";
 import { dealState, featuredDeal } from "@/features/shared/deals/model";
 import { useDealSaves } from "@/features/shared/deals/useDealSaves";
 import { useFormat } from "@/features/shared/format/useFormat";
@@ -49,7 +48,7 @@ export function LiffDeals({
   const isMine = (deal: Deal) => deal.myStatus === "saved" || saves.stateOf(deal) === "saved";
   const mine = deals.filter(isMine);
   // Loyalty P2: "สำหรับคุณ" is the deals the API marks `forYou` (the list is already the caller's).
-  const forYou = deals.filter((deal) => dealP2Of(deal).forYou);
+  const forYou = deals.filter((deal) => deal.forYou);
   const featured = view === "all" ? featuredDeal(deals) : null;
   const shown = (view === "all" ? deals : view === "for_you" ? forYou : mine).filter(
     (deal) => deal.id !== featured?.id,

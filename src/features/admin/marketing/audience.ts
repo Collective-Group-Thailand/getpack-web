@@ -4,7 +4,7 @@
  * `listing_requires_audience`, publish guard `bundle_items` / `bundle_unpriceable` / `audience_words`).
  */
 
-import type { BundlePresetItem, PromotionAudience } from "@/lib/api/requests/admin-loyalty-p2";
+import type { BundlePresetItem, PromotionAudience } from "@/features/shared/loyalty-p2/types";
 
 export type Criterion = "newCustomer" | "tiers" | "businessTypes" | "inactiveDays" | "orderedTypes";
 export const CRITERIA: readonly Criterion[] = ["newCustomer", "tiers", "businessTypes", "inactiveDays", "orderedTypes"];
@@ -42,7 +42,7 @@ export function audienceOf(draft: AudienceDraft): PromotionAudience | null {
   const days = Math.trunc(Number(draft.inactiveDays));
   const audience: PromotionAudience = {
     ...(draft.on.newCustomer ? { newCustomer: true } : {}),
-    ...(draft.on.tiers && draft.tiers.length ? { tiers: [...draft.tiers] } : {}),
+    ...(draft.on.tiers && draft.tiers.length ? { tiers: [...draft.tiers] as PromotionAudience["tiers"] } : {}),
     ...(draft.on.businessTypes && draft.businessTypes.length
       ? { businessTypes: [...draft.businessTypes] as PromotionAudience["businessTypes"] }
       : {}),

@@ -22,9 +22,8 @@ import { BLOCKED_WORDS } from "./promotion-display";
 import { SegmentPicker } from "./SegmentPicker";
 
 const contract = { GET: vi.fn(), PATCH: vi.fn() };
-const requests = { call: vi.fn() };
 vi.mock("../console", () => ({
-  adminBrowserApis: () => ({ contract, requests }),
+  adminBrowserApis: () => ({ contract }),
   problemMessage: (_error: unknown, fallback: string) => fallback,
   useProductTypes: () => ({
     types: [
@@ -52,16 +51,16 @@ const promotion = {
   status: "active",
   stackGroup: null,
   conditions: { segments: ["returning"], productTypeCodes: ["corrugated"] },
-  display: null,
+  display: { listing: "everyone", bundle: null },
 } as unknown as Schemas["PromotionDto"];
 
 beforeEach(() => {
-  contract.GET.mockReset().mockResolvedValue({
-    data: promotion,
-    response: new Response(null, { headers: { ETag: 'W/"p.1"' } }),
-  });
+  contract.GET.mockReset().mockImplementation(async (path: string) =>
+    path.endsWith("/audience-estimate")
+      ? { data: { customers: 120, rounded: true } }
+      : { data: promotion, response: new Response(null, { headers: { ETag: 'W/"p.1"' } }) },
+  );
   contract.PATCH.mockReset().mockResolvedValue({ data: promotion });
-  requests.call.mockReset().mockResolvedValue({ customers: 120, rounded: true });
 });
 
 describe("audience rules", () => {
@@ -126,9 +125,8 @@ describe("PromotionAudience", () => {
     );
     fireEvent.click(screen.getByRole("checkbox", { name: /ลูกค้าใหม่/ }));
     await waitFor(() => expect(screen.getByText("120")).toBeInTheDocument(), { timeout: 2000 });
-    expect(requests.call).toHaveBeenCalledWith("GET /v1/admin/promotions/{promotionId}/audience-estimate", {
-      path: { promotionId: promotion.id },
-      query: { audience: JSON.stringify({ newCustomer: true }) },
+    expect(contract.GET).toHaveBeenCalledWith("/v1/admin/promotions/{promotionId}/audience-estimate", {
+      params: { path: { promotionId: promotion.id }, query: { audience: JSON.stringify({ newCustomer: true }) } },
     });
     await act(async () => fireEvent.click(screen.getAllByRole("button", { name: "บันทึกกลุ่มลูกค้า" })[0]!));
     const body = contract.PATCH.mock.calls[0]![1].body;
@@ -139,9 +137,19 @@ describe("PromotionAudience", () => {
 });
 
 describe("PromotionBundle", () => {
-  it("locks the stack group to bundle and saves only when the items are complete", async () => {
+  it("locks the stack group to bundle and saves the settings before the items (publish asks for them)", async () => {
     renderTh(<PromotionBundle item={promotion} editable />);
     expect(screen.getByDisplayValue("bundle")).toBeDisabled();
+    expect(screen.getAllByText(/เผยแพร่ได้เมื่อชุดมีสินค้าครบ/).length).toBeGreaterThan(0);
+    await act(async () => fireEvent.click(screen.getAllByRole("button", { name: "บันทึกชุดสินค้า" })[0]!));
+    const body = contract.PATCH.mock.calls[0]![1].body;
+    expect(body.stackGroup).toBe("bundle");
+    expect(body.display).toEqual({ bundle: null });
+  });
+
+  it("saves listed items only once they are complete", () => {
+    renderTh(<PromotionBundle item={promotion} editable />);
+    fireEvent.change(screen.getAllByLabelText("จำนวน")[0]!, { target: { value: "500" } });
     for (const save of screen.getAllByRole("button", { name: "บันทึกชุดสินค้า" })) expect(save).toBeDisabled();
   });
 });

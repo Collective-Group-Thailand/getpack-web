@@ -25,10 +25,4 @@ describe("AgentLinksTable", () => {
     expect(row).toHaveTextContent("38,400.00");
     expect(row).toHaveTextContent("1,920.00");
   });
-
-  it("shows dashes for the P2 columns before the API sends them", () => {
-    renderTh(<AgentLinksTable rows={[{ agentCode: "AGT0001", visitors: 4, visits: 5 }]} />);
-    const row = within(screen.getAllByRole("table")[0]!).getByText("AGT0001").closest("tr")!;
-    expect(within(row).getAllByText("—").length).toBe(6);
-  });
 });

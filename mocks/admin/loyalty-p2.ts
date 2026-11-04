@@ -1,18 +1,44 @@
 /**
  * Loyalty P2 (API-CHANGES-P2, Admin): loyalty analytics, campaigns, the audience estimate, agent performance, survey
- * templates and results, and showcase consents. Every handler is a contract request (`mockRequest`), validated against
- * `src/lib/api/requests/admin-loyalty-p2.ts`. All figures are fake and only consistent with themselves (the opening
+ * templates and results, and showcase consents, in the generated shapes (getpack-api `feat/loyalty-p2-lifecycle`, pinned
+ * in `contract.lock.json`). All figures are fake and only consistent with themselves (the opening
  * and closing balances chain; the liability is the API sample's).
  */
 
-import { HttpResponse } from "msw";
+import { http, HttpResponse } from "msw";
 
-import type { LoyaltyAnalytics, SurveyResults, SurveyTemplate } from "@/lib/api/requests/admin-loyalty-p2";
+import type { LoyaltyAnalytics, SurveyResults, SurveyTemplate } from "@/features/shared/loyalty-p2/types";
+import type { Schemas } from "@/lib/api/types";
 
-import { mockRequest } from "../route";
-import { bangkokIso, mockId, problem } from "../support";
+import { bangkokIso, mockId, principalOf, problem, type Principal } from "../support";
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
+const page = <T>(data: T[]) => ({ data, meta: { page: 1, perPage: 25, total: data.length } });
+
+/** A staff handler: 401 without a token, 403 for another zone's; a plain value answers 200 as JSON. */
+function staff(
+  method: "get" | "post" | "patch",
+  path: string,
+  resolve: (context: {
+    request: Request;
+    params: Record<string, string>;
+    principal: Principal;
+    query: URLSearchParams;
+  }) => unknown,
+) {
+  return http[method](`*${path}`, async ({ request, params }) => {
+    const principal = principalOf(request);
+    if (!principal) return unauthenticated();
+    if (principal.audience !== "staff") return problem(403, "auth.wrong_audience", "โทเคนนี้ใช้กับส่วนนี้ไม่ได้");
+    const result = await resolve({
+      request,
+      params: params as Record<string, string>,
+      principal,
+      query: new URL(request.url).searchParams,
+    });
+    return result instanceof Response ? result : HttpResponse.json(result as never);
+  });
+}
 
 /** Earned by source, redeemed, returned, reversed, expired — per month, oldest first (the prototype's figures). */
 const MONTHS: [number, number, number, number, number, number, number, number][] = [
@@ -115,7 +141,7 @@ export function loyaltyAnalyticsOf(from: string, to: string): LoyaltyAnalytics {
         { programme: "winback", sent: 88, converted: 9, ratePct: "10.23", windowDays: 30 },
         { programme: "quote_recovery", sent: 64, converted: 11, ratePct: "17.19", windowDays: 14 },
         // k-anonymity: too few customers this period, so the API withholds the rate.
-        { programme: "survey", sent: 8, converted: null, ratePct: null, windowDays: 30 },
+        { programme: "survey", sent: 8, converted: 2, ratePct: null, windowDays: 30 },
       ],
     },
     currency: "THB",
@@ -172,8 +198,11 @@ const templates: SurveyTemplate[] = [
       },
     ],
     responseRatePct: "45.71",
-    responses: 96,
-    updatedAt: bangkokIso(-30 * 24 * 60),
+    completed: 96,
+    opened: 210,
+    createdAt: bangkokIso(-40 * 24 * 60),
+    publishedAt: bangkokIso(-30 * 24 * 60),
+    retiredAt: null,
   },
   {
     id: mockId("svt", 2),
@@ -209,18 +238,21 @@ const templates: SurveyTemplate[] = [
       },
     ],
     responseRatePct: null,
-    responses: 0,
-    updatedAt: bangkokIso(-2 * 24 * 60),
+    completed: 0,
+    opened: 0,
+    createdAt: bangkokIso(-2 * 24 * 60),
+    publishedAt: null,
+    retiredAt: null,
   },
 ];
 
 function resultsOf(template: SurveyTemplate): SurveyResults {
-  const few = template.responses < 10;
+  const few = template.completed < 10;
   return {
     templateId: template.id,
-    completed: template.responses,
-    opened: template.responses ? 210 : 0,
-    completionPct: template.responseRatePct,
+    responses: template.completed,
+    opened: template.opened,
+    completionRatePct: template.responseRatePct,
     countsOnly: few,
     questions: template.questions.map((question) => {
       const label = question.label.th;
@@ -229,8 +261,10 @@ function resultsOf(template: SurveyTemplate): SurveyResults {
           key: question.key,
           kind: question.kind,
           label,
-          answered: template.responses,
+          answered: template.completed,
           average: few ? null : "4.31",
+          counts: [],
+          texts: [],
         };
       if (question.kind === "text")
         return {
@@ -238,6 +272,8 @@ function resultsOf(template: SurveyTemplate): SurveyResults {
           kind: question.kind,
           label,
           answered: few ? 0 : 31,
+          average: null,
+          counts: [],
           texts: few
             ? []
             : [
@@ -250,8 +286,10 @@ function resultsOf(template: SurveyTemplate): SurveyResults {
         key: question.key,
         kind: question.kind,
         label,
-        answered: template.responses,
-        options: (question.options ?? []).map((option, at) => ({
+        answered: template.completed,
+        average: null,
+        texts: [],
+        counts: (question.options ?? []).map((option, at) => ({
           key: option.key,
           label: option.label.th,
           count: counts[at] ?? 0,
@@ -262,42 +300,42 @@ function resultsOf(template: SurveyTemplate): SurveyResults {
 }
 
 export const loyaltyP2AdminHandlers = [
-  // CONTRACT-REQUEST admin.loyalty.analytics
-  mockRequest("GET /v1/admin/loyalty/analytics", ({ principal, query }) => {
-    if (!principal) return unauthenticated();
+  // admin.loyaltyAnalytics.get (loyalty.read: also Finance, D-496)
+  staff("get", "/v1/admin/loyalty/analytics", ({ query: search }) => {
+    const query = { from: search.get("from") ?? "", to: search.get("to") ?? "" };
+    if (!/^\d{4}-\d{2}$/.test(query.from) || !/^\d{4}-\d{2}$/.test(query.to))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "from", code: "format", message: "YYYY-MM" },
+      ]);
     if (monthsBetween(query.from, query.to) < 0 || monthsBetween(query.from, query.to) > 23)
       return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
         { path: "to", code: "range", message: "ช่วงเดือนต้องไม่เกิน 24 เดือน" },
       ]);
     return loyaltyAnalyticsOf(query.from, query.to);
   }),
-  // CONTRACT-REQUEST admin.loyalty.campaigns
-  mockRequest("GET /v1/admin/loyalty/campaigns", ({ principal }) => {
-    if (!principal) return unauthenticated();
-    return {
-      data: [
-        {
-          id: mockId("lcp", 1),
-          kind: "reorder_bonus" as const,
-          status: "active" as const,
-          multiplier: "1.50",
-          customer: { id: mockId("cus", 1), displayName: "คุณสมชาย" },
-          productTypeCode: "corrugated",
-          startsAt: bangkokIso(-24 * 60),
-          endsAt: bangkokIso(6 * 24 * 60),
-          convertedOrderCode: null,
-          reason: "reorder_reminder",
-        },
-      ],
-      meta: { page: 1, perPage: 20, total: 1 },
-    };
-  }),
-  // CONTRACT-REQUEST admin.promotions.audience: a fake count from how narrow the audience is; null under 10
-  mockRequest("GET /v1/admin/promotions/{promotionId}/audience-estimate", ({ principal, query }) => {
-    if (!principal) return unauthenticated();
+  // admin.loyaltyCampaigns.list
+  staff("get", "/v1/admin/loyalty/campaigns", () =>
+    page<Schemas["AdminLoyaltyCampaignDto"]>([
+      {
+        id: mockId("lcp", 1),
+        kind: "reorder_bonus" as const,
+        status: "active" as const,
+        multiplier: "1.50",
+        customer: { id: mockId("cus", 1), displayName: "คุณสมชาย" },
+        productTypeCode: "corrugated",
+        startsAt: bangkokIso(-24 * 60),
+        endsAt: bangkokIso(6 * 24 * 60),
+        convertedOrderCode: null,
+        reason: "reorder_reminder",
+      },
+    ]),
+  ),
+  // admin.promotions.estimateAudience: a fake count from how narrow the audience is; rounded to tens, null under 10
+  staff("get", "/v1/admin/promotions/:promotionId/audience-estimate", ({ query }) => {
     let audience: Record<string, unknown> = {};
     try {
-      audience = query.audience ? (JSON.parse(query.audience) as Record<string, unknown>) : {};
+      const raw = query.get("audience");
+      audience = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
     } catch {
       return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
         { path: "audience", code: "json", message: "audience must be JSON" },
@@ -313,105 +351,112 @@ export const loyaltyP2AdminHandlers = [
       customers = Math.round(customers * (60 / audience.inactiveDaysGte) * 0.4);
     if (Array.isArray(audience.orderedProductTypeCodes) && audience.orderedProductTypeCodes.length)
       customers = Math.round((customers * audience.orderedProductTypeCodes.length) / 2.2);
-    const rounded = customers >= 100 ? Math.round(customers / 10) * 10 : customers;
-    return { customers: rounded < 10 ? null : rounded, rounded: true };
+    const rounded = Math.round(customers / 10) * 10;
+    return { customers: customers < 10 ? null : rounded, rounded: true } satisfies Schemas["AudienceEstimateDto"];
   }),
-  // CONTRACT-REQUEST admin.promotions.agent-performance
-  mockRequest("GET /v1/admin/promotions/agent-performance", ({ principal }) => {
-    if (!principal) return unauthenticated();
-    return {
-      data: AGENT_ROWS.map((row) => ({
+  // admin.promotions.agentPerformance
+  staff("get", "/v1/admin/promotions/agent-performance", () =>
+    page<Schemas["AgentPerformanceDto"]>(
+      AGENT_ROWS.map((row) => ({
         ...row,
         promotionId: mockId("prm", 1),
         promotionName: "กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%",
       })),
-      meta: { page: 1, perPage: 20, total: AGENT_ROWS.length },
-    };
-  }),
-  // CONTRACT-REQUEST admin.surveys
-  mockRequest("GET /v1/admin/surveys/templates", ({ principal }) =>
-    principal ? { items: templates } : unauthenticated(),
+    ),
   ),
-  // CONTRACT-REQUEST admin.surveys
-  mockRequest("POST /v1/admin/surveys/templates", ({ principal, body }) => {
-    if (!principal) return unauthenticated();
+  // admin.surveys.listTemplates
+  staff("get", "/v1/admin/surveys/templates", () => page(templates)),
+  // admin.surveys.createTemplate: a code another template has is a field error (`code` · `taken`)
+  staff("post", "/v1/admin/surveys/templates", async ({ request }) => {
+    const body = (await request.json()) as Schemas["CreateSurveyTemplateDto"];
+    if (templates.some((row) => row.code === body.code))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "code", code: "taken", message: "a template has this code; add a new version of it" },
+      ]);
     const created: SurveyTemplate = {
       ...body,
+      rewardEnabled: body.rewardEnabled ?? true,
       id: mockId("svt", templates.length + 1),
       version: 1,
       status: "draft",
       responseRatePct: null,
-      responses: 0,
-      updatedAt: bangkokIso(),
+      completed: 0,
+      opened: 0,
+      createdAt: bangkokIso(),
+      publishedAt: null,
+      retiredAt: null,
     };
     templates.push(created);
     return HttpResponse.json(created, { status: 201 });
   }),
-  // CONTRACT-REQUEST admin.surveys
-  mockRequest("GET /v1/admin/surveys/templates/{templateId}", ({ principal, params }) => {
-    if (!principal) return unauthenticated();
-    return templates.find((row) => row.id === params.templateId) ?? problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
+  // admin.surveys.getTemplate (with its ETag for the edit)
+  staff("get", "/v1/admin/surveys/templates/:templateId", ({ params }) => {
+    const row = templates.find((entry) => entry.id === params.templateId);
+    return row
+      ? HttpResponse.json(row, { headers: { ETag: `"svt-${row.id}-${row.version}"` } })
+      : problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
   }),
-  // CONTRACT-REQUEST admin.surveys: drafts only
-  mockRequest("PATCH /v1/admin/surveys/templates/{templateId}", ({ principal, params, body }) => {
-    if (!principal) return unauthenticated();
+  // admin.surveys.updateTemplate: drafts only
+  staff("patch", "/v1/admin/surveys/templates/:templateId", async ({ request, params }) => {
+    const body = (await request.json()) as Schemas["UpdateSurveyTemplateDto"];
     const at = templates.findIndex((row) => row.id === params.templateId);
     if (at === -1) return problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
     if (templates[at]!.status !== "draft")
       return problem(409, "surveys.template_published", "แบบสอบถามที่เผยแพร่แล้วแก้ไขไม่ได้ ให้สร้างฉบับใหม่");
-    templates[at] = { ...templates[at]!, ...body, updatedAt: bangkokIso() };
+    templates[at] = { ...templates[at]!, ...body };
     return templates[at]!;
   }),
-  // CONTRACT-REQUEST admin.surveys: publish | retire | new-version; one published per trigger
-  mockRequest("POST /v1/admin/surveys/templates/{templateId}/actions/{action}", ({ principal, params }) => {
-    if (!principal) return unauthenticated();
+  // admin.surveys.templateAction: publish | retire | new-version; one published per trigger
+  staff("post", "/v1/admin/surveys/templates/:templateId/actions/:action", ({ params }) => {
     const row = templates.find((entry) => entry.id === params.templateId);
     if (!row) return problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
     if (params.action === "publish") {
       if (templates.some((entry) => entry.trigger === row.trigger && entry.status === "published" && entry !== row))
         return problem(409, "surveys.trigger_taken", "มีแบบสอบถามที่เผยแพร่สำหรับจังหวะนี้อยู่แล้ว");
       row.status = "published";
-    } else if (params.action === "retire") row.status = "retired";
-    else if (params.action === "new-version") {
+      row.publishedAt = bangkokIso();
+    } else if (params.action === "retire") {
+      row.status = "retired";
+      row.retiredAt = bangkokIso();
+    } else if (params.action === "new-version") {
       const next: SurveyTemplate = {
         ...row,
         id: mockId("svt", templates.length + 1),
         version: row.version + 1,
         status: "draft",
-        responses: 0,
+        completed: 0,
+        opened: 0,
         responseRatePct: null,
+        createdAt: bangkokIso(),
+        publishedAt: null,
+        retiredAt: null,
       };
       templates.push(next);
       return next;
     } else return problem(404, "http.not_found", "ไม่พบการดำเนินการนี้");
-    row.updatedAt = bangkokIso();
     return row;
   }),
-  // CONTRACT-REQUEST admin.surveys
-  mockRequest("GET /v1/admin/surveys/templates/{templateId}/results", ({ principal, params }) => {
-    if (!principal) return unauthenticated();
+  // admin.surveys.results
+  staff("get", "/v1/admin/surveys/templates/:templateId/results", ({ params }) => {
     const row = templates.find((entry) => entry.id === params.templateId);
     return row ? resultsOf(row) : problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
   }),
-  // CONTRACT-REQUEST admin.showcase-consents
-  mockRequest("GET /v1/admin/showcase-consents", ({ principal }) => {
-    if (!principal) return unauthenticated();
-    return {
-      data: [
-        {
-          id: mockId("shc", 1),
-          customer: { id: mockId("cus", 2), displayName: "คุณปรียา" },
-          companyName: "บริษัท ตัวอย่าง จำกัด",
-          scope: ["brand_name", "packaging_photos"],
-          status: "approved" as const,
-          consentTextVersion: "2026-11-v1",
-          decidedAt: bangkokIso(-3 * 24 * 60),
-          withdrawnAt: null,
-        },
-      ],
-      meta: { page: 1, perPage: 20, total: 1 },
-    };
-  }),
+  // admin.showcaseConsents.list (a withdrawn one is `doNotUse`)
+  staff("get", "/v1/admin/showcase-consents", () =>
+    page<Schemas["AdminShowcaseConsentDto"]>([
+      {
+        id: mockId("shc", 1),
+        customer: { id: mockId("cus", 2), displayName: "คุณปรียา" },
+        companyName: "บริษัท ตัวอย่าง จำกัด",
+        scope: ["brand_name", "packaging_photos"],
+        status: "approved" as const,
+        consentTextVersion: "2026-11-v1",
+        decidedAt: bangkokIso(-3 * 24 * 60),
+        withdrawnAt: null,
+        doNotUse: false,
+      },
+    ]),
+  ),
 ];
 
 /** The report's share-link rows (`refAgents[]` with the P2 performance fields). */

@@ -12,7 +12,7 @@
  */
 
 import type { Schemas } from "@/lib/api/types";
-import type { PointsLiabilityMemo } from "@/lib/api/requests/admin-loyalty-p2";
+import type { PointsLiabilityMemo } from "@/features/shared/loyalty-p2/types";
 
 import { PERSONAS } from "../../personas";
 import { bangkokIso, mockId, problem } from "../../support";
@@ -544,6 +544,8 @@ export function profitAndLoss(
       expenses: total("expenses"),
       netProfit: total("netProfit"),
     },
+    // Loyalty P2: the points-liability memo for the month `to`, outside `lines` and `totals`.
+    ...pointsLiabilityOf(to),
   };
 }
 
@@ -1312,7 +1314,6 @@ export const closeHandlers = [
             String(query.to),
             (query.dimension ?? "none") as Schemas["ProfitAndLossDimension"],
           ),
-          ...pointsLiabilityOf(String(query.to)),
         }
       : invalid([{ path: "from", code: "range", message: "YYYY-MM ถึง YYYY-MM" }]),
   ),
@@ -1384,7 +1385,7 @@ export const closeHandlers = [
 ];
 
 /**
- * Loyalty P2 (CONTRACT-REQUEST admin.loyalty.p2-fields): the executive P&L's points-liability memo for the month `to`
+ * Loyalty P2 (`ProfitAndLossDto.pointsLiability`): the executive P&L's points-liability memo for the month `to`
  * — a memo block that never changes `lines` or `totals`. The figures are the analytics mock's.
  */
 function pointsLiabilityOf(to: string): { pointsLiability: PointsLiabilityMemo } {

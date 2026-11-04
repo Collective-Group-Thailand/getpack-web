@@ -6,21 +6,13 @@
  * (`account.points.tasks.<code>.*`, `./earn-tasks.ts`).
  */
 
-import type { P2TaskCode } from "@/lib/api/requests/store-loyalty-p2";
 import type { Schemas } from "@/lib/api/types";
 
-/**
- * Loyalty P2 adds `data_refresh`, `showcase_consent` and `first_sample`, and `nextDueAt` on each task
- * (CONTRACT-REQUEST store.loyalty.p2-fields). Widened here until the release is adopted; then these become the
- * generated types again.
- */
-export type LoyaltyTaskCode = Schemas["LoyaltyTaskCode"] | P2TaskCode;
-export type LoyaltyTask = Omit<Schemas["EarnTaskDto"], "code"> & {
-  code: LoyaltyTaskCode;
-  /** Only for a done `data_refresh`: when the next confirmation is due. */
-  nextDueAt?: string | null;
-};
-export type LoyaltyTasks = Omit<Schemas["EarnTasksDto"], "tasks"> & { tasks: LoyaltyTask[] };
+/** Loyalty P2's codes (`data_refresh`, `showcase_consent`, `first_sample`) are in the contract's enum. */
+export type LoyaltyTaskCode = Schemas["LoyaltyTaskCode"];
+/** `nextDueAt` is set only for a done `data_refresh`: when the next confirmation is due. */
+export type LoyaltyTask = Schemas["EarnTaskDto"];
+export type LoyaltyTasks = Schemas["EarnTasksDto"];
 export type PackagingProfile = Schemas["PackagingProfileDto"];
 export type PackagingProfileInput = Schemas["PutPackagingProfileDto"];
 

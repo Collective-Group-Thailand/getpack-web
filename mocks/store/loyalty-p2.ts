@@ -1,7 +1,7 @@
 /**
  * Loyalty P2 (API-CHANGES-P2): surveys, the reorder campaign, data refresh, showcase consent, review photos and the
- * bundle add — kept in memory per persona. Every handler is a contract request (`mockRequest`), so its answer is
- * validated against `src/lib/api/requests/store-loyalty-p2.ts`.
+ * bundle add — kept in memory per persona, in the generated shapes (getpack-api `feat/loyalty-p2-lifecycle`, pinned in
+ * `contract.lock.json`). Rewards are written synchronously with the confirmation / answers (API-CHANGES-P2 deviation 1).
  *
  * The fixture is the review case: one open post-delivery survey (8 points), one active ×1.5 reorder campaign on the
  * corrugated box (until a fixed date, D-481), data refresh due, no showcase consent yet. A newcomer has none of it.
@@ -9,16 +9,15 @@
 
 import { http, HttpResponse } from "msw";
 
-import type { Schemas } from "@/lib/api/types";
 import type {
   DataRefresh,
   LoyaltyCampaign,
   ShowcaseConsent,
   SurveyAnswers,
   SurveyInstance,
-} from "@/lib/api/requests/store-loyalty-p2";
+} from "@/features/shared/loyalty-p2/types";
+import type { Schemas } from "@/lib/api/types";
 
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, problem } from "../support";
 import { addToCart, toCartDto } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
@@ -81,11 +80,11 @@ interface State {
   survey: SurveyInstance["status"];
   dataConfirmedAt: string | null;
   showcase: ShowcaseConsent;
-  /** My reviews by order id, with the P2 `photos[]` the published `ReviewDto` does not carry yet. */
+  /** My reviews by order id, with their photos. */
   reviews: Map<string, MockReview>;
 }
 
-type MockReview = Schemas["ReviewDto"] & { photos: { id: string; url: string }[]; photoRewardPoints: number };
+type MockReview = Schemas["ReviewDto"];
 
 const states = new Map<string, State>();
 function stateOf(customer: MockCustomer): State {
@@ -96,7 +95,7 @@ function stateOf(customer: MockCustomer): State {
       showcase: {
         status: "none",
         scope: [],
-        consentTextVersion: null,
+        consentTextVersion: SHOWCASE_TEXT_VERSION,
         requestedAt: null,
         decidedAt: null,
         rewardPoints: 40,
@@ -182,40 +181,42 @@ function answerErrors(survey: SurveyInstance, answers: SurveyAnswers) {
 }
 
 export const loyaltyP2Handlers = [
-  // CONTRACT-REQUEST store.surveys
-  mockRequest("GET /v1/store/surveys/next", ({ request }) => {
+  // store.surveys
+  http.get("*/v1/store/surveys/next", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    return { survey: stateOf(customer).survey === "open" ? surveyOf(customer, langOf(request)) : null };
+    return HttpResponse.json<Schemas["SurveyEnvelopeDto"]>({
+      survey: stateOf(customer).survey === "open" ? surveyOf(customer, langOf(request)) : null,
+    });
   }),
-  // CONTRACT-REQUEST store.surveys
-  mockRequest("GET /v1/store/surveys/{surveyId}", ({ request, params }) => {
+  // store.surveys
+  http.get("*/v1/store/surveys/:surveyId", ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     if (params.surveyId !== SURVEY_ID || stateOf(customer).survey === "expired")
       return problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
-    return { survey: surveyOf(customer, langOf(request)) };
+    return HttpResponse.json<Schemas["SurveyEnvelopeDto"]>({ survey: surveyOf(customer, langOf(request)) });
   }),
-  // CONTRACT-REQUEST store.surveys
-  mockRequest("POST /v1/store/surveys/{surveyId}/actions/seen", ({ request, params }) => {
+  // store.surveys
+  http.post("*/v1/store/surveys/:surveyId/actions/seen", ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     if (params.surveyId !== SURVEY_ID) return problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
     const state = stateOf(customer);
     if (state.survey === "open") state.survey = "seen";
-    return new HttpResponse(null, { status: 204 });
+    return HttpResponse.json<Schemas["SurveyEnvelopeDto"]>({ survey: surveyOf(customer, langOf(request)) });
   }),
-  // CONTRACT-REQUEST store.surveys
-  mockRequest("POST /v1/store/surveys/{surveyId}/actions/dismiss", ({ request, params }) => {
+  // store.surveys
+  http.post("*/v1/store/surveys/:surveyId/actions/dismiss", ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     if (params.surveyId !== SURVEY_ID) return problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
     const state = stateOf(customer);
     if (state.survey === "open" || state.survey === "seen") state.survey = "dismissed";
-    return new HttpResponse(null, { status: 204 });
+    return HttpResponse.json<Schemas["SurveyEnvelopeDto"]>({ survey: surveyOf(customer, langOf(request)) });
   }),
-  // CONTRACT-REQUEST store.surveys: earn_survey once per instance
-  mockRequest("POST /v1/store/surveys/{surveyId}/responses", ({ request, params, body }) => {
+  // store.surveys.submit: earn_survey written with the answers, once per instance
+  http.post("*/v1/store/surveys/:surveyId/responses", async ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     if (params.surveyId !== SURVEY_ID) return problem(404, "http.not_found", "ไม่พบแบบสอบถามนี้");
@@ -223,44 +224,52 @@ export const loyaltyP2Handlers = [
     if (state.survey !== "open" && state.survey !== "seen")
       return problem(409, "surveys.not_open", "แบบสอบถามนี้ปิดแล้ว");
     const survey = surveyOf(customer, langOf(request));
-    const errors = answerErrors(survey, body.answers);
+    const body = (await request.json()) as Schemas["SubmitSurveyDto"];
+    const errors = answerErrors(survey, body.answers as SurveyAnswers);
     if (errors.length) return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", errors);
     state.survey = "completed";
     customer.points += survey.rewardPoints;
-    return HttpResponse.json({ status: "completed" as const, rewardPoints: survey.rewardPoints }, { status: 201 });
+    return HttpResponse.json<Schemas["SurveySubmittedDto"]>(
+      { status: "completed", rewardPoints: survey.rewardPoints },
+      { status: 201 },
+    );
   }),
 
-  // CONTRACT-REQUEST store.loyalty.campaigns
-  mockRequest("GET /v1/store/loyalty/campaigns", ({ request }) => {
+  // store.loyalty.campaigns
+  http.get("*/v1/store/loyalty/campaigns", ({ request }) => {
     const customer = customerOf(request);
-    return customer ? { items: campaignsOf(customer, langOf(request)) } : unauthenticated();
+    return customer
+      ? HttpResponse.json<Schemas["LoyaltyCampaignListDto"]>({ items: campaignsOf(customer, langOf(request)) })
+      : unauthenticated();
   }),
 
-  // CONTRACT-REQUEST store.loyalty.data-refresh
-  mockRequest("GET /v1/store/loyalty/data-refresh", ({ request }) => {
+  // store.loyalty.getDataRefresh
+  http.get("*/v1/store/loyalty/data-refresh", ({ request }) => {
     const customer = customerOf(request);
-    return customer ? dataRefreshOf(customer) : unauthenticated();
+    return customer ? HttpResponse.json(dataRefreshOf(customer)) : unauthenticated();
   }),
-  // CONTRACT-REQUEST store.loyalty.data-refresh: confirming early stamps the date but earns nothing
-  mockRequest("POST /v1/store/loyalty/data-refresh/actions/confirm", ({ request }) => {
+  // store.loyalty.confirmDataRefresh: the reward is written with the stamp; confirming early earns nothing
+  http.post("*/v1/store/loyalty/data-refresh/actions/confirm", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const state = stateOf(customer);
     if (state.dataConfirmedAt === null) customer.points += 12;
     state.dataConfirmedAt = bangkokIso();
-    return dataRefreshOf(customer);
+    return HttpResponse.json(dataRefreshOf(customer));
   }),
 
-  // CONTRACT-REQUEST store.loyalty.showcase-consent
-  mockRequest("GET /v1/store/loyalty/showcase-consent", ({ request }) => {
+  // store.loyalty.getShowcaseConsent
+  http.get("*/v1/store/loyalty/showcase-consent", ({ request }) => {
     const customer = customerOf(request);
-    return customer ? stateOf(customer).showcase : unauthenticated();
+    return customer ? HttpResponse.json(stateOf(customer).showcase) : unauthenticated();
   }),
-  // CONTRACT-REQUEST store.loyalty.showcase-consent: grant → requested (Marketing approves); withdraw → withdrawn
-  mockRequest("PUT /v1/store/loyalty/showcase-consent", ({ request, body }) => {
+  // store.loyalty.updateShowcaseConsent: grant → requested (Marketing approves); withdraw → withdrawn. A grant over an
+  // approved consent withdraws it and opens a new review (API-CHANGES-P2 deviation 6); the reward is paid once.
+  http.put("*/v1/store/loyalty/showcase-consent", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const state = stateOf(customer);
+    const body = (await request.json()) as Schemas["PutShowcaseConsentDto"];
     if (body.granted) {
       if (state.showcase.status === "requested")
         return problem(409, "showcase.consent_pending", "คำขอก่อนหน้ายังรอการตรวจสอบ");
@@ -269,19 +278,19 @@ export const loyaltyP2Handlers = [
       state.showcase = {
         ...state.showcase,
         status: "requested",
-        scope: body.scope,
-        consentTextVersion: body.consentTextVersion,
+        scope: body.scope ?? [],
+        consentTextVersion: body.consentTextVersion ?? SHOWCASE_TEXT_VERSION,
         requestedAt: bangkokIso(),
         decidedAt: null,
       };
     } else {
       state.showcase = { ...state.showcase, status: "withdrawn", decidedAt: state.showcase.decidedAt };
     }
-    return state.showcase;
+    return HttpResponse.json(state.showcase);
   }),
 
-  // store.reviews.get / submit are published; these keep the review per order so the order page's form, its
-  // "รีวิวของคุณ" state and the P2 photos agree (the generated handler answers one fixed review for every order).
+  // store.reviews.get / submit / addPhotos keep the review per order so the order page's form, its "รีวิวของคุณ"
+  // state and the photos agree (the generated handler answers one fixed review for every order).
   http.get("*/v1/store/orders/:orderId/review", ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
@@ -295,6 +304,8 @@ export const loyaltyP2Handlers = [
     const orderId = String(params.orderId);
     if (state.reviews.has(orderId)) return problem(409, "reviews.exists", "รีวิวแล้ว");
     const body = (await request.json()) as Schemas["SubmitReviewDto"];
+    const photoFileIds = body.photoFileIds ?? [];
+    if (photoFileIds.length > 4) return problem(422, "reviews.photo_limit", "แนบรูปได้สูงสุด 4 รูป");
     const review: MockReview = {
       id: mockId("rvw", state.reviews.size + 1),
       orderId,
@@ -304,21 +315,22 @@ export const loyaltyP2Handlers = [
       comment: body.comment ?? null,
       status: "pending",
       reply: null,
-      // D-490: ฿25 at the seeded point value (2.50) = 10 points.
-      rewardPoints: 10,
+      // D-490: ฿25 at the seeded point value (2.50) = 10 points, and 10 more with the first photos.
+      rewardPoints: photoFileIds.length ? 20 : 10,
       createdAt: bangkokIso(),
-      photos: [],
-      photoRewardPoints: 0,
+      photos: photoFileIds.map((id) => ({ id, url: `/v1/store/catalog/images/${id}` })),
+      photoRewardPoints: photoFileIds.length ? 10 : 0,
     };
     state.reviews.set(orderId, review);
     return HttpResponse.json(review, { status: 201 });
   }),
 
-  // CONTRACT-REQUEST store.reviews.add-photos
-  mockRequest("POST /v1/store/orders/{orderId}/review/photos", ({ request, params, body }) => {
+  // store.reviews.addPhotos answers the whole review (every photo on it)
+  http.post("*/v1/store/orders/:orderId/review/photos", async ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const review = stateOf(customer).reviews.get(params.orderId);
+    const review = stateOf(customer).reviews.get(String(params.orderId));
+    const body = (await request.json()) as Schemas["AddReviewPhotosDto"];
     if (!review) return problem(404, "http.not_found", "ยังไม่มีรีวิว");
     if (review.photos.length + body.photoFileIds.length > 4)
       return problem(422, "reviews.photo_limit", "แนบรูปได้สูงสุด 4 รูป");
@@ -331,9 +343,10 @@ export const loyaltyP2Handlers = [
     return HttpResponse.json(review, { status: 201 });
   }),
 
-  // CONTRACT-REQUEST store.promotions.add-bundle: the mock adds the customer's saved quotations (one per item, up to
-  // the bundle's size) — it has no preset pricing of its own; the cart and its ETag are the real mock's.
-  mockRequest("POST /v1/store/promotions/{promotionId}/actions/add-bundle", ({ request, params }) => {
+  // store.promotions.addBundle: the API saves the quotations, then adds every item in one transaction (all or none,
+  // API-CHANGES-P2 deviation 4). The mock adds the customer's saved quotations (one per item, up to the bundle's
+  // size) — it has no preset pricing of its own; the cart and its ETag are the real mock's.
+  http.post("*/v1/store/promotions/:promotionId/actions/add-bundle", ({ request, params }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     if (params.promotionId !== mockId("deal", 20))

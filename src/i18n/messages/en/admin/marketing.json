@@ -522,12 +522,13 @@
       "addItem": "Add item",
       "removeItem": "Remove item {no}",
       "checks": {
-        "title": "Before saving",
+        "title": "Before publishing",
         "count": "2–4 items",
         "types": "At least as many product types as the cart minimum",
         "rows": "Every item has a type, a spec and a quantity"
       },
       "pricingNote": "Before publishing, the system checks every item prices today; an item that does not is flagged on its row",
+      "itemsLaterNote": "You can save the bundle settings before adding items; the deal publishes once it has 2–4 items",
       "save": "Save bundle",
       "saved": "Bundle saved",
       "removed": "No longer a bundle deal",
@@ -936,6 +937,7 @@
       "addOption": "Add option",
       "errors": {
         "code": "Lower-case letters, digits and _ only",
+        "codeTaken": "A template already has this code. Use another code, or add a new version of that template.",
         "title": "Enter a title",
         "label": "Enter the question in both languages",
         "optionLabel": "Fill in every option in both languages",
