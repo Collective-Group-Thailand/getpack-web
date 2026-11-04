@@ -11,7 +11,9 @@ import {
   getStoreCredit,
 } from "@/features/customer/account/api.server";
 import { EarnBanner } from "@/features/customer/account/EarnBanner";
+import { WinbackBanner } from "@/features/customer/loyalty/WinbackBanner";
 import { getNextSurvey } from "@/features/customer/surveys/api.server";
+import { loyaltySummaryP2Of } from "@/features/shared/loyalty-p2/read";
 import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { TierProgress } from "@/features/customer/account/TierProgress";
@@ -138,6 +140,9 @@ export default async function Page() {
 
       {/* Loyalty P1: one line to the earn checklist; hidden when nothing is left to earn. */}
       <EarnBanner tasks={tasks} />
+
+      {/* Loyalty P2: bonus points waiting (win-back), in neutral words (D-493). */}
+      {points ? <WinbackBanner lots={loyaltySummaryP2Of(points).bonusLots} /> : null}
 
       <Section id="account-latest" title={t("latest")} more={{ href: "/account/orders", label: t("allOrders") }}>
         {latestOrders.length === 0 ? (

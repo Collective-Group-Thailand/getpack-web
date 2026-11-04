@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { listCampaigns } from "@/features/customer/loyalty/api.server";
+import { ReorderBonusBadge } from "@/features/customer/loyalty/ReorderBonusBadge";
 import { getNextSurvey } from "@/features/customer/surveys/api.server";
 import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { StageTracker } from "@/features/customer/orders/list/StageTracker";
@@ -131,25 +133,30 @@ export default async function Page({
 }) {
   await requireCustomer();
   const [{ orderId }, query] = await Promise.all([params, searchParams]);
-  const [t, tList, tCatalog, tShipping, format, locale, detail, design, samples, survey] = await Promise.all([
-    getTranslations("myOrders"),
-    getTranslations("myOrders.list"),
-    getTranslations("catalog"),
-    getTranslations("common.shipping"),
-    getFormat(),
-    getLocale(),
-    getMyOrder(orderId),
-    // A link to the studio design is a convenience: the order page never fails over it.
-    findLockedDesignOf(orderId).catch(() => null),
-    // The order's sample, if it has one (U2.F3): production waits for its approval (D-256).
-    listMySamples()
-      .then((list) => list.filter((sample) => sample.orderId === orderId))
-      .catch(() => []),
-    // Loyalty P2: the post-delivery survey of this order, when it is the one open now (a convenience read).
-    getNextSurvey(),
-  ]);
+  const [t, tList, tCatalog, tShipping, format, locale, detail, design, samples, survey, campaigns] = await Promise.all(
+    [
+      getTranslations("myOrders"),
+      getTranslations("myOrders.list"),
+      getTranslations("catalog"),
+      getTranslations("common.shipping"),
+      getFormat(),
+      getLocale(),
+      getMyOrder(orderId),
+      // A link to the studio design is a convenience: the order page never fails over it.
+      findLockedDesignOf(orderId).catch(() => null),
+      // The order's sample, if it has one (U2.F3): production waits for its approval (D-256).
+      listMySamples()
+        .then((list) => list.filter((sample) => sample.orderId === orderId))
+        .catch(() => []),
+      // Loyalty P2: the post-delivery survey of this order, when it is the one open now (a convenience read).
+      getNextSurvey(),
+      // Loyalty P2: an open ×1.5 reorder campaign on this order (D-492), shown beside "สั่งซ้ำ".
+      listCampaigns(),
+    ],
+  );
   if (!detail) notFound();
   const { order, group, instalments } = detail;
+  const reorderBonus = campaigns.find((campaign) => campaign.reorderOfOrderId === order.id) ?? null;
   const name = productNameOf(locale, order.summary);
   const unit = tCatalog(`stock.units.${order.summary.unit}`);
   const payableOf = (instalment: (typeof instalments)[number]) => ({
@@ -315,6 +322,9 @@ export default async function Page({
                   actions={headerActions}
                   payable={payable}
                 />
+              ) : null}
+              {reorder && reorderBonus ? (
+                <ReorderBonusBadge size="sm" multiplier={reorderBonus.multiplier} endsAt={reorderBonus.endsAt} />
               ) : null}
               {reorder ? (
                 <TrackClicks event="order_reorder" properties={{ status: order.customerStatus }}>

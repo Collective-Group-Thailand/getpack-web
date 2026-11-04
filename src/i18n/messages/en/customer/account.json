@@ -319,7 +319,13 @@
       "redeem_reversal": "Returned",
       "reversal_claim_refund": "Taken back after a claim or refund",
       "expire": "Expired",
-      "adjust": "Adjustment"
+      "adjust": "Adjustment",
+      "earn_review_photo": "Photo in a review",
+      "earn_first_sample": "First sample",
+      "earn_survey": "Survey answered",
+      "earn_showcase_consent": "Showcase consent",
+      "earn_data_refresh": "Details confirmed",
+      "other": "Points entry"
     },
     "expiresAt": "Expires {date}",
     "gain": "+{points}",
@@ -432,6 +438,11 @@
         "description": "Earn points when your first paid sample is delivered",
         "action": "See samples"
       }
+    },
+    "bonusReasons": {
+      "first_order": "First order bonus",
+      "winback": "Bonus points",
+      "promotion": "Deal bonus points"
     }
   },
   "referral": {
@@ -524,7 +535,9 @@
     "reorder": "Reorder",
     "dismiss": "Don't remind me",
     "dismissed": "We won't remind you about this",
-    "failed": "Could not do that — try again"
+    "failed": "Could not do that — try again",
+    "stockOut": "Likely to run out",
+    "stockOutOn": "around {date}"
   },
   "callOffs": {
     "title": "Call-offs",
@@ -923,5 +936,24 @@
       "rejected": "Not approved",
       "withdrawn": "Withdrawn"
     }
+  },
+  "lifecycle": {
+    "bonusTag": "Points ×{multiplier}",
+    "bonusUntil": "Extra points on a reorder · <b>until {date}</b>",
+    "winbackTitle": "{points} bonus points are waiting for you",
+    "winbackUntil": "Use them as a discount until {date}",
+    "winbackAction": "See deals",
+    "winbackShort": "{points} bonus points",
+    "winbackUntilShort": "Until {date}",
+    "winbackActionShort": "Deals",
+    "lotHint": "Includes {points} bonus points · until {date}",
+    "multipliers": {
+      "tier": "Tier ×{value}",
+      "paymentMethod": "QR or transfer ×{value}",
+      "reorderCampaign": "Reorder ×{value}",
+      "promotion": "Deal ×{value}"
+    },
+    "capped": "Combined multiplier at its maximum",
+    "paymentHint": "Pay by QR or bank transfer for points ×{multiplier}: {points} points"
   }
 }

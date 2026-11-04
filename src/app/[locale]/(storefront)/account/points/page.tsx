@@ -16,6 +16,9 @@ import { POINTS_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 import { Button } from "@/ui/components/Button";
+import { Icon } from "@/ui/icons";
+import { ledgerEntryP2Of, loyaltySummaryP2Of } from "@/features/shared/loyalty-p2/read";
+import { multiplierParts } from "@/features/shared/loyalty-p2/multipliers";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,10 +32,11 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function Page() {
   await requireCustomer();
-  const [t, tHome, tReferral, format, points, entries, tasks, support] = await Promise.all([
+  const [t, tHome, tReferral, tLifecycle, format, points, entries, tasks, support] = await Promise.all([
     getTranslations("account.points"),
     getTranslations("account.home"),
     getTranslations("account.referral"),
+    getTranslations("account.lifecycle"),
     getFormat(),
     getPoints(),
     getPointsEntries(50),
@@ -40,6 +44,18 @@ export default async function Page() {
     getSupportChannels().catch(() => null),
   ]);
   // The same order as the floating LINE button: the build's id, else staff's (GLOBAL-RULES §5).
+  // Loyalty P2: bonus lots (win-back) and, per entry, the bonus reason and the order's multipliers.
+  const { bonusLots } = loyaltySummaryP2Of(points);
+  const bonusLot = [...bonusLots].sort((a, b) => a.expiresAt.localeCompare(b.expiresAt))[0] ?? null;
+  const typeLabel = (entry: (typeof entries)[number]) => {
+    const { bonusReason } = ledgerEntryP2Of(entry);
+    if (entry.entryType === "earn_bonus" && bonusReason) return t(`bonusReasons.${bonusReason}`);
+    return t.has(`types.${entry.entryType}`) ? t(`types.${entry.entryType}`) : t("types.other");
+  };
+  const multiplierLine = (entry: (typeof entries)[number]) =>
+    multiplierParts(ledgerEntryP2Of(entry).multipliers)
+      .map(({ part, value }) => tLifecycle(`multipliers.${part}`, { value }))
+      .join(" · ");
   const lineOaId = clientEnv.NEXT_PUBLIC_LINE_OA_ID?.trim() || support?.lineOaId?.trim() || null;
 
   return (
@@ -61,7 +77,20 @@ export default async function Page() {
             key: "available",
             label: t("available"),
             value: format.number(points.availablePoints),
-            hint: tHome("pointsValue", { amount: format.thb(points.availableValue) }),
+            hint: bonusLot ? (
+              <>
+                {tHome("pointsValue", { amount: format.thb(points.availableValue) })}
+                <span className="border-primary-subtle-fg/15 mt-2.5 flex items-center gap-1.5 border-t pt-2.5">
+                  <Icon name="gift" size={14} aria-hidden="true" />
+                  {tLifecycle("lotHint", {
+                    points: format.number(bonusLot.points),
+                    date: format.date(bonusLot.expiresAt),
+                  })}
+                </span>
+              </>
+            ) : (
+              tHome("pointsValue", { amount: format.thb(points.availableValue) })
+            ),
             icon: "star",
             highlight: true,
           },
@@ -127,7 +156,10 @@ export default async function Page() {
               cells: {
                 what: (
                   <span className="block min-w-0">
-                    <span className="block font-semibold">{t(`types.${entry.entryType}`)}</span>
+                    <span className="block font-semibold">{typeLabel(entry)}</span>
+                    {multiplierLine(entry) ? (
+                      <span className="text-muted block text-xs font-normal">{multiplierLine(entry)}</span>
+                    ) : null}
                     {entry.orderCode && entry.orderId ? (
                       <Link
                         href={`/account/orders/${entry.orderId}`}

@@ -319,7 +319,13 @@
       "redeem_reversal": "คืนแต้มที่ใช้",
       "reversal_claim_refund": "หักคืนจากการเคลม/คืนเงิน",
       "expire": "หมดอายุ",
-      "adjust": "ปรับยอด"
+      "adjust": "ปรับยอด",
+      "earn_review_photo": "แนบรูปในรีวิว",
+      "earn_first_sample": "ตัวอย่างชิ้นแรก",
+      "earn_survey": "ตอบแบบสอบถาม",
+      "earn_showcase_consent": "อนุญาตให้แสดงผลงาน",
+      "earn_data_refresh": "ยืนยันข้อมูลบัญชี",
+      "other": "รายการแต้ม"
     },
     "expiresAt": "หมดอายุ {date}",
     "gain": "+{points}",
@@ -432,6 +438,11 @@
         "description": "ได้แต้มเมื่อตัวอย่างที่ชำระเงินชิ้นแรกส่งถึงคุณ",
         "action": "ดูตัวอย่าง"
       }
+    },
+    "bonusReasons": {
+      "first_order": "โบนัสคำสั่งซื้อแรก",
+      "winback": "แต้มโบนัส",
+      "promotion": "แต้มโบนัสจากดีล"
     }
   },
   "referral": {
@@ -524,7 +535,9 @@
     "reorder": "สั่งซ้ำ",
     "dismiss": "ไม่ต้องเตือน",
     "dismissed": "จะไม่เตือนรายการนี้อีก",
-    "failed": "ทำรายการไม่สำเร็จ ลองอีกครั้ง"
+    "failed": "ทำรายการไม่สำเร็จ ลองอีกครั้ง",
+    "stockOut": "คาดว่าจะใช้หมด",
+    "stockOutOn": "ประมาณ {date}"
   },
   "callOffs": {
     "title": "สัญญาเรียกของ",
@@ -923,5 +936,24 @@
       "rejected": "ไม่อนุมัติ",
       "withdrawn": "ถอนแล้ว"
     }
+  },
+  "lifecycle": {
+    "bonusTag": "แต้ม ×{multiplier}",
+    "bonusUntil": "สั่งซ้ำรับแต้มเพิ่ม · <b>ถึง {date}</b>",
+    "winbackTitle": "มี {points} แต้มโบนัสรอคุณอยู่",
+    "winbackUntil": "ใช้เป็นส่วนลดได้ถึง {date}",
+    "winbackAction": "ดูดีลที่ใช้ได้",
+    "winbackShort": "{points} แต้มโบนัส",
+    "winbackUntilShort": "ใช้ได้ถึง {date}",
+    "winbackActionShort": "ดูดีล",
+    "lotHint": "รวมแต้มโบนัส {points} แต้ม · ใช้ได้ถึง {date}",
+    "multipliers": {
+      "tier": "ระดับสมาชิก ×{value}",
+      "paymentMethod": "QR หรือโอนเงิน ×{value}",
+      "reorderCampaign": "สั่งซ้ำ ×{value}",
+      "promotion": "ดีล ×{value}"
+    },
+    "capped": "ตัวคูณรวมสูงสุดแล้ว",
+    "paymentHint": "ชำระด้วย QR หรือโอนเงิน รับแต้ม ×{multiplier} เป็น {points} แต้ม"
   }
 }
