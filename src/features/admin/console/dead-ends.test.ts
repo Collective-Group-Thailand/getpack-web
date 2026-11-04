@@ -24,6 +24,14 @@ const ACTION_BESIDE_IT: Record<string, string> = {
     "a report section: rows appear when agents share the deal's link; the campaign's own actions are beside it",
   "src/features/admin/marketing/SurveysAdmin.tsx":
     "the templates section's own action is สร้างชุดคำถาม, beside the table",
+  // Loyalty P3
+  "src/features/admin/marketing/RewardCatalog.tsx":
+    "the catalogue's own action is สร้างรางวัล beside the tabs; redemptions appear when customers redeem",
+  "src/features/admin/marketing/LoyaltyCampaigns.tsx": "the section's own action is สร้างแคมเปญ, in its header",
+  "src/features/admin/marketing/CapacityDeals.tsx":
+    "drafts are written by the nightly worker when a product type has room; there is nothing to create by hand",
+  "src/features/admin/finance/CreditUpliftList.tsx":
+    "rows are written by the nightly uplift job; the mode and the request are set per company in its credit tab",
   // G2
   "src/features/admin/shipping/RatesTable.tsx":
     "a rate version's lines, drawn inside the version editor whose own controls add and import lines",
