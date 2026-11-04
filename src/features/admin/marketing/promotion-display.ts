@@ -81,8 +81,13 @@ export function publicFieldsOf(item: Schemas["PromotionDto"]): {
   };
 }
 
-/** Words a public deal may not use (D-481, GLOBAL-RULES §1–§2) — the API refuses them too. */
-export const BLOCKED_WORDS = /โรงงาน|factory|กำไร|margin|ทันที|นับถอยหลัง|countdown|flash\s*sale/i;
+/**
+ * Words a public deal may not use (D-481, GLOBAL-RULES §1–§2) — the API refuses them too. Loyalty P2 adds the audience
+ * words (publish guard `audience_words`): a deal never tells a customer they were picked for not ordering or for
+ * their business type.
+ */
+export const BLOCKED_WORDS =
+  /โรงงาน|factory|กำไร|margin|ทันที|นับถอยหลัง|countdown|flash\s*sale|ไม่ได้สั่ง|ห่างหาย|inactive|ประเภทธุรกิจ|business\s*type/i;
 
 export const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 

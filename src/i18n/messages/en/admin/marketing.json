@@ -242,7 +242,8 @@
       "minOrderValue": "THB, incl. VAT, of the matching lines",
       "minQuantity": "Pieces on a matching line",
       "unitPrice": "THB per piece, incl. VAT",
-      "noProductTypes": "Product types could not be read from the catalogue; left empty, the promotion applies to every type"
+      "noProductTypes": "Product types could not be read from the catalogue; left empty, the promotion applies to every type",
+      "stackGroupBundle": "A bundle deal always uses the bundle group; change it on the Bundle tab"
     },
     "kindHints": {
       "coupon": "Customers type a code; generate codes after saving",
@@ -322,7 +323,9 @@
     "tabs": {
       "label": "Promotion sections",
       "setup": "Set-up",
-      "display": "On the deals page"
+      "display": "On the deals page",
+      "audience": "Audience",
+      "bundle": "Bundle"
     },
     "display": {
       "preview": "Preview on the deals page",
@@ -399,6 +402,127 @@
       "saved": "Display saved",
       "published": "Published on the deals page",
       "failed": "Could not save the display"
+    },
+    "audience": {
+      "title": "Who gets this deal",
+      "description": "Every criterion you turn on must hold; within one criterion, any value matches",
+      "everyone": "No criteria yet: every customer can use this deal",
+      "and": "and",
+      "or": " or ",
+      "pickOne": "Pick at least one, or this criterion is not saved",
+      "daysOrMore": "days or more",
+      "noProductTypes": "No product types to choose from yet",
+      "criteria": {
+        "newCustomer": {
+          "label": "New customers",
+          "hint": "No paid order yet"
+        },
+        "tiers": {
+          "label": "Membership tier",
+          "hint": "The tier on the day the deal is used"
+        },
+        "businessTypes": {
+          "label": "Business type",
+          "hint": "From the packaging profile; customers who have not filled it in never match"
+        },
+        "inactiveDays": {
+          "label": "Has not ordered for",
+          "hint": "Days since the last paid order; customers who never ordered never match"
+        },
+        "orderedTypes": {
+          "label": "Has ordered a product type",
+          "hint": "Paid orders of the customer or of the company they order for"
+        }
+      },
+      "say": {
+        "newCustomer": "new customers",
+        "tiers": "tier {tiers}",
+        "businessTypes": "business {types}",
+        "inactive": "no order for {days}+ days",
+        "ordered": "has ordered {types}"
+      },
+      "tiers": {
+        "member": "Member",
+        "silver": "Silver",
+        "gold": "Gold"
+      },
+      "businessTypes": {
+        "food": "Food",
+        "beverage": "Beverage",
+        "cosmetics": "Cosmetics",
+        "apparel": "Apparel",
+        "electronics": "Electronics",
+        "ecommerce": "Online shop",
+        "industrial": "Industrial",
+        "other": "Other"
+      },
+      "estimate": {
+        "title": "Matches about",
+        "unit": "customers",
+        "hint": "Rounded · fewer than 10 is not shown",
+        "everyone": "Every customer",
+        "few": "Fewer than 10"
+      },
+      "listing": {
+        "title": "Who sees this deal on the deals page",
+        "everyone": "Everyone",
+        "everyoneHint": "Customers outside the audience see it but cannot use it",
+        "matching_only": "Matching customers only",
+        "matching_onlyHint": "Hidden from guests, and it cannot be featured",
+        "needsAudience": "Choose an audience first to show it to matching customers only"
+      },
+      "customerNote": "Customers never see the audience rules. The deals page can only say new customer, tier or ordered product type; deal text must not mention not ordering or business type.",
+      "save": "Save audience",
+      "saved": "Audience saved",
+      "failed": "Could not save",
+      "refused": "This change was refused",
+      "refusals": {
+        "exclusive": "Legacy segments cannot be combined with the new audience",
+        "listing_requires_audience": "Matching-only needs an audience first",
+        "audience_words": "The deal text names an audience rule; edit it on the display tab"
+      }
+    },
+    "bundle": {
+      "title": "Items in the bundle",
+      "description": "2–4 items. Specs come from the product configurator; prices are recalculated whenever a customer adds the set",
+      "fields": {
+        "type": "Item {no}",
+        "pickType": "Choose a product type",
+        "noPreset": "No spec yet",
+        "editPreset": "Edit spec",
+        "hidePreset": "Hide",
+        "preset": "Spec (configuration)",
+        "presetHint": "Copy the values from the configurator or a quotation, as JSON",
+        "quantity": "Quantity",
+        "minTypes": "The cart must hold at least",
+        "minTypesHint": "Distinct product types in the cart (2–10)",
+        "types": "types",
+        "stackGroup": "Stack group",
+        "stackGroupHint": "Bundle deals always use the bundle group; only the best one in it applies"
+      },
+      "problems": {
+        "configuration": "The spec must be a JSON object (names and values in curly braces)"
+      },
+      "addItem": "Add item",
+      "removeItem": "Remove item {no}",
+      "checks": {
+        "title": "Before saving",
+        "count": "2–4 items",
+        "types": "At least as many product types as the cart minimum",
+        "rows": "Every item has a type, a spec and a quantity"
+      },
+      "pricingNote": "Before publishing, the system checks every item prices today; an item that does not is flagged on its row",
+      "save": "Save bundle",
+      "saved": "Bundle saved",
+      "removed": "No longer a bundle deal",
+      "remove": "Stop being a bundle deal",
+      "failed": "Could not save",
+      "refused": "This bundle was refused",
+      "refusals": {
+        "bundle_unpriceable": "This item does not price today; change its spec or remove it",
+        "bundle_items": "2–4 items, with at least as many types as the minimum",
+        "bundle_pair": "A bundle deal needs a minimum of 2 types and the bundle group"
+      }
     }
   },
   "coupons": {
