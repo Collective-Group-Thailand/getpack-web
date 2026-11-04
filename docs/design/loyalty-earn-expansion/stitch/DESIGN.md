@@ -22,8 +22,10 @@ with judgement and restraint. Nothing may look generated or templated.
 - **Ink** `#16201B` · **secondary text** `#4A554F` · **muted/placeholder** `#79827D`
 - **Hairline** `#E3E1DA` · **strong line** `#857B6F` (inputs only)
 - **Primary (actions, links, current state)** `#17573F` · hover `#0E4430` · primary tint `#E2EDE7` (text on tint `#0E4430`)
-- **Promotion accent — the ONLY colour for deals/campaign badges** amber `#E08A18` with **ink text** (never white
-  on amber) · promo tint `#FDF0E3` with text `#5F2B00`. Amber is never a button, never a link, never a warning.
+- **Promotions and coupon tickets use the primary family** (owner decision 2026-11-04): normal stubs and promo fields
+  `#E2EDE7` with text `#0E4430`; the featured ticket's stub `#17573F` with white text. Amber `#E08A18` with **ink text**
+  (never white) is allowed only for **one small badge per surface** ("ดีลเด่น"). No yellow or orange fields, stubs,
+  buttons or links.
 - **Sage** `#5F7264` (white text) · sage tint `#E8F1EE` — quiet full-width bands.
 - **Kraft** `#DCCDB3` / `#C8A97B` — decoration and packaging illustration only, never text.
 - **Status:** success `#15803D` (tint `#F6FCF7`, text `#00491B`) · warning (burnt orange, not promo) `#B45309`
@@ -45,8 +47,10 @@ with judgement and restraint. Nothing may look generated or templated.
 - **Primary button:** `#17573F` fill, white 600 text, 10px radius, 40px tall (44px on phone). One per screen area.
 - **Secondary button:** white fill, 1px `#E3E1DA` border, ink text. **Ghost/link:** primary text, underline on hover.
 - **Card:** white, 1px hairline, 14px radius, 20–24px padding, no shadow at rest. No cards inside cards.
-- **Promo badge:** amber `#E08A18` fill + ink text, 10px radius rectangle (not a pill), 12–13px 600; or promo tint
-  `#FDF0E3` + `#5F2B00` for quieter use. Max one badge per card.
+- **Promo badge:** the single "ดีลเด่น" badge is amber `#E08A18` + ink text, 10px radius (not a pill), 12–13px 600.
+  Every other tag is neutral `#F4F2F0` + `#564E45`.
+- **Coupon ticket:** stub (value only) + body, dashed perforation with semicircle notches, dashed code box; stub in
+  `#E2EDE7`/`#0E4430`, featured stub `#17573F`/white with a postage-stamp edge.
 - **Tabs:** underline tabs (2px primary underline on the active tab, ink text; others secondary text). Not pills.
 - **Chips / tags:** 10px radius, neutral tint `#F4F2F0`, 13px 500.
 - **Coupon code:** code in tabular 600 on a `#EFEEE9` field with a dashed `#857B6F` 1px border, copy action beside it.

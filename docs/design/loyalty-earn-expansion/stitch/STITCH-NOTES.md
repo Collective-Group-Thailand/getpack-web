@@ -6,7 +6,7 @@ https://stitch.withgoogle.com/projects/10188146144340170426
 **Plan:** `../PLAN.md` §3 (earn checklist, P1) and §3.5 (deals surface, P1.5).
 
 > **Read round 2 first** (end of this file). The owner's coupon references (2026-11-04) changed DealCard, /deals and
-> /liff/deals to a **ticket form in getpack's own colours**. Round 2 supersedes sections a, b and f below. Sections
+> /liff/deals to a **ticket form in getpack's primary green** (owner decision, 15:02: no amber on tickets). Round 2 supersedes sections a, b and f below. Sections
 > c, d and e still stand; their compact rows pick up the mini-stub from round 2.
 
 Stitch output is a proposal only. The tokens, `GLOBAL-RULES.md` and PLAN.md win. **No Stitch code goes into the repo.**
@@ -128,7 +128,7 @@ stitch/
   - Other rows are clickable to set the quantity.
   - One nudge line under it ("เพิ่มอีก 500 ใบ ราคาต่อใบลดอีก 10% และใช้โปรลด 10% ได้").
 - From B:
-  - The promo box **below the price**, not above the selectors: `accent-subtle` with no border and one small `accent`
+  - The promo box **below the price**, not above the selectors: `primary-subtle` with no border (owner decision 2026-11-04: no amber fields) and one small `accent`
     badge "มีโปร", then the offer, "ใช้โค้ด BOX10 ในตะกร้า" and the link to /deals.
   - **"ราคาหลังโปรโดยประมาณ ฿x"**, computed by the same pricing service.
   - The `success` line "ถูกกว่าสั่ง 500 ใบ ฿1.48 ต่อใบ".
@@ -153,7 +153,7 @@ stitch/
 - From A (desktop):
   - "คูปองที่ใช้ได้กับตะกร้านี้" is always visible inside the order summary, with no hidden popover. It only shows
     what `GET /store/cart/applicable-codes` returns.
-  - The "คุ้มที่สุด" tag (`accent-subtle`) on the best saving.
+  - The "คุ้มที่สุด" tag (`primary-subtle` / `primary-subtle-fg`) on the best saving.
   - The manual entry "มีโค้ดอื่น?" stays (PLAN §3.5.3).
   - Applied codes appear as removable neutral chips.
   - The points switch "ใช้แต้ม … สูงสุด 20% ของยอด".
@@ -245,9 +245,10 @@ stitch/
    popover, sheet and sticky bar get `overlay`.
 4. **Glass:** a `backdrop-blur` sticky header on phone. Not in the language: use a solid `bg` with a hairline.
 5. **Tab counts:** shown as tinted little pills. Use plain `muted` numbers after the label ("สำหรับคุณ 3").
-6. **Amber discipline:** Stitch spreads `accent` everywhere. Solid `accent` + `fg` only for one badge per surface;
-   all others use `accent-subtle`/`accent-subtle-fg`. Never put amber on a button, a link or "ใกล้หมดเวลา"; that last
-   one is `warning` text.
+6. **Amber discipline** (owner decision 2026-11-04): Stitch spreads `accent` everywhere. Promotions use the
+   **primary family**: `primary-subtle` fields and stubs, `primary` for the featured stub. Solid `accent` + `fg` is
+   allowed only for **one small badge per surface** ("ดีลเด่น"). Never put amber on a field, a stub, a button, a link
+   or "ใกล้หมดเวลา"; that last one is `warning` text.
 7. **Radii:** Stitch kept 10/14/16 correctly. The repo aliases are `rounded-control` / `rounded-card` /
    `rounded-panel`. `rounded-full` is for dots and the 16 px status circle only (CI refuses it elsewhere).
 8. **Desktop width:** Stitch drew most desktops at 1280 px, so check the real pages at 1440 with content max 1180
@@ -318,7 +319,7 @@ rule: **take the form, not the colours.** Colours stay on getpack tokens.
 - Two zones: a **stub** carries the value only, and the **body** says what it is and until when. A perforation and
   semicircle notches mark the tear line.
 - The value is the hero: very large numerals with a small word stacked beside them.
-- One colour family in two strengths, solid on the featured coupon and light on the rest.
+- **One colour family in two strengths**, solid on the featured coupon and light on the rest. Ours is getpack green.
 - A dashed inner frame, which becomes our code box.
 - A postage-stamp scalloped edge, used **only on the featured ticket's stub**.
 
@@ -326,19 +327,52 @@ rule: **take the form, not the colours.** Colours stay on getpack tokens.
 we don't support; rotated text (vertical Thai is unreadable); "SUPER DISCOUNT"; and several coupon shapes in one set.
 The system uses one ticket form at different sizes.
 
+### Owner decision — 2026-11-04 15:02: tickets use the primary green, not amber
+
+The owner chose the system's main colour for the ticket stubs: **no yellow or orange on the tickets**. This is a
+deliberate exception to D-180 ("`accent` amber is for promotions only"). Record it as a D-5xx row in
+`decisions.md`: *"Coupon tickets use the primary family (two strengths); amber is limited to one small badge per
+surface."*
+
+Contrast checked:
+- white on `primary` #17573F: **8.50:1**;
+- `primary-subtle-fg` #0E4430 on `primary-subtle` #E2EDE7: **9.27:1**;
+- `primary-subtle` against the page #F6F5F1: only 1.10:1, so the ticket's 1px `border` must wrap the stub as well.
+
 **Colour mapping (`semantic.ts`):**
 
 | Part | Token | Value |
 |---|---|---|
-| Stub, normal ticket | `accent-subtle` / text `accent-subtle-fg` | #FDF0E3 / #5F2B00 |
-| Stub, featured ticket | `accent` / text `fg` (never white on amber, 2.69:1) | #E08A18 / #16201B |
+| Stub, normal ticket | `primary-subtle` / text `primary-subtle-fg` | #E2EDE7 / #0E4430 |
+| Stub, featured ticket (stamp edge) | `primary` / text `primary-fg` (white) | #17573F / #FFFFFF |
+| The one small "ดีลเด่น" badge | `accent` / text `fg` (never white on amber) | #E08A18 / #16201B |
+| Other tags on a ticket (product type …) | `neutral-subtle` / `neutral-subtle-fg` | #F4F2F0 / #564E45 |
 | Stub, used or expired | `neutral-subtle` / text `subtle` | #F4F2F0 / #79827D |
-| Ticket body | `surface`, edge `border` | #FFFFFF / #E3E1DA |
+| Ticket body | `surface`, edge `border` (wraps the stub too) | #FFFFFF / #E3E1DA |
 | Notches | cut-outs that show `bg` | #F6F5F1 |
 | Perforation and code-box dash | `border-strong` | #857B6F |
-| "เก็บโค้ด" | `primary` (the only green on the ticket) | #17573F |
-| "เหลือ 2 วัน" | `warning` text | #B45309 |
+| "เก็บโค้ด" | `primary` button | #17573F |
+| "เหลือ 2 วัน" | `warning` text (stays burnt orange, it is a status, not a decoration) | #B45309 |
 | "เก็บแล้ว" | `success` text with a line check | #15803D |
+
+**Hierarchy check: green stub next to a green button.** On the featured ticket the solid green stub and the green
+"เก็บโค้ด" sit side by side. This is fine because the stub is a large flat field with no affordance, and the button
+keeps its 10 px radius, its own padding and the hover state. On normal tickets the light stub separates clearly from
+the solid button. The secondary "เก็บโค้ด" (outline) stays the default in grids. Use the solid primary button only on
+the featured ticket and in the LIFF sheet, so the page does not end up with six solid green buttons.
+
+**How these PNGs were made (important for anyone comparing with Stitch).** The tickets were first generated in amber
+(round 2) and then recoloured with Stitch's `edit_screens`. Stitch applied the edits in its editor, but neither the
+screenshots nor the downloadable HTML were updated (same file ids and bytes). The PNGs in `round-2/` were therefore
+rendered locally with Playwright from the Stitch HTML. At render time the same rules as the edit prompts were applied:
+- amber stub → `primary` with white text;
+- promo tint → `primary-subtle` with `primary-subtle-fg`;
+- "ดีลเด่น" stays `accent`;
+- the copy fixes below.
+
+Layouts are exactly Stitch's. Where a page has fixed bars (the phone tab bar, the LIFF sticky bar), the full-page
+render shows them in the middle of the page. That is a screenshot artefact, not the design. Stitch's editor shows the
+edited versions under the same screen ids.
 
 ## Stitch screen ids (round 2)
 
@@ -355,7 +389,7 @@ The system uses one ticket form at different sizes.
 
 **Take**
 - From B, the vertical ticket for every card grid (/deals, home strip, coupon wallet):
-  - a 112–120 px top stub in `accent-subtle`;
+  - a 112–120 px top stub in `primary-subtle` (value in `primary-subtle-fg`);
   - "ลด" small above "10%" at 48–56 px/600 with "สูงสุด ฿1,500" on the same baseline;
   - the product tag top-right in the stub;
   - a horizontal perforation with 16 px notches on the left and right edges;
@@ -370,7 +404,7 @@ The system uses one ticket form at different sizes.
   - ใกล้หมดเวลา: `warning` validity.
 - From B, the **compact row**: a 64 px mini-stub with the value and one notch on its right edge, then headline + validity, then a 44 px action. The same component goes into the /deals phone list, the cart picker and LIFF.
 - From A:
-  - the **featured stub**: solid `accent` with a scalloped (postage-stamp) left edge, which is the most faithful echo of the references;
+  - the **featured stub**: solid `primary` green with white value and a scalloped (postage-stamp) left edge, which is the most faithful echo of the references;
   - the **value-type set** for stubs: "10%" numeral, "ส่งฟรี" word at 28 px, "฿300", "แต้ม ×2". The stub layout handles words as well as numbers.
 
 **Don't take**
@@ -384,7 +418,7 @@ The system uses one ticket form at different sizes.
 **Take**
 - From A, desktop:
   - the header (title + "12 ดีลที่ใช้ได้ · อัปเดต …");
-  - the featured horizontal ticket at full content width (stub 260 px solid `accent`, stamp edge, value 80 px);
+  - the featured horizontal ticket at full content width (stub 260 px solid `primary`, white value 80 px, stamp edge, one amber "ดีลเด่น" badge in the body);
   - underline tabs with plain `muted` counts and a quiet product-type select;
   - **3-column grid of vertical tickets**;
   - "ใช้คูปองอย่างไร" 01–03 next to the FAQ;
@@ -392,7 +426,7 @@ The system uses one ticket form at different sizes.
 - From B, desktop: the signed-in context **"คูปองของคุณ · เก็บไว้ 3 ใบ · ใช้ได้กับตะกร้าตอนนี้ 1 ใบ"**. Put it as a
   one-line strip under the header, shown only when signed in, rather than as a sticky aside. The aside narrows the grid to 2 columns.
 - Phone:
-  - A's vertical stamp hero (amber top stub with scalloped top edge, value 56 px), because it is the strongest first screen;
+  - A's vertical stamp hero (solid green top stub with scalloped top edge, white value 56 px), because it is the strongest first screen;
   - then B's **compact rows in one hairline container**, which give the most deals per scroll;
   - A's horizontal ticket stack is the alternative if the list stays at 6 deals or fewer.
 
@@ -412,7 +446,7 @@ The system uses one ticket form at different sizes.
 - From B:
   - the points strip and a segmented control "ดีลทั้งหมด | คูปองของฉัน (n)";
   - compact rows with mini-stubs;
-  - **the bottom sheet rendered as a ticket**: an amber stub band on top, a perforation with notches cut into the
+  - **the bottom sheet rendered as a ticket**: a solid green stub band on top, a perforation with notches cut into the
     sheet's edges, label/value conditions, the dashed code box, "เก็บโค้ด" and "ส่งดีลนี้ให้ทีม". This is the best
     single moment in the round, because the deal "tears off" into the sheet.
 - From A:
@@ -434,8 +468,8 @@ The system uses one ticket form at different sizes.
 - **Accessibility:** the stub is decorative structure, but its value is content. Give it a text equivalent
   ("ส่วนลด 10% สูงสุด ฿1,500") and keep the reading order stub → headline → validity → code → action. The
   perforation and notches are `aria-hidden`.
-- **Dark mode** (GLOBAL-RULES §7): the stub uses `accent-subtle` / `accent`, and the dark theme already defines
-  them (`accent` #F0A63A with ink, as the gate allows). The masks show whatever `bg` is.
+- **Dark mode** (GLOBAL-RULES §7): the stub uses `primary-subtle` / `primary`, which the dark theme already defines
+  (`primary` #56BC91, `primary-subtle` #17322A). The contrast gate decides the stub text there. The masks show whatever `bg` is.
 - **Sizes:**
   - grid ticket min width 280, max 360;
   - compact row 64–72 px tall;
@@ -470,3 +504,15 @@ whatever is really behind the ticket (page, band, sheet, dark theme).
 
 The LIFF B scrim `rgba(42,37,32,.45)` behind the sheet is fine as an overlay. In the build use the `overlay` token,
 not a hex.
+
+**Copy fixes applied in the recolour pass:**
+- "ลดทันที" → "ลด", "ลดทันบนบิล" → "ลดบนบิล", "ลดทันใจ" → "ส่วนลด";
+- removed "เหลืออีก 48 สิทธิ์" and "อัปเดตทุกวันจันทร์";
+- "เหลือสิทธิ์ 12 ใบสุดท้าย" → the validity date;
+- the FAQ "ภายใน 24 ชั่วโมง" → "หลังทีมงานตรวจสอบ";
+- the dark chip on the deals A phone hero became plain white text.
+
+**Still don't take** from the recoloured screens:
+- LIFF B now fills every row's "เก็บ" as a solid green button. In lists the row action stays secondary (outline).
+- deals A desktop's FAQ wording "ระบบจะคืนสิทธิ์คูปอง…" promises a refund behaviour we have not specified. The
+  real copy comes from `messages/*.json`.
