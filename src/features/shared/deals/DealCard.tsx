@@ -191,7 +191,7 @@ export function DealCard({
               >
                 {figureText}
               </span>
-              {cap ? <span className="mt-3 text-[0.9375rem] font-medium">{cap}</span> : null}
+              {cap ? <span className="mt-3 mb-5 text-[0.9375rem] font-medium">{cap}</span> : null}
               {typeName ? (
                 <span className="border-primary-fg/30 mt-auto self-stretch border-t pt-3.5 text-[0.8125rem] font-medium">
                   {typeName}

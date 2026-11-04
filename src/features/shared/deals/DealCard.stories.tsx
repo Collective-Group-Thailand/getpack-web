@@ -51,12 +51,12 @@ export const Claimable: Story = { args: { deal: fixtureDeal("free-shipping-5000"
 export const Saved: Story = { args: { deal: fixtureDeal("box10-corrugated", "saved") } };
 
 /** 04 · used: the stub turns neutral and every word subtle. */
-export const Used: Story = { args: { deal: fixtureDeal("matte-free-2000", "used"), typeName: "กล่องกระดาษแข็ง" } };
+export const Used: Story = { args: { deal: fixtureDeal("folding-carton-2000", "used"), typeName: "กล่องกระดาษแข็ง" } };
 
 /** 05 · not eligible: the reason as text, no action. */
 export const NotEligible: Story = { args: { deal: fixtureDeal("welcome-300", "not_eligible"), typeName: null } };
 
-/** 06 · ending soon: "เหลือ n วัน" in warning — a static label, never a countdown. */
+/** 06 · ending soon: "เหลือ n วัน" in warning — a static date label (D-481). */
 export const EndingSoon: Story = { args: { deal: fixtureDeal("label8-5000"), typeName: "สติกเกอร์ฉลาก" } };
 
 /** No code: the discount is taken off in the cart; nothing to keep. */
@@ -83,7 +83,7 @@ export const CompactRows: Story = {
           ["label8-5000", "claimable"],
           ["reorder-points-x2", "saved"],
           ["rigid-box-5", null],
-          ["matte-free-2000", "used"],
+          ["folding-carton-2000", "used"],
         ] as const
       ).map(([slug, status]) => (
         <li key={slug}>
