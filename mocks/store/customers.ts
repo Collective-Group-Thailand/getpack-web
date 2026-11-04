@@ -47,6 +47,8 @@ export type CustomerPersona =
   | "agent"
   /** A sales agent whose agreement has ended: statements and 50 ทวิ only (D-467, `./agent.ts`). */
   | "agentended"
+  /** A customer on the agent pilot list (setting `agents.pilot`, P7): may apply while sign-up is closed to others. */
+  | "agentpilot"
   /** A scorecard round's participant, P01–P10 (`../uat.ts`; only with `MOCK_DATASET=uat`). */
   | `uat_p${string}`;
 
@@ -64,6 +66,7 @@ export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0856789012": "designer",
   "0861234567": "agent",
   "0861234568": "agentended",
+  "0861234569": "agentpilot",
   ...Object.fromEntries(uatParticipants().map((participant) => [participant.phone, uatPersona(participant)])),
 };
 
@@ -242,6 +245,13 @@ function fresh(persona: CustomerPersona): MockCustomer {
       phone: "0861234568",
       ownerIndex: null,
     },
+    agentpilot: {
+      n: 14,
+      name: "ลูกค้าในรายชื่อนำร่อง (ข้อมูลจำลอง)",
+      email: "seed.agentpilot",
+      phone: "0861234569",
+      ownerIndex: null,
+    },
     designer: {
       n: 9,
       name: "ลูกค้าออกแบบออนไลน์ (ข้อมูลจำลอง)",
@@ -284,6 +294,7 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   designer: fresh("designer"),
   agent: fresh("agent"),
   agentended: fresh("agentended"),
+  agentpilot: fresh("agentpilot"),
   ...Object.fromEntries(
     uatParticipants().map((participant) => [uatPersona(participant), fresh(uatPersona(participant))]),
   ),

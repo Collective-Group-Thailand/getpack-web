@@ -183,7 +183,11 @@ export function PayoutProfileForm({ mine, etag }: { mine: Mine; etag: string | n
       ) : null}
 
       <fieldset disabled={locked} className="flex flex-col gap-8">
-        <FormSection title={t("who")} description={tp("whoIntro", { type: t(`juristicTypes.${juristic}`) })}>
+        <FormSection
+          headingLevel={2}
+          title={t("who")}
+          description={tp("whoIntro", { type: t(`juristicTypes.${juristic}`) })}
+        >
           <Field label={t("legalName")} hint={t("legalNameHint")} error={errors.legalName} required>
             <Input value={form.legalName} onChange={(e) => set("legalName")(e.target.value)} autoComplete="name" />
           </Field>
@@ -229,7 +233,7 @@ export function PayoutProfileForm({ mine, etag }: { mine: Mine; etag: string | n
           {upload(t("idDocument"), t("idDocumentHint"), idDocument, setIdDocument, errors.idDocument)}
         </FormSection>
 
-        <FormSection title={t("payment")} description={t("paymentIntro")}>
+        <FormSection headingLevel={2} title={t("payment")} description={t("paymentIntro")}>
           <Field label={t("bank")} required>
             <SearchableSelect
               value={form.bankCode}

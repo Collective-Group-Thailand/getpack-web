@@ -62,7 +62,10 @@
     "tax_declaration_not_applicable": "ไม่ต้องส่ง ล.ย.01",
     "tax_declaration_open": "มีแบบ ล.ย.01 รอตรวจอยู่แล้ว",
     "too_many_leads": "ผู้มุ่งหวังเต็มแล้ว",
-    "discount_request_closed": "คำขอส่วนลดนี้ปิดแล้ว"
+    "discount_request_closed": "คำขอส่วนลดนี้ปิดแล้ว",
+    "rate_limited": "ใช้งานบ่อยเกินไป กรุณารอสักครู่",
+    "waitlist_closed": "ตอนนี้ไม่ได้เปิดรับลงทะเบียน",
+    "waitlist_consent_outdated": "ข้อความความยินยอมมีฉบับใหม่ กรุณาอ่านและยืนยันอีกครั้ง"
   },
   "approval": {
     "already_acted": "คุณอนุมัติคำขอนี้ไปแล้ว",

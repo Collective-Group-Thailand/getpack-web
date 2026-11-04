@@ -74,7 +74,8 @@ export default async function Page({
       {programme.state === "applied" ? null : programme.agreement ? (
         <div className="flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/agent/apply">{t("applyOpen")}</Link>
+            {/* P7: a customer who may not apply yet goes to the same page, which offers the waiting list. */}
+            <Link href="/agent/apply">{programme.applyOpen ? t("applyOpen") : t("waitlist")}</Link>
           </Button>
           <Link href="/agent" className="text-muted hover:text-fg text-sm underline underline-offset-4">
             {t("moreAbout")}

@@ -62,7 +62,10 @@
     "tax_declaration_not_applicable": "No ล.ย.01 needed",
     "tax_declaration_open": "A ล.ย.01 is waiting",
     "too_many_leads": "Too many leads",
-    "discount_request_closed": "This discount request is closed"
+    "discount_request_closed": "This discount request is closed",
+    "rate_limited": "Too many requests — please wait a moment",
+    "waitlist_closed": "Registration isn't open at the moment",
+    "waitlist_consent_outdated": "The consent text has been updated — please read it and confirm again"
   },
   "approval": {
     "already_acted": "Already approved by you",

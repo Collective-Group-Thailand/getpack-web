@@ -11,7 +11,8 @@
     "plans": "Commission plans",
     "toAgents": "Go to agents",
     "taxDeclarations": "ล.ย.01",
-    "payoutProfiles": "Payout profiles"
+    "payoutProfiles": "Payout profiles",
+    "waitlist": "Waiting list"
   },
   "kinds": {
     "freelance": "Freelance",
@@ -767,5 +768,23 @@
     "verified": "Payout profile verified",
     "rejected": "Sent back to the agent",
     "failed": "That didn't work"
+  },
+  "waitlist": {
+    "title": "Agent waiting list",
+    "description": "People who signed up on the agent programme page while applications are not open to everyone, with the consent they gave. Personal data — visible to authorised roles only.",
+    "search": "Search name, e-mail or phone",
+    "columns": {
+      "name": "Name",
+      "contact": "Contact",
+      "channel": "How they sell",
+      "joinCount": "Sign-ups",
+      "createdAt": "First signed up",
+      "lastJoinedAt": "Latest"
+    },
+    "export": "Export CSV",
+    "exported": "Exported {rows, plural, one {# row} other {# rows}} — the link works for 5 minutes",
+    "exportFailed": "Export failed. Please try again.",
+    "empty": "No one has signed up yet",
+    "emptyBody": "Sign-ups from the agent programme page appear here."
   }
 }

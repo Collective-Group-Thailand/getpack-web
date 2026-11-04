@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
-import { getPublicProgramme } from "@/features/customer/agent/api.server";
+import { getProgramme, getPublicProgramme } from "@/features/customer/agent/api.server";
 import { AgentStory } from "@/features/customer/agent/landing/AgentStory";
 import { CommissionCalculator } from "@/features/customer/agent/landing/CommissionCalculator";
+import { WaitlistForm } from "@/features/customer/agent/WaitlistForm";
 import { TrackedAnchor, TrackedLink } from "@/features/customer/business/landing/TrackedLink";
 import { pick } from "@/features/customer/catalog/localize";
 import { pageContext } from "@/features/customer/content/page-meta.server";
@@ -11,6 +12,7 @@ import { HOME_WRAP } from "@/features/customer/home/parts";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
+import { getActor } from "@/lib/auth/actor";
 import { faqPageSchema, webPageSchema } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
 import { Icon, type IconName } from "@/ui/icons";
@@ -53,9 +55,26 @@ function SectionHead({ id, title, lead }: { id: string; title: string; lead?: st
 }
 
 /**
+ * Which way in the page offers (P7 pilot switch, API-CHANGES-P7 §1): `apply` when sign-up is open for everyone, or
+ * for this signed-in customer (on the pilot list, or already an agent / applicant, whom /agent/apply sends to their
+ * page); else the waiting list when it takes sign-ups (a consent text is published); else a calm closed note.
+ */
+type Way = "apply" | "waitlist" | "closed";
+
+async function wayIn(programme: Awaited<ReturnType<typeof getPublicProgramme>>): Promise<Way> {
+  if (programme.applyOpen) return "apply";
+  if (await getActor("customer")) {
+    const mine = await getProgramme();
+    if (mine.applyOpen || mine.state === "agent" || mine.state === "applied") return "apply";
+  }
+  return programme.waitlistOpen && programme.waitlistConsent ? "waitlist" : "closed";
+}
+
+/**
  * getpack.co/agent (D-466, PLAN A-02): the public, indexable landing of the sales agent programme. Every figure comes
  * from `store.agentProgramme.public` (terms, days, examples, FAQs) and the calculator asks the API — the page claims
  * nothing of its own: no cap ("ไม่จำกัดรายได้"), never "฿0", no profit wording, nothing about production partners.
+ * Its calls to action follow the pilot switch (`wayIn`): apply, the waiting list, or a closed note.
  */
 export default async function AgentLandingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -66,7 +85,7 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
     getPublicProgramme(),
     getLocale(),
   ]);
-  const page = await pageContext("/agent", t("breadcrumb"));
+  const [page, way] = await Promise.all([pageContext("/agent", t("breadcrumb")), wayIn(programme)]);
   const terms = programme.terms;
   const faqs = programme.faqs.map((f) => ({
     question: pick(current, f.questionTh, f.questionEn),
@@ -81,6 +100,17 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
       </TrackedLink>
     </Button>
   );
+  /** The hero's first action: apply, go to the waiting list below, or nothing (the closed note follows the lede). */
+  const heroAction =
+    way === "apply" ? (
+      applyButton("hero")
+    ) : way === "waitlist" ? (
+      <Button asChild size="lg" className="w-full sm:w-auto">
+        <TrackedAnchor event="agent_cta" target="hero_waitlist" href="#waitlist">
+          {t("hero.waitlist")}
+        </TrackedAnchor>
+      </Button>
+    ) : null;
 
   return (
     <div>
@@ -110,9 +140,15 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
               {t("hero.titleStart")} <em className="text-primary not-italic">{t("hero.titleEm")}</em>
             </h1>
             <p className={lede}>{t("hero.lede")}</p>
+            {way === "closed" ? (
+              <p className="text-fg mt-6 flex items-start gap-2 text-[15px] font-medium">
+                <Icon name="info" size={18} aria-hidden="true" className="text-muted mt-0.5 shrink-0" />
+                {t("closed.title")}
+              </p>
+            ) : null}
             <div className="mt-7 flex flex-wrap gap-2.5">
-              {applyButton("hero")}
-              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+              {heroAction}
+              <Button asChild size="lg" variant={heroAction ? "secondary" : "primary"} className="w-full sm:w-auto">
                 <TrackedAnchor event="agent_cta" target="commission" href="#commission">
                   {t("hero.howCta")}
                 </TrackedAnchor>
@@ -177,7 +213,29 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
                 {programme.examples.length ? (
                   <div className={cn(CARD, "overflow-hidden")}>
                     <p className="border-border border-b px-5 py-3 text-sm font-semibold">{t("commission.examples")}</p>
-                    <table className="w-full text-sm" aria-label={t("commission.examples")}>
+                    {/* A phone has no room for three money columns: each example is a row of two labelled figures. */}
+                    <ul className="divide-border divide-y sm:hidden" aria-label={t("commission.examples")}>
+                      {programme.examples.map((row) => (
+                        <li key={row.orderValue} className="px-5 py-3.5">
+                          <p className="text-sm font-medium tabular-nums">
+                            {t("commission.exampleRow", { value: format.thb(row.orderValue) })}
+                          </p>
+                          <dl className="mt-2 grid grid-cols-2 gap-3">
+                            <div>
+                              <dt className="text-muted text-xs">{t("commission.first")}</dt>
+                              <dd className="text-primary mt-0.5 font-semibold tabular-nums">
+                                {format.thb(row.firstOrder)}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-muted text-xs">{t("commission.repeat")}</dt>
+                              <dd className="text-muted mt-0.5 tabular-nums">{format.thb(row.repeatOrder)}</dd>
+                            </div>
+                          </dl>
+                        </li>
+                      ))}
+                    </ul>
+                    <table className="hidden w-full text-sm sm:table" aria-label={t("commission.examples")}>
                       <thead className="text-muted border-border border-b text-xs">
                         <tr>
                           <th scope="col" className="px-5 py-2 text-left font-medium">
@@ -194,7 +252,7 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
                       <tbody>
                         {programme.examples.map((row) => (
                           <tr key={row.orderValue} className="border-border border-b last:border-b-0">
-                            <th scope="row" className="px-5 py-3 text-left font-medium tabular-nums">
+                            <th scope="row" className="px-5 py-3 text-left font-medium whitespace-nowrap tabular-nums">
                               {t("commission.exampleRow", { value: format.thb(row.orderValue) })}
                             </th>
                             <td className="text-primary px-3 py-3 text-right font-semibold tabular-nums">
@@ -276,22 +334,51 @@ export default async function AgentLandingPage({ params }: { params: Promise<{ l
           </section>
         ) : null}
 
-        <section aria-labelledby="agent-final" className={SECTION}>
-          <div className="bg-primary-subtle border-primary/30 rounded-panel flex flex-col items-start gap-4 border p-6 md:flex-row md:items-center md:justify-between md:p-8">
-            <div>
-              <h2 id="agent-final" className="text-[1.5rem] leading-tight font-semibold">
-                {t("final.title")}
-              </h2>
-              <p className="text-muted mt-1.5 text-[14.5px]">{t("final.body")}</p>
+        {way === "apply" ? (
+          <section aria-labelledby="agent-final" className={SECTION}>
+            <div className="bg-primary-subtle border-primary/30 rounded-panel flex flex-col items-start gap-4 border p-6 md:flex-row md:items-center md:justify-between md:p-8">
+              <div>
+                <h2 id="agent-final" className="text-[1.5rem] leading-tight font-semibold">
+                  {t("final.title")}
+                </h2>
+                <p className="text-muted mt-1.5 text-[14.5px]">{t("final.body")}</p>
+              </div>
+              {applyButton("final")}
             </div>
-            {applyButton("final")}
-          </div>
-          <p className="text-muted mt-5 text-sm">
-            <Link href="/partner-with-us" className="hover:text-fg underline underline-offset-4">
-              {t("partners")}
-            </Link>
-          </p>
-        </section>
+          </section>
+        ) : way === "waitlist" && programme.waitlistConsent ? (
+          <section id="waitlist" aria-labelledby="agent-waitlist" className={SECTION}>
+            <div className="border-border bg-surface rounded-panel grid gap-6 border p-5 md:p-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-10">
+              <div>
+                <h2 id="agent-waitlist" className="text-[1.5rem] leading-tight font-semibold">
+                  {t("waitlist.title")}
+                </h2>
+                <p className="text-muted mt-1.5 max-w-[46ch] text-[14.5px] leading-relaxed">{t("waitlist.lead")}</p>
+              </div>
+              <WaitlistForm consent={programme.waitlistConsent} />
+            </div>
+          </section>
+        ) : (
+          <section aria-labelledby="agent-closed" className={SECTION}>
+            <div className="border-border bg-surface rounded-panel flex flex-col items-start gap-4 border p-6 md:flex-row md:items-center md:justify-between md:p-8">
+              <div>
+                <h2 id="agent-closed" className="text-[1.5rem] leading-tight font-semibold">
+                  {t("closed.title")}
+                </h2>
+                <p className="text-muted mt-1.5 max-w-[60ch] text-[14.5px]">{t("closed.body")}</p>
+              </div>
+              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                <Link href="/contact">{t("closed.contact")}</Link>
+              </Button>
+            </div>
+          </section>
+        )}
+
+        <p className="text-muted mt-5 text-sm">
+          <Link href="/partner-with-us" className="hover:text-fg underline underline-offset-4">
+            {t("partners")}
+          </Link>
+        </p>
       </div>
     </div>
   );

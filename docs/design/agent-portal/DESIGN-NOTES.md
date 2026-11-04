@@ -539,3 +539,139 @@ charts; getpack tokens, Anuphan and the existing admin console patterns win ever
   profit and net profit (bold), the count of manual cells still empty; with the switch on, actual over plan. Forecast
   cards sit on the subtle ground. Create / recompute / copy / lock and the charts are not drawn below 768 px; a line says
   editing is for a tablet or a computer.
+
+## P7 — QA, pilot switch and launch readiness
+
+### Responsive QA (`e2e/agent-portal-p7-responsive.spec.ts`)
+- Every route the pack added — `/agent` (th, en), `/agent/apply`, all getpack Agent pages (home, leads list and board,
+  a lead, import, quotes, a quote and its discount request, new quote, commissions and forecast, statements and one
+  statement, customers, payout, tax, playbook, notifications, profile, sign-in, hand-off, offline), the admin sales
+  desk (inbox, pipeline list and board, a lead, quotes, dashboard, approvals list / detail / views, playbook list and
+  card, the three reports), the agents' waiting list and the P&L planner — at 360, 375, 393, 768, 1024, 1280, 1440
+  and 1920, with four checks in one pass (`e2e/helpers/responsive.ts`):
+  1. the page never scrolls sideways;
+  2. no visible element reaches past the viewport's sides unless a container that scrolls sideways holds it (a
+     page-level wrapper does not count) — a clipping container cuts the element's visible part to its own box, which
+     must be on screen (a truncated name inside a card is fine, a button half off-screen is not);
+  3. a fixed bar along the bottom pads itself by `env(safe-area-inset-bottom)` (found through the stylesheet rules
+     that match it or its children, since desktop Chromium computes the inset to 0) and, scrolled to the end, the
+     last piece of content sits above it;
+  4. no h1 / h2 is clipped (`scrollWidth > clientWidth`).
+- The checks were proved on purpose-made faults (a 900 px block, a clipped title, a tab bar with its padding and the
+  page's bottom space removed) before the run.
+- **Findings fixed:** the landing's worked-examples table cut its third money column at 360 px (th and en, inside the
+  card's clip) → below 640 px each example is a row of two labelled figures; the table is kept from 640 px. A
+  `heading-order` miss (h1 → h3) on `/agent/apply` and `/payout` found by Lighthouse → `FormSection` takes
+  `headingLevel` (src/ui) and the two forms use h2.
+- Admin desks at phone widths: they hold together (no page scroll, cards instead of tables, section tabs scroll inside
+  their strip, actions reachable); they remain desktop tools by design.
+
+### Pilot switch and waiting list (API-CHANGES-P7 §1–2)
+- **Who sees what.** The landing works out one way in (`wayIn` in `agent/page.tsx`): *apply* when the public programme
+  is open, or the signed-in customer's `store.agent.programme.applyOpen` is true (pilot list), or they already are an
+  agent / applicant (apply sends them to their page); else the *waiting list* when `waitlistOpen` and a consent text
+  are published; else *closed*. Anonymous visitors never read the pilot list (the API's public answer is the flag
+  only), so the page cannot leak who is piloting.
+- **Waiting list on the landing.** The hero's primary button becomes "ลงทะเบียนรอเปิดรับ", an anchor to `#waitlist`
+  (the visitor stays on the page that explains the programme); the closing call-to-action becomes a two-column card
+  (why, then the form) instead of the apply band. The form: ชื่อ (required), เบอร์มือถือ and อีเมล side by side from
+  640 px with one hint — "at least one of the two" — under the phone, ช่องทางที่คุณขาย as the platform's own select
+  (no extra script on a marketing page, the phone's own picker), and the consent block on the subtle ground: version
+  number, the API's summary in medium weight, the full text, then the tick. Errors are listed together in one alert
+  at the top (as the apply form) and focused. `inputMode` / `autocomplete` on every field.
+- **Neutral answer.** Every accepted submission shows the same thank-you in place of the form ("ได้รับข้อมูลแล้ว
+  ขอบคุณที่สนใจ" — we will tell you through the contact you gave), announced as a status; a repeat contact gets the
+  identical message (the API answers `received` either way). A newer consent version (409) clears the tick, says the
+  text changed and refreshes the page to show it; a closed list refreshes into the closed state; 429 asks to wait.
+- **Closed.** No form and no promise of a date: a short line with an info icon under the hero lede
+  ("ตอนนี้ไม่ได้เปิดรับสมัครตัวแทน"), "ดูวิธีคิดค่าคอม" becomes the primary hero action, and the closing card says the
+  page holds everything about the programme with a "ติดต่อทีมงาน" link. No "coming soon", no countdown.
+- **/agent/apply** for a signed-in customer who may not apply: the title becomes "ลงทะเบียนรอเปิดรับ", the apply steps
+  are not shown (there is nothing to step through), and the same form starts from the account's name, phone and
+  e-mail. The account page's programme card says "ลงทะเบียนรอเปิดรับ" and goes to the same page.
+- **Admin.** "รายชื่อรอเปิดรับ" is the last tab of the agents desk, drawn only for `agent_waitlist.read` (Sales
+  Manager, C-Level, Superadmin); the page answers anyone else with the 403 state. Table: name, contact (local phone
+  over e-mail), how they sell, sign-ups (a repeat raises it), first and latest sign-up in Bangkok time; search by name,
+  e-mail or phone; "ส่งออก CSV" downloads the API's signed link (5 minutes) and says how many rows went out.
+- Mock: persona `agentpilot` (0861234569) is on the pilot list; the switch moves with the mock-only job
+  `POST /v1/store/mock-jobs/agents.programme_state` (`waitlist` default · `closed` · `open`).
+
+### Wording pass (AGENT-PORTAL-AUTORUN §6)
+- Grep over every agent- and customer-facing surface of the pack (`customer/agent.json`, `agent/*.json` both locales,
+  `src/features/{agent,customer/agent,shared/agent}`, `src/app/agent-zone`, the storefront `agent` and `account/agent`
+  routes, `public/agent-sw.js`) for กำไร|margin|profit · โรงงาน|factory · "฿0" · กำลังพัฒนา|เร็ว ๆ นี้|coming soon ·
+  AI-image wording. Copy: **no hit**. Allow-listed (not copy): two code comments that state the rule itself
+  (`DiscountOptions.tsx` "Nothing about cost or margin, ever", the landing's doc comment "never ฿0, no profit
+  wording"), and the JSON *key* `factory_bounty` in `customer/agent.json` — the API's enum value for the retired
+  referral kind (D-464), whose displayed text is "ค่าแนะนำ (โปรแกรมเดิม)".
+- The copy rules are now a unit gate, `src/i18n/agent-wording.test.ts`, next to the storefront's factory-wording test.
+- **Landing claims checked against what shipped (P2/P3):** link and QR (P2 share: copy, LINE, full-screen QR) ✔;
+  the getpack Agent app on the home screen (P2 PWA, install card, iOS guide) ✔; 50 ทวิ with every payment (P0/P2) ✔;
+  quotes sent from the system on LINE with "opened" visible (P3 agent quotes, `quote_opened` notification and
+  timeline) ✔. Two claims said more than shipped and were rewritten: "ใบเสนอราคาในนามคุณ / Quotes in your name" → "ส่ง
+  ใบเสนอราคาให้ลูกค้าได้เอง / Send quotes yourself" (the quote is getpack's document sent by the agent and attributed
+  to them; the customer does not see the agent's name on it), with the story's "ส่งในนามคุณ" → "ส่งจากคุณ"; and
+  "…แบบเรียลไทม์ / in real time" → "…ได้ในที่เดียว / in one place" (figures are as of opening the app, not pushed live).
+
+### Real-device pass (Safari iOS, Chrome Android) — NOT PERFORMED here
+This workspace has no phones or device cloud; nothing below has been done. Checklist for the owner / QA on UAT
+(`agent.<uat-host>` and the storefront), one iPhone (iOS 17+, Safari, with a notch / Dynamic Island) and one Android
+phone (Chrome, gesture navigation):
+1. `/agent` portrait and landscape: hero, examples as rows, calculator keyboard (`inputMode=decimal` shows the
+   number pad), the waiting-list form (phone keyboard on the mobile field, e-mail keyboard on e-mail), consent text
+   readable without zoom, the thank-you message after sending.
+2. `/agent/apply` signed in as a pilot account: OTP autofill from SMS (iOS "From Messages"), the agreement sheet
+   scrolls and its button stays above the home indicator.
+3. getpack Agent: the tab bar sits above the home indicator / gesture bar (no overlap, no gap); the FAB clears the
+   tab bar; the lead detail's sticky bar (โทร · LINE · ใบเสนอราคา · บันทึก) clears it too; pull-to-refresh does not
+   fight the board's sideways scroll; landscape keeps the side insets (notch side).
+4. Text at the largest system font size (iOS Dynamic Type via Safari's page zoom 150 %, Android font scale 1.3): no
+   clipped headings or buttons on home, leads, quotes, commissions.
+5. VoiceOver (iOS) and TalkBack (Android) through the tab bar, a lead, the stage menu and the waiting-list form.
+6. Offline: airplane mode → the offline page; a new lead saved as "รอส่ง" and sent when back online.
+7. Admin sales desk on a phone (inbox, a lead, approvals): readable and the main action reachable.
+Record device, OS and browser versions and screenshots per step in the UAT sheet.
+
+### Lighthouse (mobile preset, local VM — indicative only)
+Lighthouse 12.6.1 CLI, mobile, simulated throttling, three runs, against a local production build in mock mode
+(`/tmp`-style runs; the same command before and after). The VM's CPU makes performance lower than CI or a phone would
+measure; accessibility, best practices and SEO are exact.
+
+| Page | Perf (runs) | A11y | BP | SEO | Notes |
+|---|---|---|---|---|---|
+| `/agent` before P7 changes | 79 · 75 · 77 | 100 | 100 | 100 | LCP = the h1 (2.8–4.1 s simulated); HTML 1,133 KB |
+| `/agent` after the message trim | 82 · 80 · 71 | 100 | 100 | 100 | HTML 1,017 KB (gzip 199 → 188 KB); TBT 238–462 ms |
+| `/en/agent` | 82 | 100 | 100 | 100 | |
+| getpack Agent `/` | 89 · 80 · 88 · 91 | 100 | 100 | n/a (noindex) | |
+| getpack Agent other pages | 86–96 | 100 | 100 | n/a | `/leads` 86–89, `/quotes/new` 86 |
+| `/agent/apply` (returning customer) | 77 | 98 → 100 | 96 | n/a (noindex) | heading order fixed |
+
+Tried on `/agent` and kept: the client message catalogue loses four server-only copy subtrees
+(`src/i18n/client-messages.ts`, guarded by a test) — the HTML is 10 % smaller; the change in score sits inside the
+VM's run-to-run spread, so no claim beyond the byte saving. Looked at and not changed: fonts are already preloaded by
+`next/font` (both Anuphan files at high priority before any script); there are no raster images on the page; the
+calculator's script is a few KB of the shared form primitives (lazy-loading it saves nothing measurable); the hero
+story's animations are compositor-only (opacity / transform). The remaining cost is parsing ~1 MB of HTML of which
+~0.8 MB is the storefront's client message catalogue — the follow-up is per-route client namespaces
+(docs/performance-budgets.md, Agent portal P7). CI's `pnpm lhci agent-landing agent-apply agent-zone` gives the
+reference numbers.
+
+### PWA install (iOS and Android) — manual, NOT PERFORMED here
+The e2e installability check stays (`agent-portal-p2.spec.ts`: manifest fields and icons, an active service worker
+at `/agent-sw.js`). Real installs need phones:
+- **Android / Chrome:** open `agent.<host>` signed in, visit twice → the install card appears (from the 2nd visit) →
+  "ติดตั้ง" → the system prompt → the icon on the home screen with the maskable icon cropped cleanly → opens
+  standalone (no URL bar), theme colour in the status bar, the tab bar above the gesture bar; airplane mode → the
+  offline page; a push test from Admin reaches the device and opens its deep link.
+- **iOS / Safari (16.4+):** Share → "Add to Home Screen" (the in-app iOS guide shows these steps) → the apple-touch
+  icon, name "getpack Agent" → opens standalone; safe areas on a notched phone; web push only after adding to the
+  home screen and allowing notifications in the app.
+- Record pass / fail with device and OS versions in the UAT sheet.
+
+### Screenshots (`screenshots/P7`)
+`p7-waitlist-form-390/1440`, `p7-waitlist-done-390`, `p7-closed-390/1440`, `p7-pilot-landing-390`,
+`p7-pilot-apply-390/1440`, `p7-admin-waitlist-1440`, and the responsive contact sheets
+`p7-responsive-contact-sheet-360` / `-1920` (landing, apply, agent sign-in, agent home, leads, a lead, sales inbox,
+sales dashboard, an approval, P&L). Reviewed by eye: no clipping or overlap; at 360 the leads FAB floats over the list
+by design (the list ends above it when scrolled). The admin desks at 360 stack their filters and cards and stay usable.
+

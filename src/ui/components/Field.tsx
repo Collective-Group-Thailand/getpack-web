@@ -156,6 +156,7 @@ export function FormSection({
   description,
   step,
   card = false,
+  headingLevel = 3,
   className,
   children,
 }: {
@@ -168,15 +169,20 @@ export function FormSection({
   step?: number | "done";
   /** The section as a white card (design language v2's checkout). */
   card?: boolean;
+  /** The title's heading level: 3 under a page section, 2 when the form sits right under the page's h1. */
+  headingLevel?: 2 | 3;
   className?: string;
   children: React.ReactNode;
 }) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
     <section
       className={cn("space-y-4", card && "border-border bg-surface rounded-card border px-5 py-5 md:px-6", className)}
     >
       <div>
-        <h3 className={cn("font-semibold", card ? "flex items-center gap-2.5 text-[17px] font-bold" : "text-base")}>
+        <Heading
+          className={cn("font-semibold", card ? "flex items-center gap-2.5 text-[17px] font-bold" : "text-base")}
+        >
           {step !== undefined ? (
             <span
               aria-hidden="true"
@@ -189,7 +195,7 @@ export function FormSection({
             </span>
           ) : null}
           {title}
-        </h3>
+        </Heading>
         {description ? <p className="text-muted mt-0.5 text-sm">{description}</p> : null}
       </div>
       {children}
