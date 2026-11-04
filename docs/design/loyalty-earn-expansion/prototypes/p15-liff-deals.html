@@ -1,0 +1,392 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ดีลใน LINE — getpack (P1.5 prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>/* getpack light theme — values copied from src/ui/generated/tokens.css (:root, light). Semantic names only. */
+:root{
+  --bg: oklch(96.98% 0.0054 95.1);
+  --bg-subtle: oklch(94.85% 0.0067 97.35);
+  --surface: oklch(100% 0 0);
+  --surface-subtle: oklch(96.98% 0.0054 95.1);
+  --overlay: oklch(26.2% 0.011 72 / 0.55);
+  --border: oklch(90.94% 0.0097 93.58);
+  --border-strong: oklch(58.8% 0.022 72);
+  --fg: oklch(23.19% 0.0173 163.01);
+  --muted: oklch(43.79% 0.017 161.84);
+  --subtle: oklch(59.63% 0.013 161.81);
+  --primary: oklch(40.97% 0.0759 163.95);
+  --primary-hover: oklch(34.61% 0.0657 163.79);
+  --primary-fg: oklch(100% 0 0);
+  --primary-subtle: oklch(93.61% 0.0142 162.46);
+  --primary-subtle-fg: oklch(34.61% 0.0657 163.79);
+  --accent: oklch(70.79% 0.1524 65.49);
+  --accent-fg: oklch(23.19% 0.0173 163.01);
+  --success: oklch(52.73% 0.1371 150.07);
+  --success-subtle: oklch(98.5% 0.009 150);
+  --success-subtle-fg: oklch(35.2% 0.102 150);
+  --warning: oklch(55.53% 0.1455 49);
+  --neutral-subtle: oklch(96.2% 0.0031 72);
+  --neutral-subtle-fg: oklch(42.8% 0.018 72);
+  --focus-ring: oklch(40.97% 0.0759 163.95);
+  --r-control: 10px; --r-card: 14px; --r-panel: 16px;
+  --shadow-overlay: 0 8px 24px rgb(30 27 24 / 0.1);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Anuphan',ui-sans-serif,system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+
+/* site frame (simplified from the real header) */
+.site{background:var(--surface);border-bottom:1px solid var(--border)}
+.site-in{max-width:1320px;margin:0 auto;height:64px;display:flex;align-items:center;gap:32px;padding:0 48px}
+.brand{font-weight:600;font-size:20px;letter-spacing:-.015em}
+.site nav{display:flex;gap:26px;font-size:14.5px;color:var(--muted)}
+.site nav a.on{color:var(--fg);font-weight:600}
+.site .end{margin-left:auto;display:flex;align-items:center;gap:18px;font-size:14px;color:var(--muted)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.foot{border-top:1px solid var(--border);margin-top:72px}
+.foot-in{max-width:1180px;margin:0 auto;padding:22px 20px 28px;display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--r-control);font-weight:600;font-size:14.5px;border:0;cursor:pointer;white-space:nowrap;background:var(--primary);color:var(--primary-fg)}
+.btn:hover{background:var(--primary-hover)}
+.btn.sec{background:transparent;color:var(--fg);border:1px solid var(--fg)}
+.btn.sec:hover{background:oklch(23.19% 0.0173 163.01 / .05)}
+.btn.lg{height:52px;padding:0 24px;font-size:15.5px}
+.btn.nav{height:44px}
+.btn.block{width:100%}
+.lnk{color:var(--primary);font-weight:500;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.ib{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.ib:hover{background:var(--bg-subtle);color:var(--fg)}
+.ic{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--neutral-subtle);color:var(--neutral-subtle-fg);font-size:12px;font-weight:500;white-space:nowrap}
+.chip.best{background:var(--primary-subtle);color:var(--primary-subtle-fg)}
+.feat{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--accent);color:var(--accent-fg);font-size:12px;font-weight:600;white-space:nowrap}
+.warn{color:var(--warning);font-weight:500}
+.ok{color:var(--success);font-weight:500;display:inline-flex;align-items:center;gap:6px}
+
+/* ── Ticket primitive ───────────────────────────────────────────────────────────
+   The wrapper is the 1px border (bg = border) and the inner face is the ticket; both carry the same
+   cut-outs, the wrapper's 1px larger and concentric, so the hairline follows every notch and bite.
+   Every cut is a mask (radial-gradient), never a circle painted in the page colour. */
+.tk{--r:8px;--cut:116px;--edge:5px;--step:13px;position:relative;background:var(--border);padding:1px;border-radius:var(--r-card);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.tk>.face{position:relative;height:100%;border-radius:calc(var(--r-card) - 1px);background:var(--surface);overflow:hidden;display:flex;
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+/* vertical, notches on both long edges at the tear line */
+.tk.v{display:flex}
+.tk.v>.face{flex-direction:column;width:100%}
+.tk.v.both{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000)}
+.tk.v.both>.face{-webkit-mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000);
+  mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000)}
+/* horizontal, notches top and bottom at the tear line */
+.tk.h>.face{flex-direction:row}
+.tk.h.both{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000)}
+.tk.h.both>.face{-webkit-mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000);
+  mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000)}
+/* stamp edge on the leading edge of a horizontal ticket (left), added to the notches */
+.tk.h.both.stamp{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 0 50%,#0000 96%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 0,#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at var(--cut) 100%,#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 0 50%,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,100% var(--step);mask-size:100% 100%,100% 100%,100% var(--step);
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-y;mask-repeat:no-repeat,no-repeat,repeat-y;
+  -webkit-mask-position:0 0,0 0,0 0;mask-position:0 0,0 0,0 0}
+.tk.h.both.stamp>.face{-webkit-mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at -1px 50%,#0000 96%,#000);
+  mask-image:radial-gradient(circle var(--r) at calc(var(--cut) - 1px) -1px,#0000 98%,#000),radial-gradient(circle var(--r) at calc(var(--cut) - 1px) calc(100% + 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at -1px 50%,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,100% var(--step);mask-size:100% 100%,100% 100%,100% var(--step);
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-y;mask-repeat:no-repeat,no-repeat,repeat-y;
+  -webkit-mask-position:0 0,0 0,0 -1px;mask-position:0 0,0 0,0 -1px}
+/* stamp edge on the top of a vertical ticket (phone hero), added to the notches */
+.tk.v.both.stamp{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 50% 0,#0000 96%,#000);
+  mask-image:radial-gradient(circle calc(var(--r) + 1px) at 0 var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--r) + 1px) at 100% var(--cut),#0000 98%,#000),radial-gradient(circle calc(var(--edge) + 1px) at 50% 0,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,var(--step) 100%;mask-size:100% 100%,100% 100%,var(--step) 100%;
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-x;mask-repeat:no-repeat,no-repeat,repeat-x;
+  -webkit-mask-position:0 0,0 0,0 0;mask-position:0 0,0 0,0 0}
+.tk.v.both.stamp>.face{-webkit-mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at 50% -1px,#0000 96%,#000);
+  mask-image:radial-gradient(circle var(--r) at -1px calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--r) at calc(100% + 1px) calc(var(--cut) - 1px),#0000 98%,#000),radial-gradient(circle var(--edge) at 50% -1px,#0000 96%,#000);
+  -webkit-mask-size:100% 100%,100% 100%,var(--step) 100%;mask-size:100% 100%,100% 100%,var(--step) 100%;
+  -webkit-mask-repeat:no-repeat,no-repeat,repeat-x;mask-repeat:no-repeat,no-repeat,repeat-x;
+  -webkit-mask-position:0 0,0 0,-1px 0;mask-position:0 0,0 0,-1px 0}
+/* one notch on the end edge — the mini-stub of a compact row */
+.tk.end{--r:6px;border-radius:10px}
+.tk.end>.face{border-radius:9px}
+.tk.end{-webkit-mask-image:radial-gradient(circle calc(var(--r) + 1px) at 100% 50%,#0000 98%,#000);mask-image:radial-gradient(circle calc(var(--r) + 1px) at 100% 50%,#0000 98%,#000)}
+.tk.end>.face{-webkit-mask-image:radial-gradient(circle var(--r) at calc(100% + 1px) 50%,#0000 98%,#000);mask-image:radial-gradient(circle var(--r) at calc(100% + 1px) 50%,#0000 98%,#000)}
+
+/* stub tones */
+.stub{position:relative;flex:none;background:var(--primary-subtle);color:var(--primary-subtle-fg)}
+.stub.feat-tone{background:var(--primary);color:var(--primary-fg)}
+.stub.spent{background:var(--neutral-subtle);color:var(--subtle)}
+/* perforation: a dashed hairline across the tear line, stopping short of the notches */
+.perf-h{position:absolute;left:14px;right:14px;bottom:0;border-top:1px dashed var(--border-strong);opacity:.55}
+.perf-v{position:absolute;top:14px;bottom:14px;right:0;border-left:1px dashed var(--border-strong);opacity:.55}
+
+/* value set */
+.val{display:flex;align-items:baseline;gap:8px;line-height:1;font-variant-numeric:tabular-nums}
+.val .w{font-size:13px;font-weight:500;letter-spacing:0}
+.val .n{font-size:52px;font-weight:600;letter-spacing:-.035em}
+.val .n.word{font-size:30px;letter-spacing:-.01em}
+.val .cap{font-size:13px;font-weight:500}
+
+/* code box */
+.code{display:inline-flex;align-items:center;gap:2px;height:40px;padding:0 4px 0 12px;border:1px dashed var(--border-strong);border-radius:var(--r-control);font-weight:600;font-size:14px;letter-spacing:.06em;font-variant-numeric:tabular-nums;background:var(--surface)}
+.code .ib{width:32px;height:32px}
+.code.muted{color:var(--subtle);border-color:var(--border)}
+
+/* section headings */
+.h2{font-size:22px;font-weight:600;line-height:1.3;letter-spacing:-.005em}
+.lede{color:var(--muted);font-size:14.5px}
+
+/* review states block, below the page */
+.review{max-width:1180px;margin:0 auto;padding:8px 20px 80px}
+.review>h3{font-size:13px;font-weight:600;color:var(--muted);margin:56px 0 16px;padding-top:24px;border-top:1px dashed var(--border-strong)}
+.cap-k{font-size:12px;color:var(--subtle);margin:0 0 8px}
+
+/* DealCard — vertical ticket */
+.dc{min-width:0;display:flex}
+.dc>.tk{flex:1}
+.dc .stub{padding:14px 18px 0;display:flex;flex-direction:column}
+.dc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;height:22px}
+.dc-top .w{font-size:13px;font-weight:500}
+.dc .val{margin-top:10px}
+.dc-body{flex:1;display:flex;flex-direction:column;padding:16px 18px 18px;gap:4px;min-height:186px}
+.dc-body .feat{align-self:flex-start;margin-bottom:6px}
+.dc-h{font-size:16px;font-weight:600;line-height:1.45;letter-spacing:-.003em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dc-c{font-size:13.5px;color:var(--muted);line-height:1.5}
+.valid{font-size:13px;color:var(--muted)}
+.valid.warn{color:var(--warning)}
+.reason{display:flex;gap:6px;align-items:flex-start;font-size:13px;color:var(--muted);margin-top:4px}
+.reason .ic{margin-top:3px}
+.dc-foot{margin-top:auto;padding-top:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px}
+.dc-foot .auto,.auto{font-size:13px;color:var(--muted)}
+.lnk.sm{font-size:13.5px}
+.saved{display:inline-flex;flex-direction:column;align-items:flex-end;gap:0;font-size:14px;line-height:1.35}
+.dc.spent .dc-h,.dc.spent .dc-c,.dc.spent .valid{color:var(--subtle)}
+.dc.spent .chip{background:var(--neutral-subtle);color:var(--neutral-subtle-fg)}
+.dc.off .val,.dc.off .dc-top{opacity:1}
+
+/* the mini-stub of a compact row */
+.mini{width:64px;height:56px;flex:none}
+.mini .stub{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding-right:4px;line-height:1}
+.mini .w{font-size:11px;font-weight:500}
+.mini .n{font-size:20px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mini .n.word{font-size:15px;letter-spacing:0}
+
+/* compact rows in one hairline container */
+.rows{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card)}
+.cr{position:relative;display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:14px;padding:12px 14px;min-height:80px}
+.cr+.cr{border-top:1px solid var(--border)}
+.cr-hit{position:absolute;inset:0;border-radius:inherit}
+.cr-hit:hover{background:oklch(96.98% 0.0054 95.1 / .6)}
+.cr-t{min-width:0;position:relative;pointer-events:none}
+.cr-h{font-size:15px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-m{font-size:13px;color:var(--muted);line-height:1.45;margin-top:2px;display:flex;flex-direction:column}
+.cr-c{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-a{position:relative}
+.rowbtn{height:44px;min-width:64px;padding:0 14px}
+.rowok{font-size:14px;padding:0 4px}
+.rowauto{font-size:12.5px;color:var(--muted)}
+.cr.spent .cr-h,.cr.spent .cr-m{color:var(--subtle)}
+
+/* featured — horizontal ticket, solid stub with a stamp edge */
+.fx .tk{--edge:5px;--step:13px}
+.fx-stub{width:248px;padding:24px 26px 22px 30px;display:flex;flex-direction:column;align-items:flex-start;line-height:1}
+.fx-w{font-size:15px;font-weight:500}
+.fx-n{font-size:84px;font-weight:700;letter-spacing:-.045em;margin-top:10px;font-variant-numeric:tabular-nums}
+.fx-cap{font-size:15px;font-weight:500;margin-top:12px}
+.fx-tag{margin-top:auto;padding-top:14px;font-size:13px;font-weight:500;border-top:1px solid oklch(100% 0 0 / .28);align-self:stretch}
+.fx-stub .fx-cap{margin-bottom:22px}
+.fx-tag.sm{margin:0;padding:0;border:0;align-self:auto}
+.fx-body{flex:1;min-width:0;padding:24px 28px 22px 32px;display:flex;flex-direction:column;border-left:1px dashed var(--border-strong)}
+.fx-meta{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fx-h{font-size:26px;font-weight:600;line-height:1.3;letter-spacing:-.01em;margin-top:12px}
+.fx-s{font-size:14.5px;color:var(--muted);margin-top:6px}
+.fx-foot{margin-top:auto;padding-top:20px;display:flex;align-items:center;gap:12px;border-top:1px solid var(--border)}
+.fx-more{margin-left:auto;display:inline-flex;align-items:center;gap:2px;color:var(--primary);font-weight:500;font-size:14px}
+/* phone hero — the same ticket standing up, stamp along the top */
+.hx .tk{--edge:5px;--step:13px}
+.hx-stub{height:150px;padding:20px 20px 0;display:flex;flex-direction:column}
+.hx-top{display:flex;justify-content:space-between;align-items:center;line-height:1;padding-top:2px}
+.hx-val{display:flex;align-items:baseline;gap:10px;margin-top:10px;line-height:1}
+.hx-n{font-size:62px;font-weight:700;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.hx-body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:4px}
+.hx-h{font-size:19px;font-weight:600;line-height:1.35;margin-top:8px}
+.hx-foot{display:flex;align-items:center;gap:10px;margin-top:14px}
+.hx-foot .code{flex:1;justify-content:space-between}
+
+body{background:var(--bg-subtle)}
+.board{display:flex;gap:40px;justify-content:center;padding:40px 20px 60px;align-items:flex-start}
+.cap{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.phone{position:relative;width:390px;height:844px;overflow:hidden;background:var(--bg);border:1px solid var(--border);border-radius:28px;display:flex;flex-direction:column}
+.lh{height:48px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.lb{font-weight:600;font-size:17px}.lt{font-size:12px;background:var(--primary-subtle);color:var(--primary-subtle-fg);padding:1px 8px;border-radius:8px;font-weight:500}
+.lm{flex:1;overflow:hidden;padding:14px 16px 0;display:flex;flex-direction:column;gap:14px}
+.pts{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;padding:2px 0}
+.pts b{font-weight:600}.pts span{color:var(--muted)}
+.pts a{color:var(--primary);font-weight:500;display:inline-flex;align-items:center}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.seg button{height:40px;border:0;border-radius:9px;background:transparent;font-size:14px;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--primary-subtle);color:var(--primary-subtle-fg);font-weight:600}
+.lfeat .hx .tk{--cut:118px!important}
+.lfeat .hx-stub{height:118px;padding:16px 18px 0}
+.lfeat .hx-n{font-size:50px}
+.lfeat .hx-body{padding:12px 18px 16px}
+.lfeat .hx-h{font-size:17px;margin-top:6px}
+.lfeat .dc-c{display:none}
+.lfeat .hx-foot{margin-top:10px}
+.sticky{position:absolute;left:0;right:0;bottom:64px;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px;background:var(--surface);border-top:1px solid var(--border)}
+.sticky .btn{height:44px;font-size:14px}
+.ln{position:absolute;left:0;right:0;bottom:0;height:64px;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--border);font-size:12px;color:var(--muted);align-items:center;text-align:center}
+.ln a.on{color:var(--primary-subtle-fg);font-weight:600}
+.scrim{position:absolute;inset:0;background:var(--overlay)}
+.lsheet{position:absolute;left:0;right:0;bottom:0;padding:22px 0 0}
+.grab{position:absolute;top:8px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:var(--primary-fg);opacity:.7}
+.lsheet .tk{background:var(--border)}
+.ls-stub{height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;gap:6px}
+.ls-w{font-size:13px;font-weight:500;opacity:.9}
+.ls-v{display:flex;align-items:baseline;gap:8px}
+.ls-x{font-size:16px;font-weight:500}
+.ls-n{font-size:56px;font-weight:700;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.ls-cap{font-size:14px;font-weight:500}
+.ls-body{padding:18px 18px 22px;display:flex;flex-direction:column;gap:12px}
+.ls-body h2{font-size:19px;font-weight:600;line-height:1.35}
+.kv{margin:0;border-top:1px solid var(--border)}
+.kv div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:500;text-align:right}
+.lcode{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 14px;border:1px dashed var(--border-strong);border-radius:12px}
+.lcode small{display:block;font-size:12px;color:var(--muted)}
+.lcode b{font-size:18px;letter-spacing:.08em;font-weight:600}
+.lcode .btn{height:40px;padding:0 12px;font-size:14px}
+.ls-share{border:0;font-weight:500;height:44px;color:var(--primary)}
+@media (max-width:760px){.board{flex-direction:column;align-items:center;padding:0;gap:24px}.phone{border-radius:0;border:0;width:100%}.cap{padding:12px 16px 0}}
+</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+ <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+ <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+ <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+ <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4Z"/><path d="M14 6v12" stroke-dasharray="2 2.2"/></symbol>
+ <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></symbol>
+ <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1Z"/><path d="M4 7l11-3v3M16 13.5h.01"/></symbol>
+ <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+ <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+ <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11h11l2-8H6.2"/><circle cx="9" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></symbol>
+ <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+ <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+ <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z"/></symbol>
+ <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17.5" cy="17.5" r="1.6"/></symbol>
+ <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M5 8h14M7 8l-3 6a3 3 0 0 0 6 0Zm10 0-3 6a3 3 0 0 0 6 0Z"/></symbol>
+ <symbol id="i-save" viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z"/><path d="M9 4v5h6"/></symbol>
+ <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+ <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></symbol>
+ <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+</svg>
+<main class="board">
+<section><p class="cap">/liff/deals · รายการ</p><div class="phone"><header class="lh"><span class="lb">getpack</span><span class="lt">ใน LINE</span></header>
+<div class="lm"><div class="pts"><p>แต้มของคุณ <b class="num">1,250</b> <span>· มูลค่า ฿125.00</span></p><a href="#">ดูแต้ม<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a></div>
+<div class="seg" role="tablist"><button class="on" role="tab" aria-selected="true">ดีลทั้งหมด</button><button role="tab" aria-selected="false">คูปองของฉัน (3)</button></div><div class="lfeat"><article class="hx" aria-label="ส่วนลด 10% สูงสุด ฿1,500">
+  <div class="tk v both stamp" style="--cut:150px"><div class="face">
+    <div class="stub feat-tone hx-stub">
+      <div class="hx-top"><span class="fx-w">ลด</span><span class="fx-tag sm">กล่องลูกฟูก</span></div>
+      <div class="hx-val"><span class="hx-n">10%</span><span class="fx-cap">สูงสุด ฿1,500</span></div>
+      <span class="perf-h" aria-hidden="true" style="border-color:var(--primary-fg);opacity:.35"></span>
+    </div>
+    <div class="hx-body">
+      <div class="fx-meta"><span class="feat">ดีลเด่น</span><span class="valid">ถึง 30 พ.ย. 2569</span></div>
+      <h2 class="hx-h">กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%</h2>
+      <p class="dc-c">เฉพาะกล่องลูกฟูกฝาชน · ขั้นต่ำ 1,000 ใบ · ใช้ร่วมกับคูปองส่งฟรีได้</p>
+      <div class="hx-foot"><span class="code"><span>BOX10</span><button class="ib" aria-label="คัดลอกโค้ด BOX10"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button></span><button class="btn">เก็บโค้ด</button></div>
+    </div>
+  </div></div>
+</article></div><ul class="rows"><li class="cr">
+  <a class="cr-hit" href="#" aria-label="ส่งฟรีเมื่อสั่งครบ ฿5,000"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="n word">ส่งฟรี</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">ส่งฟรีเมื่อสั่งครบ ฿5,000</p><p class="cr-m"><span class="cr-c">ยอดสินค้าขั้นต่ำ ฿5,000</span><span class="cr-d">ถึง 31 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><button class="btn sec rowbtn">เก็บ</button></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="สติกเกอร์ฉลาก 5,000 ดวงขึ้นไป ลด 8%"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">ลด</span><span class="n">8%</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">สติกเกอร์ฉลาก 5,000 ดวงขึ้นไป ลด 8%</p><p class="cr-m"><span class="cr-c">ขั้นต่ำ 5,000 ดวง</span><span class="cr-d"><span class="warn">เหลือ 2 วัน</span> · ถึง 6 พ.ย. 2569</span></p></div>
+  <div class="cr-a"><button class="btn sec rowbtn">เก็บ</button></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="คำสั่งซื้อแรก ลด ฿300"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">ลด</span><span class="n">฿300</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">คำสั่งซื้อแรก ลด ฿300</p><p class="cr-m"><span class="cr-c">ยอดสินค้าขั้นต่ำ ฿1,200</span><span class="cr-d">ถึง 31 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><span class="ok rowok"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>เก็บแล้ว</span></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="สั่งซ้ำภายใน 30 วัน รับแต้ม ×2"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">แต้ม</span><span class="n">×2</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">สั่งซ้ำภายใน 30 วัน รับแต้ม ×2</p><p class="cr-m"><span class="cr-c">ใช้กับการสั่งซ้ำแบบเดิม</span><span class="cr-d">ถึง 15 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><button class="btn sec rowbtn">เก็บ</button></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="กล่องกระดาษแข็ง 500 ใบขึ้นไป ลด 5%"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">ลด</span><span class="n">5%</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">กล่องกระดาษแข็ง 500 ใบขึ้นไป ลด 5%</p><p class="cr-m"><span class="cr-c">ขั้นต่ำ 500 ใบ</span><span class="cr-d">ถึง 25 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><span class="rowauto">ไม่ต้องใช้โค้ด</span></div>
+</li></ul></div>
+<div class="sticky"><button class="btn sec"><svg class="ic" aria-hidden="true"><use href="#i-share"/></svg>แชร์ให้เพื่อน</button><button class="btn sec"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg>เปิดกระเป๋าคูปอง</button></div>
+<nav class="ln"><a>หน้าแรก</a><a>คำสั่งซื้อ</a><a class="on">คะแนน</a><a>แชท</a></nav></div></section>
+<section><p class="cap">/liff/deals · แตะดีลเพื่อเปิดรายละเอียด (แผ่นล่างเป็นตั๋ว)</p><div class="phone"><header class="lh"><span class="lb">getpack</span><span class="lt">ใน LINE</span></header>
+<div class="lm"><div class="pts"><p>แต้มของคุณ <b class="num">1,250</b> <span>· มูลค่า ฿125.00</span></p><a href="#">ดูแต้ม<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a></div>
+<div class="seg" role="tablist"><button class="on" role="tab" aria-selected="true">ดีลทั้งหมด</button><button role="tab" aria-selected="false">คูปองของฉัน (3)</button></div><div class="lfeat"><article class="hx" aria-label="ส่วนลด 10% สูงสุด ฿1,500">
+  <div class="tk v both stamp" style="--cut:150px"><div class="face">
+    <div class="stub feat-tone hx-stub">
+      <div class="hx-top"><span class="fx-w">ลด</span><span class="fx-tag sm">กล่องลูกฟูก</span></div>
+      <div class="hx-val"><span class="hx-n">10%</span><span class="fx-cap">สูงสุด ฿1,500</span></div>
+      <span class="perf-h" aria-hidden="true" style="border-color:var(--primary-fg);opacity:.35"></span>
+    </div>
+    <div class="hx-body">
+      <div class="fx-meta"><span class="feat">ดีลเด่น</span><span class="valid">ถึง 30 พ.ย. 2569</span></div>
+      <h2 class="hx-h">กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%</h2>
+      <p class="dc-c">เฉพาะกล่องลูกฟูกฝาชน · ขั้นต่ำ 1,000 ใบ · ใช้ร่วมกับคูปองส่งฟรีได้</p>
+      <div class="hx-foot"><span class="code"><span>BOX10</span><button class="ib" aria-label="คัดลอกโค้ด BOX10"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button></span><button class="btn">เก็บโค้ด</button></div>
+    </div>
+  </div></div>
+</article></div><ul class="rows"><li class="cr">
+  <a class="cr-hit" href="#" aria-label="ส่งฟรีเมื่อสั่งครบ ฿5,000"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="n word">ส่งฟรี</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">ส่งฟรีเมื่อสั่งครบ ฿5,000</p><p class="cr-m"><span class="cr-c">ยอดสินค้าขั้นต่ำ ฿5,000</span><span class="cr-d">ถึง 31 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><button class="btn sec rowbtn">เก็บ</button></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="สติกเกอร์ฉลาก 5,000 ดวงขึ้นไป ลด 8%"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">ลด</span><span class="n">8%</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">สติกเกอร์ฉลาก 5,000 ดวงขึ้นไป ลด 8%</p><p class="cr-m"><span class="cr-c">ขั้นต่ำ 5,000 ดวง</span><span class="cr-d"><span class="warn">เหลือ 2 วัน</span> · ถึง 6 พ.ย. 2569</span></p></div>
+  <div class="cr-a"><button class="btn sec rowbtn">เก็บ</button></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="คำสั่งซื้อแรก ลด ฿300"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">ลด</span><span class="n">฿300</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">คำสั่งซื้อแรก ลด ฿300</p><p class="cr-m"><span class="cr-c">ยอดสินค้าขั้นต่ำ ฿1,200</span><span class="cr-d">ถึง 31 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><span class="ok rowok"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>เก็บแล้ว</span></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="สั่งซ้ำภายใน 30 วัน รับแต้ม ×2"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">แต้ม</span><span class="n">×2</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">สั่งซ้ำภายใน 30 วัน รับแต้ม ×2</p><p class="cr-m"><span class="cr-c">ใช้กับการสั่งซ้ำแบบเดิม</span><span class="cr-d">ถึง 15 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><button class="btn sec rowbtn">เก็บ</button></div>
+</li><li class="cr">
+  <a class="cr-hit" href="#" aria-label="กล่องกระดาษแข็ง 500 ใบขึ้นไป ลด 5%"></a>
+  <div class="tk end mini" aria-hidden="true"><div class="face"><div class="stub"><span class="w">ลด</span><span class="n">5%</span></div></div></div>
+  <div class="cr-t"><p class="cr-h">กล่องกระดาษแข็ง 500 ใบขึ้นไป ลด 5%</p><p class="cr-m"><span class="cr-c">ขั้นต่ำ 500 ใบ</span><span class="cr-d">ถึง 25 ธ.ค. 2569</span></p></div>
+  <div class="cr-a"><span class="rowauto">ไม่ต้องใช้โค้ด</span></div>
+</li></ul></div>
+<div class="sticky"><button class="btn sec"><svg class="ic" aria-hidden="true"><use href="#i-share"/></svg>แชร์ให้เพื่อน</button><button class="btn sec"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg>เปิดกระเป๋าคูปอง</button></div>
+<nav class="ln"><a>หน้าแรก</a><a>คำสั่งซื้อ</a><a class="on">คะแนน</a><a>แชท</a></nav><div class="scrim"></div><div class="lsheet" role="dialog" aria-modal="true" aria-labelledby="ls-h">
+  <span class="grab" aria-hidden="true"></span>
+  <div class="tk v both" style="--cut:132px;--r:10px;border-radius:var(--r-card) var(--r-card) 0 0"><div class="face" style="border-radius:calc(var(--r-card) - 1px) calc(var(--r-card) - 1px) 0 0">
+    <div class="stub feat-tone ls-stub"><span class="ls-w">ส่วนลด</span><span class="ls-v"><span class="ls-x">ลด</span><span class="ls-n">10%</span></span><span class="ls-cap">สูงสุด ฿1,500</span><span class="perf-h" aria-hidden="true" style="border-color:var(--primary-fg);opacity:.35"></span></div>
+    <div class="ls-body">
+      <h2 id="ls-h">กล่องลูกฟูก 1,000 ใบขึ้นไป ลด 10%</h2>
+      <dl class="kv"><div><dt>ขั้นต่ำ</dt><dd>1,000 ใบ</dd></div><div><dt>ใช้กับ</dt><dd>กล่องลูกฟูกฝาชน</dd></div><div><dt>ใช้ร่วมกับ</dt><dd>คูปองส่งฟรี</dd></div><div><dt>ใช้ได้ถึง</dt><dd>30 พ.ย. 2569</dd></div></dl>
+      <div class="lcode"><span><small>รหัสคูปอง</small><b>BOX10</b></span><button class="btn sec"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg>คัดลอก</button></div>
+      <button class="btn lg block">เก็บโค้ด</button>
+      <button class="btn sec lg block ls-share"><svg class="ic" aria-hidden="true"><use href="#i-share"/></svg>ส่งดีลนี้ให้ทีม</button>
+    </div>
+  </div></div></div></div></section>
+</main></body></html>
