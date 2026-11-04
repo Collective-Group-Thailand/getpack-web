@@ -407,7 +407,7 @@
       },
       "quote": {
         "label": "Quote",
-        "before": "Sent in your name",
+        "before": "Sent by you",
         "title": "Prices from the system; customers order and pay themselves",
         "send": "Send quote",
         "sent": "Sent",
@@ -471,11 +471,11 @@
           "body": "New customers who open it are remembered for {days} days and linked to you when they sign up"
         },
         "quote": {
-          "title": "Quotes in your name",
-          "body": "Send system quotes on LINE in minutes and see when the customer opens them"
+          "title": "Send quotes yourself",
+          "body": "Make a quote in the system and send it on LINE straight away. A customer who opens it is linked to you, and you see when they open it"
         },
         "track": {
-          "title": "Customers and commission in real time",
+          "title": "Customers and commission in one place",
           "body": "Every order, every status and when commission arrives — in one place"
         },
         "wht": {

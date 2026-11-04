@@ -596,6 +596,23 @@ charts; getpack tokens, Anuphan and the existing admin console patterns win ever
 - Mock: persona `agentpilot` (0861234569) is on the pilot list; the switch moves with the mock-only job
   `POST /v1/store/mock-jobs/agents.programme_state` (`waitlist` default · `closed` · `open`).
 
+### Wording pass (AGENT-PORTAL-AUTORUN §6)
+- Grep over every agent- and customer-facing surface of the pack (`customer/agent.json`, `agent/*.json` both locales,
+  `src/features/{agent,customer/agent,shared/agent}`, `src/app/agent-zone`, the storefront `agent` and `account/agent`
+  routes, `public/agent-sw.js`) for กำไร|margin|profit · โรงงาน|factory · "฿0" · กำลังพัฒนา|เร็ว ๆ นี้|coming soon ·
+  AI-image wording. Copy: **no hit**. Allow-listed (not copy): two code comments that state the rule itself
+  (`DiscountOptions.tsx` "Nothing about cost or margin, ever", the landing's doc comment "never ฿0, no profit
+  wording"), and the JSON *key* `factory_bounty` in `customer/agent.json` — the API's enum value for the retired
+  referral kind (D-464), whose displayed text is "ค่าแนะนำ (โปรแกรมเดิม)".
+- The copy rules are now a unit gate, `src/i18n/agent-wording.test.ts`, next to the storefront's factory-wording test.
+- **Landing claims checked against what shipped (P2/P3):** link and QR (P2 share: copy, LINE, full-screen QR) ✔;
+  the getpack Agent app on the home screen (P2 PWA, install card, iOS guide) ✔; 50 ทวิ with every payment (P0/P2) ✔;
+  quotes sent from the system on LINE with "opened" visible (P3 agent quotes, `quote_opened` notification and
+  timeline) ✔. Two claims said more than shipped and were rewritten: "ใบเสนอราคาในนามคุณ / Quotes in your name" → "ส่ง
+  ใบเสนอราคาให้ลูกค้าได้เอง / Send quotes yourself" (the quote is getpack's document sent by the agent and attributed
+  to them; the customer does not see the agent's name on it), with the story's "ส่งในนามคุณ" → "ส่งจากคุณ"; and
+  "…แบบเรียลไทม์ / in real time" → "…ได้ในที่เดียว / in one place" (figures are as of opening the app, not pushed live).
+
 ### Real-device pass (Safari iOS, Chrome Android) — NOT PERFORMED here
 This workspace has no phones or device cloud; nothing below has been done. Checklist for the owner / QA on UAT
 (`agent.<uat-host>` and the storefront), one iPhone (iOS 17+, Safari, with a notch / Dynamic Island) and one Android
