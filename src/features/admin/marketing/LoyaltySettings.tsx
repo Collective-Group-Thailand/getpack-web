@@ -24,7 +24,7 @@ type Setting = Schemas["SettingDto"];
 type Value = Setting extends { current: infer C } ? (C extends { value: infer V } ? V : never) : never;
 type Scalar = string | number | boolean | null;
 
-/** The settings this page is for, in reading order (D-130…D-136, D-154). */
+/** The settings this page is for, in reading order (D-130…D-136, D-154, D-490…D-493). */
 const KEYS = [
   "loyalty.earn_rate",
   "loyalty.point_value",
@@ -32,6 +32,11 @@ const KEYS = [
   "loyalty.activity_rewards",
   "loyalty.redemption_limits",
   "loyalty.points_expiry",
+  // Loyalty P2 (D-490…D-493): the flat ones are edited here; the nested ones (order multipliers, lifecycle bonuses,
+  // analytics windows) in Settings, where the version history is.
+  "loyalty.data_refresh",
+  "loyalty.reorder_reminder",
+  "surveys.rules",
   "referral.rules",
   "campaigns.budget_alert_pct",
 ] as const;

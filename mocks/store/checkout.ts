@@ -17,6 +17,7 @@
  */
 
 import { http, HttpResponse } from "msw";
+import type { CheckoutPointsP2Fields } from "@/features/shared/loyalty-p2/types";
 
 import type { Schemas } from "@/lib/api/types";
 
@@ -965,6 +966,7 @@ function toPreviewDto(customer: MockCustomer, priced: Priced): Schemas["Checkout
       pointValue: preview.points.pointValue,
       redeemedPoints: preview.points.redeemed,
       toEarn: preview.points.toEarn,
+      ...pointsP2Of(preview.points.toEarn),
     },
     company:
       priced.company && preview.company
@@ -1566,3 +1568,22 @@ export const storeCheckoutHandlers = [
     return HttpResponse.json({ ok: true });
   }),
 ];
+
+/**
+ * Loyalty P2 (`PointsPreviewDto`): the multipliers behind `toEarn` (payment method "1.00": none is declared before
+ * payment) and the QR / transfer bonus (D-490, D-495). The mock's engine is a fake one; the web shows these figures as given.
+ */
+function pointsP2Of(toEarn: number): CheckoutPointsP2Fields {
+  return {
+    multipliers: {
+      tier: "1.25",
+      paymentMethod: "1.00",
+      reorderCampaign: "1.00",
+      promotion: "1.00",
+      combined: "1.25",
+      capped: false,
+    },
+    paymentBonus: { multiplier: "1.20", methods: ["scb_qr", "scb_qr_cross_bank", "bank_transfer_slip"] },
+    toEarnWithPaymentBonus: Math.floor(toEarn * 1.2),
+  };
+}

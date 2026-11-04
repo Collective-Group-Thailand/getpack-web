@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getPoints } from "@/features/customer/account/api.server";
 import { listDeals } from "@/features/customer/deals/api.server";
 import { readNow } from "@/features/customer/deals/now.server";
+import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { LiffDeals } from "@/features/customer/deals/LiffDeals";
 import { LiffHeader } from "@/features/customer/liff/LiffHeader";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
@@ -53,6 +54,7 @@ export default async function Page() {
           deals={list.items}
           dealsUrl={alternateUrls(origin, "/deals", locale as Locale).canonical}
           now={await readNow()}
+          typeNames={await getProductTypeNames(locale).catch(() => ({}) as Record<string, string>)}
         />
       ) : (
         <EmptyState icon="ticket" title={t("empty.noneTitle")} description={t("empty.noneBody")} />

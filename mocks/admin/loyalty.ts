@@ -19,7 +19,10 @@ import { customers, orders } from "./commerce";
 import { settingValue } from "./platform";
 
 /** A ledger line as the fixture keeps it (with the order it came from); served as `PointsEntryDto`. */
-type Entry = Omit<Schemas["PointsEntryDto"], "orderId" | "orderCode" | "groupCode" | "reason"> & {
+type Entry = Omit<
+  Schemas["PointsEntryDto"],
+  "orderId" | "orderCode" | "groupCode" | "reason" | "bonusReason" | "multipliers"
+> & {
   order: { id: string; orderCode: string; groupCode: string } | null;
   note: string | null;
 };
@@ -186,6 +189,8 @@ export const loyaltyHandlers = [
       nextTierProgressPct: next
         ? Math.min(100, (Number(customer.loyalty.spend12m) / Number(next.minSpend12m)) * 100).toFixed(2)
         : "100.00",
+      bonusLots: [],
+      activeCampaigns: 0,
     };
     return HttpResponse.json(body);
   }),
@@ -200,6 +205,8 @@ export const loyaltyHandlers = [
         orderCode: order?.orderCode ?? null,
         groupCode: order?.groupCode ?? null,
         reason: note,
+        bonusReason: null,
+        multipliers: null,
       }))
       // `?entryType` (v0.5.0).
       .filter((entry) => !url.searchParams.get("entryType") || entry.entryType === url.searchParams.get("entryType"));

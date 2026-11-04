@@ -100,7 +100,8 @@
     "factory_payout_policy_change": "Factory payout policy change",
     "factory_tolerance_change": "Factory tolerance change",
     "guarantee_policy_change": "Guarantee policy change",
-    "style_library_change": "Style library change"
+    "style_library_change": "Style library change",
+    "showcase_consent_review": "Customer showcase consent"
   },
   "fields": {
     "quoteCode": "Quotation",
@@ -149,7 +150,11 @@
     "factory": "Factory",
     "direction": "Price direction",
     "productType": "Product type",
-    "proposedEffectiveFrom": "Proposed effective from"
+    "proposedEffectiveFrom": "Proposed effective from",
+    "scope": "What may be shown",
+    "consentTextVersion": "Consent text version",
+    "recentOrders": "Recent orders",
+    "recentOrderCodes": "Recent orders"
   },
   "delegations": {
     "title": "Delegations",

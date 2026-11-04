@@ -14,6 +14,7 @@ import { financeHandlers } from "./finance";
 import { governanceHandlers } from "./governance";
 import { logisticsHandlers } from "./logistics";
 import { loyaltyHandlers } from "./loyalty";
+import { loyaltyP2AdminHandlers } from "./loyalty-p2";
 import { marketingContractHandlers, marketingHandlers } from "./marketing";
 import { orderHandlers } from "./orders";
 import { partnerHandlers } from "./partners";
@@ -27,6 +28,8 @@ import { styleLibraryContentHandlers } from "./style-library-content";
 import { adminConversationHandlers } from "../store/conversations";
 
 export const adminHandlers = [
+  // Loyalty P2: before marketing, whose `/promotions/:promotionId` would take "agent-performance" for an id.
+  ...loyaltyP2AdminHandlers,
   ...styleLibraryContentHandlers,
   ...adminConversationHandlers,
   ...consoleHandlers,

@@ -209,3 +209,87 @@ names conflicts). Every string is in `messages/{th,en}`; deal text comes from `p
 - PDP: the phone tile selection disagreed with the price (1,000 vs 500); fixed. The LIFF sheet's second action was a
   second full outline button; now a quiet text button.
 - Cart heading "ใช้ได้ 2 จาก 3" read as "2 usable"; now "เลือกแล้ว 2 จาก 3 ใบ".
+
+---
+
+# P2 design notes — surveys, lifecycle, "สำหรับคุณ", bundles, analytics
+
+Prototypes: `prototypes/p2-survey.html`, `p2-lifecycle.html`, `p2-for-you.html`, `p2-loyalty-analytics.html`,
+`p2-promotion-audience.html`. Screenshots: `screenshots/P2/` (390 and 1440, light, full page). Each file holds the
+page first and, below a dashed rule, the review states. The base CSS (tokens, ticket masks, compact rows) is copied
+from the P1.5 prototypes so the families match; every figure is a fake example (API-CHANGES-P2 samples).
+
+## 1. Surveys (`SurveyCard`, `SurveySheet`)
+
+- **Card**: one quiet row — 40 px `primary-subtle` icon tile, eyebrow "แบบสอบถาม · OR-…", title, one meta line
+  "4 คำถามสั้น ๆ · ตอบครบรับ **8 แต้ม** · ตอบได้ถึง …". Actions: outline "ตอบแบบสอบถาม" and ghost "ไว้ทีหลัง"
+  (never two filled buttons; the account overview keeps its own primary). Shown on `/account` after "ต้องทำตอนนี้",
+  on the order page after delivery and on `/liff`. Rendering it calls `markSeen` once: "shown once" is the API's.
+- **Desktop**: a 600 px dialog with every question, numbered in `subtle` tabular figures, hairlines between them.
+- **Phone**: a bottom sheet, one question per step, "2 / 4" plus a 4-segment 3 px bar (no percentage), the question
+  at 19 px, 52 px answer tiles, "ย้อนกลับ" as an icon button and "ถัดไป" filled; the reward line sits under the
+  buttons, small.
+- Rating 1–5 = five square buttons (a `radiogroup`) with the end labels "ไม่พอใจ" / "พอใจมาก" — not stars (stars mean
+  review ratings, the one place "คะแนน" stays).
+- PDPA purpose line in the `bg-subtle` panel above the submit: what the answers are used for and that the team sees
+  them with the order code; links the privacy policy. No consent checkbox (the answers are optional feedback).
+- Thanks state: success check, "ขอบคุณสำหรับคำตอบ", and "ได้รับ 8 แต้ม" only when the API says `rewardPoints > 0`.
+- Closed/expired deep link: neutral clock icon, "แบบสอบถามนี้ปิดแล้ว", back to the account.
+
+## 2. Reorder reminder and win-back
+
+- **ReorderBonusBadge**: a `primary-subtle` line inside the replenishment card with a small solid `primary` tag
+  "แต้ม ×1.5" and "เมื่อสั่งซ้ำภายใน 7 วัน · ถึง 12 พ.ย." — a static date, never a countdown (D-481). The card with
+  an active campaign gets the filled "สั่งซ้ำ"; others keep the outline. "คาดว่าจะใช้หมด ประมาณ 18 พ.ย." is a
+  label/value pair beside "แนะนำให้สั่งภายใน". The same tag (`sm`, no tint) appears on a cart line.
+- **WinbackBanner**: same family as the earn banner — gift tile, "มี 40 แต้มโบนัสรอคุณอยู่", "ใช้เป็นส่วนลดได้ถึง …",
+  link "ดูดีลที่ใช้ได้". The words never mention inactivity, absence or "we miss you". On `/account/points` the lot is
+  a footnote inside the balance card; in the history the row "แต้มโบนัส" carries "หมดอายุ …".
+
+## 3. "สำหรับคุณ" and bundles
+
+- The tab is real: a reason line in `primary-subtle-fg` with a small people icon under the headline —
+  "สำหรับลูกค้าใหม่", "สำหรับสมาชิกระดับ …", "สำหรับลูกค้าที่เคยสั่ง<ประเภท>". `forYouReason = null` shows no line
+  (business-type and inactivity matches are never explained). Compact rows put the reason in the meta line.
+- Signed out: a card "เข้าสู่ระบบเพื่อดูดีลที่ตรงกับบัญชีของคุณ" + filled "เข้าสู่ระบบ" above the new-customer deals.
+  Empty: ticket icon, "ยังไม่มีดีลเฉพาะคุณตอนนี้", outline "ดูดีลทั้งหมด".
+- **Bundle ticket**: word "ประหยัดประมาณ", figure = the API's `estimatedSaving` with "ก่อน VAT", tag "ชุดสินค้า";
+  the body lists the pieces with quantities on hairline-dashed rows. Grid action is the outline full-width
+  "เพิ่มชุดนี้ลงตะกร้า" (D-486 grid rule); `/deals/[slug]` uses the filled one.
+- **Bundle sheet**: right side sheet on desktop (480 px), bottom sheet on phone. Each item: index, product, preset
+  summary, quantity, the API's VAT-inclusive unit price, and a two-way segmented "ใช้ไฟล์ของฉัน | จ้างออกแบบ".
+  No total (the web adds no money); the note says the bundle discount is decided in the cart and repeats the API's
+  saving. Confirm = "เพิ่ม 2 รายการลงตะกร้า".
+
+## 4. Admin — analytics
+
+- Period: two month selects. KPI row of four: liability at the D-480 rate (the one tinted card) with the amber-free
+  "รอ CPA ยืนยัน" chip; outstanding points; actual vs assumed breakage with "ข้อมูล 7 จาก 12 เดือน"; difference to
+  ledger 2330 with the GL balance and a link (the Finance reconciliation line).
+- **Monthly movement**: the repo's chart rule (`ui/components/charts`: one green series, greys for what it is read
+  against). Earned above the zero line in `primary`; redeemed (`muted`) and expired (`border-strong`) stacked below
+  with a 2 px gap; 4 px rounded data ends; one direct label (the latest month); hairline dashed grid; legend top
+  right; `<title>` per month for hover. The full table follows (opening, four sources, redeemed, returned, reversed,
+  expired, closing) in tabular figures. Earn by source is a `Composition` bar + table with `BarValue`, not a
+  per-month stack (four greens would not be readable).
+- Retention: two horizontal meters (redeemers vs non-redeemers, with counts) beside the programme table (window, sent,
+  converted, rate with `BarValue`); a null rate (k < 10) shows "—" with a title.
+
+## 5. Admin — audience and bundle
+
+- New tabs "กลุ่มลูกค้า" and "ชุดสินค้า" in the promotion editor. The audience builder is a list of criteria, each
+  with a checkbox that reveals its control (toggle chips, a days input); the active rule reads back as one sentence
+  on `bg-subtle` ("ระดับ Silver หรือ Gold และ เคยสั่งกล่องลูกฟูก"). Aside: the live estimate ("120 ราย", rounded,
+  hidden under 10), the listing choice, an info note on what customers can see, and the save.
+- Bundle editor: a table of 2–4 items with the preset summary, quantity, today's price from the API and a per-row
+  price check; the minimum product-type count; `stackGroup` shown locked as `bundle`; the publish guard as a
+  checklist.
+
+## 6. Self-review (changed after the first render)
+
+- Survey dialog sat in an over-tall scrim; trimmed. Three phone frames overflowed the 1180 column; 360 px frames.
+- The reorder badge said ×1.5 twice (tag and sentence); the sentence now carries only the window and date.
+- The win-back link inherited ink colour; now `primary`. A cart line stretched to its neighbour's height; fixed.
+- Analytics: a sixth "programme" row was invented; removed (the API has four). The phone chart was unreadable at
+  390; it now scrolls inside its panel at a 640 px minimum, as do the wide tables.
+- "สำหรับคุณ" phone header kept the desktop nav; hidden like P1.5.

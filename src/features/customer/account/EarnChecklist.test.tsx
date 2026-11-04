@@ -42,7 +42,7 @@ describe("EarnChecklistView", () => {
 
   it("says how much is left and how many are done", () => {
     renderTh(<EarnChecklistView data={review} />);
-    expect(screen.getByText(`รับได้อีก ${review.remainingPoints} แต้ม · ทำแล้ว 3 จาก 13`)).toBeInTheDocument();
+    expect(screen.getByText(`รับได้อีก ${review.remainingPoints} แต้ม · ทำแล้ว 3 จาก 16`)).toBeInTheDocument();
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "3");
   });
 
@@ -68,7 +68,7 @@ describe("EarnChecklistView", () => {
 
   it("names each status for screen readers", () => {
     renderTh(<EarnChecklistView data={review} />);
-    expect(screen.getAllByText(", ยังไม่ได้ทำ").length).toBe(8);
+    expect(screen.getAllByText(", ยังไม่ได้ทำ").length).toBe(11);
     expect(screen.getAllByText(", ได้รับแล้ว").length).toBe(3);
   });
 
@@ -84,7 +84,7 @@ describe("EarnChecklistView", () => {
   it("limits the compact variant to five rows and links to the rest", () => {
     renderTh(<EarnChecklistView data={review} variant="compact" />);
     expect(within(screen.getByRole("list")).getAllByRole("listitem")).toHaveLength(5);
-    expect(screen.getByRole("link", { name: "ดูทั้งหมด 13 รายการ" })).toHaveAttribute("href", "/account/points#earn");
+    expect(screen.getByRole("link", { name: "ดูทั้งหมด 16 รายการ" })).toHaveAttribute("href", "/account/points#earn");
   });
 
   it("offers a retry when the list could not be read", () => {

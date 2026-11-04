@@ -106,3 +106,25 @@ export const Featured: Story = {
 };
 
 export const PhoneHero: Story = { args: { variant: "hero", showBadge: true, headingLevel: "h2" } };
+
+/** Loyalty P2: a bundle — the API's estimated saving on the stub, the pieces in the body, "เพิ่มชุดนี้ลงตะกร้า". */
+export const Bundle: Story = {
+  args: {
+    deal: fixtureDeal("starter-bundle", null),
+    typeName: "ชุดสินค้า",
+    reasonText: "สำหรับลูกค้าที่เคยสั่งกล่องลูกฟูก",
+  },
+};
+
+/** Loyalty P2: the "สำหรับคุณ" reason line (never an internal attribute). */
+export const ForYouReason: Story = {
+  args: { deal: fixtureDeal("silver-gold-8"), typeName: "กล่องลูกฟูก", reasonText: "สำหรับสมาชิกตามระดับของคุณ" },
+};
+
+export const BundleCompact: Story = {
+  args: {
+    variant: "compact",
+    deal: fixtureDeal("starter-bundle", null),
+    reasonText: "สำหรับลูกค้าที่เคยสั่งกล่องลูกฟูก",
+  },
+};

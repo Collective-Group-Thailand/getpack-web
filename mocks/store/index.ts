@@ -34,6 +34,7 @@ import { heroHandlers } from "./hero";
 import { homeHandlers } from "./home";
 import { dealsHandlers } from "./deals";
 import { loyaltyHandlers } from "./loyalty";
+import { loyaltyP2Handlers } from "./loyalty-p2";
 import { styleLibraryHandlers } from "./style-library";
 
 export const storeHandlers = [
@@ -47,6 +48,7 @@ export const storeHandlers = [
   ...assistantHandlers,
   ...homeHandlers,
   ...loyaltyHandlers,
+  ...loyaltyP2Handlers,
   ...styleLibraryHandlers,
   ...heroHandlers,
   ...structuralHandlers,

@@ -319,7 +319,13 @@
       "redeem_reversal": "Returned",
       "reversal_claim_refund": "Taken back after a claim or refund",
       "expire": "Expired",
-      "adjust": "Adjustment"
+      "adjust": "Adjustment",
+      "earn_review_photo": "Photo in a review",
+      "earn_first_sample": "First sample",
+      "earn_survey": "Survey answered",
+      "earn_showcase_consent": "Showcase consent",
+      "earn_data_refresh": "Details confirmed",
+      "other": "Points entry"
     },
     "expiresAt": "Expires {date}",
     "gain": "+{points}",
@@ -415,7 +421,28 @@
         "title": "Add getpack on LINE",
         "description": "Chat with our team and get news on LINE",
         "action": "Add friend"
+      },
+      "data_refresh": {
+        "title": "Confirm your company and addresses",
+        "description": "Check your invoicing details and delivery addresses are still right, once a year",
+        "action": "Check details",
+        "nextDue": "Next confirmation {date}"
+      },
+      "showcase_consent": {
+        "title": "Let us show your work",
+        "description": "Allow getpack to show your brand name or packaging photos as an example of our work",
+        "action": "See details"
+      },
+      "first_sample": {
+        "title": "Order your first sample",
+        "description": "Earn points when your first paid sample is delivered",
+        "action": "See samples"
       }
+    },
+    "bonusReasons": {
+      "first_order": "First order bonus",
+      "winback": "Bonus points",
+      "promotion": "Deal bonus points"
     }
   },
   "referral": {
@@ -508,7 +535,9 @@
     "reorder": "Reorder",
     "dismiss": "Don't remind me",
     "dismissed": "We won't remind you about this",
-    "failed": "Could not do that — try again"
+    "failed": "Could not do that — try again",
+    "stockOut": "Likely to run out",
+    "stockOutOn": "around {date}"
   },
   "callOffs": {
     "title": "Call-offs",
@@ -750,7 +779,9 @@
     "privacy": "Privacy",
     "team": "Team & approvers",
     "all": "All",
-    "packagingProfile": "Packaging use"
+    "packagingProfile": "Packaging use",
+    "confirmData": "Confirm details",
+    "showcase": "Show our work"
   },
   "packagingProfile": {
     "title": "Packaging use",
@@ -816,5 +847,122 @@
     "savedAt": "Last saved {date}",
     "saved": "Saved",
     "failed": "We could not save it. Your answers are still here — please try again."
+  },
+  "surveys": {
+    "pageTitle": "Survey",
+    "titleOrder": "How was this order?",
+    "questions": "{count} short questions",
+    "rewardShort": "Answer them all for <b>{points} points</b>",
+    "reward": "Answer all {count} for <b>{points} points</b>",
+    "rewardPlain": "Answer all {count} for {points} points",
+    "until": "Open until {date}",
+    "untilShort": "Until {date}",
+    "answer": "Answer the survey",
+    "later": "Later",
+    "close": "Close",
+    "step": "<b>{current}</b> / {total}",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Send answers",
+    "optional": "(optional)",
+    "optionalMulti": "(optional · choose any)",
+    "ratingLow": "Not satisfied",
+    "ratingHigh": "Very satisfied",
+    "textPlaceholder": "Up to {max} characters",
+    "required": "Please answer this question",
+    "invalid": "This answer can't be used. Please check it.",
+    "failed": "Your answers weren't sent. Please try again.",
+    "purpose": "We use your answers to improve our products and service. Our team sees them with the order code and never publishes your name ·",
+    "privacy": "Privacy policy",
+    "thanks": "Thank you for your answers",
+    "thanksBody": "We'll use them to make your next order better",
+    "earned": "<b>{points}</b> points added",
+    "backToAccount": "Back to your account",
+    "closedTitle": "This survey is closed",
+    "closedBody": "Thanks for your interest. We'll send a new survey after your next order.",
+    "orderRef": "Survey · {code}"
+  },
+  "confirmData": {
+    "title": "Confirm your company and addresses",
+    "intro": "Check that the details on your documents and deliveries are still right. If anything changed, edit it from each section's link.",
+    "company": "Company",
+    "taxProfiles": "Tax details",
+    "addresses": "Delivery addresses",
+    "default": "Default",
+    "none": "Nothing yet",
+    "edit": "Edit",
+    "reward": "Confirm for <b>{points} points</b>",
+    "noReward": "You can confirm whenever your details change",
+    "confirm": "Confirm these details are correct",
+    "confirmAgain": "Confirm again",
+    "confirmed": "Confirmation saved",
+    "confirmedReward": "+{points} points — details confirmed",
+    "failed": "That didn't save. Please try again.",
+    "upToDate": "Last confirmed {date}",
+    "nextDue": "next due {date}",
+    "banner": {
+      "title": "Are your company details and addresses still right?",
+      "body": "Last confirmed {date} · a yearly check keeps documents and deliveries right",
+      "bodyReward": "Last confirmed {date} · check and confirm for {points} points",
+      "action": "Check details"
+    }
+  },
+  "showcase": {
+    "title": "Let us show your work",
+    "intro": "Allow getpack to use your brand name, logo or packaging photos as examples of our work on our website and materials. Our team reviews every request before using anything.",
+    "scopeTitle": "What we may show",
+    "scopeHint": "Choose one or more",
+    "scopes": {
+      "brand_name": "Brand name",
+      "logo": "Logo",
+      "packaging_photos": "Packaging photos",
+      "review_quote": "A quote from your review"
+    },
+    "consentTitle": "Consent",
+    "consentText": "I allow getpack to show what I selected above as examples of its work on its website, online channels and presentations. I can withdraw this consent at any time from this page, and getpack will stop using new material after I do.",
+    "version": "Version {version}",
+    "agree": "I have read and agree to the text above",
+    "reward": "Get <b>{points} points</b> once our team approves",
+    "submit": "Send request",
+    "sent": "Request sent. We'll email you the outcome.",
+    "withdraw": "Withdraw consent",
+    "withdrawHint": "You can withdraw at any time; points already received stay yours",
+    "withdrawn": "Consent withdrawn",
+    "change": "Change what we may show",
+    "cancelChange": "Cancel",
+    "regrantNote": "Sending a new request withdraws the approved consent and our team reviews the new one. The points for this consent are paid only once.",
+    "pickScope": "Choose at least one thing we may show",
+    "agreeFirst": "Please read and agree before sending",
+    "pending": "Your earlier request is still being reviewed",
+    "outdated": "The consent text has a newer version. Please reload this page.",
+    "failed": "That didn't send. Please try again.",
+    "requestedOn": "Requested {date}",
+    "decidedOn": "Updated {date}",
+    "status": {
+      "none": "No consent given",
+      "requested": "Under review",
+      "approved": "Approved",
+      "rejected": "Not approved",
+      "withdrawn": "Withdrawn"
+    }
+  },
+  "lifecycle": {
+    "bonusTag": "Points ×{multiplier}",
+    "bonusUntil": "Extra points on a reorder · <b>until {date}</b>",
+    "winbackTitle": "{points} bonus points are waiting for you",
+    "winbackUntil": "Use them as a discount until {date}",
+    "winbackAction": "See deals",
+    "winbackShort": "{points} bonus points",
+    "winbackUntilShort": "Until {date}",
+    "winbackActionShort": "Deals",
+    "lotHint": "Includes {points} bonus points · until {date}",
+    "multipliers": {
+      "tier": "Tier ×{value}",
+      "paymentMethod": "QR or transfer ×{value}",
+      "reorderCampaign": "Reorder ×{value}",
+      "promotion": "Deal ×{value}"
+    },
+    "capped": "Combined multiplier at its maximum",
+    "paymentHint": "Pay by QR or bank transfer for points ×{multiplier}: {points} points"
   }
 }

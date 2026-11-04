@@ -20,6 +20,10 @@ export const TASK_POINTS: Record<LoyaltyTaskCode, number> = {
   team_invite: 20,
   packaging_profile: 40,
   line_oa_friend: 8,
+  // Loyalty P2 (D-490): ฿30, ฿100 and ฿50 at ฿2.50 a point.
+  data_refresh: 12,
+  showcase_consent: 40,
+  first_sample: 20,
 };
 
 const ORDER = Object.keys(TASK_POINTS) as LoyaltyTaskCode[];
@@ -43,6 +47,7 @@ export function buildLoyaltyTasks(
       doneAt: state.status === "done" ? (state.doneAt ?? null) : null,
       heldReason: state.status === "held" ? "duplicate_identity" : null,
       recommended: false,
+      nextDueAt: null,
     };
   });
   const open = tasks

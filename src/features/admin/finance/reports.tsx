@@ -29,6 +29,7 @@ import { downloadCsv, toCsv } from "./csv";
 import { AccountPicker, useAccounts } from "./ledger";
 import { PeriodBar, EmptyLink } from "./frame";
 import { journalHref, sourceHref, useSourceLabel } from "./shared";
+import { PointsLiabilityMemo } from "./PointsLiabilityMemo";
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 const thisMonth = () => bangkokToday().slice(0, 7);
@@ -623,6 +624,8 @@ export function ProfitAndLossView() {
       ) : report.isPending ? (
         <Skeleton className="h-72" />
       ) : null}
+      {/* Loyalty P2: the points-liability memo for the month `to` (never part of the lines or totals). */}
+      {data ? <PointsLiabilityMemo memo={data.pointsLiability} /> : null}
       {dimension !== "none" ? (
         <DeskSection title={t(`dimensions.${dimension}`)}>
           <DataTable

@@ -100,7 +100,8 @@
     "factory_payout_policy_change": "เปลี่ยนนโยบายจ่ายเงินโรงงาน",
     "factory_tolerance_change": "เปลี่ยนค่าคลาดเคลื่อนของโรงงาน",
     "guarantee_policy_change": "เปลี่ยนนโยบายรับประกัน",
-    "style_library_change": "เปลี่ยนคลังแบบกล่อง"
+    "style_library_change": "เปลี่ยนคลังแบบกล่อง",
+    "showcase_consent_review": "ขอแสดงผลงานของลูกค้า"
   },
   "fields": {
     "quoteCode": "ใบเสนอราคา",
@@ -149,7 +150,11 @@
     "factory": "โรงงาน",
     "direction": "ทิศทางของราคา",
     "productType": "ประเภทสินค้า",
-    "proposedEffectiveFrom": "เสนอให้มีผลตั้งแต่"
+    "proposedEffectiveFrom": "เสนอให้มีผลตั้งแต่",
+    "scope": "สิ่งที่อนุญาตให้แสดง",
+    "consentTextVersion": "ฉบับข้อความความยินยอม",
+    "recentOrders": "คำสั่งซื้อล่าสุด",
+    "recentOrderCodes": "คำสั่งซื้อล่าสุด"
   },
   "delegations": {
     "title": "การมอบหมายให้อนุมัติแทน",

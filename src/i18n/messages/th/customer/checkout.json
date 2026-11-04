@@ -44,11 +44,11 @@
     "accepted": "ใช้โค้ด {code} แล้ว ส่วนลดคำนวณในสรุปคำสั่งซื้อ"
   },
   "points": {
-    "title": "ใช้คะแนนสะสม",
-    "hint": "คุณมี {balance} คะแนน ระบบจะบอกว่าคำสั่งซื้อนี้ใช้ได้เท่าไร",
-    "redeem": "คะแนนที่ใช้",
-    "unit": "คะแนน",
-    "bounds": "ใช้ได้ {min}–{max} คะแนนสำหรับคำสั่งซื้อนี้"
+    "title": "ใช้แต้มสะสม",
+    "hint": "คุณมี {balance} แต้ม ระบบจะบอกว่าคำสั่งซื้อนี้ใช้ได้เท่าไร",
+    "redeem": "แต้มที่ใช้",
+    "unit": "แต้ม",
+    "bounds": "ใช้ได้ {min}–{max} แต้มสำหรับคำสั่งซื้อนี้"
   },
   "schedule": {
     "title": "รูปแบบการชำระเงิน",
@@ -71,7 +71,7 @@
     "taxInvoice": "ใบกำกับภาษีในนาม {name} ({taxId}) {branch}",
     "minus": "−{amount}",
     "net": "ยอดก่อนภาษี",
-    "pointsToEarn": "รับ {points} คะแนนเมื่อคำสั่งซื้อเสร็จสิ้น",
+    "pointsToEarn": "รับ {points} แต้มเมื่อคำสั่งซื้อเสร็จสิ้น",
     "guarantee": "ดูการรับประกันงาน",
     "quantity": "{quantity} ชิ้น"
   },
@@ -138,9 +138,9 @@
     "promotion_payment_method_required": "โปรโมชันนี้ใช้ได้เฉพาะบางวิธีชำระเงิน",
     "discount_applied": "ส่วนลดพิเศษ {amount}",
     "discount_capped": "ส่วนลดพิเศษถูกปรับลด {cappedAmount} ตามเกณฑ์กำไรขั้นต่ำ",
-    "points_applied": "ใช้ {points} คะแนน ลด {amount}",
-    "points_capped": "คำสั่งซื้อนี้ใช้คะแนนได้ {points} คะแนน (ขอไว้ {requested})",
-    "points_rejected": "ใช้คะแนนกับคำสั่งซื้อนี้ไม่ได้ (ขั้นต่ำ {minimumBaht})",
+    "points_applied": "ใช้ {points} แต้ม ลด {amount}",
+    "points_capped": "คำสั่งซื้อนี้ใช้แต้มได้ {points} แต้ม (ขอไว้ {requested})",
+    "points_rejected": "ใช้แต้มกับคำสั่งซื้อนี้ไม่ได้ (ขั้นต่ำ {minimumBaht})",
     "company_approval_required": "ยอดเกิน {threshold} ตามที่บริษัทกำหนด คำสั่งซื้อจะรอผู้อนุมัติของบริษัท และเริ่มผลิตเมื่ออนุมัติแล้ว",
     "company_credit_order": "สั่งด้วยเครดิตเทอม {termDays} วัน วงเงินคงเหลือ {available}",
     "company_credit_unavailable": "ใช้เครดิตเทอมกับคำสั่งซื้อนี้ไม่ได้ สั่งแบบชำระก่อนได้ตามปกติ",
@@ -183,7 +183,7 @@
       "totalWithShipping": "รวมค่าส่งแล้ว",
       "withholding": "หัก ณ ที่จ่าย",
       "payNow": "ชำระวันนี้ {amount}",
-      "pointsToEarn": "ได้รับ {points} คะแนนจากคำสั่งซื้อนี้",
+      "pointsToEarn": "ได้รับ {points} แต้มจากคำสั่งซื้อนี้",
       "blockedTitle": "ก่อนไปต่อ",
       "pdf": "ใบเสนอราคา PDF",
       "approver": "ส่งให้ผู้อนุมัติ",
@@ -192,7 +192,7 @@
       "warranty": "รับประกันงาน · จำนวน ±5% ส่วนที่ขาดคืนเป็นเครดิต",
       "methods": "ชำระด้วย {list}",
       "fine": "ราคาทั้งหมดคำนวณโดยระบบ getpack และยืนยันอีกครั้งก่อนชำระเงิน",
-      "codesNote": "คะแนนสะสมใช้ได้ในขั้นชำระเงิน",
+      "codesNote": "แต้มสะสมใช้ได้ในขั้นชำระเงิน",
       "pending": "กำลังคำนวณยอด…",
       "pdfReady": "ใบเสนอราคา {code} พร้อมแล้ว",
       "pdfOpen": "เปิด PDF",
@@ -243,7 +243,7 @@
       "methodsNone": "คำสั่งซื้อนี้ไม่ต้องชำระตอนนี้",
       "planTitle": "รูปแบบการชำระ",
       "planHint": "กำหนดตามเงื่อนไขของคำสั่งซื้อนี้",
-      "pointsTitle": "ใช้คะแนนสะสม",
+      "pointsTitle": "ใช้แต้มสะสม",
       "companyTitle": "สั่งในนามบริษัท"
     },
     "review": {

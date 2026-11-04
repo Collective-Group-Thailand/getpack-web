@@ -21,6 +21,7 @@ import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
 import type { CampaignRow, CouponCodeRow, PromotionRow } from "./marketing-model";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
+import { AGENT_ROWS } from "./loyalty-p2";
 import { etagOf as tableEtag } from "./tables";
 
 /** A coupon batch as the fixture keeps it; `toCouponBatchDto` is what the API answers. */
@@ -292,6 +293,8 @@ const EMPTY_DISPLAY: Schemas["PromotionDisplayDto"] = {
   terms: null,
   featured: false,
   slug: null,
+  listing: "everyone",
+  bundle: null,
 };
 
 /**
@@ -313,6 +316,13 @@ function publishErrors(
     errors.push({ path: "display.headline.th", code: "required", message: "a Thai headline is required" });
   if (!display.terms?.th)
     errors.push({ path: "display.terms.th", code: "required", message: "Thai terms are required" });
+  // Loyalty P2 (API-CHANGES-P2 deviation 3): a bundle's items are required here, at publish — not on save.
+  const minTypes = row.conditions.cartProductTypeCountGte ?? 0;
+  if (minTypes >= 2) {
+    const items = display.bundle?.items ?? [];
+    if (items.length < 2 || items.length > 4 || new Set(items.map((item) => item.productTypeCode)).size < minTypes)
+      errors.push({ path: "display.bundle.items", code: "bundle_items", message: "2–4 items of enough product types" });
+  }
   for (const key of ["headline", "subline", "badge", "terms"] as const) {
     for (const lang of ["th", "en"] as const) {
       const value = display[key]?.[lang];
@@ -327,17 +337,26 @@ function publishErrors(
   return errors;
 }
 
+/** Whether a promotion's stored conditions use v2 keys (audience, bundle count). */
+function conditionsV2Of(row: PromotionRow): boolean {
+  const conditions = row.conditions;
+  return Boolean(conditions.audience || conditions.cartProductTypeCountGte);
+}
+
 function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
   const campaign = campaigns.find((candidate) => candidate.id === row.campaignId);
   // The spend is the discount given: what the promotion's own budget is measured against.
   return {
     // Loyalty P1.5: hidden with no display copy until Marketing sets them.
     visibility: "hidden",
-    display: EMPTY_DISPLAY,
     heroImageFileId: null,
     heroImageUrl: null,
     ...row,
-    displaySchemaVersion: 1,
+    // Loyalty P2: display v2 always carries `listing` and `bundle`; v2 once an audience, a bundle or a listing is set.
+    display: { ...EMPTY_DISPLAY, ...(row.display ?? {}) },
+    displaySchemaVersion:
+      row.display && (row.display.listing === "matching_only" || Boolean(row.display.bundle)) ? 2 : 1,
+    conditionsSchemaVersion: conditionsV2Of(row) ? 2 : 1,
     systemKey: null,
     usage: { ...row.usage, views: row.usage.redemptions * 12, saves: row.usage.redemptions * 2 },
     spentAmount: row.usage.discountAmount,
@@ -381,7 +400,7 @@ function benefitSummary(benefit: Schemas["PromotionBenefitDto"]): { th: string; 
     case "free_revision_rounds":
       return { th: `แก้แบบฟรี ${benefit.rounds} รอบ`, en: `${benefit.rounds} free revision rounds` };
     case "points_multiplier":
-      return { th: `คะแนน x${benefit.multiplier}`, en: `${benefit.multiplier}× points` };
+      return { th: `แต้ม x${benefit.multiplier}`, en: `${benefit.multiplier}× points` };
     case "bonus_points":
       return { th: `รับคะแนนพิเศษ ${benefit.points} คะแนน`, en: `${benefit.points} bonus points` };
     case "free_shipping":
@@ -435,7 +454,8 @@ function reportOf(rows: readonly PromotionRow[]): Schemas["PromotionReportDto"] 
     uses: redemptions,
     views: redemptions * 12,
     saves: redemptions * 2,
-    refAgents: [],
+    // Loyalty P2: the share-link rows gain the performance fields (CONTRACT-REQUEST admin.promotions.agent-performance).
+    refAgents: rows.length ? AGENT_ROWS.map(({ agentName: _name, ...row }) => row) : [],
     currency: "THB",
   };
 }
@@ -793,11 +813,36 @@ export const marketingContractHandlers = [
     void [kind, campaignId];
     // Loyalty P1.5: `display` keys given replace the stored ones; a public or unlisted promotion passes the guard.
     const { display: displayInput, ...rest } = changes;
-    const display = { ...(row.display ?? EMPTY_DISPLAY), ...(displayInput ?? {}) } as Schemas["PromotionDisplayDto"];
+    const display = {
+      ...EMPTY_DISPLAY,
+      ...(row.display ?? {}),
+      ...(displayInput ?? {}),
+    } as Schemas["PromotionDisplayDto"];
     const visibility = rest.visibility ?? row.visibility ?? "hidden";
     if (display.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(display.slug))
       return invalid("display.slug", "slug ใช้ได้เฉพาะตัวพิมพ์เล็ก ตัวเลข และขีด");
-    const failed = publishErrors(row, visibility, display);
+    // Loyalty P2 (D-494): a bundle is `cartProductTypeCountGte ≥ 2` if and only if `stackGroup = 'bundle'`;
+    // `matching_only` needs an audience.
+    const v2Conditions: Schemas["PromotionConditionsDto"] = { ...row.conditions, ...(rest.conditions ?? {}) };
+    const stackGroup = rest.stackGroup !== undefined ? rest.stackGroup : row.stackGroup;
+    const isBundle = (v2Conditions.cartProductTypeCountGte ?? 0) >= 2;
+    if (isBundle !== (stackGroup === "bundle"))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        {
+          path: isBundle ? "stackGroup" : "conditions.cartProductTypeCountGte",
+          code: "bundle_pair",
+          message: "ดีลชุดต้องมีจำนวนประเภทสินค้าขั้นต่ำ 2 และกลุ่มการใช้ร่วม bundle",
+        },
+      ]);
+    if (display.listing === "matching_only" && !v2Conditions.audience)
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        {
+          path: "display.listing",
+          code: "listing_requires_audience",
+          message: "แสดงเฉพาะกลุ่มต้องกำหนดกลุ่มลูกค้าก่อน",
+        },
+      ]);
+    const failed = publishErrors({ ...row, conditions: v2Conditions }, visibility, display);
     if (failed.length)
       return problem(
         422,

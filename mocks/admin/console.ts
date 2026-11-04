@@ -136,6 +136,8 @@ const LIST_EXPORTS: Record<Schemas["ListExportResource"], { permission: string; 
   claims: { permission: "claims.read", type: "claim" },
   // C1f (D-451): the customer file access log page — rows from the log mock, with the typed reason.
   customer_file_access_logs: { permission: "customer_file_access_logs.read", type: null },
+  // Loyalty P2 (D-495): agents' share-link performance per deal.
+  promotion_agent_performance: { permission: "promotions.read", type: null },
 };
 
 /* ----------------------------------------------------------------------- saved views */

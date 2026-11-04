@@ -46,3 +46,37 @@ describe("customer-facing messages", () => {
     }
   });
 });
+
+/**
+ * D-489 (loyalty P2): points are "แต้ม". "คะแนน" stays only for ratings ("คะแนนเฉลี่ย 4.8 จาก 5"), factory scorecards
+ * and the chart of accounts' own names (admin finance: "หนี้สินคะแนนสะสม" is the GL account 2330's registered name).
+ * Two rules: no "คะแนน" under a points / loyalty / referral key anywhere but finance; and on a customer-facing file
+ * only a rating or review key may say it.
+ */
+const POINTS_KEY = /(^|\.)(points|loyalty|referral|pointsToEarn|redeem)/i;
+const RATING_KEY = /(^|\.)(rating|reviews?|average|score)/i;
+const POINTS_WORD_ALLOWED_FILES = new Set(["admin/finance.json"]);
+
+function* thFiles(): Generator<string> {
+  const base = path.join(ROOT, "th");
+  for (const zone of fs.readdirSync(base)) {
+    const dir = path.join(base, zone);
+    if (!fs.statSync(dir).isDirectory()) continue;
+    for (const file of fs.readdirSync(dir).filter((name) => name.endsWith(".json"))) yield `${zone}/${file}`;
+  }
+}
+
+describe("points wording (D-489)", () => {
+  for (const file of thFiles()) {
+    if (POINTS_WORD_ALLOWED_FILES.has(file)) continue;
+    it(`th/${file} says แต้ม, not คะแนน, for points`, () => {
+      const messages: unknown = JSON.parse(fs.readFileSync(path.join(ROOT, "th", file), "utf8"));
+      const customerFacing = file.startsWith("customer/") || file === "common/problems.json";
+      const hits = [...strings(messages)]
+        .filter(([, text]) => text.includes("คะแนน"))
+        .filter(([key]) => POINTS_KEY.test(key) || (customerFacing && !RATING_KEY.test(key)))
+        .map(([key, text]) => `${key}: ${text}`);
+      expect(hits).toEqual([]);
+    });
+  }
+});

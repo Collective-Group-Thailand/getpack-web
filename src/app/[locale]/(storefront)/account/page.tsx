@@ -10,7 +10,13 @@ import {
   getSavedQuotes,
   getStoreCredit,
 } from "@/features/customer/account/api.server";
+import { accountBannerOf } from "@/features/customer/account/account-banner";
 import { EarnBanner } from "@/features/customer/account/EarnBanner";
+import { getDataRefresh } from "@/features/customer/loyalty/api.server";
+import { DataRefreshBanner } from "@/features/customer/loyalty/DataRefreshBanner";
+import { WinbackBanner } from "@/features/customer/loyalty/WinbackBanner";
+import { getNextSurvey } from "@/features/customer/surveys/api.server";
+import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -70,21 +76,39 @@ function Section({
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, latest, active, points, credit, launchpad, defaults, quotes, company, tasks] =
-    await Promise.all([
-      getTranslations("account.home"),
-      getTranslations("account.nav"),
-      getFormat(),
-      listOrderPage("active", "", 1, 3).catch(() => null),
-      listOrderPage("active", "", 1, 100).catch(() => null),
-      getPoints().catch(() => null),
-      getStoreCredit().catch(() => null),
-      getLaunchpad().catch(() => null),
-      getDefaults().catch(() => null),
-      getSavedQuotes().catch(() => []),
-      getMyCompany().catch(() => null),
-      getLoyaltyTasks(),
-    ]);
+  const [
+    t,
+    tNav,
+    format,
+    latest,
+    active,
+    points,
+    credit,
+    launchpad,
+    defaults,
+    quotes,
+    company,
+    tasks,
+    survey,
+    refresh,
+  ] = await Promise.all([
+    getTranslations("account.home"),
+    getTranslations("account.nav"),
+    getFormat(),
+    listOrderPage("active", "", 1, 3).catch(() => null),
+    listOrderPage("active", "", 1, 100).catch(() => null),
+    getPoints().catch(() => null),
+    getStoreCredit().catch(() => null),
+    getLaunchpad().catch(() => null),
+    getDefaults().catch(() => null),
+    getSavedQuotes().catch(() => []),
+    getMyCompany().catch(() => null),
+    getLoyaltyTasks(),
+    getNextSurvey(),
+    // Loyalty P2: the yearly data confirmation (a convenience read; no banner when it fails).
+    getDataRefresh().catch(() => null),
+  ]);
+  const banner = accountBannerOf({ refresh, survey, tasks, bonusLots: points?.bonusLots ?? [] });
   // A company approver's queue leads (round 2, B2).
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
   const latestOrders = (latest?.groups ?? [])
@@ -130,8 +154,12 @@ export default async function Page() {
         }
       />
 
-      {/* Loyalty P1: one line to the earn checklist; hidden when nothing is left to earn. */}
-      <EarnBanner tasks={tasks} />
+      {/* Loyalty: at most one banner — the yearly data confirmation, a due survey (shown once, D-491), the earn
+          checklist, then win-back (D-493); the others wait for a later visit (`accountBannerOf`). */}
+      {banner === "data_confirmation" ? <DataRefreshBanner refresh={refresh} /> : null}
+      {banner === "survey" ? <SurveyCard survey={survey} /> : null}
+      {banner === "earn" ? <EarnBanner tasks={tasks} /> : null}
+      {banner === "winback" && points ? <WinbackBanner lots={points.bonusLots} /> : null}
 
       <Section id="account-latest" title={t("latest")} more={{ href: "/account/orders", label: t("allOrders") }}>
         {latestOrders.length === 0 ? (

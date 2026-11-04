@@ -107,7 +107,14 @@
     "upTo": "Up to",
     "perk": "Perk",
     "alreadySaved": "Already saved",
-    "notSaveable": "This deal's code can't be saved right now"
+    "notSaveable": "This deal's code can't be saved right now",
+    "bundle": {
+      "word": "Save about",
+      "short": "Set",
+      "exVat": "before VAT",
+      "add": "Add this set to cart",
+      "addShort": "Add"
+    }
   },
   "detail": {
     "back": "All deals",
@@ -192,6 +199,39 @@
     "close": "Close",
     "shareTitle": "A deal from getpack",
     "linkCopied": "Link copied",
-    "openDeals": "Deals and coupons"
+    "openDeals": "Deals and coupons",
+    "forYou": "For you"
+  },
+  "forYou": {
+    "newCustomer": "For new customers",
+    "tier": "For members at your tier",
+    "orderedType": "For customers who have ordered {type}",
+    "orderedAny": "For customers who have ordered this type",
+    "lede": "Deals that match your account right now. Full terms are on each deal's page.",
+    "signInTitle": "Sign in to see the deals that match your account",
+    "signInBody": "Meanwhile, these deals are open to every new customer",
+    "signIn": "Sign in",
+    "emptyTitle": "No deals just for you right now",
+    "emptyBody": "Deals that match your account will appear here"
+  },
+  "bundle": {
+    "title": "Bundle",
+    "close": "Close",
+    "unitPrice": "{price} per {unit} (incl. VAT)",
+    "design": "Design for {item}",
+    "ownFile": "My own file",
+    "hiredDesign": "Hire a designer",
+    "note": "The bundle discount applies in the cart when all {count} types are in it · save about <b>{saving}</b> (before VAT). Quantities can be changed in the cart.",
+    "noteNoSaving": "The bundle discount applies in the cart when all {count} types are in it. Quantities can be changed in the cart.",
+    "cancel": "Cancel",
+    "confirm": "Add {count} items to cart",
+    "signIn": "Sign in to add this set",
+    "added": "{count} items added to your cart",
+    "unavailableItems": "{items} can't be priced right now. Please try again later.",
+    "unavailable": "This set can't be priced right now. Please try again later.",
+    "stale": "Your cart just changed. Please add the set again.",
+    "gone": "This deal is no longer open",
+    "failed": "That didn't add to your cart. Please try again.",
+    "itemCount": "Bundle · {count} items"
   }
 }

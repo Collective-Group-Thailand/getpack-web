@@ -47,9 +47,10 @@ export function EarnChecklist({
 }) {
   const t = useTranslations("account.points");
   const format = useFormat();
-  const query = useQuery({
+  const query = useQuery<LoyaltyTasks>({
     queryKey: LOYALTY_TASKS_KEY,
-    queryFn: async () => (await browserApi().GET("/v1/store/loyalty/tasks")).data!,
+    // P2 task codes are wider than the published enum (CONTRACT-REQUEST store.loyalty.p2-fields).
+    queryFn: async () => (await browserApi().GET("/v1/store/loyalty/tasks")).data! as LoyaltyTasks,
     initialData: initial,
     staleTime: 10_000,
     refetchOnWindowFocus: true,
@@ -358,6 +359,10 @@ function TaskRow({
         </span>
         <span className="text-muted block text-[0.8125rem]">
           {held ? t("earn.heldNote") : t("earn.doneOn", { date: format.date(task.doneAt) })}
+          {/* Loyalty P2: a confirmation that comes back yearly says when. */}
+          {!held && task.code === "data_refresh" && task.nextDueAt
+            ? ` · ${t("tasks.data_refresh.nextDue", { date: format.date(task.nextDueAt) })}`
+            : null}
         </span>
       </span>
       {points}

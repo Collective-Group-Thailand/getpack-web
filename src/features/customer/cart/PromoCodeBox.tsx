@@ -45,7 +45,7 @@ export interface PromoCodeBoxProps {
    * (checkout redesign item 6) — same states, same words.
    */
   variant?: "coupon" | "compact";
-  /** Small print after the limit (compact): "คะแนนสะสมใช้ได้ในขั้นชำระเงิน". */
+  /** Small print after the limit (compact): "แต้มสะสมใช้ได้ในขั้นชำระเงิน". */
   note?: string;
   className?: string;
 }

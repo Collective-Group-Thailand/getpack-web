@@ -8,9 +8,11 @@
 
 import type { Schemas } from "@/lib/api/types";
 
-export type LoyaltyTasks = Schemas["EarnTasksDto"];
-export type LoyaltyTask = Schemas["EarnTaskDto"];
+/** Loyalty P2's codes (`data_refresh`, `showcase_consent`, `first_sample`) are in the contract's enum. */
 export type LoyaltyTaskCode = Schemas["LoyaltyTaskCode"];
+/** `nextDueAt` is set only for a done `data_refresh`: when the next confirmation is due. */
+export type LoyaltyTask = Schemas["EarnTaskDto"];
+export type LoyaltyTasks = Schemas["EarnTasksDto"];
 export type PackagingProfile = Schemas["PackagingProfileDto"];
 export type PackagingProfileInput = Schemas["PutPackagingProfileDto"];
 

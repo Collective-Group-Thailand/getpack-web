@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { listCampaigns } from "@/features/customer/loyalty/api.server";
+import { ReorderBonusBadge } from "@/features/customer/loyalty/ReorderBonusBadge";
+import { getNextSurvey } from "@/features/customer/surveys/api.server";
+import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { StageTracker } from "@/features/customer/orders/list/StageTracker";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -8,11 +12,13 @@ import { pick } from "@/features/customer/catalog/localize";
 import { PayInstalmentButton } from "@/features/customer/checkout/PayInstalmentButton";
 import { ShipmentCard } from "@/features/customer/fulfilment/ShipmentCard";
 import { AskAbout } from "@/features/customer/messages/StartThread";
-import { findLockedDesignOf, getMyOrder } from "@/features/customer/orders/api.server";
+import { findLockedDesignOf, getMyOrder, getMyReview } from "@/features/customer/orders/api.server";
 import { OrderJourney } from "@/features/customer/orders/detail/OrderJourney";
 import { OrderViewTracker, TrackClicks } from "@/features/customer/orders/detail/OrderTracking";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { OrderReview } from "@/features/customer/orders/OrderReview";
+import { canReview } from "@/features/customer/orders/review";
 import {
   artworkNoteOf,
   artworkNoteTextOf,
@@ -129,23 +135,31 @@ export default async function Page({
 }) {
   await requireCustomer();
   const [{ orderId }, query] = await Promise.all([params, searchParams]);
-  const [t, tList, tCatalog, tShipping, format, locale, detail, design, samples] = await Promise.all([
-    getTranslations("myOrders"),
-    getTranslations("myOrders.list"),
-    getTranslations("catalog"),
-    getTranslations("common.shipping"),
-    getFormat(),
-    getLocale(),
-    getMyOrder(orderId),
-    // A link to the studio design is a convenience: the order page never fails over it.
-    findLockedDesignOf(orderId).catch(() => null),
-    // The order's sample, if it has one (U2.F3): production waits for its approval (D-256).
-    listMySamples()
-      .then((list) => list.filter((sample) => sample.orderId === orderId))
-      .catch(() => []),
-  ]);
+  const [t, tList, tCatalog, tShipping, format, locale, detail, design, samples, survey, campaigns, review] =
+    await Promise.all([
+      getTranslations("myOrders"),
+      getTranslations("myOrders.list"),
+      getTranslations("catalog"),
+      getTranslations("common.shipping"),
+      getFormat(),
+      getLocale(),
+      getMyOrder(orderId),
+      // A link to the studio design is a convenience: the order page never fails over it.
+      findLockedDesignOf(orderId).catch(() => null),
+      // The order's sample, if it has one (U2.F3): production waits for its approval (D-256).
+      listMySamples()
+        .then((list) => list.filter((sample) => sample.orderId === orderId))
+        .catch(() => []),
+      // Loyalty P2: the post-delivery survey of this order, when it is the one open now (a convenience read).
+      getNextSurvey(),
+      // Loyalty P2: an open ×1.5 reorder campaign on this order (D-492), shown beside "สั่งซ้ำ".
+      listCampaigns(),
+      // D-135 / loyalty P2: my review of this order (none yet = null; a failed read = no review card).
+      getMyReview(orderId),
+    ]);
   if (!detail) notFound();
   const { order, group, instalments } = detail;
+  const reorderBonus = campaigns.find((campaign) => campaign.reorderOfOrderId === order.id) ?? null;
   const name = productNameOf(locale, order.summary);
   const unit = tCatalog(`stock.units.${order.summary.unit}`);
   const payableOf = (instalment: (typeof instalments)[number]) => ({
@@ -312,6 +326,9 @@ export default async function Page({
                   payable={payable}
                 />
               ) : null}
+              {reorder && reorderBonus ? (
+                <ReorderBonusBadge size="sm" multiplier={reorderBonus.multiplier} endsAt={reorderBonus.endsAt} />
+              ) : null}
               {reorder ? (
                 <TrackClicks event="order_reorder" properties={{ status: order.customerStatus }}>
                   <OrderActions
@@ -330,6 +347,7 @@ export default async function Page({
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_21.25rem]">
         <div className="flex min-w-0 flex-col gap-4">
+          {survey && survey.orderCode === order.orderCode ? <SurveyCard survey={survey} variant="order" /> : null}
           <Box id="progress" title={t("detail.timeline")}>
             {/* The six stages across the card on a wide screen (the list's tracker), the dated journey under it. */}
             <StageTracker
@@ -444,6 +462,12 @@ export default async function Page({
               <p className="text-sm">
                 <TrackingLinkButton orderId={order.id} />
               </p>
+            </Box>
+          ) : null}
+
+          {canReview(order) && review !== undefined ? (
+            <Box id="review" title={review ? t("review.titleDone") : t("review.title")}>
+              <OrderReview orderId={order.id} initial={review} />
             </Box>
           ) : null}
 

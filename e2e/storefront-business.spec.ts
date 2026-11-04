@@ -193,8 +193,8 @@ test.describe("LINE LIFF (D-151)", () => {
     await expect(page.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" })).toBeVisible();
     await expect(page.getByRole("link", { name: /^สั่งซ้ำ/ })).toHaveAttribute("href", /\/liff\/orders\/.+\/reorder$/);
 
-    await tabs.getByRole("link", { name: "คะแนน" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "คะแนนสะสม" })).toBeVisible();
+    await tabs.getByRole("link", { name: "แต้ม" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "แต้มสะสม" })).toBeVisible();
     await tabs.getByRole("link", { name: "แชท" }).click();
     await expect(page.getByRole("link", { name: "เปิดแชทกับ getpack" })).toHaveAttribute(
       "href",

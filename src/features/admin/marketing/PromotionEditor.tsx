@@ -37,6 +37,8 @@ import {
 } from "../console";
 import { DetailSkeleton } from "../console/DetailSkeleton";
 import { CouponCodes } from "./CouponCodes";
+import { PromotionAudience } from "./PromotionAudience";
+import { PromotionBundle } from "./PromotionBundle";
 import { PromotionDisplay } from "./PromotionDisplay";
 import type { Promotion } from "./resources";
 import { bangkokDayOf, bangkokMidnight } from "./time";
@@ -265,7 +267,9 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const format = useFormat();
   const en = useLocale() === "en";
   const router = useRouter();
-  const tab = useSearchParams().get("tab") === "display" ? "display" : "setup";
+  const asked = useSearchParams().get("tab");
+  // Loyalty P2: "กลุ่มลูกค้า" (audience) and "ชุดสินค้า" (bundle) join the P1.5 display tab.
+  const tab = asked === "display" || asked === "audience" || asked === "bundle" ? asked : "setup";
   const queryClient = useQueryClient();
   const actor = useActor();
   const can = (permission: string) => actor.permissions.includes(permission);
@@ -295,6 +299,8 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const toggle = <T extends string>(values: readonly T[], value: T, on: boolean) =>
     on ? [...values, value] : values.filter((entry) => entry !== value);
   const systemManaged = item?.kind === "referral";
+  // Loyalty P2 (D-494): a bundle's stack group is `bundle`, set from the bundle tab only.
+  const bundleLocked = item ? (item.conditions.cartProductTypeCountGte ?? 0) >= 2 : false;
   const editable = can("promotions.manage") && (!item || item.status !== "ended") && !systemManaged;
   const redeemed = (item?.usage.redemptions ?? 0) > 0;
   const actions = item && !systemManaged ? adminPromotionActions(item.status, can) : [];
@@ -466,6 +472,8 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
           current={tab}
           items={[
             { key: "setup", href: `/marketing/promotions/${item.id}`, label: t("tabs.setup") },
+            { key: "audience", href: `/marketing/promotions/${item.id}?tab=audience`, label: t("tabs.audience") },
+            { key: "bundle", href: `/marketing/promotions/${item.id}?tab=bundle`, label: t("tabs.bundle") },
             { key: "display", href: `/marketing/promotions/${item.id}?tab=display`, label: t("tabs.display") },
           ]}
         />
@@ -473,6 +481,10 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
 
       {item && tab === "display" && !systemManaged ? (
         <PromotionDisplay item={item} editable={can("promotions.manage") && item.status !== "ended"} />
+      ) : item && tab === "audience" && !systemManaged ? (
+        <PromotionAudience item={item} editable={can("promotions.manage") && item.status !== "ended"} />
+      ) : item && tab === "bundle" && !systemManaged ? (
+        <PromotionBundle item={item} editable={can("promotions.manage") && item.status !== "ended"} />
       ) : (
         <FormColumns
           aside={
@@ -587,10 +599,13 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
                   }))}
                 />
               </Field>
-              <Field label={t("fields.stackGroup")} hint={t("hints.stackGroup")}>
+              <Field
+                label={t("fields.stackGroup")}
+                hint={bundleLocked ? t("hints.stackGroupBundle") : t("hints.stackGroup")}
+              >
                 <Input
                   value={form.stackGroup}
-                  disabled={!editable}
+                  disabled={!editable || bundleLocked}
                   onChange={(event) => set({ stackGroup: event.target.value })}
                 />
               </Field>

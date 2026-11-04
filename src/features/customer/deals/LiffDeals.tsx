@@ -17,6 +17,9 @@ import { Ticket } from "@/ui/components/Ticket";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
+import { BundleSheet } from "./BundleSheet";
+import { forYouReasonText } from "./for-you";
+
 /**
  * `/liff/deals` (loyalty P1.5, STITCH-NOTES R2-f; prototype `p15-liff-deals.html`): the segmented "ดีลทั้งหมด |
  * คูปองของฉัน (n)", the featured ticket, compact rows, and a deal opened in a bottom sheet drawn as a ticket — a
@@ -24,15 +27,45 @@ import { Icon } from "@/ui/icons";
  * "เก็บโค้ด" and "ส่งดีลนี้ให้ทีม". A sticky bar above the LIFF tabs: "แชร์ให้เพื่อน | เปิดกระเป๋าคูปอง". No LINE
  * chrome of its own (LINE draws it).
  */
-export function LiffDeals({ deals, dealsUrl, now }: { deals: readonly Deal[]; dealsUrl: string; now: number }) {
+export function LiffDeals({
+  deals,
+  dealsUrl,
+  now,
+  typeNames = {},
+}: {
+  deals: readonly Deal[];
+  dealsUrl: string;
+  now: number;
+  /** Loyalty P2: product-type names for the "สำหรับคุณ" reasons. */
+  typeNames?: Record<string, string>;
+}) {
   const t = useTranslations("deals.liff");
+  const tForYou = useTranslations("deals.forYou");
   const saves = useDealSaves();
-  const [view, setView] = useState<"all" | "mine">("all");
+  const [view, setView] = useState<"all" | "for_you" | "mine">("all");
   const [open, setOpen] = useState<Deal | null>(null);
+  const [bundleDeal, setBundleDeal] = useState<Deal | null>(null);
   const isMine = (deal: Deal) => deal.myStatus === "saved" || saves.stateOf(deal) === "saved";
   const mine = deals.filter(isMine);
+  // Loyalty P2: "สำหรับคุณ" is the deals the API marks `forYou` (the list is already the caller's).
+  const forYou = deals.filter((deal) => deal.forYou);
   const featured = view === "all" ? featuredDeal(deals) : null;
-  const shown = (view === "all" ? deals : mine).filter((deal) => deal.id !== featured?.id);
+  const shown = (view === "all" ? deals : view === "for_you" ? forYou : mine).filter(
+    (deal) => deal.id !== featured?.id,
+  );
+  const reasonOf = (deal: Deal) =>
+    view === "for_you"
+      ? forYouReasonText(
+          deal,
+          {
+            newCustomer: tForYou("newCustomer"),
+            tier: tForYou("tier"),
+            orderedType: (type) => tForYou("orderedType", { type }),
+            orderedAny: tForYou("orderedAny"),
+          },
+          typeNames,
+        )
+      : null;
 
   return (
     <div className="flex flex-col gap-3.5 pb-16">
@@ -40,9 +73,10 @@ export function LiffDeals({ deals, dealsUrl, now }: { deals: readonly Deal[]; de
         label={t("segments")}
         value={view}
         onValueChange={setView}
-        className="grid w-full grid-cols-2"
+        className="grid w-full grid-cols-3"
         options={[
           { value: "all", label: t("all") },
+          { value: "for_you", label: t("forYou") },
           { value: "mine", label: t("mine", { count: mine.length }) },
         ]}
       />
@@ -58,6 +92,7 @@ export function LiffDeals({ deals, dealsUrl, now }: { deals: readonly Deal[]; de
           saving={saves.pendingId === featured.id}
           onSave={(deal) => void saves.save(deal)}
           signInHref="/liff/deals"
+          onAddBundle={setBundleDeal}
         />
       ) : null}
       {shown.length > 0 ? (
@@ -74,13 +109,18 @@ export function LiffDeals({ deals, dealsUrl, now }: { deals: readonly Deal[]; de
                 saving={saves.pendingId === deal.id}
                 onSave={(chosen) => void saves.save(chosen)}
                 onOpen={setOpen}
+                reasonText={reasonOf(deal)}
+                onAddBundle={setBundleDeal}
               />
             </li>
           ))}
         </ul>
       ) : view === "mine" ? (
         <EmptyState icon="ticket" title={t("emptyMine")} description={t("emptyMineBody")} />
+      ) : view === "for_you" ? (
+        <EmptyState icon="ticket" title={tForYou("emptyTitle")} description={tForYou("emptyBody")} />
       ) : null}
+      <BundleSheet deal={bundleDeal} signedIn onOpenChange={(next) => (next ? null : setBundleDeal(null))} />
 
       <div className="border-border bg-surface fixed inset-x-0 bottom-[calc(var(--mobile-tab-h)+env(safe-area-inset-bottom))] z-30 border-t">
         <div className="mx-auto grid max-w-xl grid-cols-2 gap-2 px-4 py-2.5">

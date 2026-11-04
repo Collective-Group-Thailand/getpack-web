@@ -115,7 +115,13 @@ export default async function DealsPage({
 
       {featured ? (
         <div className="mt-4 md:mt-6">
-          <FeaturedDeal deal={featured} signedIn={signedIn} now={now} typeName={typeOf(featured.productTypeCodes)} />
+          <FeaturedDeal
+            deal={featured}
+            signedIn={signedIn}
+            now={now}
+            typeName={typeOf(featured.productTypeCodes)}
+            typeNames={typeNames}
+          />
         </div>
       ) : null}
 
@@ -129,9 +135,46 @@ export default async function DealsPage({
               </div>
             ) : null}
           </div>
+          {/* Loyalty P2: a guest's "สำหรับคุณ" is the new-customer deals, under an invitation to sign in. */}
+          {tab === "for_you" && !signedIn ? (
+            <section
+              aria-labelledby="for-you-sign-in"
+              className="border-border bg-surface rounded-card mt-4 grid items-center gap-4 border px-5 py-[1.125rem] md:mt-6 md:grid-cols-[minmax(0,1fr)_auto]"
+            >
+              <div>
+                <h2 id="for-you-sign-in" className="text-base font-semibold">
+                  {t("forYou.signInTitle")}
+                </h2>
+                <p className="text-muted mt-0.5 text-sm">{t("forYou.signInBody")}</p>
+              </div>
+              <Button asChild>
+                <Link href="/sign-in?next=/deals?tab=for_you">{t("forYou.signIn")}</Link>
+              </Button>
+            </section>
+          ) : null}
+          {tab === "for_you" && signedIn ? <p className="text-muted mt-4 text-sm">{t("forYou.lede")}</p> : null}
           {rest.length > 0 ? (
-            <DealsView className="mt-4 md:mt-6" deals={rest} signedIn={signedIn} now={now} typeNames={typeNames} />
-          ) : featured ? null : (
+            <DealsView
+              className="mt-4 md:mt-6"
+              deals={rest}
+              signedIn={signedIn}
+              now={now}
+              typeNames={typeNames}
+              showReasons={tab === "for_you"}
+            />
+          ) : featured ? null : tab === "for_you" ? (
+            <EmptyState
+              className="mt-6"
+              icon="ticket"
+              title={t("forYou.emptyTitle")}
+              description={t("forYou.emptyBody")}
+              action={
+                <Button asChild variant="secondary">
+                  <Link href="/deals">{t("empty.all")}</Link>
+                </Button>
+              }
+            />
+          ) : (
             <EmptyState
               className="mt-6"
               icon="ticket"

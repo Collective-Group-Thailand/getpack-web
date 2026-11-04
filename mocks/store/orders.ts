@@ -502,6 +502,10 @@ export const storeOrderHandlers = [
       nextTier: next?.tier ?? null,
       nextTierMinSpend12m: next ? baht(next.from) : null,
       nextTierProgressPct: next ? Math.min(100, (spendOf(customer) / next.from) * 100).toFixed(2) : "100.00",
+      // Loyalty P2: the review customer holds a 40-point win-back lot and one active reorder campaign.
+      bonusLots:
+        customer.ownerIndex === null ? [] : [{ points: 40, reason: "winback", expiresAt: bangkokIso(30 * DAY) }],
+      activeCampaigns: customer.ownerIndex === null ? 0 : 1,
     };
     return HttpResponse.json(summary);
   }),
@@ -529,6 +533,8 @@ export const storeOrderHandlers = [
       groupCode: null,
       reason: null,
       createdAt: bangkokIso(-createdMinutesAgo),
+      bonusReason: null,
+      multipliers: null,
       ...extra,
     });
     const earned = ordersOf(customer)

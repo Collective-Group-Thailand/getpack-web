@@ -32,6 +32,7 @@ import {
   useActor,
 } from "../console";
 import { DetailSkeleton } from "../console/DetailSkeleton";
+import { AgentLinksTable } from "./AgentLinksTable";
 import { CampaignBudget } from "./CampaignBudget";
 import type { Campaign, Promotion } from "./resources";
 import { bangkokDayOf, bangkokMidnight } from "./time";
@@ -262,6 +263,9 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
             }
           />
         </DeskSection>
+
+        {/* Loyalty P2: agents' share links and what followed them (D-495). */}
+        {report.data ? <AgentLinksTable rows={report.data.refAgents} loading={report.isFetching} /> : null}
 
         {goals.length > 0 ? (
           <p className="flex flex-wrap items-center gap-2 text-sm">
