@@ -11,6 +11,8 @@ import {
   getStoreCredit,
 } from "@/features/customer/account/api.server";
 import { EarnBanner } from "@/features/customer/account/EarnBanner";
+import { getDataRefresh } from "@/features/customer/loyalty/api.server";
+import { DataRefreshBanner } from "@/features/customer/loyalty/DataRefreshBanner";
 import { WinbackBanner } from "@/features/customer/loyalty/WinbackBanner";
 import { getNextSurvey } from "@/features/customer/surveys/api.server";
 import { loyaltySummaryP2Of } from "@/features/shared/loyalty-p2/read";
@@ -74,22 +76,38 @@ function Section({
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, latest, active, points, credit, launchpad, defaults, quotes, company, tasks, survey] =
-    await Promise.all([
-      getTranslations("account.home"),
-      getTranslations("account.nav"),
-      getFormat(),
-      listOrderPage("active", "", 1, 3).catch(() => null),
-      listOrderPage("active", "", 1, 100).catch(() => null),
-      getPoints().catch(() => null),
-      getStoreCredit().catch(() => null),
-      getLaunchpad().catch(() => null),
-      getDefaults().catch(() => null),
-      getSavedQuotes().catch(() => []),
-      getMyCompany().catch(() => null),
-      getLoyaltyTasks(),
-      getNextSurvey(),
-    ]);
+  const [
+    t,
+    tNav,
+    format,
+    latest,
+    active,
+    points,
+    credit,
+    launchpad,
+    defaults,
+    quotes,
+    company,
+    tasks,
+    survey,
+    refresh,
+  ] = await Promise.all([
+    getTranslations("account.home"),
+    getTranslations("account.nav"),
+    getFormat(),
+    listOrderPage("active", "", 1, 3).catch(() => null),
+    listOrderPage("active", "", 1, 100).catch(() => null),
+    getPoints().catch(() => null),
+    getStoreCredit().catch(() => null),
+    getLaunchpad().catch(() => null),
+    getDefaults().catch(() => null),
+    getSavedQuotes().catch(() => []),
+    getMyCompany().catch(() => null),
+    getLoyaltyTasks(),
+    getNextSurvey(),
+    // Loyalty P2: the yearly data confirmation (a convenience read; no banner when it fails).
+    getDataRefresh().catch(() => null),
+  ]);
   // A company approver's queue leads (round 2, B2).
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
   const latestOrders = (latest?.groups ?? [])
@@ -143,6 +161,9 @@ export default async function Page() {
 
       {/* Loyalty P2: bonus points waiting (win-back), in neutral words (D-493). */}
       {points ? <WinbackBanner lots={loyaltySummaryP2Of(points).bonusLots} /> : null}
+
+      {/* Loyalty P2: the yearly confirmation once it is due again (the first one is a checklist task, D-490). */}
+      <DataRefreshBanner refresh={refresh} />
 
       <Section id="account-latest" title={t("latest")} more={{ href: "/account/orders", label: t("allOrders") }}>
         {latestOrders.length === 0 ? (

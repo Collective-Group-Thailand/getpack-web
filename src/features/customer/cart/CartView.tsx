@@ -15,6 +15,7 @@ import { trackCheckout } from "@/lib/analytics/checkout";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
+import type { LoyaltyCampaign } from "@/lib/api/requests/store-loyalty-p2";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -49,7 +50,15 @@ type Removed = Pick<CartItem, "quoteId" | "quoteOptionId" | "designOption" | "de
  *
  * CONTRACT-GAP store.cart — a line does not list the design options it may switch to.
  */
-export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?: Address[] }) {
+export function CartView({
+  initialCart,
+  campaigns = [],
+}: {
+  initialCart: Cart;
+  initialAddresses?: Address[];
+  /** Loyalty P2 (D-492): my active reorder campaigns; a reorder line of that order shows the ×1.5 tag. */
+  campaigns?: LoyaltyCampaign[];
+}) {
   const t = useTranslations("cart");
   const tFlow = useTranslations("checkout.flow");
   const tShipping = useTranslations("common.shipping");
@@ -320,6 +329,11 @@ export function CartView({ initialCart }: { initialCart: Cart; initialAddresses?
                 <li key={item.id} className={index > 0 ? "border-border mt-5 border-t pt-5" : undefined}>
                   <CartItemCard
                     item={item}
+                    reorderBonus={
+                      item.reorderOf
+                        ? (campaigns.find((campaign) => campaign.reorderOfOrderId === item.reorderOf?.orderId) ?? null)
+                        : null
+                    }
                     quantityStep={cart.quantityStep}
                     pending={mutate.isPending}
                     onQuantity={(quantity) => void changeQuantity(item, quantity, false)}

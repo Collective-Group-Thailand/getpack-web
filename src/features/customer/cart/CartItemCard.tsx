@@ -9,6 +9,8 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
+import { ReorderBonusBadge } from "@/features/customer/loyalty/ReorderBonusBadge";
+import type { LoyaltyCampaign } from "@/lib/api/requests/store-loyalty-p2";
 import { productFamilyOf, ProductThumb } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
 
@@ -35,6 +37,7 @@ export function specChips(locale: string, item: CartItem): string[] {
  */
 export function CartItemCard({
   item,
+  reorderBonus = null,
   quantityStep,
   pending,
   onQuantity,
@@ -46,6 +49,8 @@ export function CartItemCard({
   onConfirmReprice,
 }: {
   item: CartItem;
+  /** Loyalty P2 (D-492): the open reorder campaign of the order this line repeats — the bare "แต้ม ×1.5" line. */
+  reorderBonus?: LoyaltyCampaign | null;
   quantityStep: number | null;
   pending: boolean;
   onQuantity: (quantity: number) => void;
@@ -109,6 +114,14 @@ export function CartItemCard({
           <p className="text-muted m-0 mt-1.5 text-xs">
             {t(item.reusesApprovedArtwork ? "reorderOfReused" : "reorderOf", { code: item.reorderOf.orderCode })}
           </p>
+        ) : null}
+        {item.reorderOf && reorderBonus ? (
+          <ReorderBonusBadge
+            size="sm"
+            className="mt-1.5"
+            multiplier={reorderBonus.multiplier}
+            endsAt={reorderBonus.endsAt}
+          />
         ) : null}
 
         {item.pendingReprice ? (

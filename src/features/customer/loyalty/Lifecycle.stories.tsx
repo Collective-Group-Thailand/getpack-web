@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import account from "@/i18n/messages/th/customer/account.json";
 import checkout from "@/i18n/messages/th/customer/checkout.json";
 
+import { DataRefreshBanner } from "./DataRefreshBanner";
 import { PointsBreakdown } from "./PointsBreakdown";
 import { ReorderBonusBadge } from "./ReorderBonusBadge";
 import { WinbackBanner } from "./WinbackBanner";
@@ -66,6 +67,23 @@ export const CheckoutPoints: Story = {
         },
         paymentBonus: { multiplier: "1.20", methods: ["scb_qr", "scb_qr_cross_bank", "bank_transfer_slip"] },
         toEarnWithPaymentBonus: 27,
+      }}
+    />
+  ),
+};
+
+/** The yearly data confirmation on /account, once it is due again (the first one is a checklist task). */
+export const DataRefreshDue: Story = {
+  render: () => (
+    <DataRefreshBanner
+      refresh={{
+        due: true,
+        lastConfirmedAt: "2025-11-02T10:00:00+07:00",
+        nextDueAt: null,
+        rewardPoints: 12,
+        company: null,
+        taxProfiles: [],
+        addresses: [],
       }}
     />
   ),

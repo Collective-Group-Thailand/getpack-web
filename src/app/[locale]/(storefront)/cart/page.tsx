@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getCartAndBook } from "@/features/customer/cart/api.server";
 import { CartView } from "@/features/customer/cart/CartView";
 import { GuestCartView } from "@/features/customer/cart/GuestCartView";
+import { listCampaigns } from "@/features/customer/loyalty/api.server";
 import { getActor } from "@/lib/auth/actor";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,7 +27,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       </div>
     );
   }
-  const { cart } = await getCartAndBook();
+  // Loyalty P2: an open ×1.5 reorder campaign shows on the reorder line it applies to (a convenience read).
+  const [{ cart }, campaigns] = await Promise.all([getCartAndBook(), listCampaigns()]);
   // Step 1 of 4 (checkout redesign Phase 1): the stepper, then the cart box, whose heading is the page's h1.
   return (
     <div className="max-w-nav mx-auto px-5 pt-1 pb-8 md:px-8 xl:px-12">
@@ -35,7 +37,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           {t("title")}
         </h1>
       ) : null}
-      <CartView initialCart={cart} />
+      <CartView initialCart={cart} campaigns={campaigns} />
     </div>
   );
 }

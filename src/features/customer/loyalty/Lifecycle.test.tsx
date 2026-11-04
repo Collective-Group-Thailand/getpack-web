@@ -6,6 +6,7 @@ import account from "@/i18n/messages/th/customer/account.json";
 import checkout from "@/i18n/messages/th/customer/checkout.json";
 import { multiplierParts, shortMultiplier } from "@/features/shared/loyalty-p2/multipliers";
 
+import { DataRefreshBanner } from "./DataRefreshBanner";
 import { PointsBreakdown } from "./PointsBreakdown";
 import { ReorderBonusBadge } from "./ReorderBonusBadge";
 import { WinbackBanner } from "./WinbackBanner";
@@ -103,5 +104,41 @@ describe("PointsBreakdown", () => {
       />,
     );
     expect(screen.queryByText(/ชำระด้วย QR/)).not.toBeInTheDocument();
+  });
+});
+
+describe("DataRefreshBanner", () => {
+  const refresh = {
+    due: true,
+    lastConfirmedAt: "2025-11-02T10:00:00+07:00",
+    nextDueAt: null,
+    rewardPoints: 12,
+    company: null,
+    taxProfiles: [],
+    addresses: [],
+  };
+
+  it("asks for the yearly confirmation with the API's reward and links to the page", () => {
+    renderTh(<DataRefreshBanner refresh={refresh} />);
+    const link = screen.getByRole("link");
+    expect(link).toHaveAttribute("href", "/account/confirm-data");
+    expect(link).toHaveTextContent("ตรวจและยืนยันรับ 12 แต้ม");
+  });
+
+  it("stays out of the way for the first confirmation, when not due, and without a reward line at 0", () => {
+    const { rerender } = renderTh(<DataRefreshBanner refresh={{ ...refresh, lastConfirmedAt: null }} />);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    rerender(
+      <NextIntlClientProvider locale="th" messages={{ account, checkout }} timeZone="Asia/Bangkok">
+        <DataRefreshBanner refresh={{ ...refresh, due: false }} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    rerender(
+      <NextIntlClientProvider locale="th" messages={{ account, checkout }} timeZone="Asia/Bangkok">
+        <DataRefreshBanner refresh={{ ...refresh, rewardPoints: 0 }} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole("link")).not.toHaveTextContent("แต้ม");
   });
 });

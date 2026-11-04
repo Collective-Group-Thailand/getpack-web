@@ -899,7 +899,13 @@
     "confirmedReward": "+{points} points — details confirmed",
     "failed": "That didn't save. Please try again.",
     "upToDate": "Last confirmed {date}",
-    "nextDue": "next due {date}"
+    "nextDue": "next due {date}",
+    "banner": {
+      "title": "Are your company details and addresses still right?",
+      "body": "Last confirmed {date} · a yearly check keeps documents and deliveries right",
+      "bodyReward": "Last confirmed {date} · check and confirm for {points} points",
+      "action": "Check details"
+    }
   },
   "showcase": {
     "title": "Let us show your work",
