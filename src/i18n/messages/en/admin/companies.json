@@ -237,7 +237,67 @@
     "permanent": "Permanent",
     "temporaryInForce": "Temporary limit, valid until {date}",
     "temporaryFallback": "Afterwards {limit} on {days} days applies again",
-    "temporaryNoFallback": "Afterwards the company has no limit until a new one is approved"
+    "temporaryNoFallback": "Afterwards the company has no limit until a new one is approved",
+    "uplift": {
+      "title": "Credit uplift by tier",
+      "note": "Every night the limit follows the company's own 12-month spend: Gold ×1.5, Platinum ×2 of the base, automatically up to the cap; above it, a request.",
+      "modeLabel": "Uplift",
+      "modes": {
+        "auto": "Automatic",
+        "frozen": "Frozen",
+        "off": "Off"
+      },
+      "companyTier": "Company tier",
+      "spend": "12-month spend {amount}",
+      "base": "Base limit",
+      "target": "Tier target",
+      "capped": "Above the automatic cap",
+      "inForce": "Limit in force",
+      "modeReason": "Reason: {reason}",
+      "notEligible": "No approved permanent base limit yet, so no uplift.",
+      "aboveCap": "The tier target is {target}; the part above the cap needs approval",
+      "aboveCapNote": "The request follows the usual credit-limit approval",
+      "requestFull": "Request the full limit",
+      "requestReason": "Credit uplift by membership tier (tier_uplift)",
+      "confirm": {
+        "auto": {
+          "title": "Let the uplift run automatically?",
+          "body": "Tonight's run recalculates from the base of {base} and the company's tier.",
+          "action": "Use automatic"
+        },
+        "frozen": {
+          "title": "Freeze the uplift?",
+          "body": "The limit in force stays as it is until you switch back to automatic.",
+          "action": "Freeze"
+        },
+        "off": {
+          "title": "Turn the uplift off?",
+          "body": "The limit goes back to the base of {base} as soon as you save, and is not raised again.",
+          "action": "Turn off and go back to base"
+        }
+      },
+      "close": "Close",
+      "keep": "Keep as is",
+      "reason": "Reason",
+      "reasonHint": "Recorded in the audit log",
+      "reasonShort": "At least 10 characters",
+      "failed": "Could not change it",
+      "modeSet": {
+        "auto": "Uplift set to automatic",
+        "frozen": "Uplift frozen",
+        "off": "Uplift off; limit back to base"
+      },
+      "tiers": {
+        "member": "Member",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum"
+      },
+      "origins": {
+        "tier_uplift": "{tier} tier ×{factor}",
+        "tier_uplift_override": "Finance back to base"
+      }
+    }
   },
   "statements": {
     "title": "Monthly figures",

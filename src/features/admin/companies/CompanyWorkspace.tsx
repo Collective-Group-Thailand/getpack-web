@@ -41,6 +41,7 @@ import {
   useCan,
 } from "../console";
 import { CompanyMemoButton } from "./CompanyMemo";
+import { CreditOriginBadge, CreditUpliftPanel } from "./CreditUplift";
 import { PartyOrders } from "../orders";
 import { companyActions, type CompanyAction } from "./actions";
 import type {
@@ -596,6 +597,10 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
   const canManage = useCan("company_credit.manage");
   const [requesting, setRequesting] = useState<{ key: string } | null>(null);
   const [draft, setDraft] = useState<CreditDraft>(EMPTY_CREDIT_DRAFT);
+  // Loyalty P3: arrived from /finance/credit-uplifts to file the full amount above the automatic cap.
+  const [upliftRequestLeads] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("uplift") === "request",
+  );
   const key = queryKeys.related("admin", "company", company.id, "credit");
   const credit = useQuery({
     queryKey: key,
@@ -650,7 +655,17 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
           <span className="text-muted text-sm">{t("permanent")}</span>
         ),
     },
-    { id: "basis", header: t("basis"), cell: (row) => t(`bases.${row.basis}`) },
+    {
+      id: "basis",
+      header: t("basis"),
+      // Loyalty P3 (D-501): a tier uplift says so, with its factor; a request keeps its basis alone.
+      cell: (row) => (
+        <span className="inline-flex flex-wrap items-center gap-1.5">
+          {t(`bases.${row.basis}`)}
+          <CreditOriginBadge version={row} />
+        </span>
+      ),
+    },
     {
       id: "status",
       header: t("versionStatus"),
@@ -778,6 +793,29 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
           </Callout>
         ) : null}
       </Section>
+
+      {figures ? (
+        <CreditUpliftPanel
+          companyId={company.id}
+          credit={figures}
+          canManage={canManage && company.status === "active"}
+          requestLeads={upliftRequestLeads}
+          onChanged={() => {
+            void credit.refetch();
+            onChanged();
+          }}
+          onRequestFull={(amount) => {
+            // The full target through the credit_limit approval (D-449/D-451), prefilled; reason tier_uplift (D-501).
+            setDraft({
+              ...EMPTY_CREDIT_DRAFT,
+              limitAmount: amount,
+              basis: eligibility?.reason ?? "financial_statement",
+              reason: t("uplift.requestReason"),
+            });
+            setRequesting({ key: newIdempotencyKey() });
+          }}
+        />
+      ) : null}
 
       <Section title={t("receivables")} description={t("receivablesNote")}>
         {receivables.isError ? (

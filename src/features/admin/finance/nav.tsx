@@ -42,6 +42,13 @@ export const FINANCE_NAV: readonly { group: string; items: readonly NavItem[] }[
       { key: "creditNotes", href: "/finance/credit-notes", icon: "file-check", anyOf: ["receivables.read"] },
       { key: "corrections", href: "/finance/corrections", icon: "edit", anyOf: ["receivables.read"] },
       { key: "receivables", href: "/finance/receivables", icon: "coins", anyOf: ["receivables.read"] },
+      // Loyalty P3 (D-501): credit limits raised by the company's tier.
+      {
+        key: "creditUplifts",
+        href: "/finance/credit-uplifts",
+        icon: "trend-up",
+        anyOf: ["company_credit.manage", "companies.read"],
+      },
     ],
   },
   {
