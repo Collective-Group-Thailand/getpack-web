@@ -16,6 +16,7 @@ import { erpE4Handlers } from "./erp-e4";
 import { factoryHandlers } from "./factories";
 import { registerFactoryNames } from "./factory-names";
 import { jobHandlers } from "./jobs";
+import { partnerLoyaltyP4Handlers } from "./loyalty-p4";
 import { onboardingHandlers } from "./onboarding";
 import { shipmentHandlers } from "./shipments";
 
@@ -25,6 +26,7 @@ registerFactoryNames((factoryId) => {
 });
 
 export const partnerZoneHandlers = [
+  ...partnerLoyaltyP4Handlers,
   ...onboardingHandlers,
   ...jobHandlers,
   ...shipmentHandlers,

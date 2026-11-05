@@ -36,6 +36,7 @@ import { dealsHandlers } from "./deals";
 import { loyaltyHandlers } from "./loyalty";
 import { loyaltyP2Handlers } from "./loyalty-p2";
 import { loyaltyP3Handlers } from "./loyalty-p3";
+import { loyaltyP4Handlers } from "./loyalty-p4";
 import { styleLibraryHandlers } from "./style-library";
 
 export const storeHandlers = [
@@ -48,6 +49,8 @@ export const storeHandlers = [
   ...contentHandlers,
   ...assistantHandlers,
   ...homeHandlers,
+  // Loyalty P4: the surface guards answer before the deal, reward and checklist handlers they pass through to.
+  ...loyaltyP4Handlers,
   ...loyaltyHandlers,
   ...loyaltyP2Handlers,
   ...loyaltyP3Handlers,

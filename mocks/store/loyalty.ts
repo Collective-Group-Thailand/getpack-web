@@ -18,6 +18,7 @@ import type {
 import { problem } from "../support";
 import { customerOf } from "./customers";
 import { buildLoyaltyTasks, REVIEW_TASK_STATES, type TaskState } from "./loyalty-fixtures";
+import { withCompanyClaims } from "./loyalty-p4";
 
 const states: Partial<Record<LoyaltyTaskCode, TaskState>> = { ...REVIEW_TASK_STATES };
 
@@ -58,7 +59,10 @@ function invalidProfile(body: Partial<PackagingProfileInput> | null) {
 export const loyaltyHandlers = [
   // store.loyalty.tasks
   http.get("*/v1/store/loyalty/tasks", ({ request }) =>
-    customerOf(request) ? HttpResponse.json(buildLoyaltyTasks(states)) : unauthenticated(),
+    customerOf(request)
+      ? // Loyalty P4 (D-508): a second member of a verified company sees the company's one-offs as claimed.
+        HttpResponse.json(withCompanyClaims(buildLoyaltyTasks(states), customerOf(request)))
+      : unauthenticated(),
   ),
   // store.loyalty.getPackagingProfile: null fields until first saved, never 404
   http.get("*/v1/store/loyalty/packaging-profile", ({ request }) =>

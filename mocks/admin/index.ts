@@ -16,6 +16,7 @@ import { logisticsHandlers } from "./logistics";
 import { loyaltyHandlers } from "./loyalty";
 import { loyaltyP2AdminHandlers } from "./loyalty-p2";
 import { loyaltyP3AdminHandlers } from "./loyalty-p3";
+import { adminLoyaltyP4Handlers } from "./loyalty-p4";
 import { marketingContractHandlers, marketingHandlers } from "./marketing";
 import { orderHandlers } from "./orders";
 import { partnerHandlers } from "./partners";
@@ -33,6 +34,7 @@ export const adminHandlers = [
   ...loyaltyP2AdminHandlers,
   // Loyalty P3: before marketing, whose `/promotions/:promotionId` would take "capacity-deals" for an id.
   ...loyaltyP3AdminHandlers,
+  ...adminLoyaltyP4Handlers,
   ...styleLibraryContentHandlers,
   ...adminConversationHandlers,
   ...consoleHandlers,

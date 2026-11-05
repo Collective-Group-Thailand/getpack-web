@@ -571,19 +571,23 @@ function statementOf({ store, statement }: ReturnType<typeof statementsAll>[numb
     // The partner model keeps the dispute note only, not the lines it named.
     disputedLineNos: [],
     currency: "THB",
-    totals: {
-      production: statement.totals.production,
-      shipping: statement.totals.shipping,
-      // The partner model has no mock-up, design or reproduction lines.
-      other: "0.00",
-      deductions: statement.totals.deductions,
-      advanceOffset: statement.totals.alreadyPaid,
-      net: statement.totals.net,
-      vat: statement.totals.vat,
-      gross: statement.totals.gross,
-      alreadyPaid: statement.totals.alreadyPaid,
-      remaining: statement.totals.remaining,
-    },
+    // Loyalty P4 (D-506): `totals.cofunding` (CONTRACT-REQUEST admin.loyalty.p4-fields).
+    totals: Object.assign(
+      {
+        production: statement.totals.production,
+        shipping: statement.totals.shipping,
+        // The partner model has no mock-up, design or reproduction lines.
+        other: "0.00",
+        deductions: statement.totals.deductions,
+        advanceOffset: statement.totals.alreadyPaid,
+        net: statement.totals.net,
+        vat: statement.totals.vat,
+        gross: statement.totals.gross,
+        alreadyPaid: statement.totals.alreadyPaid,
+        remaining: statement.totals.remaining,
+      },
+      { cofunding: statement.totals.cofunding ?? "0.00" },
+    ),
     taxInvoices: [...invoices].reverse(),
     taxInvoiceStatus: !latest || latest.status === "void" ? "none" : latest.status,
     inputVatStatus: latest?.inputVatStatus ?? null,
@@ -594,11 +598,13 @@ function statementOf({ store, statement }: ReturnType<typeof statementsAll>[numb
     grossAmount: statement.totals.gross,
     lines: statement.lines.map((line, index) => {
       const net = satangOf(line.amount);
-      const vat = vatOf(net, registered);
+      // A co-funding line carries no VAT (contra_discount, pending CPA — D-506).
+      const vat = line.kind === "cofunding" ? 0 : vatOf(net, registered);
       return {
         lineNo: index + 1,
-        // The contract has no advance-offset kind: the partner model's offset is a deduction here.
-        kind: line.kind === "advance_offset" ? "deduction" : line.kind,
+        // The contract has no advance-offset kind: the partner model's offset is a deduction here. Loyalty P4 adds
+        // `cofunding` (CONTRACT-REQUEST admin.loyalty.p4-fields).
+        kind: (line.kind === "advance_offset" ? "deduction" : line.kind) as Schemas["BillingStatementLineKind"],
         description: line.description,
         reference: line.reference,
         quantity: line.quantity,

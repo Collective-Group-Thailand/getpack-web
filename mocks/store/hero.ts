@@ -15,6 +15,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { bangkokIso, problem } from "../support";
 import { catalogProducts } from "./catalog";
+import { anonymousSurfaces } from "./loyalty-p4";
 import { configuratorOf, inputsOf, stepOf, toStoreConfiguratorDto } from "./quotes";
 
 type Shape = Schemas["HeroShape"];
@@ -253,7 +254,10 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
 export const heroHandlers = [
   // The mock catalogue's made-to-order floor is 100; 300 here is the figure the Main board review
   // names, as an admin catalogue would state it.
-  http.get("*/v1/store/public-config", () => HttpResponse.json(publicConfig())),
+  // Loyalty P4: `loyaltySurfaces`, the anonymous view (CONTRACT-REQUEST store.loyalty.p4-fields).
+  http.get("*/v1/store/public-config", () =>
+    HttpResponse.json({ ...publicConfig(), loyaltySurfaces: anonymousSurfaces() }),
+  ),
   http.get("*/v1/store/catalog/hero-presets", () => HttpResponse.json(presets())),
   http.post("*/v1/store/quotes/actions/preview", async ({ request }) => {
     const body = (await request.json().catch(() => null)) as Schemas["HeroPreviewRequestDto"] | null;

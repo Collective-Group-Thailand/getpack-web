@@ -119,6 +119,17 @@ export interface StaffPersona {
   permissions: StaffPermission[];
 }
 
+/**
+ * Loyalty P4 (API-CHANGES-P4 "New permissions"): `loyalty.programme.manage` is not in the pinned rbac yet; the mock
+ * grants it as the API will. Leaves with `pnpm gen:rbac` after adoption.
+ */
+const P4_GRANTS: Record<string, StaffPermission[]> = Object.fromEntries(
+  ["marketing", "finance_manager", "c_level", "superadmin"].map((role) => [
+    role,
+    ["loyalty.programme.manage" as StaffPermission],
+  ]),
+);
+
 function persona(key: string, n: number, displayName: string, roles: string[]): StaffPersona {
   return {
     key,
@@ -126,7 +137,9 @@ function persona(key: string, n: number, displayName: string, roles: string[]): 
     email: key === "cs" ? "somchai.staff@getpack.invalid" : `${key.replace(/_/g, ".")}.staff@getpack.invalid`,
     displayName,
     roles,
-    permissions: [...new Set(roles.flatMap((role) => STAFF_ROLE_GRANTS[role] ?? []))],
+    permissions: [
+      ...new Set(roles.flatMap((role) => [...(STAFF_ROLE_GRANTS[role] ?? []), ...(P4_GRANTS[role] ?? [])])),
+    ],
   };
 }
 
