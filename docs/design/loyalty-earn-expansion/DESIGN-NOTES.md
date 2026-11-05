@@ -398,3 +398,67 @@ figure is a fake example (API-CHANGES-P3 samples and the UAT seed's eight items)
 - "ส่วนลดเงินสด" → "ส่วนลดค่าสินค้า": no customer word says cash (owner: no cash-out wording). The confirm sheet states
   the validity in days ("90 วันนับจากวันที่แลก") and the date only on the coupon the API returns — the web adds no days
   to a date.
+
+# P4 design notes — co-funding, programme budget, rollout, unavailable states
+
+Prototypes: `prototypes/p4-partner-cofunding.html`, `p4-admin-rollout.html`, `p4-admin-budget.html`,
+`p4-customer-states.html`. Screenshots: `screenshots/P4/` (390 and 1440, light, full page; rendered with headless Chrome
+in the cloud container, Anuphan from Google Fonts). Each file holds the page first and, below a dashed rule, the review
+states. The base CSS (tokens, ticket masks, admin frame, form controls) is copied from the P2 prototypes; every figure
+is a fake example from `API-CHANGES-P4.md`. The co-funding panel on a capacity deal reuses the promotion editor's
+patterns and has no prototype (P4-PLAN §6.4).
+
+## 1. Partner — co-funding offers (`/cofunding`, `/cofunding/[offerId]`; 390 is the primary frame)
+
+- **Offer ticket** (D-486, system green): a horizontal ticket whose stub is the factory's share — "40%" over "ของส่วนลดดีล",
+  or "฿150" over "ต่อออเดอร์" — the figure the factory decides on. The body is the deal (product type · week), one line
+  "ดีลลด 5% · สูงสุด ฿20,000", and a footer that carries the state: proposed = the one amber badge "รอตอบรับ" + the
+  respond-by date as a static date (never a countdown) + "ดูข้อเสนอ"; accepted = a plain meter with "฿4,320 จาก
+  ฿12,000 · 9 ออเดอร์" and a success "ตอบรับแล้ว"; closed (declined / expired / withdrawn / ended) under "ที่ผ่านมา"
+  with a neutral stub.
+- Tabs as a segmented control: รอตอบรับ · ตอบรับแล้ว · ทั้งหมด, with counts.
+- The page lede says what an offer is and that it is voluntary; one grey note at the foot explains where the share shows
+  (the billing-statement line) and the refund on cancel.
+- **Detail**: the terms as one sentence at 19 px, then "ไม่ใช่ข้อบังคับ ไม่ตอบรับก็ไม่มีผลกับการรับงาน", then the facts
+  (deal discount, window, cap, respond-by, getpack's note). The decision panel sits right on desktop and first on a
+  phone, with "ตอบรับข้อเสนอ" filled and "ปฏิเสธ" outline; on a phone the two buttons also sit in a bar at the bottom.
+  Orders counted: order code, job number, deal discount, share, status — no customer, address or price.
+- Accept asks once (what the factory pays, where it is netted, what happens on a cancel). Decline asks a reason (≥ 5).
+  A user without `factory_cofunding.decide` sees "รอเจ้าของโรงงานตอบ"; past respond-by "ปิดรับคำตอบแล้ว".
+
+## 2. Admin — rollout (`/marketing/loyalty/rollout`)
+
+- A static four-step rail (ภายใน · UAT · บางส่วน N% · ทุกคน) with a 3 px top rule per step, done steps checked, the
+  current one in `primary-subtle-fg`; no progress animation. Under it the cohort as two figures.
+- The pending advance is a card with a primary left rule and the link to the approval; "ขอเลื่อนขั้น" is disabled while
+  one waits. "ถอยกลับ" is outline (secondary) — it applies at once, so its confirm uses the danger button.
+- Four gate cards (value, target with its window, state ผ่าน / ต้องดู / ยังไม่มีข้อมูล). "ต้องดู" is warning **text**
+  with an icon, not a filled chip — gates are advisory and never block.
+- Allowlists (companies, accounts) and a cohort lookup ("ตรวจว่าอยู่ในกลุ่มไหม") for support. History: last 10 versions.
+
+## 3. Admin — programme budget (`/marketing/loyalty/budget`) and the shell banner
+
+- One figure (used, 32 px) "จาก ฿budget" and the percentage at the right of a plain 8 px meter with a hairline tick at the
+  first alert. The breakdown is a table under the meter, factory share as a negative line, total ruled off.
+- Aside: the month's budget (monthly, this month's override, effective, alert points), the pending override card, and
+  "ขอเพิ่มงบเดือนนี้" (amount > current, reason ≥ 10) — disabled while a request waits.
+- **Banner** in the admin shell for `loyalty.read` users: neutral surface, the small amber "80%" badge, text and "ดูงบ";
+  at 100 % the text is danger-toned with a pause icon and no amber fill. Dismissible per session.
+- The publish refusal (`budget_exhausted`, `loyalty.budget_exhausted`) is the same neutral line with a link to the page.
+
+## 4. Customer — unavailable page and the claimed checklist row
+
+- `FeatureUnavailable`: a quiet card, a clock icon on `bg-subtle`, "ส่วนนี้ยังไม่เปิดให้บริการ", the calm sentence, and
+  two actions ("ไปหน้าแต้มของฉัน" filled when signed in, "เลือกสินค้า" outline). No illustration, no word for budget,
+  rollout or closing; `noindex`. LIFF uses the same card in its frame; the LIFF bottom bar drops the closed tab.
+- Checklist row `claimed_by_company`: neutral check (`subtle`), title muted, the line "บริษัทของคุณรับแต้มนี้แล้ว", no
+  points figure, no chevron, not a link; after the todo rows. It never says who.
+
+## 5. Self-review (changed after the first render)
+
+- The partner detail's decision card sat inside the account frame's side style (double border) → its own class.
+- Order and job codes wrapped at 1440 → `nowrap`; the phone overflowed to 610 px because grid children kept their
+  table's width → `min-width: 0`.
+- Phone: the fixed bottom bar and decision bar covered the list in a full-page render → drawn in flow in the prototype
+  (the app pins them).
+- Gate cards at 390 squeezed "ต้องดู" beside the label → the state moves above the label on a phone.
