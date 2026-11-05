@@ -123,7 +123,7 @@ export interface StaffPersona {
  * Loyalty P4 (API-CHANGES-P4 "New permissions"): `loyalty.programme.manage` is not in the pinned rbac yet; the mock
  * grants it as the API will. Leaves with `pnpm gen:rbac` after adoption.
  */
-const P4_GRANTS: Record<string, StaffPermission[]> = Object.fromEntries(
+export const P4_GRANTS: Record<string, StaffPermission[]> = Object.fromEntries(
   ["marketing", "finance_manager", "c_level", "superadmin"].map((role) => [
     role,
     ["loyalty.programme.manage" as StaffPermission],

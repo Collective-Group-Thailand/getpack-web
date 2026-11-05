@@ -102,7 +102,9 @@
     "guarantee_policy_change": "Guarantee policy change",
     "style_library_change": "Style library change",
     "showcase_consent_review": "Customer showcase consent",
-    "capacity_deal_publish": "Publish a capacity deal"
+    "capacity_deal_publish": "Publish a capacity deal",
+    "programme_budget_override": "Raise the loyalty programme budget",
+    "loyalty_rollout_advance": "Advance the loyalty programme rollout"
   },
   "fields": {
     "quoteCode": "Quotation",
@@ -323,5 +325,6 @@
     "direction": {
       "factory_to_getpack": "Factory's price to getpack"
     }
-  }
+  },
+  "fundingTitle": "Who funds the discount"
 }

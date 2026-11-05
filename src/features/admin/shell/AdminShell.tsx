@@ -12,6 +12,7 @@ import { Sheet } from "@/ui/components/Sheet";
 import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/ShortcutsOverlay";
 
 import { ActorProvider } from "../console/actor";
+import { BudgetBanner } from "../marketing/ProgrammeBudget";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminTopbar } from "./AdminTopbar";
 import { sidebarItems } from "./menu";
@@ -98,7 +99,11 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
         sidebarClassName="bg-surface"
         className="text-base"
       >
-        <ActorProvider actor={actor}>{children}</ActorProvider>
+        <ActorProvider actor={actor}>
+          {/* Loyalty P4 (D-507): the programme budget line from the first alert, for loyalty.read users. */}
+          <BudgetBanner />
+          {children}
+        </ActorProvider>
       </AppShell>
 
       <Sheet

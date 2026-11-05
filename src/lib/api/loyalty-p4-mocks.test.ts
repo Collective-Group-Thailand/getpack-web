@@ -175,8 +175,8 @@ describe("programme budget and rollout", () => {
 
   it("opens an approval to grow the cohort and rolls back at once without one", async () => {
     const before = await requests(staff("marketing")).call("GET /v1/admin/loyalty/rollout");
-    const target = { ...before.current, percent: 25, reason: "ผ่านเกณฑ์สองสัปดาห์แล้ว" };
-    const { settingVersionId: _v, effectiveFrom: _e, ...grow } = target;
+    const { stage, allowlistCompanyIds, allowlistUserIds } = before.current;
+    const grow = { stage, percent: 25, allowlistCompanyIds, allowlistUserIds, reason: "ผ่านเกณฑ์สองสัปดาห์แล้ว" };
     const pending = await requests(staff("marketing")).call("POST /v1/admin/loyalty/rollout/actions/advance", {
       body: grow,
       idempotencyKey: "k-adv",

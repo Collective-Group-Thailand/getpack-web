@@ -19,6 +19,7 @@ import { toast } from "@/ui/components/Toast";
 
 import { FormDialog, FormError, problemMessage, QueryError, Section, StatusChip, useActor, useCan } from "../console";
 import { adminBrowserApis } from "../console/api";
+import { SurfaceSwitches } from "./SurfaceSwitches";
 
 type Setting = Schemas["SettingDto"];
 type Value = Setting extends { current: infer C } ? (C extends { value: infer V } ? V : never) : never;
@@ -47,8 +48,19 @@ const KEYS = [
   "promotions.free_rush",
   "promotions.capacity_deal",
   "b2b.credit_tier_uplift",
+  // Loyalty P4 (D-506, D-507, D-510): the co-funding rules (Finance, pending CPA), and the programme budget and the
+  // rollout read-only here — each is changed on its own screen, through its approval.
+  "promotions.cofunding",
+  "loyalty.programme_budget",
+  "loyalty.rollout",
 ] as const;
 type Key = (typeof KEYS)[number];
+
+/** Settings changed on their own screen (and approval), shown here read-only with a link (P4-PLAN §2). */
+const OWN_SCREEN: Partial<Record<Key, string>> = {
+  "loyalty.programme_budget": "/marketing/loyalty/budget",
+  "loyalty.rollout": "/marketing/loyalty/rollout",
+};
 
 /** Fields that are words, not amounts: shown, never edited here. */
 const FIXED_FIELDS = new Set(["basis", "tier", "spendBasis", "best"]);
@@ -107,8 +119,15 @@ export function LoyaltySettings() {
   if (settings.isError) return <QueryError error={settings.error} onRetry={() => void settings.refetch()} />;
   const byKey = new Map((settings.data ?? []).map((setting) => [setting.key, setting]));
 
+  const surfaces = byKey.get("loyalty.surfaces");
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {/* Loyalty P4 (D-509): the eight surface switches lead the page — they are what changes most often. */}
+      {surfaces ? (
+        <div className="lg:col-span-2">
+          <SurfaceSwitches setting={surfaces} />
+        </div>
+      ) : null}
       {KEYS.map((key) => {
         const setting = byKey.get(key);
         return setting ? <SettingCard key={key} settingKey={key} setting={setting} /> : null;
@@ -127,7 +146,9 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
   const actor = useActor();
   // settings.change is every owning role's; each may change only the settings it owns (D-063), as
   // the Settings screen and getpack-api's owner check have it.
-  const canChange = useCan("settings.change") && actor.roles.includes(setting.ownerRole);
+  const ownScreen = OWN_SCREEN[settingKey];
+  const mayChange = useCan("settings.change");
+  const canChange = !ownScreen && mayChange && actor.roles.includes(setting.ownerRole);
   const [editing, setEditing] = useState(false);
   const value = setting.current?.value ?? null;
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -200,7 +221,11 @@ function SettingCard({ settingKey, setting }: { settingKey: Key; setting: Settin
           <Button size="sm" variant="ghost" asChild>
             <Link href={`/settings/${setting.id}`}>{t("history")}</Link>
           </Button>
-          {canChange ? (
+          {ownScreen ? (
+            <Button size="sm" variant="secondary" asChild>
+              <Link href={ownScreen}>{t("changeThere")}</Link>
+            </Button>
+          ) : canChange ? (
             <Button size="sm" variant="secondary" onClick={open}>
               {t("change")}
             </Button>

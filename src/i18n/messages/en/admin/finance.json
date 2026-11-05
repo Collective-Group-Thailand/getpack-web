@@ -1009,7 +1009,8 @@
         "mockup": "Mock-up",
         "design": "Design",
         "reproduction": "Reproduction",
-        "deduction": "Deduction"
+        "deduction": "Deduction",
+        "cofunding": "Discount co-funding"
       },
       "lineDisputed": "Disputed by the factory",
       "quantity": "Quantity",
@@ -1020,7 +1021,8 @@
         "deductions": "Deductions",
         "advanceOffset": "Advance already paid",
         "alreadyPaid": "Paid so far",
-        "remaining": "Still to pay"
+        "remaining": "Still to pay",
+        "cofunding": "Discount co-funding"
       }
     },
     "capture": {

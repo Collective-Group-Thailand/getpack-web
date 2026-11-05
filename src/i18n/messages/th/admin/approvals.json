@@ -102,7 +102,9 @@
     "guarantee_policy_change": "เปลี่ยนนโยบายรับประกัน",
     "style_library_change": "เปลี่ยนคลังแบบกล่อง",
     "showcase_consent_review": "ขอแสดงผลงานของลูกค้า",
-    "capacity_deal_publish": "เผยแพร่ดีลจากคิวผลิตว่าง"
+    "capacity_deal_publish": "เผยแพร่ดีลจากคิวผลิตว่าง",
+    "programme_budget_override": "ขอเพิ่มงบโปรแกรมสะสมแต้ม",
+    "loyalty_rollout_advance": "ขอเลื่อนขั้นการเปิดใช้โปรแกรมสะสมแต้ม"
   },
   "fields": {
     "quoteCode": "ใบเสนอราคา",
@@ -323,5 +325,6 @@
     "direction": {
       "factory_to_getpack": "ราคาที่โรงงานคิดกับ getpack"
     }
-  }
+  },
+  "fundingTitle": "แหล่งเงินส่วนลด"
 }

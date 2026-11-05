@@ -16,7 +16,10 @@ import { DeskSection } from "@/ui/components/DeskPage";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { toast } from "@/ui/components/Toast";
 
+import { fundingOf } from "@/features/shared/loyalty-p4/read";
+
 import { adminBrowserApis, problemMessage, QueryError, useProductTypes } from "../console";
+import { FundingSummary } from "./Cofunding";
 
 type ApprovalStatus = NonNullable<CapacityDealRow["approval"]>["status"];
 const APPROVAL_TONE: Record<ApprovalStatus, "neutral" | "success" | "danger" | "info"> = {
@@ -119,6 +122,8 @@ export function CapacityDealList() {
             ),
           },
           { id: "approval", header: t("columns.approval"), cell: (row) => <ApprovalChip approval={row.approval} /> },
+          // Loyalty P4 (D-506): who co-funds the discount; "—" while getpack funds it alone.
+          { id: "funders", header: t("columns.funders"), cell: (row) => <FundingSummary funding={fundingOf(row)} /> },
         ]}
       />
     </DeskSection>

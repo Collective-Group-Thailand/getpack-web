@@ -1009,7 +1009,8 @@
         "mockup": "ตัวอย่างงาน (ม็อกอัป)",
         "design": "ค่าออกแบบ",
         "reproduction": "ผลิตซ้ำ",
-        "deduction": "รายการหัก"
+        "deduction": "รายการหัก",
+        "cofunding": "ส่วนร่วมส่วนลด (co-funding)"
       },
       "lineDisputed": "โรงงานโต้แย้งรายการนี้",
       "quantity": "จำนวน",
@@ -1020,7 +1021,8 @@
         "deductions": "รายการหัก",
         "advanceOffset": "หักเงินล่วงหน้าที่จ่ายแล้ว",
         "alreadyPaid": "จ่ายแล้ว",
-        "remaining": "คงเหลือที่ต้องจ่าย"
+        "remaining": "คงเหลือที่ต้องจ่าย",
+        "cofunding": "ส่วนร่วมส่วนลด (co-funding)"
       }
     },
     "capture": {

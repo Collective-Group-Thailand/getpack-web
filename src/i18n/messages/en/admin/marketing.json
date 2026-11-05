@@ -8,7 +8,9 @@
     "analytics": "Points analytics",
     "surveys": "Surveys",
     "rewards": "Point rewards",
-    "loyaltyCampaigns": "Points campaigns"
+    "loyaltyCampaigns": "Points campaigns",
+    "programmeBudget": "Programme budget",
+    "rollout": "Rollout"
   },
   "budget": {
     "text": "{spent} of {budget} spent · alert at {threshold}",
@@ -422,7 +424,9 @@
         "terms": "Enter the Thai terms",
         "blocked_word": "Remove the word deals can't use from {field}",
         "system_managed": "System promotions always stay hidden",
-        "slugTaken": "Another promotion already uses this slug. Choose another"
+        "slugTaken": "Another promotion already uses this slug. Choose another",
+        "budget_exhausted": "This month's programme budget is used up",
+        "budgetLink": "See the budget"
       },
       "save": "Save display",
       "publish": "Publish on the deals page",
@@ -759,7 +763,12 @@
         "true": "On",
         "false": "Off",
         "company_12m": "The company’s 12-month spend",
-        "single": "The best single campaign"
+        "single": "The best single campaign",
+        "contra_discount": "Contra to discounts",
+        "internal": "Internal",
+        "uat": "UAT",
+        "percent": "Partial",
+        "all": "Everyone"
       },
       "loyalty_data_refresh": {
         "title": "Yearly data confirmation",
@@ -847,8 +856,38 @@
         "platinum": "Platinum",
         "capAmount": "Automatic cap (THB)",
         "spendBasis": "Spend counted"
+      },
+      "promotions_cofunding": {
+        "title": "Factory co-funding of discounts",
+        "note": "Offers factories may accept to share a capacity deal's discount, the caps, and the accounting treatment (pending CPA)",
+        "enabled": "On",
+        "offerResponseDays": "Days to answer an offer",
+        "maxFixedPerOrder": "Max per order (THB)",
+        "maxCapAmount": "Max cap per offer (THB)",
+        "accountingTreatment": "Accounting treatment"
+      },
+      "loyalty_programme_budget": {
+        "title": "Monthly loyalty programme budget",
+        "note": "Changed on the budget page; every change needs the Finance Manager and C-Level",
+        "monthlyBaht": "Monthly budget (THB)",
+        "alertPcts": "Alerts at (%)",
+        "monthOverrides": "Month overrides"
+      },
+      "loyalty_rollout": {
+        "title": "Loyalty programme rollout",
+        "note": "Changed on the rollout page only; an advance needs approval, a rollback applies at once",
+        "stage": "Stage",
+        "percent": "Share (%)",
+        "allowlistCompanyIds": "Always-on companies",
+        "allowlistUserIds": "Always-on accounts",
+        "gates": "Gates",
+        "minRedemptionPct": "Min redemption rate (%)",
+        "maxLiabilityBaht": "Max points liability (THB)",
+        "minMarginAfterPromotionsPct": "Min margin after promotions (%)",
+        "maxBudgetUsePct": "Max budget use (%)"
       }
-    }
+    },
+    "changeThere": "Change on its page"
   },
   "hubTitle": "Marketing",
   "analytics": {
@@ -1052,7 +1091,8 @@
       "free": "Free capacity",
       "discount": "Discount",
       "visibility": "Visibility",
-      "approval": "Approval"
+      "approval": "Approval",
+      "funders": "Co-funders"
     },
     "week": "From {date}",
     "visibility": {
@@ -1353,5 +1393,390 @@
       "gold": "Gold",
       "platinum": "Platinum"
     }
+  },
+  "surfaces": {
+    "title": "Surfaces",
+    "description": "A surface that is off shows customers \"This part isn't open yet\" and leaves the menus. The points balance and history always stay.",
+    "rolloutLink": "Phased rollout",
+    "budgetLink": "Programme budget",
+    "reason": "Reason",
+    "needReason": "Please give a reason",
+    "reset": "Reset",
+    "save": "Save {count, plural, one {# change} other {# changes}}",
+    "saved": "Saved — in force now",
+    "failed": "Could not save",
+    "effect": "In force as soon as it is saved; customer pages read it within a minute.",
+    "flags": {
+      "deals": {
+        "label": "Deals (/deals)",
+        "on": "Customers see the deals page and the home strip",
+        "off": "The deals page says it isn't open and the home strip goes; published deals still apply at checkout"
+      },
+      "dealsLiff": {
+        "label": "Deals in LINE",
+        "on": "The deals page opens in LINE",
+        "off": "The deals page in LINE says it isn't open"
+      },
+      "redeem": {
+        "label": "Redeem points",
+        "on": "Customers can redeem points for coupons",
+        "off": "The redeem button goes; coupons already redeemed still work"
+      },
+      "tierPerks": {
+        "label": "Tier perks",
+        "on": "Tier perks show and new ones are granted",
+        "off": "Tier perks are hidden and none are granted; granted ones stay"
+      },
+      "capacityDeals": {
+        "label": "Capacity deals",
+        "on": "Deals are drafted from free capacity each morning",
+        "off": "No new drafts; publishing and co-funding offers are refused"
+      },
+      "checklist": {
+        "label": "Earn checklist",
+        "on": "Customers see the earn checklist",
+        "off": "The checklist is hidden; earning carries on"
+      },
+      "pointsLiff": {
+        "label": "Points in LINE",
+        "on": "The points page opens in LINE",
+        "off": "The LINE points tab goes; the web points page stays"
+      },
+      "quoteRecovery": {
+        "label": "Quote recovery",
+        "on": "Offers go out for stalled quotations",
+        "off": "No new offers are sent"
+      }
+    }
+  },
+  "cofunding": {
+    "title": "Factory co-funding",
+    "defaultFunder": "getpack funds 100% — no factory has accepted",
+    "acceptedLine": "{count, plural, one {# factory has} other {# factories have}} accepted; their share is netted from the orders they produce",
+    "propose": "Propose co-funding",
+    "offersTitle": "Offers",
+    "emptyOffers": "No offers yet",
+    "emptyOffersBody": "Only factories that make this product type; they may accept or decline",
+    "contributionsTitle": "Shares by order",
+    "emptyContributions": "No orders counted yet",
+    "surfaceOff": "Capacity deals are off (Surfaces), so co-funding cannot be offered",
+    "summary": "{count, plural, one {# factory} other {# factories}}",
+    "window": "{from} – {to}",
+    "respondBy": "Answer by {date}",
+    "use": "{accrued} of {cap}",
+    "capped": "Cut to the cap",
+    "columns": {
+      "factory": "Factory",
+      "terms": "Terms",
+      "status": "Status",
+      "use": "Cap used",
+      "actions": "Actions",
+      "order": "Order",
+      "discount": "Deal discount",
+      "share": "Share"
+    },
+    "status": {
+      "proposed": "Awaiting answer",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn",
+      "expired": "Expired",
+      "ended": "Ended"
+    },
+    "contribution": {
+      "accrued": "Counted, not yet billed",
+      "netted": "Netted on the statement",
+      "reversed": "Not counted",
+      "refunded": "Refunded"
+    },
+    "reverseReason": {
+      "order_cancelled": "Order cancelled",
+      "order_refunded": "Fully refunded",
+      "job_reassigned": "Job moved to another factory",
+      "job_rejected": "Factory declined the job",
+      "offer_withdrawn_before_job": "Offer withdrawn before the job"
+    },
+    "form": {
+      "title": "Propose co-funding of the discount",
+      "description": "The factory sees these terms in its portal and may accept or decline; routing is never affected",
+      "submit": "Send offer",
+      "factory": "Factory",
+      "factoryHint": "Only factories that make this product type and have no open offer",
+      "mode": "Type",
+      "modes": {
+        "pct_of_discount": "% of the discount",
+        "fixed_per_order": "Baht per order"
+      },
+      "sharePct": "Share of the discount (%)",
+      "fixedAmount": "Baht per order",
+      "cap": "Total cap (THB)",
+      "capHint": "Past the cap getpack funds the rest",
+      "from": "Count from",
+      "to": "Count to",
+      "respondBy": "Answer by",
+      "respondByHint": "Leave empty for the default",
+      "note": "Note to the factory",
+      "noteHint": "Optional",
+      "needFactory": "Choose a factory",
+      "needValue": "Enter the share or the amount",
+      "needCap": "Enter the cap",
+      "needWindow": "Enter the window",
+      "failed": "Could not send the offer",
+      "done": "Offer sent"
+    },
+    "withdraw": {
+      "action": "Withdraw",
+      "title": "Withdraw the offer to {factory}",
+      "body": "Orders placed from now do not count; shares already counted stay with their orders",
+      "submit": "Withdraw offer",
+      "reason": "Reason",
+      "reasonHint": "At least 10 characters; the factory sees it",
+      "needReason": "Give a reason of at least 10 characters",
+      "failed": "Could not withdraw",
+      "done": "Offer withdrawn"
+    },
+    "approval": {
+      "getpackOnly": "getpack funds the whole discount",
+      "withFactories": "{count, plural, one {# factory co-funds} other {# factories co-fund}} · {share} counted",
+      "laterCounts": "An offer accepted after the request also counts — it can only lower getpack's cost"
+    },
+    "allDeals": "See capacity deals",
+    "toStatements": "See factory statements"
+  },
+  "programmeBudget": {
+    "title": "Loyalty programme budget",
+    "description": "The month's cost of points issued, discounts getpack funds and tier perks; factory shares excluded",
+    "month": "Month",
+    "asOf": "As of {at}",
+    "used": "Used",
+    "of": "of {budget}",
+    "valueText": "{spent} used of {budget} ({pct})",
+    "minus": "−{amount}",
+    "partsTitle": "Spend by part",
+    "parts": {
+      "points": "Points issued",
+      "pointsHint": "Point value × expected redemption rate",
+      "discounts": "Coupon and deal discounts",
+      "discountsHint": "getpack's part only",
+      "tierPerks": "Tier perks",
+      "factoryShare": "Less factory co-funding",
+      "total": "Total"
+    },
+    "state": {
+      "ok": "Below the first alert",
+      "warning": "The first alert is reached; new campaigns can still start until it is used up",
+      "exhausted": "Used up — new campaigns, deals and rewards cannot start, and campaign multipliers stop until the month ends. Points earned, coupons issued and published deals carry on."
+    },
+    "alerts": {
+      "title": "Alerts this month",
+      "note": "Sent to Marketing and Finance",
+      "none": "No alerts yet",
+      "spent": "{spent} used of {budget}"
+    },
+    "facts": {
+      "title": "This month's budget",
+      "monthly": "Monthly budget",
+      "override": "This month raised to",
+      "effective": "In force",
+      "alertsAt": "Alerts at"
+    },
+    "pending": {
+      "title": "Raise awaiting approval",
+      "body": "{amount} · {name} asked {at}",
+      "steps": "Finance Manager, then C-Level",
+      "open": "Open the approval"
+    },
+    "override": {
+      "title": "Raise this month's budget",
+      "body": "Must be above the budget in force; Finance Manager and C-Level approve",
+      "amount": "New budget for the month (THB)",
+      "current": "Now {amount}",
+      "reason": "Reason",
+      "reasonHint": "At least 10 characters",
+      "mustRaise": "The new budget must be above the one in force",
+      "needReason": "Give a reason of at least 10 characters",
+      "submit": "Ask for approval",
+      "pending": "A request is already waiting",
+      "failed": "Could not send the request",
+      "done": "Raise requested"
+    },
+    "banner": {
+      "warning": "This month's loyalty programme budget is {pct} used",
+      "exhausted": "This month's budget is used up — new campaigns, deals and rewards cannot start until the month ends",
+      "open": "See the budget",
+      "dismiss": "Dismiss"
+    }
+  },
+  "rollout": {
+    "title": "Loyalty programme rollout",
+    "description": "Opened to customers group by group. Customers outside it still earn the basic points on orders and use the points they have.",
+    "stageTitle": "Current stage",
+    "since": "{stage} since {at}",
+    "approvedBy": "approved by {name}",
+    "stages": {
+      "internal": "Internal",
+      "uat": "UAT",
+      "percent": "Partial",
+      "percentOf": "Partial {percent}%",
+      "all": "Everyone"
+    },
+    "stageNotes": {
+      "internal": "Staff and test accounts",
+      "uat": "Companies in testing",
+      "percent": "A stable share of customers",
+      "all": "Every customer"
+    },
+    "cohort": {
+      "companiesLabel": "Companies in the cohort",
+      "usersLabel": "Accounts without a company in the cohort",
+      "companies": "of {total} companies",
+      "users": "of {total} accounts without a company"
+    },
+    "pending": {
+      "title": "Awaiting approval: advance to {stage}",
+      "body": "{name} asked {at}",
+      "open": "Open the approval"
+    },
+    "gates": {
+      "title": "Gates before advancing",
+      "note": "· advisory, never a block",
+      "metrics": {
+        "redemption_rate": "Redemption rate",
+        "points_liability": "Points liability",
+        "margin_after_promotions": "Margin after promotions",
+        "budget_use": "Budget use"
+      },
+      "status": {
+        "pass": "Pass",
+        "attention": "Check",
+        "unknown": "No data yet"
+      },
+      "targetMin": "Target ≥ {target}",
+      "targetMax": "Target ≤ {target}",
+      "windows": {
+        "3m": "Last 3 months",
+        "now": "Now",
+        "month": "This month"
+      }
+    },
+    "allowlist": {
+      "title": "Always-on list",
+      "note": "In the cohort at every stage. Adding counts as an advance (approval); removing applies at once.",
+      "companies": "Companies · {count}",
+      "users": "Accounts without a company · {count}",
+      "none": "None yet",
+      "remove": "Remove",
+      "addCompany": "Add a company",
+      "addUser": "Add an account (account id)",
+      "addUserHint": "The account id from the customer page",
+      "add": "Add",
+      "already": "This company is already on the list"
+    },
+    "search": {
+      "hint": "Type at least 2 characters of a name or tax id",
+      "pick": "Choose",
+      "none": "No company found"
+    },
+    "lookup": {
+      "title": "Is it in the cohort?",
+      "note": "For answering a customer who asks why they don't see deals",
+      "company": "Company",
+      "failed": "Could not check",
+      "in": "{name} is in the cohort",
+      "out": "{name} is not in the cohort yet",
+      "key": "Keyed by",
+      "bucket": "Bucket",
+      "reason": "Why",
+      "keys": {
+        "company": "Company",
+        "user": "Account"
+      },
+      "reasons": {
+        "stage_all": "Open to everyone",
+        "allowlisted_company": "The company is on the always-on list",
+        "allowlisted_user": "The account is on the always-on list",
+        "bucket_below_percent": "Its bucket is within the open share",
+        "bucket_above_percent": "Its bucket is above the open share",
+        "not_allowlisted": "This stage is open to the listed ones only"
+      }
+    },
+    "history": {
+      "title": "History",
+      "note": "· last 10",
+      "at": "When",
+      "stage": "Stage",
+      "kind": "Type",
+      "reason": "Reason",
+      "by": "By",
+      "byApproved": "{name} · approved by {approver}",
+      "system": "System",
+      "kinds": {
+        "advance": "Advance",
+        "rollback": "Rollback",
+        "seed": "Seed"
+      }
+    },
+    "advance": {
+      "action": "Ask to advance",
+      "title": "Ask to advance",
+      "body": "The Finance Manager approves; you cannot approve your own request",
+      "submit": "Ask for approval",
+      "done": "Advance requested",
+      "notAnAdvance": "An advance must grow the cohort",
+      "allowlistOnly": "Adding to the always-on list counts as an advance and needs approval"
+    },
+    "rollback": {
+      "action": "Roll back",
+      "title": "Roll back to which stage",
+      "body": "Applies at once, no approval",
+      "submit": "Roll back",
+      "done": "Rolled back — in force now",
+      "notARollback": "A rollback must not grow the cohort",
+      "allowlistOnly": "Remove this one from the always-on list — applies at once",
+      "keeps": "Customers who leave the cohort keep every point they earned and can use them",
+      "withdraws": "A waiting advance request is withdrawn first"
+    },
+    "dialog": {
+      "stage": "Stage",
+      "percent": "Share of customers (%)",
+      "percentHint": "Now {now}% · enter 1–99",
+      "percentRange": "The share must be 1–99",
+      "reason": "Reason",
+      "reasonHint": "At least 10 characters",
+      "needReason": "Give a reason of at least 10 characters",
+      "failed": "Could not save"
+    }
+  },
+  "fundingSplit": {
+    "title": "Who funded deal discounts",
+    "note": "Each week's capacity deal: getpack's and the factories' part (Finance: read only)",
+    "empty": "No capacity deals in this period",
+    "factories": "{count, plural, one {# factory} other {# factories}}",
+    "columns": {
+      "deal": "Deal",
+      "week": "Week",
+      "orders": "Orders",
+      "discount": "Discount",
+      "getpack": "getpack paid",
+      "factory": "Factories paid",
+      "reversed": "Reversed"
+    },
+    "totals": {
+      "discount": "Discount {amount}",
+      "getpack": "getpack {amount}",
+      "factory": "Factories {amount}"
+    },
+    "allDeals": "See capacity deals"
+  },
+  "p4Problems": {
+    "loyalty_feature_disabled": "This surface is off (Surfaces)",
+    "loyalty_budget_exhausted": "This month's programme budget is used up — it can start once the budget is raised or a new month begins",
+    "cofunding_deal_not_eligible": "Only capacity deals can be co-funded",
+    "cofunding_offer_exists": "This factory already has an open offer on this deal",
+    "cofunding_invalid_transition": "This offer has changed; reload it",
+    "cofunding_response_closed": "The time to answer this offer has passed",
+    "cofunding_disabled": "Co-funding is off in the settings",
+    "settings_dedicated_editor": "This setting is changed on its own page",
+    "settings_pending_exists": "A request is already waiting for approval"
   }
 }

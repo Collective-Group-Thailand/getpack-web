@@ -28,6 +28,7 @@ import { adminBrowserApis, problemMessage, QueryError, useCan, useProductTypes }
 import { DetailSkeleton } from "../console/DetailSkeleton";
 import { rewardActionsOf } from "./reward-item";
 import { RewardItemForm } from "./RewardItemForm";
+import { useP4Problem } from "./p4-problems";
 
 const STATUS_TONE = { draft: "neutral", active: "success", paused: "warning", archived: "neutral" } as const;
 const REDEMPTION_TONE = { issued: "info", used: "success", expired: "neutral", cancelled: "neutral" } as const;
@@ -65,6 +66,7 @@ export function RewardCatalog({ tab }: { tab: "items" | "redemptions" }) {
 
 function RewardItems() {
   const t = useTranslations("marketing.rewards");
+  const p4Message = useP4Problem();
   const en = useLocale() === "en";
   const format = useFormat();
   const queryClient = useQueryClient();
@@ -89,7 +91,8 @@ function RewardItems() {
       toast.success(t(`form.actions.${action}.done`));
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "reward_item") });
     } catch (error) {
-      toast.error(problemMessage(error, t("form.failed")));
+      // Loyalty P4 (D-507): `activate` while the month's budget is used up → loyalty.budget_exhausted.
+      toast.error(p4Message(error, t("form.failed")));
     } finally {
       setBusy(null);
     }
