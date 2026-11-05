@@ -8,6 +8,7 @@ import { PortalTable } from "@/features/customer/account/PortalTable";
 import { customerStatusLabel } from "@/features/customer/account/status-label";
 import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { PROMOTION_OFFER_STATUS } from "@/domain/status";
@@ -28,13 +29,16 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function Page() {
   await requireCustomer();
-  const [t, tReferral, tStatus, format, credit, codes] = await Promise.all([
+  const [t, tReferral, tStatus, format, credit, codes, surfaces, tStore] = await Promise.all([
     getTranslations("account.wallet"),
     getTranslations("account.referral"),
     getTranslations("status"),
     getFormat(),
     getStoreCredit(),
     getMyCodes(),
+    // Loyalty P4: the empty wallet leads to the deals only while they are open to this customer.
+    getLoyaltySurfaces(),
+    getTranslations("storefront"),
   ]);
   const benefit = (offer: (typeof codes)[number]) => {
     const cap = offer.benefit.maxAmount ? t("benefitCap", { amount: format.thb(offer.benefit.maxAmount) }) : "";
@@ -87,7 +91,11 @@ export default async function Page() {
             action={
               // Loyalty P1.5: an empty wallet leads to the deals, where codes are kept.
               <Button asChild variant="secondary">
-                <Link href="/deals">{t("seeDeals")}</Link>
+                {surfaces.deals ? (
+                  <Link href="/deals">{t("seeDeals")}</Link>
+                ) : (
+                  <Link href="/products">{tStore("unavailable.toProducts")}</Link>
+                )}
               </Button>
             }
           />

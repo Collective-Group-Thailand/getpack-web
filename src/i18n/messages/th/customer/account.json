@@ -355,7 +355,8 @@
       "retry": "ลองอีกครั้ง",
       "loading": "กำลังโหลดรายการ",
       "awarded": "+{points} แต้ม — {task}",
-      "newTab": "(เปิดในแท็บใหม่)"
+      "newTab": "(เปิดในแท็บใหม่)",
+      "claimedByCompany": "บริษัทของคุณรับแต้มนี้แล้ว"
     },
     "tasks": {
       "signup": {

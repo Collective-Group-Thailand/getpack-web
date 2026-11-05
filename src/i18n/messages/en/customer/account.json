@@ -355,7 +355,8 @@
       "retry": "Try again",
       "loading": "Loading the list",
       "awarded": "+{points} points — {task}",
-      "newTab": "(opens in a new tab)"
+      "newTab": "(opens in a new tab)",
+      "claimedByCompany": "Your company has already received these points"
     },
     "tasks": {
       "signup": {

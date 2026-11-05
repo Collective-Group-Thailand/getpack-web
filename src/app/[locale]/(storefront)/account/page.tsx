@@ -15,6 +15,7 @@ import { EarnBanner } from "@/features/customer/account/EarnBanner";
 import { getDataRefresh } from "@/features/customer/loyalty/api.server";
 import { DataRefreshBanner } from "@/features/customer/loyalty/DataRefreshBanner";
 import { WinbackBanner } from "@/features/customer/loyalty/WinbackBanner";
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
 import { getNextSurvey } from "@/features/customer/surveys/api.server";
 import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
@@ -108,7 +109,14 @@ export default async function Page() {
     // Loyalty P2: the yearly data confirmation (a convenience read; no banner when it fails).
     getDataRefresh().catch(() => null),
   ]);
-  const banner = accountBannerOf({ refresh, survey, tasks, bonusLots: points?.bonusLots ?? [] });
+  // Loyalty P4 (D-509, D-510): no earn banner while the checklist is closed, no win-back link while deals are.
+  const surfaces = await getLoyaltySurfaces();
+  const banner = accountBannerOf({
+    refresh,
+    survey,
+    tasks: surfaces.checklist ? tasks : null,
+    bonusLots: surfaces.deals ? (points?.bonusLots ?? []) : [],
+  });
   // A company approver's queue leads (round 2, B2).
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
   const latestOrders = (latest?.groups ?? [])

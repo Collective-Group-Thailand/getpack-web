@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { LiffNav } from "@/features/customer/liff/LiffNav";
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
 import { Link } from "@/i18n/navigation";
 import { BRAND_NAME } from "@/ui/brand";
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
  * top bar, the content, and four tabs at the bottom. No site header or footer, no marketing tags.
  */
 export default async function LiffLayout({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations("liff");
+  const [t, surfaces] = await Promise.all([getTranslations("liff"), getLoyaltySurfaces()]);
   return (
     <div className="bg-bg flex min-h-dvh flex-col">
       <a href="#liff-main" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50">
@@ -35,7 +36,8 @@ export default async function LiffLayout({ children }: { children: React.ReactNo
       <main id="liff-main" className="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-[calc(var(--mobile-tab-h)+1.5rem)]">
         {children}
       </main>
-      <LiffNav />
+      {/* Loyalty P4 (D-509): the points tab only while `pointsLiff` is open to this customer. */}
+      <LiffNav points={surfaces.pointsLiff} />
     </div>
   );
 }

@@ -342,5 +342,11 @@
       "trip": "trip"
     },
     "inWords": "({words})"
+  },
+  "unavailable": {
+    "title": "This part isn't open yet",
+    "body": "We're opening it gradually. Meanwhile you can order and use the points you have as usual.",
+    "toPoints": "Go to my points",
+    "toProducts": "Browse products"
   }
 }

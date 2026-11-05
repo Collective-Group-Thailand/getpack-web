@@ -6,6 +6,8 @@ import { listDeals } from "@/features/customer/deals/api.server";
 import { readNow } from "@/features/customer/deals/now.server";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { LiffDeals } from "@/features/customer/deals/LiffDeals";
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
+import { FeatureUnavailable } from "@/features/customer/shell/FeatureUnavailable";
 import { LiffHeader } from "@/features/customer/liff/LiffHeader";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
@@ -25,6 +27,10 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Deals in LINE (loyalty P1.5, D-151): the points line, then the deals with the ticket sheet. */
 export default async function Page() {
   if (!(await liffCustomer())) return <LiffSignIn />;
+  // Loyalty P4 (D-509, D-510): deals closed for this customer, or in LINE (`dealsLiff`, a web-only gate).
+  const surfaces = await getLoyaltySurfaces();
+  if (!surfaces.deals || !surfaces.dealsLiff)
+    return <FeatureUnavailable signedIn liff pointsHref="/liff/points" showPoints={surfaces.pointsLiff} />;
   const [t, locale, format, points, list, origin] = await Promise.all([
     getTranslations("deals"),
     getLocale(),

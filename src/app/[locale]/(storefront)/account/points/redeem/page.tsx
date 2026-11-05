@@ -7,6 +7,8 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { readNow } from "@/features/customer/deals/now.server";
 import { getMyRewardCoupons, getRewards } from "@/features/customer/rewards/api.server";
 import { MineLink, RedeemView } from "@/features/customer/rewards/RedeemView";
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
+import { FeatureUnavailable } from "@/features/customer/shell/FeatureUnavailable";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.rewards");
@@ -20,6 +22,8 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function Page() {
   await requireCustomer();
+  // Loyalty P4 (D-509, D-510): redeeming closed for this customer; issued coupons stay in the wallet.
+  if (!(await getLoyaltySurfaces()).redeem) return <FeatureUnavailable signedIn />;
   const [t, tPoints, list, redemptions, points, now] = await Promise.all([
     getTranslations("account.rewards"),
     getTranslations("account.points"),

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
+import { FeatureUnavailable, UNAVAILABLE_ROBOTS } from "@/features/customer/shell/FeatureUnavailable";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { readNow } from "@/features/customer/deals/now.server";
 import { dealRef, getApplicableCodes, listDeals } from "@/features/customer/deals/api.server";
@@ -29,12 +31,16 @@ const tabOf = (value: string | undefined): DealTab =>
   DEAL_TABS.includes(value as DealTab) ? (value as DealTab) : "all";
 
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
-  const [t, locale, origin, raw] = await Promise.all([
+  const [t, locale, origin, raw, surfaces] = await Promise.all([
     getTranslations("deals"),
     getLocale(),
     publicOrigin(),
     searchParams,
+    getLoyaltySurfaces(),
   ]);
+  // Loyalty P4 (D-509): a closed surface is a calm page kept out of search results.
+  if (!surfaces.deals || (one(raw.tab) === "points" && !surfaces.redeem))
+    return { title: t("title"), robots: UNAVAILABLE_ROBOTS };
   const { canonical, languages } = alternateUrls(origin, "/deals", locale as Locale);
   // A tab, a type or a share link's `?ref=` is a view of the list, not a page of its own.
   const filtered = Boolean(one(raw.tab) || one(raw.type) || one(raw.ref));
@@ -73,6 +79,9 @@ export default async function DealsPage({
     getProductTypeNames(locale).catch(() => ({}) as Record<string, string>),
   ]);
   const signedIn = Boolean(readAccessToken(jar));
+  // Loyalty P4 (D-509, D-510): deals closed for this visitor, or the points tab with redeeming closed.
+  const surfaces = await getLoyaltySurfaces();
+  if (!surfaces.deals || (tab === "points" && !surfaces.redeem)) return <FeatureUnavailable signedIn={signedIn} />;
   const [list, everything, applicable, rewards] = await Promise.all([
     listDeals({ tab, productTypeCode: type ?? undefined, ref }),
     // The type filter's options and the header's count are over every deal, whatever the view.

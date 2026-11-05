@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
+import { FeatureUnavailable, UNAVAILABLE_ROBOTS } from "@/features/customer/shell/FeatureUnavailable";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { readNow } from "@/features/customer/deals/now.server";
 import { dealRef, getDeal, listDeals } from "@/features/customer/deals/api.server";
@@ -30,6 +32,8 @@ export async function generateMetadata({
   searchParams: SearchParams;
 }): Promise<Metadata> {
   const [{ slug }, raw, locale, origin] = await Promise.all([params, searchParams, getLocale(), publicOrigin()]);
+  // Loyalty P4 (D-509): a closed surface stays out of search results.
+  if (!(await getLoyaltySurfaces()).deals) return { robots: UNAVAILABLE_ROBOTS };
   const deal = await getDeal(slug, await dealRef(raw.ref)).catch(() => null);
   if (!deal) return {};
   const { canonical, languages } = alternateUrls(origin, dealHref(deal), locale as Locale);
@@ -57,6 +61,9 @@ export default async function DealPage({ params, searchParams }: { params: Param
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const raw = await searchParams;
+  // Loyalty P4 (D-509, D-510): deals closed for this visitor.
+  if (!(await getLoyaltySurfaces()).deals)
+    return <FeatureUnavailable signedIn={Boolean(readAccessToken(await cookies()))} />;
   const ref = await dealRef(raw.ref);
   const [t, format, jar, origin, typeNames, deal] = await Promise.all([
     getTranslations("deals.detail"),
