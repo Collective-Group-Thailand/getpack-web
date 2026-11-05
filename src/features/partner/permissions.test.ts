@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { FACTORY_PERMISSIONS, FACTORY_ROLE_GRANTS } from "../../../mocks/generated/rbac";
-import { PARTNER_PERSONAS, ROLE_PERMISSIONS } from "../../../mocks/partner/personas";
+import { P4_PERMISSIONS, PARTNER_PERSONAS, ROLE_PERMISSIONS } from "../../../mocks/partner/personas";
 import { SURFACE_PROBLEM_CODES } from "@/lib/api/problem-codes";
 
 /**
@@ -14,7 +14,9 @@ import { SURFACE_PROBLEM_CODES } from "@/lib/api/problem-codes";
  */
 
 const ROOT = process.cwd();
-const known = new Set<string>(FACTORY_PERMISSIONS);
+// Loyalty P4 (API-CHANGES-P4 "New permissions"): \`factory_cofunding.read|decide\` are granted by getpack-api's P4
+// release, not in the pinned rbac yet; this goes with \`pnpm gen:rbac\` after adoption.
+const known = new Set<string>([...FACTORY_PERMISSIONS, ...Object.values(P4_PERMISSIONS).flat()]);
 const problems = new Set<string>(Object.values(SURFACE_PROBLEM_CODES).flat());
 
 function files(dir: string): string[] {

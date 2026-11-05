@@ -172,7 +172,8 @@
       "ledgerReports": "งบการเงิน",
       "ledgerAccounts": "ผังบัญชีและตั้งค่า",
       "ledgerAssets": "สินทรัพย์ถาวร",
-      "ledgerBank": "ธนาคารและกระทบยอด"
+      "ledgerBank": "ธนาคารและกระทบยอด",
+      "cofunding": "ร่วมสนับสนุนส่วนลด"
     },
     "search": "ค้นหาเมนู",
     "searchPlaceholder": "ค้นหาเมนู (กด /)",

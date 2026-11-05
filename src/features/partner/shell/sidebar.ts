@@ -33,6 +33,7 @@ export type SidebarItemKey =
   | "quotations"
   | "salesOrders"
   | "deliveries"
+  | "cofunding"
   | "invoices"
   | "receivables"
   | "tax"
@@ -122,6 +123,14 @@ const ITEMS: Record<SidebarItemKey, SidebarItem & { group: SidebarGroupKey; perm
     icon: "truck",
     group: "sales",
     permission: "factory_sales.read",
+  },
+  // Loyalty P4 (D-506): getpack's voluntary co-funding offers on capacity deals — accept or decline.
+  cofunding: {
+    key: "cofunding",
+    href: "/cofunding",
+    icon: "handshake",
+    group: "sales",
+    permission: "factory_cofunding.read",
   },
   // getpack Factory ERP (E1, D-316): the factory's own stock, buying and trading partners.
   stock: { key: "stock", href: "/stock", icon: "warehouse", group: "supply", permission: "factory_inventory.read" },
@@ -415,6 +424,7 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "payables",
     "billing",
     "payouts",
+    "cofunding",
     "prices",
     "shippingRates",
     "performance",
@@ -467,6 +477,7 @@ const ROLE_ITEMS: Record<string, readonly SidebarItemKey[]> = {
     "quotations",
     "salesOrders",
     "deliveries",
+    "cofunding",
     "invoices",
     "receivables",
     "tradingPartners",

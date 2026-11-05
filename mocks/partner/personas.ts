@@ -178,7 +178,7 @@ export const partnerPersonaByKey = (key: string | undefined) =>
  * Loyalty P4 (API-CHANGES-P4 "New permissions"): co-funding is not in the pinned rbac yet; the mock grants it as the
  * API will (read: owner, accountant, sales; decide: owner). Leaves with `pnpm gen:rbac` after adoption.
  */
-const P4_PERMISSIONS: Partial<Record<PartnerRole, readonly string[]>> = {
+export const P4_PERMISSIONS: Partial<Record<PartnerRole, readonly string[]>> = {
   factory_owner: ["factory_cofunding.read", "factory_cofunding.decide"],
   factory_accountant: ["factory_cofunding.read"],
   factory_sales: ["factory_cofunding.read"],

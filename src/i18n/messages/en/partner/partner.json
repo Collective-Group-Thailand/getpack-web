@@ -172,7 +172,8 @@
       "ledgerReports": "Financial statements",
       "ledgerAccounts": "Chart & settings",
       "ledgerAssets": "Fixed assets",
-      "ledgerBank": "Bank & reconciliation"
+      "ledgerBank": "Bank & reconciliation",
+      "cofunding": "Discount co-funding"
     },
     "search": "Find a menu",
     "searchPlaceholder": "Find a menu (press /)",
