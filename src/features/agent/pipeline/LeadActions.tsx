@@ -51,7 +51,13 @@ export function LeadActionBar({ lead, closed }: { lead: Lead; closed: boolean })
   const line = lineHref(lead, t("lineGreeting", { name: lead.contactName }));
   const quoteHref = `/quotes/new?leadId=${lead.id}`;
 
-  const phoneAction = (props: { icon: IconName; label: string; href?: string | null; onClick?: () => void; external?: boolean }) => {
+  const phoneAction = (props: {
+    icon: IconName;
+    label: string;
+    href?: string | null;
+    onClick?: () => void;
+    external?: boolean;
+  }) => {
     const body = (
       <>
         <Icon name={props.icon} size={20} aria-hidden="true" />
@@ -111,7 +117,12 @@ export function LeadActionBar({ lead, closed }: { lead: Lead; closed: boolean })
           </>
         )}
       </div>
-      <MobileActionBar className={cn("grid gap-1 px-2 py-1.5 pe-[max(0.5rem,env(safe-area-inset-right))] ps-[max(0.5rem,env(safe-area-inset-left))] sm:hidden", closed ? "grid-cols-2" : "grid-cols-4")}>
+      <MobileActionBar
+        className={cn(
+          "grid gap-1 px-2 py-1.5 ps-[max(0.5rem,env(safe-area-inset-left))] pe-[max(0.5rem,env(safe-area-inset-right))] sm:hidden",
+          closed ? "grid-cols-2" : "grid-cols-4",
+        )}
+      >
         {phoneAction({ icon: "phone", label: t("call"), href: tel })}
         {phoneAction({ icon: "chat", label: t("line"), href: line, external: true })}
         {closed ? null : phoneAction({ icon: "send", label: t("sendQuoteShort"), href: quoteHref })}
@@ -126,7 +137,15 @@ export function LeadActionBar({ lead, closed }: { lead: Lead; closed: boolean })
  * "บันทึกการติดต่อ" (`store.agentLeads.addActivity`): how they talked, what was said, and optionally when to follow up
  * next. The first entry moves a new lead to ติดต่อแล้ว (the API does it).
  */
-export function LogActivity({ open, onOpenChange, lead }: { open: boolean; onOpenChange: (open: boolean) => void; lead: Lead }) {
+export function LogActivity({
+  open,
+  onOpenChange,
+  lead,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  lead: Lead;
+}) {
   const t = useTranslations("agentSales.log");
   const tCommon = useTranslations("common");
   const problemText = useProblemText();
@@ -193,14 +212,31 @@ export function LogActivity({ open, onOpenChange, lead }: { open: boolean; onOpe
           />
         </Field>
         <Field label={t("body")} required error={error && !body.trim() ? error : undefined}>
-          <Textarea rows={3} maxLength={2000} value={body} onChange={(event) => setBody(event.target.value)} placeholder={t("bodyExample")} />
+          <Textarea
+            rows={3}
+            maxLength={2000}
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            placeholder={t("bodyExample")}
+          />
         </Field>
         <Field label={t("next")} hint={t("nextHint")}>
-          <Input type="datetime-local" value={next} onChange={(event) => setNext(event.target.value)} className="min-h-11 sm:min-h-0" />
+          <Input
+            type="datetime-local"
+            value={next}
+            onChange={(event) => setNext(event.target.value)}
+            className="min-h-11 sm:min-h-0"
+          />
         </Field>
         <div className="-mt-2 flex flex-wrap gap-2">
           {(["tomorrow", "threeDays", "week"] as const).map((choice) => (
-            <Button key={choice} size="sm" variant="secondary" className="min-h-11 sm:min-h-8" onClick={() => setNext(toLocalInput(quickFollowUp(choice)))}>
+            <Button
+              key={choice}
+              size="sm"
+              variant="secondary"
+              className="min-h-11 sm:min-h-8"
+              onClick={() => setNext(toLocalInput(quickFollowUp(choice)))}
+            >
               {t(`quick.${choice}`)}
             </Button>
           ))}

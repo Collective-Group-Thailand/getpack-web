@@ -26,7 +26,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
   const { leadId } = await searchParams;
   const [t, tz] = await Promise.all([getTranslations("agentSales.newQuote"), getTranslations("agentZone.titles")]);
   const found = leadId ? await getLead(leadId) : null;
-  const open = found && ["registered", "converted"].includes(found.lead.status) && !["won", "lost"].includes(found.lead.stage);
+  const open =
+    found && ["registered", "converted"].includes(found.lead.status) && !["won", "lost"].includes(found.lead.stage);
 
   if (!found || !open) {
     const pipeline = await getPipeline({ view: "open", limit: 50 });
@@ -78,7 +79,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
   return (
     <AgentPage title={t("title")} back={{ href: `/leads/${lead.id}`, label: lead.contactName }}>
       <NewQuoteFlow
-        lead={{ id: lead.id, contactName: lead.contactName, organisationName: lead.organisationName, lineId: lead.lineId }}
+        lead={{
+          id: lead.id,
+          contactName: lead.contactName,
+          organisationName: lead.organisationName,
+          lineId: lead.lineId,
+        }}
         products={products}
       />
     </AgentPage>

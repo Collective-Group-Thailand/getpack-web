@@ -52,11 +52,7 @@ export default async function Page({ params }: { params: Promise<{ agentQuoteId:
   const specific = cards.filter((card) => !card.contexts.includes("all"));
   const largest = quote.quote.options.at(-1);
   return (
-    <AgentPage
-      title={t("pageTitle")}
-      intro={t("pageIntro", { name: quote.lead.contactName })}
-      back={back}
-    >
+    <AgentPage title={t("pageTitle")} intro={t("pageIntro", { name: quote.lead.contactName })} back={back}>
       <DiscountFlow
         agentQuoteId={quote.id}
         quantity={largest?.quantity ?? 0}

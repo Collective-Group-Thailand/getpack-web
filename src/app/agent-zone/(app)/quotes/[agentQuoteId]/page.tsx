@@ -26,9 +26,13 @@ async function giveGetLines(round: DiscountRequest): Promise<string[]> {
   const [t, format] = await Promise.all([getTranslations("agentSales.discount.giveGet"), getFormat()]);
   return [
     round.quantityChange ? t("summary.quantity", { quantity: format.number(round.quantityChange) }) : null,
-    round.commitment === "call_off" && round.commitmentMonths ? t("summary.callOff", { months: round.commitmentMonths }) : null,
+    round.commitment === "call_off" && round.commitmentMonths
+      ? t("summary.callOff", { months: round.commitmentMonths })
+      : null,
     round.depositPct ? t("summary.deposit", { pct: format.percent(round.depositPct) }) : null,
-    round.cashWithinDays !== null && round.cashWithinDays !== undefined ? t("summary.cash", { days: round.cashWithinDays }) : null,
+    round.cashWithinDays !== null && round.cashWithinDays !== undefined
+      ? t("summary.cash", { days: round.cashWithinDays })
+      : null,
     round.leadTimeFlexDays ? t("summary.leadTime", { days: round.leadTimeFlexDays }) : null,
     round.specChange ? t("summary.spec", { spec: round.specChange }) : null,
   ].filter((line): line is string => Boolean(line));
@@ -74,7 +78,10 @@ export default async function Page({ params }: { params: Promise<{ agentQuoteId:
     >
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <div className="flex min-w-0 flex-col gap-6">
-          <section aria-labelledby="quote-facts" className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5">
+          <section
+            aria-labelledby="quote-facts"
+            className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5"
+          >
             <h2 id="quote-facts" className="sr-only">
               {t("facts")}
             </h2>
@@ -101,9 +108,15 @@ export default async function Page({ params }: { params: Promise<{ agentQuoteId:
               <caption className="sr-only">{t("prices")}</caption>
               <thead className="text-muted text-xs">
                 <tr className="border-border border-b">
-                  <th scope="col" className="py-2 text-start font-medium">{t("quantity")}</th>
-                  <th scope="col" className="py-2 text-end font-medium">{t("unitPrice")}</th>
-                  <th scope="col" className="py-2 text-end font-medium">{t("total")}</th>
+                  <th scope="col" className="py-2 text-start font-medium">
+                    {t("quantity")}
+                  </th>
+                  <th scope="col" className="py-2 text-end font-medium">
+                    {t("unitPrice")}
+                  </th>
+                  <th scope="col" className="py-2 text-end font-medium">
+                    {t("total")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -137,11 +150,17 @@ export default async function Page({ params }: { params: Promise<{ agentQuoteId:
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusChip map={AGENT_DISCOUNT_REQUEST_STATUS} value={latest.status} />
                   <span className="text-muted text-sm">
-                    {tDiscount("round", { round: latest.round, date: format.date(latest.createdAt, { style: "dayMonth" }) })}
+                    {tDiscount("round", {
+                      round: latest.round,
+                      date: format.date(latest.createdAt, { style: "dayMonth" }),
+                    })}
                   </span>
                 </div>
                 <p className="text-sm">
-                  {tDiscount("asked", { pct: format.percent(latest.requestedPct), reason: tDiscount(`reasons.${latest.reason}`) })}
+                  {tDiscount("asked", {
+                    pct: format.percent(latest.requestedPct),
+                    reason: tDiscount(`reasons.${latest.reason}`),
+                  })}
                   {lines.length ? <span className="text-muted"> · {lines.join(" · ")}</span> : null}
                 </p>
                 {latest.status === "open" ? (
@@ -150,7 +169,11 @@ export default async function Page({ params }: { params: Promise<{ agentQuoteId:
                   </Callout>
                 ) : null}
                 {latest.options.length > 0 ? (
-                  <DiscountOptions agentQuoteId={quote.id} options={latest.options} locked={latest.status !== "offered"} />
+                  <DiscountOptions
+                    agentQuoteId={quote.id}
+                    options={latest.options}
+                    locked={latest.status !== "offered"}
+                  />
                 ) : null}
                 {latest.decisionNote ? <p className="text-muted text-sm">{latest.decisionNote}</p> : null}
               </div>

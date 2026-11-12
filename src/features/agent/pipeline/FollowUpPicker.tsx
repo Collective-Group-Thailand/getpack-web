@@ -116,9 +116,19 @@ export function FollowUpPicker({
           }}
         >
           <Field label={t("customLabel")} className="min-w-0 flex-1 sm:max-w-xs">
-            <Input type="datetime-local" value={value} onChange={(event) => setValue(event.target.value)} className="min-h-11 sm:min-h-0" />
+            <Input
+              type="datetime-local"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              className="min-h-11 sm:min-h-0"
+            />
           </Field>
-          <Button type="submit" loading={busy === "custom"} disabled={!fromLocalInput(value)} className="min-h-11 sm:min-h-0">
+          <Button
+            type="submit"
+            loading={busy === "custom"}
+            disabled={!fromLocalInput(value)}
+            className="min-h-11 sm:min-h-0"
+          >
             {t("save")}
           </Button>
         </form>

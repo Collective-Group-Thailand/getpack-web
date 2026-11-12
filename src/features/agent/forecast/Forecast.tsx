@@ -73,7 +73,9 @@ export async function Forecast({ forecast }: { forecast: CommissionForecast }) {
               order: (
                 <span className="block min-w-0">
                   <span className="block font-semibold tabular-nums">{item.orderCode ?? t("noCode")}</span>
-                  <span className="text-muted hidden text-xs md:block">{item.isFirstOrder ? t("firstOrder") : t("repeatOrder")}</span>
+                  <span className="text-muted hidden text-xs md:block">
+                    {item.isFirstOrder ? t("firstOrder") : t("repeatOrder")}
+                  </span>
                 </span>
               ),
               status: <StatusChip map={AGENT_FORECAST_STATUS} value={item.status} />,
@@ -100,7 +102,14 @@ export async function Forecast({ forecast }: { forecast: CommissionForecast }) {
                   ) : (
                     <span className="text-muted">{t("noDate")}</span>
                   )}
-                  {item.waitingFor ? <span className="text-muted text-xs">{t(`waiting.${item.waitingFor}`, { date: format.date(item.earnableOn), statement: format.date(item.statementOn) })}</span> : null}
+                  {item.waitingFor ? (
+                    <span className="text-muted text-xs">
+                      {t(`waiting.${item.waitingFor}`, {
+                        date: format.date(item.earnableOn),
+                        statement: format.date(item.statementOn),
+                      })}
+                    </span>
+                  ) : null}
                 </span>
               ),
             },

@@ -69,8 +69,10 @@ export function PlaybookLibrary({ cards }: { cards: Card[] }) {
               aria-pressed={context === key}
               onClick={() => setContext(key)}
               className={cn(
-                "focus-visible:ring-focus-ring border-border inline-flex min-h-11 items-center rounded-lg border px-3.5 text-sm outline-none transition-colors duration-100 focus-visible:ring-2 sm:min-h-9",
-                context === key ? "bg-primary-subtle text-primary-subtle-fg border-primary/30 font-semibold" : "bg-surface hover:bg-surface-subtle",
+                "focus-visible:ring-focus-ring border-border inline-flex min-h-11 items-center rounded-lg border px-3.5 text-sm transition-colors duration-100 outline-none focus-visible:ring-2 sm:min-h-9",
+                context === key
+                  ? "bg-primary-subtle text-primary-subtle-fg border-primary/30 font-semibold"
+                  : "bg-surface hover:bg-surface-subtle",
               )}
             >
               {t(`contexts.${key}`)}

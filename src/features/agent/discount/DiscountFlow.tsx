@@ -67,13 +67,32 @@ export function DiscountFlow({
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [gives, setGives] = useState<Set<GiveKey>>(new Set());
-  const [values, setValues] = useState({ quantity: "", months: "6", deposit: "50", cash: "7", leadTime: "7", spec: "" });
+  const [values, setValues] = useState({
+    quantity: "",
+    months: "6",
+    deposit: "50",
+    cash: "7",
+    leadTime: "7",
+    spec: "",
+  });
   const [requestedPct, setRequestedPct] = useState("");
   const [reason, setReason] = useState<Reason | undefined>(undefined);
   const [reasonNote, setReasonNote] = useState("");
   const [file, setFile] = useState<{ id: string; name: string } | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [spec, setSpec] = useState({ boardGrade: "", flute: "", printSides: "", printColours: "", finish: "", quantity: "", leadTimeDays: "", price: "", shippingIncluded: false, vatIncluded: true, notes: "" });
+  const [spec, setSpec] = useState({
+    boardGrade: "",
+    flute: "",
+    printSides: "",
+    printColours: "",
+    finish: "",
+    quantity: "",
+    leadTimeDays: "",
+    price: "",
+    shippingIncluded: false,
+    vatIncluded: true,
+    notes: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [problem, setProblem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -219,7 +238,12 @@ export function DiscountFlow({
       case "quantity":
         return (
           <Field label={t("giveGet.quantityLabel", { current: format.number(quantity) })} error={errors["quantity"]}>
-            <Input inputMode="numeric" value={values.quantity} onChange={setValue("quantity")} className="sm:max-w-40" />
+            <Input
+              inputMode="numeric"
+              value={values.quantity}
+              onChange={setValue("quantity")}
+              className="sm:max-w-40"
+            />
           </Field>
         );
       case "callOff":
@@ -243,7 +267,12 @@ export function DiscountFlow({
       case "leadTime":
         return (
           <Field label={t("giveGet.leadTimeLabel")} error={errors["leadTime"]}>
-            <Input inputMode="numeric" value={values.leadTime} onChange={setValue("leadTime")} className="sm:max-w-28" />
+            <Input
+              inputMode="numeric"
+              value={values.leadTime}
+              onChange={setValue("leadTime")}
+              className="sm:max-w-28"
+            />
           </Field>
         );
       case "spec":
@@ -297,7 +326,11 @@ export function DiscountFlow({
             </ul>
             {errors["gives"] ? <Callout tone="danger" title={errors["gives"]} live /> : null}
             <Field label={t("pctLabel")} hint={t("pctHint")} error={errors["pct"]} className="sm:max-w-xs">
-              <Input inputMode="decimal" value={requestedPct} onChange={(event) => setRequestedPct(event.target.value)} />
+              <Input
+                inputMode="decimal"
+                value={requestedPct}
+                onChange={(event) => setRequestedPct(event.target.value)}
+              />
             </Field>
           </fieldset>
         ) : null}
@@ -317,10 +350,18 @@ export function DiscountFlow({
               />
             </Field>
             <Field label={t("reasonNote")}>
-              <Textarea rows={2} maxLength={500} value={reasonNote} onChange={(event) => setReasonNote(event.target.value)} />
+              <Textarea
+                rows={2}
+                maxLength={500}
+                value={reasonNote}
+                onChange={(event) => setReasonNote(event.target.value)}
+              />
             </Field>
             {reason === "competitor_price" ? (
-              <section aria-labelledby="evidence" className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4">
+              <section
+                aria-labelledby="evidence"
+                className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4"
+              >
                 <div>
                   <h3 id="evidence" className="font-semibold">
                     {t("evidence.title")}
@@ -352,10 +393,18 @@ export function DiscountFlow({
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field label={t("evidence.boardGrade")}>
-                    <Input value={spec.boardGrade} onChange={setSpecValue("boardGrade")} placeholder={t("evidence.boardGradeExample")} />
+                    <Input
+                      value={spec.boardGrade}
+                      onChange={setSpecValue("boardGrade")}
+                      placeholder={t("evidence.boardGradeExample")}
+                    />
                   </Field>
                   <Field label={t("evidence.flute")}>
-                    <Input value={spec.flute} onChange={setSpecValue("flute")} placeholder={t("evidence.fluteExample")} />
+                    <Input
+                      value={spec.flute}
+                      onChange={setSpecValue("flute")}
+                      placeholder={t("evidence.fluteExample")}
+                    />
                   </Field>
                   <Field label={t("evidence.printSides")}>
                     <Input inputMode="numeric" value={spec.printSides} onChange={setSpecValue("printSides")} />
@@ -398,7 +447,10 @@ export function DiscountFlow({
         ) : null}
 
         {step === 2 ? (
-          <section aria-labelledby="review" className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5">
+          <section
+            aria-labelledby="review"
+            className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5"
+          >
             <h2 id="review" className="text-lg font-semibold">
               {t("steps.review")}
             </h2>
@@ -427,7 +479,14 @@ export function DiscountFlow({
               {reason === "competitor_price" ? (
                 <div>
                   <dt className="text-muted text-xs">{t("review.evidence")}</dt>
-                  <dd>{[file?.name, spec.price ? t("review.theirPrice", { price: format.thb(toMoneyInput(spec.price)) }) : null].filter(Boolean).join(" · ") || "—"}</dd>
+                  <dd>
+                    {[
+                      file?.name,
+                      spec.price ? t("review.theirPrice", { price: format.thb(toMoneyInput(spec.price)) }) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ") || "—"}
+                  </dd>
                 </div>
               ) : null}
             </dl>

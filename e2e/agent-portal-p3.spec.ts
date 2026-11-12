@@ -42,11 +42,18 @@ async function noHorizontalScroll(page: Page, label: string) {
   await page.setViewportSize({ width: 1280, height: 900 });
 }
 
-async function shoot(page: Page, name: string, sizes: readonly ("phone" | "tablet" | "desktop")[] = ["phone", "desktop"]) {
+async function shoot(
+  page: Page,
+  name: string,
+  sizes: readonly ("phone" | "tablet" | "desktop")[] = ["phone", "desktop"],
+) {
   if (!shots) return;
   const widths = { phone: 390, tablet: 768, desktop: 1440 } as const;
   for (const size of sizes) {
-    await page.setViewportSize({ width: widths[size], height: size === "phone" ? 844 : size === "tablet" ? 1024 : 900 });
+    await page.setViewportSize({
+      width: widths[size],
+      height: size === "phone" ? 844 : size === "tablet" ? 1024 : 900,
+    });
     await page.waitForTimeout(250);
     await page.screenshot({ path: `${shots}/${name}-${size}-${widths[size]}.png`, fullPage: true });
   }
@@ -140,12 +147,20 @@ test.describe("agent portal P3 — lead management (D-468)", () => {
     await form.getByRole("checkbox", { name: "ลูกค้ายินยอมให้ getpack ติดต่อกลับ" }).click();
     await form.getByRole("button", { name: "บันทึก", exact: true }).click();
     await expect(page.getByRole("heading", { level: 1, name: "คุณสุดา ทดลองสแกน" })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("จากนามบัตร").first()).toBeVisible().catch(() => undefined);
+    await expect(page.getByText("จากนามบัตร").first())
+      .toBeVisible()
+      .catch(() => undefined);
   });
 
-  test("offline: the lead waits on the device as รอส่ง and is sent when the connection returns", async ({ page, context }) => {
+  test("offline: the lead waits on the device as รอส่ง and is sent when the connection returns", async ({
+    page,
+    context,
+  }) => {
     await signInToAgentZone(page, "/leads");
-    await page.getByRole("button", { name: /เพิ่มลูกค้ามุ่งหวัง/ }).first().click();
+    await page
+      .getByRole("button", { name: /เพิ่มลูกค้ามุ่งหวัง/ })
+      .first()
+      .click();
     const dialog = page.getByRole("dialog", { name: "ลูกค้ามุ่งหวังใหม่" });
     await dialog.getByLabel("ชื่อผู้ติดต่อ").fill("คุณออฟไลน์ ทดสอบ");
     await dialog.getByLabel("เบอร์โทร").fill(uniquePhone());
@@ -177,10 +192,19 @@ test.describe("agent portal P3 — lead management (D-468)", () => {
     // The board is the desktop's enhancement; every card there keeps the same menu.
     await gotoHydrated(page, `${HOSTS.agent}/leads?layout=board`);
     await expect(page.getByRole("heading", { level: 2, name: "กำลังต่อรอง" })).toBeVisible();
-    await expect(page.locator("section").filter({ hasText: "กำลังต่อรอง" }).getByRole("button", { name: /ย้ายไปขั้น…/ }).first()).toBeVisible();
+    await expect(
+      page
+        .locator("section")
+        .filter({ hasText: "กำลังต่อรอง" })
+        .getByRole("button", { name: /ย้ายไปขั้น…/ })
+        .first(),
+    ).toBeVisible();
   });
 
-  test("a quote on the lead's behalf, opened by the customer, then the sign-up converts the lead", async ({ page, browser }) => {
+  test("a quote on the lead's behalf, opened by the customer, then the sign-up converts the lead", async ({
+    page,
+    browser,
+  }) => {
     test.setTimeout(180_000);
     await signInToAgentZone(page, "/leads");
     // The lead is the storefront's returning customer, so the conversion can be walked (mock: claim by phone).
@@ -188,7 +212,13 @@ test.describe("agent portal P3 — lead management (D-468)", () => {
     if (!lead) {
       const created = (await bff(page, "/bff/v1/store/agent/leads", {
         method: "POST",
-        body: { kind: "customer", source: "manual", contactName: "คุณลูกค้า กลับมา", phone: "+66812345678", consentConfirmed: true },
+        body: {
+          kind: "customer",
+          source: "manual",
+          contactName: "คุณลูกค้า กลับมา",
+          phone: "+66812345678",
+          consentConfirmed: true,
+        },
       })) as { httpStatus: number };
       expect(created.httpStatus).toBe(201);
       lead = await leadByPhone(page, CUSTOMER_PHONE);
@@ -226,7 +256,9 @@ test.describe("agent portal P3 — lead management (D-468)", () => {
     // Signing up with the lead's phone claims the code and converts the lead (mock: the claim matches the phone).
     await signInAsCustomer(customerPage, "/account", CUSTOMER_PHONE);
     await expect
-      .poll(async () => (await customer.cookies()).some((entry) => entry.name === "pk_agent" && entry.value), { timeout: 15_000 })
+      .poll(async () => (await customer.cookies()).some((entry) => entry.name === "pk_agent" && entry.value), {
+        timeout: 15_000,
+      })
       .toBe(false);
     await customer.close();
     await gotoHydrated(page, `${HOSTS.agent}/leads/${lead!.id}`);
@@ -235,7 +267,9 @@ test.describe("agent portal P3 — lead management (D-468)", () => {
     await shoot(page, "p3-lead-detail");
   });
 
-  test("a discount request in three steps, and a co-fund option accepted only with its explicit confirm", async ({ page }) => {
+  test("a discount request in three steps, and a co-fund option accepted only with its explicit confirm", async ({
+    page,
+  }) => {
     await signInToAgentZone(page, "/quotes");
     await shoot(page, "p3-quotes-list");
     await page.locator("main").getByRole("link", { name: "คุณวีระ ทองดี" }).first().click();
@@ -359,7 +393,9 @@ test.describe("agent portal P3 — lead management (D-468)", () => {
     await shoot(page, "p3-playbook");
   });
 
-  test("notifications offer the two new events; the storefront /q link of a factory quote still opens as before", async ({ page }) => {
+  test("notifications offer the two new events; the storefront /q link of a factory quote still opens as before", async ({
+    page,
+  }) => {
     await signInToAgentZone(page, "/notifications");
     await expect(page.getByRole("group", { name: /ถึงเวลาติดตามลูกค้า/ })).toBeVisible();
     await expect(page.getByRole("group", { name: /ลูกค้าเปิดดูใบเสนอราคา/ })).toBeVisible();

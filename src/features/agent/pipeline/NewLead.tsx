@@ -295,7 +295,11 @@ export function NewLead({
       <div className="bg-surface-subtle rounded-card flex items-center gap-3 p-3">
         {scan.preview ? (
           // eslint-disable-next-line @next/next/no-img-element -- a local object URL of the photo just taken
-          <img src={scan.preview} alt={t("cardPhoto")} className="border-border h-14 w-20 rounded-md border object-cover" />
+          <img
+            src={scan.preview}
+            alt={t("cardPhoto")}
+            className="border-border h-14 w-20 rounded-md border object-cover"
+          />
         ) : (
           <span className="bg-surface text-primary grid size-11 shrink-0 place-items-center rounded-full">
             <Icon name="scan" size={22} aria-hidden="true" />
@@ -473,7 +477,12 @@ export function NewLead({
       {problem ? <Callout tone="danger" title={problem} live /> : null}
       <p className="text-muted text-xs">
         {t("partnerNote")}{" "}
-        <a href={partnerPageUrl} target="_blank" rel="noopener noreferrer" className="text-link underline-offset-2 hover:underline">
+        <a
+          href={partnerPageUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-link underline-offset-2 hover:underline"
+        >
           {t("partnerLink")}
         </a>
       </p>
@@ -482,7 +491,13 @@ export function NewLead({
 
   const footer = (
     <>
-      <Button type="button" variant="secondary" onClick={() => setOpen(false)} disabled={busy} className="max-sm:flex-1">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => setOpen(false)}
+        disabled={busy}
+        className="max-sm:flex-1"
+      >
         {tCommon("actions.cancel")}
       </Button>
       <Button type="submit" form={formId} loading={busy} className="max-sm:flex-1">

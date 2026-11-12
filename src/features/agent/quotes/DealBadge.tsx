@@ -24,7 +24,12 @@ export async function DealBadge({ deal, className }: { deal: Deal | null | undef
     >
       <Icon name="shield-check" size={16} aria-hidden="true" />
       <span className="font-semibold">{t("until", { date: format.date(deal.protectedUntil) })}</span>
-      <span>{t("locked", { first: format.percent(deal.lockedFirstRatePct), repeat: format.percent(deal.lockedRepeatRatePct) })}</span>
+      <span>
+        {t("locked", {
+          first: format.percent(deal.lockedFirstRatePct),
+          repeat: format.percent(deal.lockedRepeatRatePct),
+        })}
+      </span>
     </p>
   );
 }

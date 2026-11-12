@@ -37,7 +37,10 @@ test.describe("agent portal P0 (D-464, D-465)", () => {
   test("the lead form registers customers only and points manufacturers to the partner page", async ({ page }) => {
     await signInToAgentZone(page, "/leads", AGENT_PHONE);
     // P3 (D-468): the form is "เพิ่มลูกค้ามุ่งหวัง" (the header button; a FAB on a phone).
-    await page.getByRole("button", { name: /เพิ่มลูกค้ามุ่งหวัง/ }).first().click();
+    await page
+      .getByRole("button", { name: /เพิ่มลูกค้ามุ่งหวัง/ })
+      .first()
+      .click();
     const dialog = page.getByRole("dialog");
     // No lead-kind choice (customers only, D-464); "ประเภทธุรกิจ" (P3 industry) is not that.
     await expect(dialog.getByText("ประเภท", { exact: true })).toHaveCount(0);

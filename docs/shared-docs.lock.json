@@ -1,9 +1,9 @@
 {
   "$comment": "Shared with getpack-api, which owns them. Written by `pnpm docs:sync`; `pnpm docs:sync --check` fails on hand edits.",
   "tag": "v0.75.0",
-  "commit": "7e81cff66afae1ec65031bae6b070ab3c61c8999",
+  "commit": "ef08a1172d72776a583cc8cc931b9099ef282889",
   "files": {
-    "docs/decisions.md": "a7a37142ef043af4b9c7cc23ffc24c5ce356ab39a8584b40985ea07d037d7abb",
+    "docs/decisions.md": "9eda65a3731403ff9c5860356d8aefc6b0fee8420d4c8a6a8f8539094630d219",
     "docs/contract/api-conventions.md": "2113929f24b9ec2dfe209e5869000637e0a72d51d66f965538959538b9815a4e"
   }
 }

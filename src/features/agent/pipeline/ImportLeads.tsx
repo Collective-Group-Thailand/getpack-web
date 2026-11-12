@@ -80,7 +80,9 @@ export function ImportLeads({ maxRows }: { maxRows: number }) {
     if (!consent) return setError(t("errors.consent"));
     setBusy(true);
     try {
-      const { data } = await browserApi().POST("/v1/store/agent/leads/imports", { body: { csv, consentConfirmed: true } });
+      const { data } = await browserApi().POST("/v1/store/agent/leads/imports", {
+        body: { csv, consentConfirmed: true },
+      });
       setPreview(data ?? null);
       key.current = newIdempotencyKey();
     } catch (failure) {
@@ -116,15 +118,25 @@ export function ImportLeads({ maxRows }: { maxRows: number }) {
   if (result) {
     return (
       <div className="flex flex-col gap-5">
-        <ProgressTracker label={t("progress")} stateLabels={{ done: t("stateDone"), current: t("stateCurrent"), upcoming: "", skipped: "" }} stages={stages} className="md:max-w-xl" />
-        <section className="border-border bg-surface rounded-card flex flex-col items-start gap-3 border p-5" aria-labelledby="import-done">
+        <ProgressTracker
+          label={t("progress")}
+          stateLabels={{ done: t("stateDone"), current: t("stateCurrent"), upcoming: "", skipped: "" }}
+          stages={stages}
+          className="md:max-w-xl"
+        />
+        <section
+          className="border-border bg-surface rounded-card flex flex-col items-start gap-3 border p-5"
+          aria-labelledby="import-done"
+        >
           <span className="bg-success-subtle text-success-subtle-fg grid size-10 place-items-center rounded-full">
             <Icon name="check" size={20} aria-hidden="true" />
           </span>
           <h2 id="import-done" className="text-lg font-semibold">
             {t("doneTitle", { count: result.createdCount ?? 0 })}
           </h2>
-          <p className="text-muted text-sm">{t("doneBody", { skipped: result.rowCount - (result.createdCount ?? 0) })}</p>
+          <p className="text-muted text-sm">
+            {t("doneBody", { skipped: result.rowCount - (result.createdCount ?? 0) })}
+          </p>
           <Button asChild>
             <Link href="/leads">{t("toLeads")}</Link>
           </Button>
@@ -136,11 +148,19 @@ export function ImportLeads({ maxRows }: { maxRows: number }) {
   const rows = preview ? preview.rows.filter((row) => !onlyProblems || row.errors.length > 0) : [];
   return (
     <div className="flex flex-col gap-5">
-      <ProgressTracker label={t("progress")} stateLabels={{ done: t("stateDone"), current: t("stateCurrent"), upcoming: "", skipped: "" }} stages={stages} className="md:max-w-xl" />
+      <ProgressTracker
+        label={t("progress")}
+        stateLabels={{ done: t("stateDone"), current: t("stateCurrent"), upcoming: "", skipped: "" }}
+        stages={stages}
+        className="md:max-w-xl"
+      />
 
       {!preview ? (
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <section className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5" aria-labelledby="import-file">
+          <section
+            className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5"
+            aria-labelledby="import-file"
+          >
             <h2 id="import-file" className="font-semibold">
               {t("fileTitle")}
             </h2>
@@ -181,7 +201,10 @@ export function ImportLeads({ maxRows }: { maxRows: number }) {
               {t("check")}
             </Button>
           </section>
-          <aside className="border-border bg-surface-subtle rounded-card flex flex-col gap-3 border p-4 sm:p-5" aria-labelledby="template">
+          <aside
+            className="border-border bg-surface-subtle rounded-card flex flex-col gap-3 border p-4 sm:p-5"
+            aria-labelledby="template"
+          >
             <h2 id="template" className="font-semibold">
               {t("templateTitle")}
             </h2>
@@ -226,12 +249,15 @@ export function ImportLeads({ maxRows }: { maxRows: number }) {
                 name: (
                   <span className="block min-w-0">
                     <span className="block font-medium">{row.contactName ?? "—"}</span>
-                    {row.organisationName ? <span className="text-muted hidden text-xs md:block">{row.organisationName}</span> : null}
+                    {row.organisationName ? (
+                      <span className="text-muted hidden text-xs md:block">{row.organisationName}</span>
+                    ) : null}
                   </span>
                 ),
                 contact: (
                   <span className="text-sm break-all tabular-nums">
-                    {[row.phone ? displayPhone(row.phone) : null, row.email, row.taxId].filter(Boolean).join(" · ") || "—"}
+                    {[row.phone ? displayPhone(row.phone) : null, row.email, row.taxId].filter(Boolean).join(" · ") ||
+                      "—"}
                   </span>
                 ),
                 result:
@@ -244,7 +270,9 @@ export function ImportLeads({ maxRows }: { maxRows: number }) {
                       {row.errors.map((problem, index) => (
                         <li key={index} className="flex items-start gap-1.5">
                           <Icon name="warning" size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
-                          {t(`errorCodes.${problem.code}`, { field: t.has(`fields.${problem.field}`) ? t(`fields.${problem.field}`) : problem.field })}
+                          {t(`errorCodes.${problem.code}`, {
+                            field: t.has(`fields.${problem.field}`) ? t(`fields.${problem.field}`) : problem.field,
+                          })}
                         </li>
                       ))}
                     </ul>

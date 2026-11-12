@@ -145,7 +145,9 @@ export interface PipelineQuery {
 
 /** The pipeline (`store.agentLeads.list`): one view, filters, a cursor. */
 export async function getPipeline(query: PipelineQuery): Promise<{ data: PipelineLead[]; nextCursor: string | null }> {
-  const { data } = await (await api()).GET("/v1/store/agent/leads/pipeline", {
+  const { data } = await (
+    await api()
+  ).GET("/v1/store/agent/leads/pipeline", {
     params: {
       query: {
         ...(query.view ? { view: query.view } : {}),
@@ -186,7 +188,9 @@ export async function getLeadActivities(leadId: string): Promise<LeadActivity[]>
 export async function getAgentQuotes(
   query: { leadId?: string; status?: AgentQuote["status"]; page?: number } = {},
 ): Promise<Page<AgentQuote>> {
-  const { data } = await (await api()).GET("/v1/store/agent/quotes", {
+  const { data } = await (
+    await api()
+  ).GET("/v1/store/agent/quotes", {
     params: {
       query: {
         ...(query.leadId ? { leadId: query.leadId } : {}),

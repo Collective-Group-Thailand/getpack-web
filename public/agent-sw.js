@@ -67,7 +67,8 @@ function openDrafts() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DRAFT_DB, 1);
     request.onupgradeneeded = () => {
-      if (!request.result.objectStoreNames.contains(DRAFT_STORE)) request.result.createObjectStore(DRAFT_STORE, { keyPath: "id" });
+      if (!request.result.objectStoreNames.contains(DRAFT_STORE))
+        request.result.createObjectStore(DRAFT_STORE, { keyPath: "id" });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
@@ -85,7 +86,9 @@ function draftStore(db, mode, work) {
 /** The page sends the same queue on its `online` event: one Web Lock keeps a draft from being sent twice. */
 const DRAFT_LOCK = "getpack-agent-lead-drafts";
 function flushLeadDrafts() {
-  return self.navigator.locks ? self.navigator.locks.request(DRAFT_LOCK, flushLeadDraftsUnlocked) : flushLeadDraftsUnlocked();
+  return self.navigator.locks
+    ? self.navigator.locks.request(DRAFT_LOCK, flushLeadDraftsUnlocked)
+    : flushLeadDraftsUnlocked();
 }
 
 async function flushLeadDraftsUnlocked() {
@@ -109,7 +112,10 @@ async function flushLeadDraftsUnlocked() {
       } else if (response.status >= 400 && response.status < 500 && ![401, 408, 429].includes(response.status)) {
         const problem = await response.json().catch(() => null);
         await draftStore(db, "readwrite", (store) =>
-          store.put({ ...draft, refused: { code: (problem && problem.code) || "http.conflict", detail: (problem && problem.detail) || "" } }),
+          store.put({
+            ...draft,
+            refused: { code: (problem && problem.code) || "http.conflict", detail: (problem && problem.detail) || "" },
+          }),
         );
         changed = true;
       } else {
@@ -120,7 +126,8 @@ async function flushLeadDraftsUnlocked() {
   } finally {
     db.close();
     if (changed) {
-      for (const client of await self.clients.matchAll({ type: "window" })) client.postMessage({ type: "lead-drafts-flushed" });
+      for (const client of await self.clients.matchAll({ type: "window" }))
+        client.postMessage({ type: "lead-drafts-flushed" });
     }
   }
 }

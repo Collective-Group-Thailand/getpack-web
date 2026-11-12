@@ -68,8 +68,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
               <ol className="flex flex-wrap items-center justify-center gap-1.5" aria-label={t("pathLabel")}>
                 {(["sent", "opened", "accepted"] as const).map((status, index) => (
                   <li key={status} className="flex items-center gap-1.5">
-                    <StatusBadge meta={AGENT_QUOTE_STATUS[status]} label={tStatus(AGENT_QUOTE_STATUS[status].labelKey)} size="sm" />
-                    {index < 2 ? <Icon name="chevron-right" size={14} className="text-muted" aria-hidden="true" /> : null}
+                    <StatusBadge
+                      meta={AGENT_QUOTE_STATUS[status]}
+                      label={tStatus(AGENT_QUOTE_STATUS[status].labelKey)}
+                      size="sm"
+                    />
+                    {index < 2 ? (
+                      <Icon name="chevron-right" size={14} className="text-muted" aria-hidden="true" />
+                    ) : null}
                   </li>
                 ))}
               </ol>
@@ -104,7 +110,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
                       {quote.lead.contactName}
                     </Link>
                     {quote.lead.organisationName ? (
-                      <span className="text-muted hidden text-xs font-normal md:block">{quote.lead.organisationName}</span>
+                      <span className="text-muted hidden text-xs font-normal md:block">
+                        {quote.lead.organisationName}
+                      </span>
                     ) : null}
                   </span>
                 ),
@@ -112,7 +120,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
                   <span className="text-sm">
                     {quote.quote.summary.product?.nameTh ?? quote.quote.summary.productTypeNameTh}
                     <span className="text-muted block text-xs tabular-nums">
-                      {[quote.quote.quoteCode, largest ? t("pieces", { quantity: format.number(largest.quantity) }) : null].filter(Boolean).join(" · ")}
+                      {[
+                        quote.quote.quoteCode,
+                        largest ? t("pieces", { quantity: format.number(largest.quantity) }) : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                   </span>
                 ),
@@ -132,7 +145,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
                   <span className="text-sm">
                     {format.date(quote.sentAt, { style: "dayMonth" })}
                     {quote.openedAt ? (
-                      <span className="text-muted block text-xs">{t("openedOn", { date: format.dateTime(quote.openedAt, { style: "dayMonth" }) })}</span>
+                      <span className="text-muted block text-xs">
+                        {t("openedOn", { date: format.dateTime(quote.openedAt, { style: "dayMonth" }) })}
+                      </span>
                     ) : null}
                   </span>
                 ),
@@ -149,7 +164,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
           })}
         />
       )}
-      <AgentPager page={page} total={list.meta.total} perPage={list.meta.perPage} path={tab === "all" ? "/quotes" : `/quotes?status=${tab}`} />
+      <AgentPager
+        page={page}
+        total={list.meta.total}
+        perPage={list.meta.perPage}
+        path={tab === "all" ? "/quotes" : `/quotes?status=${tab}`}
+      />
     </AgentPage>
   );
 }

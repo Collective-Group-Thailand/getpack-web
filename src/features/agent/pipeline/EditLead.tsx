@@ -62,7 +62,11 @@ export function EditLead({ lead, etag }: { lead: Lead; etag: string | null }) {
       organisationName: form.organisationName.trim() || null,
       lineId: form.lineId.trim() || null,
       industry: form.industry.trim() || null,
-      tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean).slice(0, 10),
+      tags: form.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .slice(0, 10),
       expectedValue,
       note: form.note.trim() || null,
     };
@@ -89,7 +93,16 @@ export function EditLead({ lead, etag }: { lead: Lead; etag: string | null }) {
 
   return (
     <>
-      <Button variant="ghost" size="sm" iconStart="edit" className="min-h-11 sm:min-h-8" onClick={() => { setForm(initial); setOpen(true); }}>
+      <Button
+        variant="ghost"
+        size="sm"
+        iconStart="edit"
+        className="min-h-11 sm:min-h-8"
+        onClick={() => {
+          setForm(initial);
+          setOpen(true);
+        }}
+      >
         {t("open")}
       </Button>
       <Dialog
@@ -118,16 +131,36 @@ export function EditLead({ lead, etag }: { lead: Lead; etag: string | null }) {
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={tNew("phone")} hint={keysEditable ? undefined : t("keysLocked")}>
-              <Input value={form.phone} onChange={set("phone")} type="tel" inputMode="tel" autoComplete="tel-national" disabled={!keysEditable} />
+              <Input
+                value={form.phone}
+                onChange={set("phone")}
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                disabled={!keysEditable}
+              />
             </Field>
             <Field label={tNew("email")} hint={keysEditable ? undefined : t("keysLocked")}>
-              <Input value={form.email} onChange={set("email")} type="email" inputMode="email" autoComplete="email" disabled={!keysEditable} />
+              <Input
+                value={form.email}
+                onChange={set("email")}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                disabled={!keysEditable}
+              />
             </Field>
             <Field label={tNew("lineId")}>
               <Input value={form.lineId} onChange={set("lineId")} autoCapitalize="none" spellCheck={false} />
             </Field>
             <Field label={tNew("taxId")} hint={keysEditable ? undefined : t("keysLocked")}>
-              <Input value={form.taxId} onChange={set("taxId")} inputMode="numeric" maxLength={13} disabled={!keysEditable} />
+              <Input
+                value={form.taxId}
+                onChange={set("taxId")}
+                inputMode="numeric"
+                maxLength={13}
+                disabled={!keysEditable}
+              />
             </Field>
             <Field label={tNew("expectedValue")}>
               <Input value={form.expectedValue} onChange={set("expectedValue")} inputMode="decimal" />

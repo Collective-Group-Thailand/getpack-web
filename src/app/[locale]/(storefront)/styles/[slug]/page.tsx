@@ -15,13 +15,7 @@ import { configureHref, rfqHref } from "@/features/customer/catalog/paths";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { axisLabel, facetLabel, valueLabel, type StylesT } from "@/features/customer/styles/labels";
-import {
-  codeOfSlug,
-  styleHref,
-  styleSlug,
-  STYLES_HREF,
-  styleTopicHref,
-} from "@/features/customer/styles/paths";
+import { codeOfSlug, styleHref, styleSlug, STYLES_HREF, styleTopicHref } from "@/features/customer/styles/paths";
 import { shortName, topicHeading, topicsOf } from "@/features/customer/styles/topics";
 import { optionSummary } from "@/features/customer/styles/VariantCardFace";
 import { StyleDetailActions } from "@/features/customer/styles/StyleDetailActions";

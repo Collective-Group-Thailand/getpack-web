@@ -23,7 +23,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const labels = { showTable: "Show as table", hideTable: "Show as chart", step: "Line", amount: "Amount", share: "Share" };
+const labels = {
+  showTable: "Show as table",
+  hideTable: "Show as chart",
+  step: "Line",
+  amount: "Amount",
+  share: "Share",
+};
 
 export const Bridge: Story = {
   render: () => (
@@ -42,7 +48,15 @@ export const Bridge: Story = {
           { key: "gross", label: "Gross margin", kind: "total", value: 2040, display: "฿2,040.00", share: "21.7%" },
           { key: "commission", label: "Commission", kind: "delta", value: -470, display: "− ฿470.00", share: "5%" },
           { key: "credit", label: "Credit cost", kind: "delta", value: -62, display: "− ฿62.00", note: "Estimate" },
-          { key: "contribution", label: "Contribution after commission", kind: "total", value: 1508, display: "฿1,508.00", share: "16.0%", emphasis: true },
+          {
+            key: "contribution",
+            label: "Contribution after commission",
+            kind: "total",
+            value: 1508,
+            display: "฿1,508.00",
+            share: "16.0%",
+            emphasis: true,
+          },
         ]}
       />
     </div>

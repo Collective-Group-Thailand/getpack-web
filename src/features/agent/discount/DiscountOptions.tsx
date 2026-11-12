@@ -85,22 +85,37 @@ export function DiscountOptions({
             >
               <div className="min-w-0">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <Badge tone={option.kind === "co_fund" ? "warning" : option.kind === "spiff" ? "success" : "primary"} icon={option.kind === "co_fund" ? "handshake" : option.kind === "spiff" ? "star" : "check"}>
+                  <Badge
+                    tone={option.kind === "co_fund" ? "warning" : option.kind === "spiff" ? "success" : "primary"}
+                    icon={option.kind === "co_fund" ? "handshake" : option.kind === "spiff" ? "star" : "check"}
+                  >
                     {t(`kinds.${option.kind}`)}
                   </Badge>
-                  {accepted ? <Badge tone="success" icon="check">{t("chosen")}</Badge> : null}
+                  {accepted ? (
+                    <Badge tone="success" icon="check">
+                      {t("chosen")}
+                    </Badge>
+                  ) : null}
                 </div>
                 <p className="text-base font-semibold text-pretty tabular-nums">
-                  {t("line", { discount: format.percent(option.discountPct), commission: format.thb(option.commissionAmount) })}
+                  {t("line", {
+                    discount: format.percent(option.discountPct),
+                    commission: format.thb(option.commissionAmount),
+                  })}
                 </p>
                 <p className="text-muted mt-0.5 text-sm tabular-nums">
                   {t("net", { net: format.thb(option.netAmount) })} ·{" "}
                   {option.kind === "standard"
                     ? t("fullRate", { rate: format.percent(option.ratePct) })
-                    : t("rate", { rate: format.percent(option.ratePct), standard: format.percent(option.standardRatePct) })}
+                    : t("rate", {
+                        rate: format.percent(option.ratePct),
+                        standard: format.percent(option.standardRatePct),
+                      })}
                 </p>
                 {option.conditionsTh ? <p className="text-muted mt-1 text-sm">{option.conditionsTh}</p> : null}
-                <p className="text-muted mt-1 text-xs">{t("validUntil", { date: format.dateTime(option.validUntil) })}</p>
+                <p className="text-muted mt-1 text-xs">
+                  {t("validUntil", { date: format.dateTime(option.validUntil) })}
+                </p>
               </div>
               {locked || option.status !== "offered" ? null : (
                 <Button
@@ -125,7 +140,11 @@ export function DiscountOptions({
         open={chosen !== null}
         onOpenChange={(next) => !busy && !next && setChosen(null)}
         title={chosen?.kind === "co_fund" ? t("coFundTitle") : t("confirmTitle")}
-        description={chosen ? t("confirmBody", { discount: format.percent(chosen.discountPct), net: format.thb(chosen.netAmount) }) : undefined}
+        description={
+          chosen
+            ? t("confirmBody", { discount: format.percent(chosen.discountPct), net: format.thb(chosen.netAmount) })
+            : undefined
+        }
         closeLabel={tCommon("actions.close")}
         footer={
           <>
@@ -141,15 +160,22 @@ export function DiscountOptions({
         {chosen ? (
           <div className="flex flex-col gap-4">
             <p className="bg-surface-subtle rounded-lg p-4 text-base">
-              {t("youGet")} <strong className="text-lg font-semibold tabular-nums">{format.thb(chosen.commissionAmount)}</strong>
+              {t("youGet")}{" "}
+              <strong className="text-lg font-semibold tabular-nums">{format.thb(chosen.commissionAmount)}</strong>
               <span className="text-muted block text-sm">
-                {t("atRate", { rate: format.percent(chosen.ratePct), standard: format.percent(chosen.standardRatePct) })}
+                {t("atRate", {
+                  rate: format.percent(chosen.ratePct),
+                  standard: format.percent(chosen.standardRatePct),
+                })}
               </span>
             </p>
             {chosen.kind === "co_fund" ? (
               <>
                 <Callout tone="warning" title={t("coFundWarning")}>
-                  {t("coFundBody", { rate: format.percent(chosen.ratePct), standard: format.percent(chosen.standardRatePct) })}
+                  {t("coFundBody", {
+                    rate: format.percent(chosen.ratePct),
+                    standard: format.percent(chosen.standardRatePct),
+                  })}
                 </Callout>
                 <Checkbox
                   label={t("coFundAgree", { amount: format.thb(chosen.commissionAmount) })}

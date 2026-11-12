@@ -37,10 +37,7 @@ export function AgentTabBar({ items }: { items: readonly AgentNavItem[] }) {
                 )}
               >
                 <span
-                  className={cn(
-                    "flex h-7 w-12 items-center justify-center rounded-lg",
-                    current && "bg-primary-subtle",
-                  )}
+                  className={cn("flex h-7 w-12 items-center justify-center rounded-lg", current && "bg-primary-subtle")}
                 >
                   <Icon
                     name={item.icon}

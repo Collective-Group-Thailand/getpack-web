@@ -17,6 +17,7 @@ env:
   PUBLIC_HOST: "localhost:3000"
   ADMIN_HOST: "admin.localhost:3000"
   PARTNER_HOST: "partner.localhost:3000"
+  AGENT_HOST: "agent.localhost:3000"
   API_INTERNAL_URL: "http://127.0.0.1:4999"
   # `pnpm typecheck` (verify job) is the type gate; next build skips its own pass (next.config.ts).
   NEXT_SKIP_TYPECHECK: "1"

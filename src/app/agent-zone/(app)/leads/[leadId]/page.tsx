@@ -65,11 +65,18 @@ export default async function Page({ params }: { params: Promise<{ leadId: strin
     getAgentQuotes({ leadId: lead.id }),
     getPipeline({ view: "open", limit: 30 }),
   ]);
-  const deal = quotes.data.map((quote) => quote.dealRegistration).find((entry) => entry && entry.status === "registered");
+  const deal = quotes.data
+    .map((quote) => quote.dealRegistration)
+    .find((entry) => entry && entry.status === "registered");
   const playbook = (await getPlaybook(contextOf(lead, Boolean(deal)))).filter((card) => !card.contexts.includes("all"));
   const closed = lead.stage === "won" || lead.stage === "lost" || !["registered", "converted"].includes(lead.status);
   const rows = [
-    { key: "phone", icon: "phone" as const, value: lead.phone ? displayPhone(lead.phone) : null, href: lead.phone ? `tel:${lead.phone}` : null },
+    {
+      key: "phone",
+      icon: "phone" as const,
+      value: lead.phone ? displayPhone(lead.phone) : null,
+      href: lead.phone ? `tel:${lead.phone}` : null,
+    },
     { key: "email", icon: "mail" as const, value: lead.email, href: lead.email ? `mailto:${lead.email}` : null },
     { key: "lineId", icon: "chat" as const, value: lead.lineId, href: null },
     { key: "taxId", icon: "building" as const, value: lead.taxId, href: null },
@@ -112,7 +119,10 @@ export default async function Page({ params }: { params: Promise<{ leadId: strin
         className="lg:[&>header>a]:hidden"
         actions={closed ? null : <StageMenu leadId={lead.id} name={lead.contactName} stage={lead.stage} size="md" />}
       >
-        <section aria-label={t("summary")} className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5">
+        <section
+          aria-label={t("summary")}
+          className="border-border bg-surface rounded-card flex flex-col gap-4 border p-4 sm:p-5"
+        >
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
             <div>
               <dt className="text-muted text-xs">{t("protection")}</dt>
@@ -123,7 +133,11 @@ export default async function Page({ params }: { params: Promise<{ leadId: strin
             <div>
               <dt className="text-muted text-xs">{t("expectedValue")}</dt>
               <dd className="mt-0.5 text-[0.9375rem] font-semibold tabular-nums">
-                {lead.expectedValue ? format.thb(lead.expectedValue) : <span className="text-muted font-normal">{t("noValue")}</span>}
+                {lead.expectedValue ? (
+                  format.thb(lead.expectedValue)
+                ) : (
+                  <span className="text-muted font-normal">{t("noValue")}</span>
+                )}
               </dd>
             </div>
             <div>
@@ -175,11 +189,18 @@ export default async function Page({ params }: { params: Promise<{ leadId: strin
                             {quote.quote.summary.product?.nameTh ?? quote.quote.quoteCode}
                           </span>
                           <span className="text-muted block text-xs tabular-nums">
-                            {[quote.quote.quoteCode, t("sentOn", { date: format.date(quote.sentAt, { style: "dayMonth" }) })].filter(Boolean).join(" · ")}
+                            {[
+                              quote.quote.quoteCode,
+                              t("sentOn", { date: format.date(quote.sentAt, { style: "dayMonth" }) }),
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
                           </span>
                         </span>
                         <span className="flex shrink-0 flex-col items-end gap-1">
-                          <span className="font-semibold tabular-nums">{format.thb(quote.quote.options[0]?.grossAmount)}</span>
+                          <span className="font-semibold tabular-nums">
+                            {format.thb(quote.quote.options[0]?.grossAmount)}
+                          </span>
                           <StatusChip map={AGENT_QUOTE_STATUS} value={quote.status} />
                         </span>
                       </Link>
@@ -241,7 +262,10 @@ export default async function Page({ params }: { params: Promise<{ leadId: strin
             {playbook.slice(0, 1).map((card) => (
               <PlaybookCard key={card.id} card={card} compact />
             ))}
-            <Link href="/playbook" className="text-primary -mt-3 self-start text-sm font-medium underline underline-offset-2">
+            <Link
+              href="/playbook"
+              className="text-primary -mt-3 self-start text-sm font-medium underline underline-offset-2"
+            >
               {t("allPlaybook")}
             </Link>
           </div>
