@@ -433,7 +433,7 @@ function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
         : 1,
     origin: origin ?? (stored.kind === "referral" ? "system" : "manual"),
     // Loyalty P4 (D-506): a capacity deal carries who funds its discount.
-    capacityDeal: capacityDeal ? Object.assign({ ...capacityDeal }, { funding: fundingOf(row.id) }) : null,
+    capacityDeal: capacityDeal ? { ...capacityDeal, funding: fundingOf(row.id) } : null,
   });
 }
 

@@ -2,7 +2,7 @@
  * Loyalty P4 (D-508, D-509, D-510): which loyalty surfaces are open, the `loyalty.feature_disabled` guards on the store
  * endpoints, and the company one-off claims on the earn checklist.
  *
- * - `store.loyalty.surfaces` is a contract request (`mockRequest`). Flags are the `loyalty.surfaces` setting of the
+ * - `store.loyalty.surfaces` (`mockOperation`, typed by the generated contract). Flags are the `loyalty.surfaces` setting of the
  *   admin mock (so a switch on `/marketing/loyalty` shows at once); with a token they are ANDed with the caller's
  *   cohort, without one they are the anonymous view (open only at stage `all`).
  * - The mock's cohort stands in for the API's hash: at stage `percent` every persona but `newcomer` is in (the
@@ -18,10 +18,10 @@
 import { http, HttpResponse } from "msw";
 
 import type { LoyaltyTasks } from "@/features/customer/account/loyalty-types";
-import type { LoyaltySurfaces, StoreLoyaltySurface } from "@/lib/api/requests/store-loyalty-p4";
+import type { LoyaltySurfaces, StoreLoyaltySurface } from "@/features/shared/loyalty-p4/types";
 
 import { rolloutInForce, surfaceSetting } from "../admin/loyalty-p4";
-import { mockRequest } from "../route";
+import { mockOperation } from "../route";
 import { principalOf, problem } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 
@@ -86,7 +86,7 @@ export function withCompanyClaims(tasks: LoyaltyTasks, customer: MockCustomer | 
   if (customer?.persona !== "companybuyer") return tasks;
   const claimed = tasks.tasks
     .filter((task) => CLAIMED_BY_COMPANY.has(task.code) && task.status === "todo")
-    .map((task) => ({ ...task, status: "claimed_by_company" as never, recommended: false }));
+    .map((task) => ({ ...task, status: "claimed_by_company" as const, recommended: false }));
   if (claimed.length === 0) return tasks;
   const rest = tasks.tasks.filter((task) => !claimed.some((other) => other.code === task.code));
   const open = rest.filter((task) => task.status !== "done");
@@ -107,12 +107,16 @@ export function withCompanyClaims(tasks: LoyaltyTasks, customer: MockCustomer | 
 const passThrough = (slug: string | undefined) => slug === "mine" || slug === "actions";
 
 export const loyaltyP4Handlers = [
-  // CONTRACT-REQUEST store.loyalty.surfaces — public; never `capacityDeals`, no cohort field
-  mockRequest("GET /v1/store/loyalty/surfaces", ({ request }) => {
-    if (!principalOf(request) && request.headers.get("authorization"))
-      return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน");
-    return surfacesFor(request);
-  }),
+  mockOperation(
+    "get",
+    "/v1/store/loyalty/surfaces",
+    ({ request }) => {
+      if (!principalOf(request) && request.headers.get("authorization"))
+        return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน");
+      return surfacesFor(request);
+    },
+    { public: true },
+  ),
   // Guards (D-509, D-510): answered before the P1.5 / P3 handlers, which they pass through to when open.
   http.get("*/v1/store/promotions", ({ request }) => closed(request, "deals")),
   http.get("*/v1/store/promotions/:slug", ({ request, params }) =>

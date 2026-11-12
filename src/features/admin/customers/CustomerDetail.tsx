@@ -294,7 +294,18 @@ function Points({ customerId }: { customerId: string }) {
 
   const columns: DataTableColumn<PointsEntry>[] = [
     { id: "createdAt", header: t("when"), cell: (row) => <When at={row.createdAt} /> },
-    { id: "entryType", header: t("entry"), cell: (row) => t(`types.${row.entryType}`) },
+    {
+      id: "entryType",
+      header: t("entry"),
+      cell: (row) => (
+        <span className="flex flex-col">
+          <span>{t(`types.${row.entryType}`)}</span>
+          {row.companyClaim ? (
+            <span className="text-muted text-xs">{t("companyClaim", { company: row.companyClaim.legalName })}</span>
+          ) : null}
+        </span>
+      ),
+    },
     {
       id: "order",
       header: t("order"),

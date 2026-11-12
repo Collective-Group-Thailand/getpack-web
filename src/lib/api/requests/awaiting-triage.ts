@@ -20,25 +20,6 @@ export const AWAITING_TRIAGE: readonly string[] = [
   "POST /v1/store/newsletter/actions/subscribe",
   // U3.6 (2026-10-06): the staff a structural design request can be assigned to.
   "GET /v1/admin/structural-requests/designers",
-  // Loyalty P4 (2026-11-05, API-CHANGES-P4): surfaces, co-funding, programme budget, rollout and the funding split,
-  // built in parallel on getpack-api `feat/loyalty-p4-cofunding-controls`.
-  "GET /v1/store/loyalty/surfaces",
-  "GET /v1/admin/promotions/{promotionId}/cofunding-candidates",
-  "GET /v1/admin/promotions/{promotionId}/cofunding-offers",
-  "POST /v1/admin/promotions/{promotionId}/cofunding-offers",
-  "POST /v1/admin/cofunding-offers/{offerId}/actions/withdraw",
-  "GET /v1/admin/cofunding-contributions",
-  "GET /v1/admin/loyalty/programme-budget",
-  "POST /v1/admin/loyalty/programme-budget/overrides",
-  "GET /v1/admin/loyalty/rollout",
-  "POST /v1/admin/loyalty/rollout/actions/advance",
-  "POST /v1/admin/loyalty/rollout/actions/rollback",
-  "GET /v1/admin/loyalty/rollout/cohort",
-  "GET /v1/admin/loyalty/analytics/funding",
-  "GET /v1/partner/cofunding-offers",
-  "GET /v1/partner/cofunding-offers/{offerId}",
-  "POST /v1/partner/cofunding-offers/{offerId}/actions/accept",
-  "POST /v1/partner/cofunding-offers/{offerId}/actions/decline",
 ];
 
 /**

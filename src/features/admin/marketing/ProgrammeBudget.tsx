@@ -7,7 +7,7 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { ProgrammeBudget } from "@/lib/api/requests/admin-loyalty-p4";
+import type { ProgrammeBudget } from "@/features/shared/loyalty-p4/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
@@ -21,7 +21,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, QueryError, useCan } from "../console";
-import { useP4Problem } from "./p4-problems";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 
 export const BUDGET_PAGE = "/marketing/loyalty/budget";
 const budgetKey = (month?: string) => queryKeys.list("admin", "programme_budget", { month: month ?? "current" });
@@ -52,7 +52,8 @@ export function ProgrammeBudgetPage() {
   const query = useQuery({
     queryKey: budgetKey(month),
     queryFn: async () =>
-      adminBrowserApis().requests.call("GET /v1/admin/loyalty/programme-budget", { query: { month } }),
+      (await adminBrowserApis().contract.GET("/v1/admin/loyalty/programme-budget", { params: { query: { month } } }))
+        .data!,
     staleTime: 60_000,
   });
   const data = query.data;
@@ -251,7 +252,7 @@ function PendingOverride({ data }: { data: ProgrammeBudget }) {
       <p className="text-muted mt-1 text-sm tabular-nums">
         {t("body", {
           amount: format.thb(pending.amount),
-          name: pending.requestedBy.displayName,
+          name: pending.requestedBy?.displayName ?? t("unknownRequester"),
           at: format.dateTime(pending.requestedAt),
         })}
       </p>
@@ -268,7 +269,7 @@ function PendingOverride({ data }: { data: ProgrammeBudget }) {
 
 function OverrideForm({ data }: { data: ProgrammeBudget }) {
   const t = useTranslations("marketing.programmeBudget.override");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const format = useFormat();
   const queryClient = useQueryClient();
   const canRequest = useCan("loyalty.programme.manage");
@@ -288,8 +289,8 @@ function OverrideForm({ data }: { data: ProgrammeBudget }) {
     setError(null);
     setBusy(true);
     try {
-      await adminBrowserApis().requests.call("POST /v1/admin/loyalty/programme-budget/overrides", {
-        idempotencyKey: key,
+      await adminBrowserApis().contract.POST("/v1/admin/loyalty/programme-budget/overrides", {
+        params: { header: { "Idempotency-Key": key } },
         body: { month: data.month, amount: number.toFixed(2), reason: reason.trim() },
       });
       toast.success(t("done"));
@@ -332,7 +333,8 @@ function OverrideForm({ data }: { data: ProgrammeBudget }) {
           {error}
         </p>
       ) : null}
-      <Button type="submit" loading={busy} disabled={pending}>
+      {/* A request already waiting: a neutral, disabled control — never the filled primary (owner review, P4). */}
+      <Button type="submit" variant={pending ? "soft" : "primary"} loading={busy} disabled={pending}>
         {pending ? t("pending") : t("submit")}
       </Button>
     </form>
@@ -353,7 +355,7 @@ export function BudgetBanner() {
     enabled: canRead,
     retry: false,
     staleTime: 5 * 60_000,
-    queryFn: async () => adminBrowserApis().requests.call("GET /v1/admin/loyalty/programme-budget"),
+    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/loyalty/programme-budget")).data!,
   });
   const [dismissed, setDismissed] = useState<string | null>(() =>
     typeof window === "undefined" ? null : window.sessionStorage.getItem(DISMISS_KEY),

@@ -455,7 +455,7 @@ export function toStatementDto(store: Store, statement: StatementModel, who: Par
       return {
         lineNo: index + 1,
         // The contract has no advance-offset kind: as on the back office's statement, it is a deduction.
-        // Loyalty P4: `cofunding` is a kind the published enum gains (CONTRACT-REQUEST partner.loyalty.p4-fields).
+        // Loyalty P4 (D-506): `cofunding` lines after the deductions.
         kind: (line.kind === "advance_offset" ? "deduction" : line.kind) as Schemas["BillingStatementLineKind"],
         description: line.description,
         reference: line.reference,

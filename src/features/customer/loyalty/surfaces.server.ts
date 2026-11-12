@@ -4,9 +4,8 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 import { getPublicConfig } from "@/features/customer/catalog/api.server";
-import { publicConfigSurfacesOf, SURFACES_CLOSED, surfacesOf } from "@/features/shared/loyalty-p4/read";
-import { serverRequests } from "@/lib/api/requests/server";
-import type { LoyaltySurfaces } from "@/lib/api/requests/store-loyalty-p4";
+import { type LoyaltySurfaces, SURFACES_CLOSED } from "@/features/shared/loyalty-p4/types";
+import { serverApi } from "@/lib/api/server";
 import { readAccessToken } from "@/lib/auth/session";
 
 /**
@@ -20,9 +19,9 @@ import { readAccessToken } from "@/lib/auth/session";
 export const getLoyaltySurfaces = cache(async (): Promise<LoyaltySurfaces> => {
   try {
     const signedIn = Boolean(readAccessToken(await cookies()));
-    if (!signedIn) return publicConfigSurfacesOf(await getPublicConfig());
-    // CONTRACT-REQUEST store.loyalty.surfaces
-    return surfacesOf(await (await serverRequests("customer")).call("GET /v1/store/loyalty/surfaces"));
+    if (!signedIn) return (await getPublicConfig())?.loyaltySurfaces ?? SURFACES_CLOSED;
+    const { data } = await (await serverApi("customer")).GET("/v1/store/loyalty/surfaces");
+    return data ?? SURFACES_CLOSED;
   } catch {
     return SURFACES_CLOSED;
   }

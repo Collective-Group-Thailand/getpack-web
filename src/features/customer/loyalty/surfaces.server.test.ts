@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const token = vi.fn<() => string | null>();
 const config = vi.fn();
-const call = vi.fn();
+const get = vi.fn();
 
 vi.mock("next/headers", () => ({ cookies: async () => ({}) }));
 vi.mock("@/lib/auth/session", () => ({ readAccessToken: () => token() }));
 vi.mock("@/features/customer/catalog/api.server", () => ({ getPublicConfig: () => config() }));
-vi.mock("@/lib/api/requests/server", () => ({ serverRequests: async () => ({ call }) }));
+vi.mock("@/lib/api/server", () => ({ serverApi: async () => ({ GET: get }) }));
 // React's request cache is a no-op outside a server render; each test reads afresh.
 vi.mock("react", async (original) => ({ ...(await original<typeof import("react")>()), cache: <T>(fn: T) => fn }));
 
@@ -30,19 +30,19 @@ describe("getLoyaltySurfaces (loyalty P4)", () => {
     token.mockReturnValue(null);
     config.mockResolvedValue({ loyaltySurfaces: { ...open, redeem: false } });
     expect(await getLoyaltySurfaces()).toEqual({ ...open, redeem: false });
-    expect(call).not.toHaveBeenCalled();
+    expect(get).not.toHaveBeenCalled();
   });
 
   it("reads a signed-in customer's own surfaces", async () => {
     token.mockReturnValue("t");
-    call.mockResolvedValue(open);
+    get.mockResolvedValue({ data: open });
     expect(await getLoyaltySurfaces()).toEqual(open);
-    expect(call).toHaveBeenCalledWith("GET /v1/store/loyalty/surfaces");
+    expect(get).toHaveBeenCalledWith("/v1/store/loyalty/surfaces");
   });
 
   it("closes every gated surface when the read fails", async () => {
     token.mockReturnValue("t");
-    call.mockRejectedValue(new Error("down"));
+    get.mockRejectedValue(new Error("down"));
     expect(Object.values(await getLoyaltySurfaces()).some(Boolean)).toBe(false);
   });
 });

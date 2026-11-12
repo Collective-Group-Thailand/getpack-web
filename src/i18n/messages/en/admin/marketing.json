@@ -1494,7 +1494,8 @@
       "order_refunded": "Fully refunded",
       "job_reassigned": "Job moved to another factory",
       "job_rejected": "Factory declined the job",
-      "offer_withdrawn_before_job": "Offer withdrawn before the job"
+      "offer_withdrawn_before_job": "Offer withdrawn before the job",
+      "no_payable": "No factory payable to net it from (getpack funds it)"
     },
     "form": {
       "title": "Propose co-funding of the discount",
@@ -1577,14 +1578,15 @@
       "title": "This month's budget",
       "monthly": "Monthly budget",
       "override": "This month raised to",
-      "effective": "In force",
+      "effective": "Effective for the month",
       "alertsAt": "Alerts at"
     },
     "pending": {
       "title": "Raise awaiting approval",
       "body": "{amount} · {name} asked {at}",
       "steps": "Finance Manager, then C-Level",
-      "open": "Open the approval"
+      "open": "Open the approval",
+      "unknownRequester": "a former user"
     },
     "override": {
       "title": "Raise this month's budget",
@@ -1635,7 +1637,8 @@
     "pending": {
       "title": "Awaiting approval: advance to {stage}",
       "body": "{name} asked {at}",
-      "open": "Open the approval"
+      "open": "Open the approval",
+      "unknownRequester": "a former user"
     },
     "gates": {
       "title": "Gates before advancing",
@@ -1767,16 +1770,5 @@
       "factory": "Factories {amount}"
     },
     "allDeals": "See capacity deals"
-  },
-  "p4Problems": {
-    "loyalty_feature_disabled": "This surface is off (Surfaces)",
-    "loyalty_budget_exhausted": "This month's programme budget is used up — it can start once the budget is raised or a new month begins",
-    "cofunding_deal_not_eligible": "Only capacity deals can be co-funded",
-    "cofunding_offer_exists": "This factory already has an open offer on this deal",
-    "cofunding_invalid_transition": "This offer has changed; reload it",
-    "cofunding_response_closed": "The time to answer this offer has passed",
-    "cofunding_disabled": "Co-funding is off in the settings",
-    "settings_dedicated_editor": "This setting is changed on its own page",
-    "settings_pending_exists": "A request is already waiting for approval"
   }
 }

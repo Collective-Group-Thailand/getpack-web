@@ -6,7 +6,7 @@ import approvals from "@/i18n/messages/th/admin/approvals.json";
 import console_ from "@/i18n/messages/th/admin/console.json";
 import marketing from "@/i18n/messages/th/admin/marketing.json";
 import common from "@/i18n/messages/th/common/common.json";
-import type { LoyaltyRollout, ProgrammeBudget } from "@/lib/api/requests/admin-loyalty-p4";
+import type { LoyaltyRollout, ProgrammeBudget } from "@/features/shared/loyalty-p4/types";
 
 import { FundingSplitBlock } from "./Cofunding";
 import { FundingSplitTable } from "./FundingSplit";
@@ -179,7 +179,7 @@ export const ApprovalFundingSplit: Story = {
             },
           ],
           acceptedCount: 1,
-          factoryShareToDate: "840.00",
+          factoryShareSoFar: "840.00",
         }}
       />
     </div>

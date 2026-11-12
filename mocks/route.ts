@@ -12,6 +12,7 @@ import { http, HttpResponse, type HttpResponseResolver } from "msw";
 import type { z } from "zod";
 
 import type { ResponseOf } from "@/lib/api/requests/client";
+import type { ApiPaths } from "@/lib/api/types";
 import { REQUESTS, type RequestKey, type Requests } from "@/lib/api/requests/registry";
 
 import { principalOf, problem, type Principal } from "./support";
@@ -108,4 +109,70 @@ export function mockRequest<K extends RequestKey>(
   };
 
   return http[verb](toMswPath(path), resolver);
+}
+
+/* --------------------------------------------------------------------------- published operations */
+
+type Method = "get" | "post" | "put" | "patch" | "delete";
+type OperationOf<P extends keyof ApiPaths, M extends Method> = NonNullable<ApiPaths[P][M]>;
+type JsonOf<T> = T extends { content: { "application/json": infer J } } ? J : never;
+type QueryOf<O> = O extends { parameters: { query?: infer Q } } ? NonNullable<Q> : never;
+type BodyOf<O> = O extends { requestBody?: infer B } ? JsonOf<NonNullable<B>> : never;
+type SuccessOf<O> = O extends { responses: infer R }
+  ? { [S in keyof R]: S extends 200 | 201 | 202 ? JsonOf<R[S]> : never }[keyof R]
+  : never;
+
+export interface OperationContext<O> {
+  params: Record<string, string>;
+  /** The query as the URL carries it; `page` / `perPage` as numbers. */
+  query: Partial<QueryOf<O>>;
+  body: BodyOf<O>;
+  principal: Principal | null;
+  request: Request;
+}
+
+const NUMERIC_QUERY = new Set(["page", "perPage"]);
+
+/**
+ * `mockOperation(method, path, resolver)` — an MSW handler for a **published** operation, typed by the generated
+ * contract (`src/lib/api/schema.d.ts`): the path, the query, the body and the answer come from the operation, so a
+ * mock that drifts from the contract is a type error. It checks the token and its audience as `mockRequest` does and,
+ * with `idempotent`, the `Idempotency-Key` the operation requires. A request that left the registry on adoption keeps
+ * its stateful mock through this.
+ */
+export function mockOperation<P extends keyof ApiPaths & string, M extends Method>(
+  method: M,
+  path: P,
+  resolve: (
+    context: OperationContext<OperationOf<P, M>>,
+  ) => SuccessOf<OperationOf<P, M>> | Response | Promise<SuccessOf<OperationOf<P, M>> | Response>,
+  options: { status?: number; public?: boolean; idempotent?: boolean } = {},
+) {
+  const resolver: HttpResponseResolver = async ({ request, params }) => {
+    const principal = principalOf(request);
+    if (!principal && !options.public) return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
+    if (principal && principal.audience !== audienceOf(path)) {
+      return problem(403, "auth.wrong_audience", "โทเคนนี้ใช้กับส่วนนี้ไม่ได้");
+    }
+    if (options.idempotent && !request.headers.get("idempotency-key")) {
+      return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key สำหรับคำสั่งนี้");
+    }
+    const query = Object.fromEntries(
+      [...new URL(request.url).searchParams].map(([key, value]) => [
+        key,
+        NUMERIC_QUERY.has(key) ? Number(value) : value,
+      ]),
+    );
+    const body = method === "get" ? undefined : await request.json().catch(() => ({}));
+    const result = await resolve({
+      params: params as Record<string, string>,
+      query: query as OperationContext<OperationOf<P, M>>["query"],
+      body: body as BodyOf<OperationOf<P, M>>,
+      principal,
+      request,
+    });
+    if (result instanceof Response) return result;
+    return HttpResponse.json(result as never, { status: options.status ?? 200 });
+  };
+  return http[method](toMswPath(path), resolver);
 }

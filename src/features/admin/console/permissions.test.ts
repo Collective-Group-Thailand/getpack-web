@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { STAFF_PERMISSIONS, STAFF_ROLE_GRANTS } from "../../../../mocks/generated/rbac";
-import { MENU_CATALOGUE, P4_GRANTS, PERSONAS } from "../../../../mocks/personas";
+import { MENU_CATALOGUE, PERSONAS } from "../../../../mocks/personas";
 
 /**
  * Backend names win (triage `admin.permissions`, U-F0.3): every permission the admin zone or its
@@ -12,9 +12,7 @@ import { MENU_CATALOGUE, P4_GRANTS, PERSONAS } from "../../../../mocks/personas"
  */
 
 const ROOT = process.cwd();
-// Loyalty P4 (API-CHANGES-P4 "New permissions"): granted by getpack-api's P4 release, not in the pinned rbac yet; this
-// line goes with \`pnpm gen:rbac\` after adoption.
-const known = new Set<string>([...STAFF_PERMISSIONS, ...Object.values(P4_GRANTS).flat()]);
+const known = new Set<string>(STAFF_PERMISSIONS);
 
 function files(dir: string): string[] {
   return readdirSync(join(ROOT, dir)).flatMap((name) => {
@@ -64,9 +62,7 @@ describe("admin permissions", () => {
 
   it("gives every persona exactly its role's grants", () => {
     for (const persona of PERSONAS) {
-      const expected = [
-        ...new Set(persona.roles.flatMap((role) => [...(STAFF_ROLE_GRANTS[role] ?? []), ...(P4_GRANTS[role] ?? [])])),
-      ].sort();
+      const expected = [...new Set(persona.roles.flatMap((role) => STAFF_ROLE_GRANTS[role] ?? []))].sort();
       expect([...persona.permissions].sort(), persona.key).toEqual(expected);
       expect(
         persona.roles.every((role) => role in STAFF_ROLE_GRANTS),

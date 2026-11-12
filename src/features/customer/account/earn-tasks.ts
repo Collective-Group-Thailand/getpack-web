@@ -1,4 +1,4 @@
-import { isClaimedByCompany } from "@/features/shared/loyalty-p4/read";
+import { isClaimedByCompany } from "@/features/shared/loyalty-p4/types";
 
 import type { LoyaltyTask, LoyaltyTaskCode, LoyaltyTasks } from "./loyalty-types";
 

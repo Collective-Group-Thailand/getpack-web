@@ -191,7 +191,7 @@ function preview(body: Schemas["HeroPreviewRequestDto"]): Schemas["HeroPreviewDt
   };
 }
 
-const publicConfig = (): Schemas["PublicConfigDto"] => ({
+const publicConfig = (): Omit<Schemas["PublicConfigDto"], "loyaltySurfaces"> => ({
   minOrderQty: { custom: 300, readyStock: 1 },
   priceLockDays: 15,
   claimWindowDays: 7,
@@ -254,7 +254,7 @@ const publicConfig = (): Schemas["PublicConfigDto"] => ({
 export const heroHandlers = [
   // The mock catalogue's made-to-order floor is 100; 300 here is the figure the Main board review
   // names, as an admin catalogue would state it.
-  // Loyalty P4: `loyaltySurfaces`, the anonymous view (CONTRACT-REQUEST store.loyalty.p4-fields).
+  // Loyalty P4: `loyaltySurfaces`, the anonymous view (open only at stage `all`).
   http.get("*/v1/store/public-config", () =>
     HttpResponse.json({ ...publicConfig(), loyaltySurfaces: anonymousSurfaces() }),
   ),

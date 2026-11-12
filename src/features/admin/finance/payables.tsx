@@ -64,7 +64,7 @@ import {
   type VendorInvoice,
 } from "./resources";
 import { DocumentSheet, StatusViews, FinanceDateField, EmptyLink } from "./frame";
-import { cofundingTotalOf } from "@/features/shared/loyalty-p4/read";
+import { cofundingTotalOf } from "@/features/shared/loyalty-p4/types";
 import { AccountNo, fieldErrorsOf, SourceJournals } from "./shared";
 import { invalidateMoney } from "./slips";
 

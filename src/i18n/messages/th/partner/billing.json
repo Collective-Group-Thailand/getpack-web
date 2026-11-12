@@ -420,11 +420,6 @@
       "confirm": "ปฏิเสธข้อเสนอ",
       "done": "ปฏิเสธข้อเสนอแล้ว",
       "failed": "ปฏิเสธไม่สำเร็จ"
-    },
-    "problems": {
-      "cofunding_invalid_transition": "ข้อเสนอนี้ตอบไปแล้ว กรุณาโหลดหน้าใหม่",
-      "cofunding_response_closed": "หมดเวลาตอบข้อเสนอนี้แล้ว",
-      "loyalty_feature_disabled": "ส่วนนี้ยังไม่เปิดให้บริการ"
     }
   }
 }

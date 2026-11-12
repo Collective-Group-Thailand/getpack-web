@@ -2,18 +2,18 @@
  * Loyalty P4 (API-CHANGES-P4): the back office's co-funding offers and contributions, the programme budget with its
  * override approval, the rollout (advance through approval, rollback at once, cohort lookup) and the funding split.
  *
- * Every handler is a contract request (`mockRequest`), validated against `src/lib/api/requests/admin-loyalty-p4.ts`.
+ * Every handler is a published operation (`mockOperation`, typed by the generated contract).
  * The offers live in `./cofunding-state.ts` (shared with the partner portal). The rollout is the `loyalty.rollout`
  * setting of `./platform.ts`, edited only here (the generic editor refuses it, `settings.dedicated_editor`). The
  * budget is ฿200,000 a month with this month raised to ฿250,000 and ฿210,000 spent (84 %, the 80 % alert fired);
  * `setMockBudgetSpent` moves it for the 100 % state.
  */
 
-import type { LoyaltyRollout, ProgrammeBudget, RolloutTarget } from "@/lib/api/requests/admin-loyalty-p4";
+import type { LoyaltyRollout, ProgrammeBudget, RolloutTarget } from "@/features/shared/loyalty-p4/types";
 
 import { staffPersonaOf } from "../auth";
 import { can } from "../personas";
-import { mockRequest } from "../route";
+import { mockOperation } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import {
   adminContributionOf,
@@ -130,13 +130,20 @@ let pendingAdvance: LoyaltyRollout["pendingAdvance"] = null;
 let history: LoyaltyRollout["history"] = [];
 let versionSeq = 3;
 
-function resetRollout() {
+/**
+ * The rollout presets: `all` (the default, so `pnpm dev:mock` shows every surface to every persona and to guests) and
+ * `percent` — 10 % behind an allowlisted company, the rollout screen's review case and the out-of-cohort state
+ * (`newcomer`, guests). Tests and stories pick `percent` with `resetLoyaltyP4AdminMock({ rollout: "percent" })`.
+ */
+export type MockRolloutPreset = "all" | "percent";
+
+function resetRollout(preset: MockRolloutPreset) {
   const row = settingRow("loyalty.rollout");
   row.current = {
     ...row.current!,
     value: {
-      stage: "percent",
-      percent: 10,
+      stage: preset,
+      percent: preset === "percent" ? 10 : 0,
       allowlistCompanyIds: [mockId("c", 1)],
       allowlistUserIds: [],
       gates: {
@@ -148,10 +155,23 @@ function resetRollout() {
     } as never,
   };
   pendingAdvance = null;
-  versionSeq = 3;
+  versionSeq = preset === "all" ? 4 : 3;
   const maree = { id: "00000000-0000-4000-8000-00000000510c", displayName: "ฝ่ายการตลาด ตัวอย่าง (ข้อมูลจำลอง)" };
   const fm = { id: "00000000-0000-4000-8000-00000000510a", displayName: "ผู้จัดการการเงิน ตัวอย่าง (ข้อมูลจำลอง)" };
+  const toAll: LoyaltyRollout["history"] = [
+    {
+      settingVersionId: mockId("stv", 5004),
+      stage: "all",
+      percent: 0,
+      kind: "advance",
+      reason: "อัตราการแลกและกำไรผ่านเกณฑ์ที่ 10 % มาสองสัปดาห์",
+      by: maree,
+      approvedBy: fm,
+      effectiveFrom: "2026-12-04T09:00:00+07:00",
+    },
+  ];
   history = [
+    ...(preset === "all" ? toAll : []),
     {
       settingVersionId: mockId("stv", 5003),
       stage: "percent",
@@ -177,14 +197,14 @@ function resetRollout() {
       stage: "internal",
       percent: 0,
       kind: "seed",
-      reason: null,
+      reason: "ค่าเริ่มต้นของระบบ",
       by: null,
       approvedBy: null,
       effectiveFrom: "2026-11-05T00:00:00+07:00",
     },
   ];
 }
-resetRollout();
+resetRollout("all");
 
 /** The rollout in force, for the store mock's cohort (`../store/loyalty-p4.ts`). */
 export const rolloutInForce = (): RolloutTarget => {
@@ -296,7 +316,7 @@ function rolloutOf(): LoyaltyRollout {
 
 onApprovalDecided("loyalty_rollout_advance", (_approval, outcome, decider) => {
   if (outcome === "approved" && pendingAdvance)
-    applyRollout(pendingAdvance.target, "advance", pendingAdvance.reason, pendingAdvance.requestedBy, {
+    applyRollout(pendingAdvance.target, "advance", pendingAdvance.reason, pendingAdvance.requestedBy ?? decider, {
       id: decider.id,
       displayName: decider.displayName,
     });
@@ -310,14 +330,13 @@ const knownId = (id: string) => /^00000000-0000-4000-8000-/.test(id);
 
 const CANDIDATES = [F001, FACTORY_B, mockId("fac", 3)];
 
-export function resetLoyaltyP4AdminMock() {
+export function resetLoyaltyP4AdminMock({ rollout = "all" }: { rollout?: MockRolloutPreset } = {}) {
   resetBudget();
-  resetRollout();
+  resetRollout(rollout);
 }
 
 export const adminLoyaltyP4Handlers = [
-  // CONTRACT-REQUEST admin.cofunding-offers
-  mockRequest("GET /v1/admin/promotions/{promotionId}/cofunding-candidates", ({ request, params }) => {
+  mockOperation("get", "/v1/admin/promotions/{promotionId}/cofunding-candidates", ({ request, params }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
     if (params.promotionId !== CAPACITY_DEAL_ID)
       return problem(422, "cofunding.deal_not_eligible", "ร่วมสนับสนุนได้เฉพาะดีลจากคิวผลิตว่าง");
@@ -334,8 +353,7 @@ export const adminLoyaltyP4Handlers = [
       { perPage: 50 },
     );
   }),
-  // CONTRACT-REQUEST admin.cofunding-offers
-  mockRequest("GET /v1/admin/promotions/{promotionId}/cofunding-offers", ({ request, params, query }) => {
+  mockOperation("get", "/v1/admin/promotions/{promotionId}/cofunding-offers", ({ request, params, query }) => {
     if (!allowed(request, "promotions.read")) return forbidden();
     expireDue();
     const rows = cofunding.offers
@@ -343,62 +361,67 @@ export const adminLoyaltyP4Handlers = [
       .map(adminOfferOf);
     return paginate(rows, { page: query.page, perPage: query.perPage ?? 50 });
   }),
-  // CONTRACT-REQUEST admin.cofunding-offers
-  mockRequest("POST /v1/admin/promotions/{promotionId}/cofunding-offers", ({ request, params, body }) => {
-    if (!allowed(request, "promotions.manage")) return forbidden();
-    if (params.promotionId !== CAPACITY_DEAL_ID)
-      return problem(422, "cofunding.deal_not_eligible", "ร่วมสนับสนุนได้เฉพาะดีลจากคิวผลิตว่าง");
-    if (!surfaceSetting().capacityDeals) return problem(404, "loyalty.feature_disabled", "ส่วนนี้ปิดอยู่");
-    if (!CANDIDATES.includes(body.factoryId))
-      return invalid("factoryId", "not_a_candidate", "โรงงานนี้ผลิตประเภทนี้ไม่ได้");
-    const pctMode = body.mode === "pct_of_discount";
-    if (pctMode ? !body.sharePct || body.fixedAmount !== null : !body.fixedAmount || body.sharePct !== null)
-      return invalid(pctMode ? "sharePct" : "fixedAmount", "mode_value_mismatch", "ค่าไม่ตรงกับรูปแบบ");
-    if (pctMode && (Number(body.sharePct) < 1 || Number(body.sharePct) > 100))
-      return invalid("sharePct", "above_max", "1–100");
-    if (!pctMode && Number(body.fixedAmount) > 5000) return invalid("fixedAmount", "above_max", "สูงสุด ฿5,000");
-    if (Number(body.capAmount) > 200000) return invalid("capAmount", "above_max", "สูงสุด ฿200,000");
-    const deal = cofunding.offers.find((offer) => offer.promotionId === CAPACITY_DEAL_ID)!.deal;
-    if (body.validFrom < deal.startsAt.slice(0, 10) || body.validTo > deal.endsAt)
-      return invalid("validTo", "out_of_deal_window", "ต้องอยู่ในช่วงของดีล");
-    const respondBy = body.respondBy ?? bangkokIso(3 * 24 * 60);
-    if (respondBy > body.validTo) return invalid("respondBy", "respond_by_after_end", "ต้องตอบก่อนจบช่วง");
-    if (
-      cofunding.offers.some(
-        (offer) =>
-          offer.promotionId === params.promotionId &&
-          offer.factoryId === body.factoryId &&
-          ["proposed", "accepted"].includes(offer.status),
+  mockOperation(
+    "post",
+    "/v1/admin/promotions/{promotionId}/cofunding-offers",
+    ({ request, params, body }) => {
+      if (!allowed(request, "promotions.manage")) return forbidden();
+      if (params.promotionId !== CAPACITY_DEAL_ID)
+        return problem(422, "cofunding.deal_not_eligible", "ร่วมสนับสนุนได้เฉพาะดีลจากคิวผลิตว่าง");
+      if (!surfaceSetting().capacityDeals) return problem(404, "loyalty.feature_disabled", "ส่วนนี้ปิดอยู่");
+      if (!CANDIDATES.includes(body.factoryId))
+        return invalid("factoryId", "not_a_candidate", "โรงงานนี้ผลิตประเภทนี้ไม่ได้");
+      const pctMode = body.mode === "pct_of_discount";
+      const sharePct = body.sharePct ?? null;
+      const fixedAmount = body.fixedAmount ?? null;
+      if (pctMode ? !sharePct || fixedAmount !== null : !fixedAmount || sharePct !== null)
+        return invalid(pctMode ? "sharePct" : "fixedAmount", "mode_value_mismatch", "ค่าไม่ตรงกับรูปแบบ");
+      if (pctMode && (Number(body.sharePct) < 1 || Number(body.sharePct) > 100))
+        return invalid("sharePct", "above_max", "1–100");
+      if (!pctMode && Number(body.fixedAmount) > 5000) return invalid("fixedAmount", "above_max", "สูงสุด ฿5,000");
+      if (Number(body.capAmount) > 200000) return invalid("capAmount", "above_max", "สูงสุด ฿200,000");
+      const deal = cofunding.offers.find((offer) => offer.promotionId === CAPACITY_DEAL_ID)!.deal;
+      if (body.validFrom < deal.startsAt.slice(0, 10) || body.validTo > deal.endsAt)
+        return invalid("validTo", "out_of_deal_window", "ต้องอยู่ในช่วงของดีล");
+      const respondBy = body.respondBy ?? bangkokIso(3 * 24 * 60);
+      if (respondBy > body.validTo) return invalid("respondBy", "respond_by_after_end", "ต้องตอบก่อนจบช่วง");
+      if (
+        cofunding.offers.some(
+          (offer) =>
+            offer.promotionId === params.promotionId &&
+            offer.factoryId === body.factoryId &&
+            ["proposed", "accepted"].includes(offer.status),
+        )
       )
-    )
-      return problem(409, "cofunding.offer_exists", "มีข้อเสนอที่ยังเปิดอยู่กับโรงงานนี้แล้ว");
-    const row: OfferRow = {
-      id: mockId("cfo", 100 + cofunding.offers.length),
-      promotionId: params.promotionId!,
-      factoryId: body.factoryId,
-      mode: body.mode,
-      sharePct: body.sharePct,
-      fixedAmount: body.fixedAmount,
-      capAmount: body.capAmount,
-      validFrom: body.validFrom,
-      validTo: body.validTo,
-      respondBy,
-      status: "proposed",
-      note: body.note?.trim() || null,
-      proposedAt: bangkokIso(0),
-      answeredAt: null,
-      answeredBy: null,
-      declineReason: null,
-      withdrawnAt: null,
-      withdrawReason: null,
-      rowVersion: 1,
-      deal,
-    };
-    cofunding.offers.push(row);
-    return adminOfferOf(row);
-  }),
-  // CONTRACT-REQUEST admin.cofunding-offers
-  mockRequest("POST /v1/admin/cofunding-offers/{offerId}/actions/withdraw", ({ request, params, body }) => {
+        return problem(409, "cofunding.offer_exists", "มีข้อเสนอที่ยังเปิดอยู่กับโรงงานนี้แล้ว");
+      const row: OfferRow = {
+        id: mockId("cfo", 100 + cofunding.offers.length),
+        promotionId: params.promotionId!,
+        factoryId: body.factoryId,
+        mode: body.mode,
+        sharePct,
+        fixedAmount,
+        capAmount: body.capAmount,
+        validFrom: body.validFrom,
+        validTo: body.validTo,
+        respondBy,
+        status: "proposed",
+        note: body.note?.trim() || null,
+        proposedAt: bangkokIso(0),
+        answeredAt: null,
+        answeredBy: null,
+        declineReason: null,
+        withdrawnAt: null,
+        withdrawReason: null,
+        rowVersion: 1,
+        deal,
+      };
+      cofunding.offers.push(row);
+      return adminOfferOf(row);
+    },
+    { status: 201, idempotent: true },
+  ),
+  mockOperation("post", "/v1/admin/cofunding-offers/{offerId}/actions/withdraw", ({ request, params, body }) => {
     if (!allowed(request, "promotions.manage")) return forbidden();
     const offer = cofunding.offers.find((candidate) => candidate.id === params.offerId);
     if (!offer) return notFound();
@@ -415,9 +438,9 @@ export const adminLoyaltyP4Handlers = [
     });
     return adminOfferOf(offer);
   }),
-  // CONTRACT-REQUEST admin.cofunding-contributions
-  mockRequest("GET /v1/admin/cofunding-contributions", ({ request, query }) => {
-    if (!allowed(request, "promotions.read") && !allowed(request, "factory_payables.read")) return forbidden();
+  mockOperation("get", "/v1/admin/cofunding-contributions", ({ request, query }) => {
+    // D-512: Marketing (`promotions.read`) or Finance (`payables.read`), read-only — the shares are netted from payouts.
+    if (!allowed(request, "promotions.read") && !allowed(request, "payables.read")) return forbidden();
     const rows = cofunding.contributions
       .map(adminContributionOf)
       .filter(
@@ -429,84 +452,93 @@ export const adminLoyaltyP4Handlers = [
       );
     return paginate(rows, { page: query.page, perPage: query.perPage ?? 50 });
   }),
-  // CONTRACT-REQUEST admin.programme-budget
-  mockRequest("GET /v1/admin/loyalty/programme-budget", ({ request, query }) => {
+  mockOperation("get", "/v1/admin/loyalty/programme-budget", ({ request, query }) => {
     if (!allowed(request, "loyalty.read")) return forbidden();
     return budgetOf(query.month ?? thisMonth());
   }),
-  // CONTRACT-REQUEST admin.programme-budget
-  mockRequest("POST /v1/admin/loyalty/programme-budget/overrides", ({ request, body }) => {
-    const persona = staffPersonaOf(request);
-    if (!can(persona, "loyalty.programme.manage")) return forbidden();
-    const month = thisMonth();
-    const next = bangkokIso(40 * 24 * 60).slice(0, 7);
-    if (body.month !== month && body.month !== next)
-      return invalid("month", "month_out_of_range", "เฉพาะเดือนนี้หรือเดือนหน้า");
-    if (satang(body.amount) <= satang(budgetOf(body.month).budget.effective))
-      return invalid("amount", "must_raise", "ต้องมากกว่างบที่ใช้อยู่");
-    if (budget.pending) return problem(409, "settings.pending_exists", "มีคำขอรออนุมัติอยู่แล้ว");
-    const opened = openApproval({
-      policy: "programme_budget_override",
-      subjectType: "setting_version",
-      subjectId: mockId("stv", 4100),
-      requester: persona!,
-      amount: body.amount,
-      payload: { key: "loyalty.programme_budget", month: body.month, amount: body.amount, reason: body.reason },
-    });
-    budget.pending = {
-      approvalId: opened.id,
-      amount: body.amount,
-      requestedBy: { id: persona!.id, displayName: persona!.displayName },
-      requestedAt: bangkokIso(0),
-    };
-    return { approvalId: opened.id, status: "pending" as const };
-  }),
-  // CONTRACT-REQUEST admin.loyalty-rollout
-  mockRequest("GET /v1/admin/loyalty/rollout", ({ request }) => {
+  mockOperation(
+    "post",
+    "/v1/admin/loyalty/programme-budget/overrides",
+    ({ request, body }) => {
+      const persona = staffPersonaOf(request);
+      if (!can(persona, "loyalty.programme.manage")) return forbidden();
+      const month = thisMonth();
+      const next = bangkokIso(40 * 24 * 60).slice(0, 7);
+      if (body.month !== month && body.month !== next)
+        return invalid("month", "month_out_of_range", "เฉพาะเดือนนี้หรือเดือนหน้า");
+      if (satang(body.amount) <= satang(budgetOf(body.month).budget.effective))
+        return invalid("amount", "must_raise", "ต้องมากกว่างบที่ใช้อยู่");
+      if (budget.pending) return problem(409, "settings.pending_exists", "มีคำขอรออนุมัติอยู่แล้ว");
+      const opened = openApproval({
+        policy: "programme_budget_override",
+        subjectType: "setting_version",
+        subjectId: mockId("stv", 4100),
+        requester: persona!,
+        amount: body.amount,
+        payload: { key: "loyalty.programme_budget", month: body.month, amount: body.amount, reason: body.reason },
+      });
+      budget.pending = {
+        approvalId: opened.id,
+        amount: body.amount,
+        requestedBy: { id: persona!.id, displayName: persona!.displayName },
+        requestedAt: bangkokIso(0),
+      };
+      return { approvalId: opened.id, status: "pending" as const };
+    },
+    { status: 202, idempotent: true },
+  ),
+  mockOperation("get", "/v1/admin/loyalty/rollout", ({ request }) => {
     if (!allowed(request, "loyalty.read")) return forbidden();
     return rolloutOf();
   }),
-  // CONTRACT-REQUEST admin.loyalty-rollout
-  mockRequest("POST /v1/admin/loyalty/rollout/actions/advance", ({ request, body }) => {
-    const persona = staffPersonaOf(request);
-    if (!can(persona, "loyalty.programme.manage")) return forbidden();
-    const { reason, ...target } = body;
-    if ((target.stage === "percent") !== target.percent >= 1)
-      return invalid("percent", "invalid", "1–99 เฉพาะขั้นบางส่วน");
-    if ([...target.allowlistCompanyIds, ...target.allowlistUserIds].some((id) => !knownId(id)))
-      return invalid("allowlistCompanyIds", "unknown_id", "ไม่พบรายชื่อนี้");
-    if (!grows(rolloutInForce(), target)) return invalid("stage", "not_an_advance", "ต้องขยายกลุ่ม");
-    if (pendingAdvance) return problem(409, "settings.pending_exists", "มีคำขอเลื่อนขั้นรออนุมัติอยู่แล้ว");
-    const opened = openApproval({
-      policy: "loyalty_rollout_advance",
-      subjectType: "setting_version",
-      subjectId: mockId("stv", 5100 + versionSeq),
-      requester: persona!,
-      payload: { key: "loyalty.rollout", before: rolloutInForce(), after: target, reason },
-    });
-    pendingAdvance = {
-      approvalId: opened.id,
-      target,
-      reason,
-      requestedBy: { id: persona!.id, displayName: persona!.displayName },
-      requestedAt: bangkokIso(0),
-    };
-    return { approvalId: opened.id, status: "pending" as const };
-  }),
-  // CONTRACT-REQUEST admin.loyalty-rollout
-  mockRequest("POST /v1/admin/loyalty/rollout/actions/rollback", ({ request, body }) => {
-    const persona = staffPersonaOf(request);
-    if (!can(persona, "loyalty.programme.manage")) return forbidden();
-    const { reason, ...target } = body;
-    if ((target.stage === "percent") !== target.percent >= 1)
-      return invalid("percent", "invalid", "1–99 เฉพาะขั้นบางส่วน");
-    if (grows(rolloutInForce(), target)) return invalid("stage", "not_a_rollback", "การถอยกลับต้องไม่ขยายกลุ่ม");
-    pendingAdvance = null;
-    applyRollout(target, "rollback", reason, { id: persona!.id, displayName: persona!.displayName }, null);
-    return rolloutOf();
-  }),
-  // CONTRACT-REQUEST admin.loyalty-rollout
-  mockRequest("GET /v1/admin/loyalty/rollout/cohort", ({ request, query }) => {
+  mockOperation(
+    "post",
+    "/v1/admin/loyalty/rollout/actions/advance",
+    ({ request, body }) => {
+      const persona = staffPersonaOf(request);
+      if (!can(persona, "loyalty.programme.manage")) return forbidden();
+      const { reason, ...target } = body;
+      if ((target.stage === "percent") !== target.percent >= 1)
+        return invalid("percent", "invalid", "1–99 เฉพาะขั้นบางส่วน");
+      if ([...target.allowlistCompanyIds, ...target.allowlistUserIds].some((id) => !knownId(id)))
+        return invalid("allowlistCompanyIds", "unknown_id", "ไม่พบรายชื่อนี้");
+      if (!grows(rolloutInForce(), target)) return invalid("stage", "not_an_advance", "ต้องขยายกลุ่ม");
+      if (pendingAdvance) return problem(409, "settings.pending_exists", "มีคำขอเลื่อนขั้นรออนุมัติอยู่แล้ว");
+      const opened = openApproval({
+        policy: "loyalty_rollout_advance",
+        subjectType: "setting_version",
+        subjectId: mockId("stv", 5100 + versionSeq),
+        requester: persona!,
+        payload: { key: "loyalty.rollout", before: rolloutInForce(), after: target, reason },
+      });
+      pendingAdvance = {
+        approvalId: opened.id,
+        target,
+        reason,
+        requestedBy: { id: persona!.id, displayName: persona!.displayName },
+        requestedAt: bangkokIso(0),
+      };
+      return { approvalId: opened.id, status: "pending" as const };
+    },
+    { status: 202, idempotent: true },
+  ),
+  mockOperation(
+    "post",
+    "/v1/admin/loyalty/rollout/actions/rollback",
+    ({ request, body }) => {
+      const persona = staffPersonaOf(request);
+      if (!can(persona, "loyalty.programme.manage")) return forbidden();
+      const { reason, ...target } = body;
+      if ((target.stage === "percent") !== target.percent >= 1)
+        return invalid("percent", "invalid", "1–99 เฉพาะขั้นบางส่วน");
+      if (grows(rolloutInForce(), target)) return invalid("stage", "not_a_rollback", "การถอยกลับต้องไม่ขยายกลุ่ม");
+      pendingAdvance = null;
+      applyRollout(target, "rollback", reason, { id: persona!.id, displayName: persona!.displayName }, null);
+      return rolloutOf();
+    },
+    { idempotent: true },
+  ),
+  mockOperation("get", "/v1/admin/loyalty/rollout/cohort", ({ request, query }) => {
     if (!allowed(request, "loyalty.read")) return forbidden();
     if (Boolean(query.companyId) === Boolean(query.userId))
       return invalid("companyId", "exactly_one", "ระบุบริษัทหรือบัญชีอย่างใดอย่างหนึ่ง");
@@ -531,8 +563,7 @@ export const adminLoyaltyP4Handlers = [
     const inCohort = ["stage_all", "allowlisted_company", "allowlisted_user", "bucket_below_percent"].includes(reason);
     return { key, keyId, bucket, inCohort, reason };
   }),
-  // CONTRACT-REQUEST admin.loyalty-analytics.funding
-  mockRequest("GET /v1/admin/loyalty/analytics/funding", ({ request, query }) => {
+  mockOperation("get", "/v1/admin/loyalty/analytics/funding", ({ request, query }) => {
     if (!allowed(request, "loyalty.read")) return forbidden();
     const deals = [...new Set(cofunding.offers.map((offer) => offer.promotionId))].map((promotionId) => {
       const offers = cofunding.offers.filter((offer) => offer.promotionId === promotionId);

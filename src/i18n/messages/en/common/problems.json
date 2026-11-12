@@ -358,7 +358,9 @@
   },
   "loyalty": {
     "insufficient_points": "Not enough points",
-    "campaign_started": "The campaign has started and can no longer be edited. Cancel it and create a new one."
+    "campaign_started": "The campaign has started and can no longer be edited. Cancel it and create a new one.",
+    "feature_disabled": "This is not available yet",
+    "budget_exhausted": "This month's programme budget is used up — it can start once the budget is raised or a new month begins"
   },
   "mockups": {
     "exists": "Mockup exists"
@@ -656,5 +658,12 @@
     "insufficient_points": "Not enough points for this reward.",
     "open_limit": "You already hold the most unused coupons of this reward.",
     "tier_required": "This reward is for a higher membership tier."
+  },
+  "cofunding": {
+    "deal_not_eligible": "Only capacity deals can be co-funded",
+    "offer_exists": "This factory already has an open offer on this deal",
+    "invalid_transition": "This offer has changed; reload the page",
+    "response_closed": "The time to answer this offer has passed",
+    "disabled": "Co-funding is off in the settings"
   }
 }

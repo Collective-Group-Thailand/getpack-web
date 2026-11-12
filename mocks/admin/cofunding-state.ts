@@ -14,12 +14,12 @@ import type {
   AdminCofundingContribution,
   AdminCofundingOffer,
   CapacityDealFunding,
-} from "@/lib/api/requests/admin-loyalty-p4";
+} from "@/features/shared/loyalty-p4/types";
 import type {
   CofundingOfferStatus,
   PartnerCofundingOffer,
   PartnerCofundingOfferDetail,
-} from "@/lib/api/requests/partner-loyalty-p4";
+} from "@/features/shared/loyalty-p4/types";
 
 import { bangkokIso, mockId } from "../support";
 
@@ -221,6 +221,7 @@ function seed(): { offers: OfferRow[]; contributions: ContributionRow[] } {
     share: string,
     status: ContributionRow["status"],
     netted: string | null = null,
+    reason: ContributionRow["reverseReason"] = "order_cancelled",
   ): ContributionRow => ({
     id: mockId("cfc", n),
     offerId,
@@ -234,7 +235,7 @@ function seed(): { offers: OfferRow[]; contributions: ContributionRow[] } {
     nettedAt: status === "netted" ? "2026-11-18T16:40:00+07:00" : null,
     billingStatementNumber: netted,
     reversedAt: status === "reversed" ? "2026-11-11T09:00:00+07:00" : null,
-    reverseReason: status === "reversed" ? "order_cancelled" : null,
+    reverseReason: status === "reversed" ? reason : null,
   });
   const contributions: ContributionRow[] = [
     contribution(1, mockId("cfo", 2), "GP-2611-00123", "JB-26-00456", "1200.00", "480.00", "netted", "BS-26-00088"),
@@ -242,6 +243,18 @@ function seed(): { offers: OfferRow[]; contributions: ContributionRow[] } {
     contribution(3, mockId("cfo", 3), "GP-2611-00098", "JB-26-00402", "1600.00", "150.00", "netted", "BS-26-00081"),
     contribution(4, mockId("cfo", 3), "GP-2611-00102", "JB-26-00410", "960.00", "150.00", "netted", "BS-26-00081"),
     contribution(5, mockId("cfo", 3), "GP-2611-00140", "JB-26-00480", "600.00", "150.00", "reversed"),
+    // API-CHANGES-P4 note 3: nothing was left of the order's payable at the goods receipt, so getpack funds it.
+    contribution(
+      6,
+      mockId("cfo", 3),
+      "GP-2611-00144",
+      "JB-26-00486",
+      "480.00",
+      "150.00",
+      "reversed",
+      null,
+      "no_payable",
+    ),
   ];
   return { offers, contributions };
 }
@@ -381,6 +394,6 @@ export function fundingOf(promotionId: string): CapacityDealFunding {
       accruedAmount: accruedOf(offer.id),
     })),
     acceptedCount: accepted.length,
-    factoryShareToDate: baht(accepted.reduce((sum, offer) => sum + satang(accruedOf(offer.id)), 0)),
+    factoryShareSoFar: baht(accepted.reduce((sum, offer) => sum + satang(accruedOf(offer.id)), 0)),
   };
 }

@@ -11,7 +11,7 @@ import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } fr
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/partner/status";
-import { cofundingTotalOf, STATEMENT_LINE_KINDS_P4 } from "@/features/shared/loyalty-p4/read";
+import { cofundingTotalOf, STATEMENT_LINE_KINDS_P4 } from "@/features/shared/loyalty-p4/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerBilling.detail"))("metaTitle") };
 }
 
-/** Line kinds in reading order; loyalty P4 adds `cofunding` after the deductions (D-506, read until adoption). */
+/** Line kinds in reading order; loyalty P4 adds `cofunding` after the deductions (D-506). */
 const KINDS = STATEMENT_LINE_KINDS_P4;
 
 /**
@@ -170,7 +170,7 @@ export default async function StatementPage({ params }: Props) {
         <PartnerSection title={t("linesTitle")}>
           <PartnerTable
             caption={t("linesTitle")}
-            rows={KINDS.flatMap((kind) => statement.lines.filter((line) => (line.kind as string) === kind))}
+            rows={KINDS.flatMap((kind) => statement.lines.filter((line) => line.kind === kind))}
             rowKey={(line) => String(line.lineNo)}
             rowTone={(line) => (statement.disputedLineNos.includes(line.lineNo) ? "warning" : undefined)}
             columns={[

@@ -7,7 +7,7 @@ import { attempt, canAt, factoryContext } from "@/features/partner/context/serve
 import { ActionPanel, PageError, PartnerDetail, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { PartnerTable } from "@/features/partner/table";
 import { getFormat } from "@/features/shared/format/server";
-import { serverRequests } from "@/lib/api/requests/server";
+import { serverApi } from "@/lib/api/server";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
@@ -36,9 +36,13 @@ export default async function CofundingOfferPage({ params }: Props) {
     factoryContext(),
   ]);
   const back = { href: "/cofunding", label: t("title") };
-  const found = await attempt(async () =>
-    // CONTRACT-REQUEST partner.cofunding-offers
-    (await serverRequests("partner")).call("GET /v1/partner/cofunding-offers/{offerId}", { path: { offerId } }),
+  const found = await attempt(
+    async () =>
+      (
+        await (
+          await serverApi("partner")
+        ).GET("/v1/partner/cofunding-offers/{offerId}", { params: { path: { offerId } } })
+      ).data!,
   );
   if (!found.data)
     return (

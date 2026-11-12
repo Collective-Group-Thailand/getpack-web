@@ -42,7 +42,7 @@ import { DetailSkeleton } from "../console/DetailSkeleton";
 import { benefitV2Body, withSchemaVersion } from "./benefit-v2";
 import { CapacityDealNote } from "./CapacityDeals";
 import { CofundingPanel } from "./Cofunding";
-import { useP4Problem } from "./p4-problems";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 import { CouponCodes } from "./CouponCodes";
 import { PromotionAudience } from "./PromotionAudience";
 import { PromotionBundle } from "./PromotionBundle";
@@ -288,7 +288,7 @@ export async function readPromotion(promotionId: string) {
  */
 export function PromotionEditor({ promotionId, campaignId }: { promotionId?: string; campaignId?: string | null }) {
   const t = useTranslations("marketing.promotion");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const tList = useTranslations("marketing.promotions");
   const tFilters = useTranslations("console.filters");
   const format = useFormat();

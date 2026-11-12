@@ -34,7 +34,7 @@ import {
   type CampaignProblem,
 } from "./loyalty-campaign";
 import { SegmentPicker } from "./SegmentPicker";
-import { useP4Problem } from "./p4-problems";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 
 type Row = Schemas["AdminLoyaltyCampaignDto"];
 
@@ -318,7 +318,7 @@ export function LoyaltyCampaignForm({
   onSaved,
 }: LoyaltyCampaignFormProps) {
   const t = useTranslations("marketing.loyaltyCampaigns.form");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const [draft, setDraft] = useState<CampaignDraft>(() =>
     campaign ? campaignDraftOf(campaign) : blankCampaignDraft(),
   );

@@ -12,7 +12,6 @@ import { topicsOf } from "@/features/customer/styles/topics";
 import { isLandingPublished, PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
 import { USE_CASES } from "@/features/customer/styles/use-cases";
 import { listDeals } from "@/features/customer/deals/api.server";
-import { publicConfigSurfacesOf } from "@/features/shared/loyalty-p4/read";
 import { dealHref } from "@/features/customer/deals/paths";
 import { featureFlags } from "@/lib/env/server";
 import { articleHref, categoryHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
@@ -71,7 +70,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Loyalty P4 (D-509): `/deals` leaves the sitemap while the anonymous view has it closed.
     getPublicConfig(),
   ]);
-  const dealsOpen = publicConfigSurfacesOf(config).deals;
+  const dealsOpen = config?.loyaltySurfaces.deals ?? false;
 
   const entries: { path: string; priority: number; changeFrequency: Frequency; lastModified?: string }[] = [
     ...STATIC_ROUTES.filter((route) => dealsOpen || route.path !== "/deals"),

@@ -28,7 +28,7 @@ import { adminBrowserApis, problemMessage, QueryError, useCan, useProductTypes }
 import { DetailSkeleton } from "../console/DetailSkeleton";
 import { rewardActionsOf } from "./reward-item";
 import { RewardItemForm } from "./RewardItemForm";
-import { useP4Problem } from "./p4-problems";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 
 const STATUS_TONE = { draft: "neutral", active: "success", paused: "warning", archived: "neutral" } as const;
 const REDEMPTION_TONE = { issued: "info", used: "success", expired: "neutral", cancelled: "neutral" } as const;
@@ -66,7 +66,7 @@ export function RewardCatalog({ tab }: { tab: "items" | "redemptions" }) {
 
 function RewardItems() {
   const t = useTranslations("marketing.rewards");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const en = useLocale() === "en";
   const format = useFormat();
   const queryClient = useQueryClient();

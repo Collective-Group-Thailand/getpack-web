@@ -15,8 +15,8 @@ import { queryOf } from "@/features/partner/erp/ui";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { ListToolbar, ViewTabs } from "@/features/partner/rows";
 import { getFormat } from "@/features/shared/format/server";
-import { serverRequests } from "@/lib/api/requests/server";
-import type { PartnerCofundingOffer } from "@/lib/api/requests/partner-loyalty-p4";
+import { serverApi } from "@/lib/api/server";
+import type { PartnerCofundingOffer } from "@/features/shared/loyalty-p4/types";
 import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -44,15 +44,14 @@ export default async function CofundingOffersPage({ searchParams }: { searchPara
         <Callout tone="info" title={t("noAccess")} />
       </PartnerPage>
     );
-  const requests = await serverRequests("partner");
-  // CONTRACT-REQUEST partner.cofunding-offers
+  const api = await serverApi("partner");
   const found = await attempt(
     async () =>
       (
-        await requests.call("GET /v1/partner/cofunding-offers", {
-          query: { factoryId: context.factoryId, perPage: 100 },
+        await api.GET("/v1/partner/cofunding-offers", {
+          params: { query: { factoryId: context.factoryId, perPage: 100 } },
         })
-      ).data,
+      ).data!.data,
   );
   if (!found.data)
     return (

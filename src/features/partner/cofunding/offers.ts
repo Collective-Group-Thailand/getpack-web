@@ -1,4 +1,4 @@
-import type { CofundingOfferStatus, PartnerCofundingOffer } from "@/lib/api/requests/partner-loyalty-p4";
+import type { CofundingOfferStatus, PartnerCofundingOffer } from "@/features/shared/loyalty-p4/types";
 
 /** Badge tone per offer status: amber only for the one state that waits on the factory (P4 design rule). */
 export const OFFER_STATUS_TONE: Record<CofundingOfferStatus, "accent" | "success" | "neutral"> = {

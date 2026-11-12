@@ -4,15 +4,16 @@ import { describe, expect, it, vi } from "vitest";
 
 import billing from "@/i18n/messages/th/partner/billing.json";
 import common from "@/i18n/messages/th/common/common.json";
+import problems from "@/i18n/messages/th/common/problems.json";
 import { ApiError } from "@/lib/api/problem";
 
 import { AcceptOffer, DeclineOffer } from "./actions";
 import { capPct, inView, isClosed, OFFER_STATUS_TONE } from "./offers";
 import { OfferTicket } from "./OfferTicket";
 
-const call = vi.fn();
+const post = vi.fn();
 const refresh = vi.fn();
-vi.mock("@/lib/api/requests/browser", () => ({ browserRequests: () => ({ call }) }));
+vi.mock("@/lib/api/browser", () => ({ browserApi: () => ({ POST: post }) }));
 vi.mock("@/features/partner/client", () => ({ useRefresh: () => [refresh, false] }));
 const toastError = vi.fn();
 vi.mock("@/ui/components/Toast", () => ({
@@ -21,7 +22,11 @@ vi.mock("@/ui/components/Toast", () => ({
 
 const renderTh = (node: React.ReactNode) =>
   render(
-    <NextIntlClientProvider locale="th" messages={{ partnerBilling: billing, common }} timeZone="Asia/Bangkok">
+    <NextIntlClientProvider
+      locale="th"
+      messages={{ partnerBilling: billing, common, problems }}
+      timeZone="Asia/Bangkok"
+    >
       {node}
     </NextIntlClientProvider>,
   );
@@ -58,22 +63,25 @@ describe("partner co-funding offers (D-506)", () => {
   });
 
   it("accepts after one confirmation with a fresh idempotency key", async () => {
-    call.mockResolvedValueOnce({});
+    post.mockResolvedValueOnce({ data: {} });
     renderTh(<AcceptOffer offerId="o-1" terms="40 % ของส่วนลดดีล สูงสุด ฿20,000" window="9–15 พ.ย." />);
     fireEvent.click(screen.getByRole("button", { name: "ตอบรับข้อเสนอ" }));
     const dialog = await screen.findByRole("alertdialog").catch(() => screen.findByRole("dialog"));
     fireEvent.click(within(dialog).getByRole("button", { name: "ยืนยันตอบรับ" }));
     await waitFor(() =>
-      expect(call).toHaveBeenCalledWith(
-        "POST /v1/partner/cofunding-offers/{offerId}/actions/accept",
-        expect.objectContaining({ path: { offerId: "o-1" }, body: {}, idempotencyKey: expect.any(String) }),
+      expect(post).toHaveBeenCalledWith(
+        "/v1/partner/cofunding-offers/{offerId}/actions/accept",
+        expect.objectContaining({
+          params: { path: { offerId: "o-1" }, header: { "Idempotency-Key": expect.any(String) } },
+          body: {},
+        }),
       ),
     );
     expect(refresh).toHaveBeenCalled();
   });
 
   it("words a closed answer window in the factory's language", async () => {
-    call.mockRejectedValueOnce(
+    post.mockRejectedValueOnce(
       new ApiError({
         status: 409,
         code: "cofunding.response_closed",

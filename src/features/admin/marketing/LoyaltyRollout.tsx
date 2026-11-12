@@ -13,7 +13,7 @@ import type {
   RolloutGate,
   RolloutStage,
   RolloutTarget,
-} from "@/lib/api/requests/admin-loyalty-p4";
+} from "@/features/shared/loyalty-p4/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { DataTable } from "@/ui/components/DataTable";
@@ -26,7 +26,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, FormDialog, FormError, QueryError, useCan } from "../console";
-import { useP4Problem } from "./p4-problems";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 
 export const ROLLOUT_STAGE_ORDER: readonly RolloutStage[] = ["internal", "uat", "percent", "all"];
 const rolloutKey = queryKeys.list("admin", "loyalty_rollout", {});
@@ -64,7 +64,7 @@ export function LoyaltyRolloutScreen() {
   const [dialog, setDialog] = useState<Dialog>(null);
   const query = useQuery({
     queryKey: rolloutKey,
-    queryFn: async () => adminBrowserApis().requests.call("GET /v1/admin/loyalty/rollout"),
+    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/loyalty/rollout")).data!,
   });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   if (!query.data) return <Skeleton className="h-96 w-full" />;
@@ -216,7 +216,10 @@ function PendingAdvance({ data }: { data: LoyaltyRollout }) {
           {t("title", { stage: stageLabel(tRollout, pending.target.stage, pending.target.percent) })}
         </h2>
         <p className="text-muted text-sm">
-          {t("body", { name: pending.requestedBy.displayName, at: format.dateTime(pending.requestedAt) })}
+          {t("body", {
+            name: pending.requestedBy?.displayName ?? t("unknownRequester"),
+            at: format.dateTime(pending.requestedAt),
+          })}
           {" · "}
           {pending.reason}
         </p>
@@ -391,16 +394,16 @@ function Allowlists({
 
 function CohortCheck() {
   const t = useTranslations("marketing.rollout.lookup");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const [result, setResult] = useState<{ name: string; data: CohortLookup } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const lookUp = async (company: { id: string; name: string }) => {
     setError(null);
     try {
-      const data = await adminBrowserApis().requests.call("GET /v1/admin/loyalty/rollout/cohort", {
-        query: { companyId: company.id },
+      const { data } = await adminBrowserApis().contract.GET("/v1/admin/loyalty/rollout/cohort", {
+        params: { query: { companyId: company.id } },
       });
-      setResult({ name: company.name, data });
+      setResult({ name: company.name, data: data! });
     } catch (failure) {
       setResult(null);
       setError(p4Message(failure, t("failed")));
@@ -525,7 +528,7 @@ function AdvanceDialog({
   onClose: () => void;
 }) {
   const t = useTranslations("marketing.rollout");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const queryClient = useQueryClient();
   const later = ROLLOUT_STAGE_ORDER.slice(ROLLOUT_STAGE_ORDER.indexOf(current.stage)).filter(
     (stage) => stage !== current.stage || stage === "percent",
@@ -553,8 +556,8 @@ function AdvanceDialog({
         if (!growsCohort(current, target)) throw new FormError(t("advance.notAnAdvance"));
         if (reason.trim().length < 10) throw new FormError(t("dialog.needReason"));
         try {
-          await adminBrowserApis().requests.call("POST /v1/admin/loyalty/rollout/actions/advance", {
-            idempotencyKey: key,
+          await adminBrowserApis().contract.POST("/v1/admin/loyalty/rollout/actions/advance", {
+            params: { header: { "Idempotency-Key": key } },
             body: { ...target, reason: reason.trim() },
           });
         } catch (error) {
@@ -593,7 +596,7 @@ function RollbackDialog({
   onClose: () => void;
 }) {
   const t = useTranslations("marketing.rollout");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const queryClient = useQueryClient();
   const earlier = ROLLOUT_STAGE_ORDER.slice(0, ROLLOUT_STAGE_ORDER.indexOf(current.stage) + 1).reverse();
   const [stage, setStage] = useState<RolloutStage>(preset?.stage ?? earlier[1] ?? current.stage);
@@ -618,8 +621,8 @@ function RollbackDialog({
         if (growsCohort(current, target)) throw new FormError(t("rollback.notARollback"));
         if (reason.trim().length < 10) throw new FormError(t("dialog.needReason"));
         try {
-          await adminBrowserApis().requests.call("POST /v1/admin/loyalty/rollout/actions/rollback", {
-            idempotencyKey: key,
+          await adminBrowserApis().contract.POST("/v1/admin/loyalty/rollout/actions/rollback", {
+            params: { header: { "Idempotency-Key": key } },
             body: { ...target, reason: reason.trim() },
           });
         } catch (error) {

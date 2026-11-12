@@ -34,7 +34,23 @@ function renderTh() {
   );
 }
 
-beforeEach(() => contract.GET.mockReset().mockResolvedValue({ data: loyaltyAnalyticsOf("2026-05", "2026-10") }));
+const NO_FUNDING = {
+  data: [],
+  meta: {
+    page: 1,
+    perPage: 100,
+    total: 0,
+    totals: { discountTotal: "0.00", factoryShare: "0.00", getpackShare: "0.00" },
+  },
+  asOf: "2026-11-05T09:00:00+07:00",
+  currency: "THB",
+};
+beforeEach(() => {
+  contract.GET.mockReset().mockImplementation(async (path: string) => ({
+    // Loyalty P4: the funding split at the foot reads its own operation.
+    data: path.endsWith("/analytics/funding") ? NO_FUNDING : loyaltyAnalyticsOf("2026-05", "2026-10"),
+  }));
+});
 
 describe("recentMonths", () => {
   it("lists whole months only, newest first, in Bangkok time", () => {

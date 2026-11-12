@@ -5,9 +5,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import approvals from "@/i18n/messages/th/admin/approvals.json";
 import common from "@/i18n/messages/th/common/common.json";
+import problems from "@/i18n/messages/th/common/problems.json";
 import console_ from "@/i18n/messages/th/admin/console.json";
 import marketing from "@/i18n/messages/th/admin/marketing.json";
-import type { CapacityDealFunding, LoyaltyRollout, ProgrammeBudget } from "@/lib/api/requests/admin-loyalty-p4";
+import type { CapacityDealFunding, LoyaltyRollout, ProgrammeBudget } from "@/features/shared/loyalty-p4/types";
 import { ApiError } from "@/lib/api/problem";
 
 import { CofundingPanel, FundingSplitBlock } from "./Cofunding";
@@ -16,11 +17,11 @@ import { GateCard, growsCohort, LoyaltyRolloutScreen, RolloutStageCard } from ".
 import { BudgetBannerView, BudgetUse, budgetMonths } from "./ProgrammeBudget";
 import { changedFlags, SurfaceSwitches } from "./SurfaceSwitches";
 
-const call = vi.fn();
+const get = vi.fn();
 const post = vi.fn();
 vi.mock("../console", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../console")>()),
-  adminBrowserApis: () => ({ requests: { call }, contract: { GET: vi.fn(), POST: post } }),
+  adminBrowserApis: () => ({ requests: {}, contract: { GET: get, POST: post } }),
   useCan: () => true,
   useActor: () => ({ id: "u-1", roles: ["marketing"], permissions: [] }),
 }));
@@ -32,7 +33,7 @@ function renderTh(node: React.ReactNode) {
     <QueryClientProvider client={client}>
       <NextIntlClientProvider
         locale="th"
-        messages={{ marketing, console: console_, approvals, common }}
+        messages={{ marketing, console: console_, approvals, common, problems }}
         timeZone="Asia/Bangkok"
       >
         {node}
@@ -42,7 +43,7 @@ function renderTh(node: React.ReactNode) {
 }
 
 beforeEach(() => {
-  call.mockReset();
+  get.mockReset();
   post.mockReset();
 });
 
@@ -78,12 +79,14 @@ const OFFER = {
 
 describe("co-funding on a capacity deal (D-506)", () => {
   it("says getpack funds 100 % until a factory accepts, lists the offer with the API's terms, and proposes one", async () => {
-    call.mockImplementation(async (key: string) => {
-      if (key.includes("cofunding-offers")) return page([OFFER]);
-      if (key.includes("cofunding-contributions")) return page([]);
-      if (key.includes("cofunding-candidates"))
-        return page([{ factoryId: "0192f3a0-7c1e-7d2a-9b1f-000000000f02", name: "โรงงาน B", hasLiveOffer: false }]);
-      throw new Error(key);
+    get.mockImplementation(async (path: string) => {
+      if (path.includes("cofunding-offers")) return { data: page([OFFER]) };
+      if (path.includes("cofunding-contributions")) return { data: page([]) };
+      if (path.includes("cofunding-candidates"))
+        return {
+          data: page([{ factoryId: "0192f3a0-7c1e-7d2a-9b1f-000000000f02", name: "โรงงาน B", hasLiveOffer: false }]),
+        };
+      throw new Error(path);
     });
     renderTh(<CofundingPanel promotionId={PROMOTION} window={{ from: "2026-11-09", to: "2026-11-15" }} />);
     expect(await screen.findByText("40 % ของส่วนลดดีล สูงสุด ฿20,000")).toBeInTheDocument();
@@ -94,13 +97,13 @@ describe("co-funding on a capacity deal (D-506)", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText(/สัดส่วนของส่วนลด/), { target: { value: "30" } });
     fireEvent.change(within(dialog).getByLabelText(/วงเงินรวมสูงสุด/), { target: { value: "5000" } });
-    call.mockResolvedValueOnce(OFFER);
+    post.mockResolvedValueOnce({ data: OFFER });
     fireEvent.click(within(dialog).getByRole("button", { name: "ส่งข้อเสนอ" }));
     await waitFor(() =>
-      expect(call).toHaveBeenCalledWith(
-        "POST /v1/admin/promotions/{promotionId}/cofunding-offers",
+      expect(post).toHaveBeenCalledWith(
+        "/v1/admin/promotions/{promotionId}/cofunding-offers",
         expect.objectContaining({
-          path: { promotionId: PROMOTION },
+          params: { path: { promotionId: PROMOTION }, header: { "Idempotency-Key": expect.any(String) } },
           body: expect.objectContaining({
             factoryId: "0192f3a0-7c1e-7d2a-9b1f-000000000f02",
             mode: "pct_of_discount",
@@ -115,8 +118,8 @@ describe("co-funding on a capacity deal (D-506)", () => {
   });
 
   it("shows the flag state instead of the panel while capacity deals are off", async () => {
-    call.mockImplementation(async (key: string) => {
-      if (key.includes("cofunding-candidates"))
+    get.mockImplementation(async (path: string) => {
+      if (path.includes("cofunding-candidates"))
         throw new ApiError({
           status: 404,
           code: "loyalty.feature_disabled",
@@ -125,7 +128,7 @@ describe("co-funding on a capacity deal (D-506)", () => {
           detail: "",
           requestId: "r",
         });
-      return page([]);
+      return { data: page([]) };
     });
     renderTh(<CofundingPanel promotionId={PROMOTION} window={{ from: "2026-11-09", to: null }} />);
     expect(await screen.findByText(/ดีลจากคิวผลิตว่างปิดอยู่/)).toBeInTheDocument();
@@ -145,7 +148,7 @@ describe("co-funding on a capacity deal (D-506)", () => {
         },
       ],
       acceptedCount: 1,
-      factoryShareToDate: "4320.00",
+      factoryShareSoFar: "4320.00",
     };
     renderTh(<FundingSplitBlock funding={funding} />);
     expect(screen.getByText(/โรงงานร่วมสนับสนุน 1 แห่ง/)).toBeInTheDocument();
@@ -249,10 +252,8 @@ describe("rollout (D-510)", () => {
   });
 
   it("asks for an advance with a reason and rolls back at once", async () => {
-    call.mockImplementation(async (key: string) => {
-      if (key === "GET /v1/admin/loyalty/rollout") return ROLLOUT;
-      return { approvalId: OFFER.id, status: "pending" };
-    });
+    get.mockResolvedValue({ data: ROLLOUT });
+    post.mockResolvedValue({ data: { approvalId: OFFER.id, status: "pending" } });
     renderTh(<LoyaltyRolloutScreen />);
     fireEvent.click(await screen.findByRole("button", { name: "ขอเลื่อนขั้น" }));
     let dialog = await screen.findByRole("dialog");
@@ -260,8 +261,8 @@ describe("rollout (D-510)", () => {
     fireEvent.change(within(dialog).getByLabelText(/เหตุผล/), { target: { value: "ผ่านเกณฑ์สองสัปดาห์แล้ว" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "ส่งขออนุมัติ" }));
     await waitFor(() =>
-      expect(call).toHaveBeenCalledWith(
-        "POST /v1/admin/loyalty/rollout/actions/advance",
+      expect(post).toHaveBeenCalledWith(
+        "/v1/admin/loyalty/rollout/actions/advance",
         expect.objectContaining({ body: expect.objectContaining({ stage: "percent", percent: 25 }) }),
       ),
     );
@@ -272,8 +273,8 @@ describe("rollout (D-510)", () => {
     fireEvent.change(within(dialog).getByLabelText(/เหตุผล/), { target: { value: "พบปัญหาคำนวณแต้มโบนัส" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "ถอยกลับ" }));
     await waitFor(() =>
-      expect(call).toHaveBeenCalledWith(
-        "POST /v1/admin/loyalty/rollout/actions/rollback",
+      expect(post).toHaveBeenCalledWith(
+        "/v1/admin/loyalty/rollout/actions/rollback",
         expect.objectContaining({ body: expect.objectContaining({ stage: "uat", percent: 0 }) }),
       ),
     );

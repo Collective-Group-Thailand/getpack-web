@@ -58,9 +58,9 @@ export interface PromotionRow {
   /** `admin.promotions.setHeroImage`: the uploaded file, and the URL the API answers for it. */
   heroImageFileId?: string | null;
   heroImageUrl?: string | null;
-  /** Loyalty P3: who made it, and a capacity deal's week and approval. */
+  /** Loyalty P3: who made it, and a capacity deal's week and approval (P4 `funding` is composed on read). */
   origin?: PromotionOrigin;
-  capacityDeal?: CapacityDealRef | null;
+  capacityDeal?: Omit<CapacityDealRef, "funding"> | null;
 }
 
 export interface CouponCodeRow {

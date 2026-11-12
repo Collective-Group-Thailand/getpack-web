@@ -15,7 +15,7 @@ import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { isClaimedByCompany } from "@/features/shared/loyalty-p4/read";
+import { isClaimedByCompany } from "@/features/shared/loyalty-p4/types";
 
 import { checklistView, newlyDone, taskLink } from "./earn-tasks";
 import type { LoyaltyTask, LoyaltyTasks } from "./loyalty-types";

@@ -11,9 +11,6 @@ import { storeContentRequests } from "./store-content";
 import { storeHomeRequests } from "./store-home";
 import { adminStructuralRequests } from "./admin-structural";
 import { storeSupportRequests } from "./store-support";
-import { storeLoyaltyP4Requests } from "./store-loyalty-p4";
-import { adminLoyaltyP4Requests } from "./admin-loyalty-p4";
-import { partnerLoyaltyP4Requests } from "./partner-loyalty-p4";
 
 export const REQUESTS = {
   ...storeSupportRequests,
@@ -21,9 +18,6 @@ export const REQUESTS = {
   ...storeAssistantRequests,
   ...storeHomeRequests,
   ...adminStructuralRequests,
-  ...storeLoyaltyP4Requests,
-  ...adminLoyaltyP4Requests,
-  ...partnerLoyaltyP4Requests,
 } as const;
 
 export type Requests = typeof REQUESTS;

@@ -420,11 +420,6 @@
       "confirm": "Decline the offer",
       "done": "Offer declined",
       "failed": "Could not decline"
-    },
-    "problems": {
-      "cofunding_invalid_transition": "This offer has already been answered; reload the page",
-      "cofunding_response_closed": "The time to answer this offer has passed",
-      "loyalty_feature_disabled": "This part isn't open yet"
     }
   }
 }

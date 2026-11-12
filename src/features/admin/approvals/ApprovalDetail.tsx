@@ -44,7 +44,7 @@ import {
   type Approval,
 } from "./presentation";
 import { SoloOwnerBadge, useSoloOwnerMode } from "./SoloOwnerMode";
-import { fundingOf } from "@/features/shared/loyalty-p4/read";
+import { approvalFundingOf } from "@/features/shared/loyalty-p4/types";
 import { FundingSplitBlock } from "../marketing/Cofunding";
 
 async function fetchApproval(requestId: string): Promise<Approval> {
@@ -127,7 +127,7 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
   // A snapshot reads as labelled facts: an empty value says nothing, so it is left out (UX audit:
   // "ซ่อน null"), and a key without a label is humanised rather than shown as raw JSON.
   // Loyalty P4 (D-506): a capacity deal's funding split has its own block, not a JSON value in the snapshot.
-  const funding = approval.policy === "capacity_deal_publish" ? fundingOf(approval.payload) : null;
+  const funding = approval.policy === "capacity_deal_publish" ? approvalFundingOf(approval.payload) : null;
   const payloadItems = Object.entries(approval.payload as Record<string, unknown>)
     .filter(([key]) => !(funding && key === "funding"))
     .filter(([, value]) => value !== null && value !== undefined && value !== "")

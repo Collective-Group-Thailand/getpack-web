@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { FundingRow, FundingSplit } from "@/lib/api/requests/admin-loyalty-p4";
+import type { FundingRow, FundingSplit } from "@/features/shared/loyalty-p4/types";
 import { Button } from "@/ui/components/Button";
 import { DataTable } from "@/ui/components/DataTable";
 import { DeskSection } from "@/ui/components/DeskPage";
@@ -24,9 +24,11 @@ export function FundingSplitSection({ range }: { range: { from: string; to: stri
   const query = useQuery({
     queryKey: queryKeys.list("admin", "loyalty_funding", range),
     queryFn: async () =>
-      adminBrowserApis().requests.call("GET /v1/admin/loyalty/analytics/funding", {
-        query: { ...range, perPage: 100 },
-      }),
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/loyalty/analytics/funding", {
+          params: { query: { ...range, perPage: 100 } },
+        })
+      ).data!,
     staleTime: 5 * 60_000,
   });
   return (

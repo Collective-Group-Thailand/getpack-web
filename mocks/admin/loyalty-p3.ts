@@ -564,8 +564,8 @@ export const loyaltyP3AdminHandlers = [
       status: row.status,
       approval: row.capacityDeal!.approval,
       createdAt: bangkokIso(-4 * 60),
-      // Loyalty P4 (D-506): who funds the discount (CONTRACT-REQUEST admin.loyalty.p4-fields).
-      ...({ funding: fundingOf(row.id) } as object),
+      // Loyalty P4 (D-506): who funds the discount.
+      funding: fundingOf(row.id),
     }));
     return json(paginate(rows, pageOf(new URL(request.url).searchParams)));
   }),

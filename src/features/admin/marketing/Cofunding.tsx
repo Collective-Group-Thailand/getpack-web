@@ -6,14 +6,15 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
+import { ifMatch } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type {
   AdminCofundingContribution,
   AdminCofundingOffer,
   CapacityDealFunding,
-} from "@/lib/api/requests/admin-loyalty-p4";
-import type { CofundingOfferStatus } from "@/lib/api/requests/partner-loyalty-p4";
+} from "@/features/shared/loyalty-p4/types";
+import type { CofundingOfferStatus } from "@/features/shared/loyalty-p4/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { DataTable } from "@/ui/components/DataTable";
@@ -27,7 +28,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, FormDialog, FormError, QueryError, Section, useCan } from "../console";
-import { useP4Problem } from "./p4-problems";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 import { bangkokMidnight } from "./time";
 
 /** The capacity-deal drafts (P3), where a deal to co-fund is found. */
@@ -89,20 +90,19 @@ export function CofundingPanel({
     queryKey: offersKey(promotionId),
     queryFn: async () =>
       (
-        await adminBrowserApis().requests.call("GET /v1/admin/promotions/{promotionId}/cofunding-offers", {
-          path: { promotionId },
-          query: { perPage: 100 },
+        await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}/cofunding-offers", {
+          params: { path: { promotionId }, query: { perPage: 100 } },
         })
-      ).data,
+      ).data!.data,
   });
   const contributions = useQuery({
     queryKey: contributionsKey(promotionId),
     queryFn: async () =>
       (
-        await adminBrowserApis().requests.call("GET /v1/admin/cofunding-contributions", {
-          query: { promotionId, perPage: 100 },
+        await adminBrowserApis().contract.GET("/v1/admin/cofunding-contributions", {
+          params: { query: { promotionId, perPage: 100 } },
         })
-      ).data,
+      ).data!.data,
   });
   const candidates = useQuery({
     queryKey: queryKeys.list("admin", "cofunding_candidate", { promotionId }),
@@ -110,10 +110,10 @@ export function CofundingPanel({
     retry: false,
     queryFn: async () =>
       (
-        await adminBrowserApis().requests.call("GET /v1/admin/promotions/{promotionId}/cofunding-candidates", {
-          path: { promotionId },
+        await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}/cofunding-candidates", {
+          params: { path: { promotionId } },
         })
-      ).data,
+      ).data!.data,
   });
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "cofunding_offer") });
@@ -331,7 +331,7 @@ function OfferForm({
   onDone: () => void;
 }) {
   const t = useTranslations("marketing.cofunding.form");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const [factoryId, setFactoryId] = useState(candidates[0]?.factoryId ?? "");
@@ -362,9 +362,8 @@ function OfferForm({
         if (!capAmount) throw new FormError(t("needCap"));
         if (!from || !to) throw new FormError(t("needWindow"));
         try {
-          await adminBrowserApis().requests.call("POST /v1/admin/promotions/{promotionId}/cofunding-offers", {
-            path: { promotionId },
-            idempotencyKey: key,
+          await adminBrowserApis().contract.POST("/v1/admin/promotions/{promotionId}/cofunding-offers", {
+            params: { path: { promotionId }, header: { "Idempotency-Key": key } },
             body: {
               factoryId,
               mode,
@@ -446,7 +445,7 @@ function WithdrawDialog({
   onDone: () => void;
 }) {
   const t = useTranslations("marketing.cofunding.withdraw");
-  const p4Message = useP4Problem();
+  const p4Message = useLoyaltyProblem();
   const [reason, setReason] = useState("");
   return (
     <FormDialog
@@ -458,9 +457,9 @@ function WithdrawDialog({
       onSubmit={async () => {
         if (reason.trim().length < 10) throw new FormError(t("needReason"));
         try {
-          await adminBrowserApis().requests.call("POST /v1/admin/cofunding-offers/{offerId}/actions/withdraw", {
-            path: { offerId: offer.id },
-            etag: `W/"${offer.rowVersion}"`,
+          await adminBrowserApis().contract.POST("/v1/admin/cofunding-offers/{offerId}/actions/withdraw", {
+            params: { path: { offerId: offer.id } },
+            headers: ifMatch(`W/"${offer.rowVersion}"`),
             body: { reason: reason.trim() },
           });
         } catch (error) {
@@ -490,7 +489,7 @@ export function FundingSplitBlock({ funding }: { funding: CapacityDealFunding })
       <p className="font-medium">
         {funding.acceptedCount === 0
           ? t("getpackOnly")
-          : t("withFactories", { count: funding.acceptedCount, share: format.thb(funding.factoryShareToDate) })}
+          : t("withFactories", { count: funding.acceptedCount, share: format.thb(funding.factoryShareSoFar) })}
       </p>
       {funding.offers.length ? (
         <ul className="divide-border border-border rounded-card divide-y border">

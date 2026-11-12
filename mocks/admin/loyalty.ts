@@ -205,7 +205,7 @@ export const loyaltyHandlers = [
     const index = customerIndex(request, params.customerId as string, "loyalty.read");
     if (index instanceof Response) return index;
     const url = new URL(request.url);
-    const rows: Schemas["PointsEntryDto"][] = ledgerOf(index)
+    const rows: Schemas["AdminPointsEntryDto"][] = ledgerOf(index)
       .map(({ order, note, ...entry }) => ({
         ...entry,
         orderId: order?.id ?? null,
@@ -215,6 +215,8 @@ export const loyaltyHandlers = [
         bonusReason: null,
         multipliers: null,
         reward: null,
+        // Loyalty P4 (D-508, API-CHANGES-P4 note 4): staff see which company an earn-once task was claimed for.
+        companyClaim: null,
       }))
       // `?entryType` (v0.5.0).
       .filter((entry) => !url.searchParams.get("entryType") || entry.entryType === url.searchParams.get("entryType"));
