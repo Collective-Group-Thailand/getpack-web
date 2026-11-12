@@ -170,3 +170,68 @@ pnpm dev:mock
 pnpm gen:api --adopt --tag vX.Y.Z   # registry.test.ts lists the 17 P4 requests to retire
 pnpm gen:rbac
 ```
+
+## 7. Integration (2026-11-05, getpack-api `feat/loyalty-p4-cofunding-controls` b965da5e)
+
+- **Commit message fix.** `6d6b9985`'s body line `MSW: …` parsed as a trailer; `git filter-branch --msg-filter` over
+  `14c09bc3..HEAD` rewrote it to "MSW mocks — …" (trees, author and committer unchanged; the P4 commits are now
+  `77c51462…002db317`). `git log --format=%(trailers) 14c09bc3..HEAD` is empty.
+- **Contract.** `contract/openapi.json` is the API branch's document at b965da5e (1532 paths: 9eee3a52's 17 P4
+  operations plus the integration's D-512 `x-required-permissions-any`), pinned unreleased in `contract.lock.json`
+  (still labelled 0.75.0 / v0.75.0 so `verifyLock` passes, as P1.5–P3). `pnpm gen:api` regenerated `schema.d.ts`, the
+  MSW examples/problems, `problem-codes.ts` and `docs/contract-requests.openapi.json`; `API-CHANGES-P4.md` here is the
+  API's copy with its deviation notes. Re-adopt with `pnpm gen:api --adopt --tag vX.Y.Z` once the API tags a release.
+- **Adopted (generated client).** All 17 P4 operations and the three `…p4-fields` requests left the registry
+  (`store-`, `admin-`, `partner-loyalty-p4.ts` deleted), `awaiting-triage.ts` and the open table of
+  `docs/contract-requests.md` (three "Resolved" rows). Screens call `serverApi` / `browserApi` /
+  `adminBrowserApis().contract`; types are `Schemas` aliases in `features/shared/loyalty-p4/types.ts`.
+  `features/shared/loyalty-p4/read.ts` (and its test) is gone: `loyaltySurfaces`, `claimed_by_company`, capacity-deal
+  `funding` and the statement's `cofunding` kind / total are plain property reads. The one open-object read left is
+  `approvalFundingOf` (approval payloads are untyped in the contract). The P4 mocks are `mockOperation` handlers
+  (`mocks/route.ts`, typed by the generated contract, token / audience / `Idempotency-Key` checks as `mockRequest`).
+  No contract request remains open for P4.
+- **Problem copy.** `loyalty.feature_disabled` ("ส่วนนี้ยังไม่เปิดให้ใช้งาน", customer-safe), `loyalty.budget_exhausted` and
+  the five `cofunding.*` codes moved to `common/problems.json` (th/en); `marketing.p4Problems`,
+  `partnerBilling.cofunding.problems`, `shared/loyalty-p4/problems.ts` and `admin/marketing/p4-problems.ts` are gone.
+  `useLoyaltyProblem` (shared) gives the problem title, the budget title for a `promotions.not_publishable` refused for
+  `budget_exhausted`, else the API's detail. `settings.dedicated_editor` is not documented on any operation in the
+  contract, so it has no copy (the API's detail shows) — an ask for getpack-api.
+- **Permissions.** `RBAC_SOURCE=../getpack-api-p1/docs/rbac.md pnpm gen:rbac` (rbac.md at add6b181) brought
+  `loyalty.programme.manage` and `factory_cofunding.read|decide`; `P4_GRANTS` / `P4_PERMISSIONS` left the personas and
+  both permission tests. The accountant and sales sidebars now show "ร่วมสนับสนุนส่วนลด" (`nav.test.ts` follows).
+- **API-CHANGES-P4 deviations followed.** (1) `funding.factoryShareSoFar` (panel, approval block, fixtures). (2) D-512:
+  the contributions list takes `promotions.read` **or** `payables.read`; the mock follows. (3) `CofundingReverseReason`
+  `no_payable` worded ("ไม่มียอดค้างจ่ายโรงงานให้หัก (getpack รับเอง)") and seeded on F001's fixed offer. (4)
+  `admin.loyalty.ledger` items are `AdminPointsEntryDto`: the customer's points tab names a `companyClaim`
+  ("รับในนามบริษัท …"); the mock answers `companyClaim: null`. (5) `EntryMultipliersDto.budgetCapped`: the checkout mock
+  sets it from the budget state; no customer surface words it (no budget word to customers, D-510). (6) The 202s
+  (`requestOverride`, `advance`) invalidate the budget / rollout reads, which is the poll. (7) Withdraw reason ≥ 10
+  (≤ 800), decline 5–500 — the forms already ask that. (8) Notification audiences: nothing to change in the web. (9)
+  Unseeded settings mean "as before P4" — the reader's fallback is unchanged. (10) Budget guard scope: the refusal copy
+  covers `activate` and visibility updates. (11) Spend simplification: shown as the API sends it. (12) Claim races: no
+  web effect. (13) `store.loyalty.surfaces` caching: `serverApi` per request, cached per render. (14) Funding analytics
+  counts read as published. Also: `RolloutHistoryDto.reason` is a string, `pendingAdvance` / `pendingOverride`
+  `requestedBy` nullable ("ผู้ใช้ที่ไม่อยู่ในระบบแล้ว"), `CohortDto`.
+- **D-512 (Finance reads co-funding).** Decided in getpack-api (head of team); the row is identical in both repos'
+  `docs/decisions.md`.
+- **Mock rollout.** `loyalty.rollout` now starts at stage `all` (percent 0, history up to "all"), so `pnpm dev:mock`
+  shows every surface to every persona and to guests. The 10 % case stays: `resetLoyaltyP4AdminMock({ rollout:
+  "percent" })` (used by `loyalty-p4-mocks.test.ts`) and the `Admin/Marketing/Loyalty P4` stories' 10 % fixtures. §5
+  item 6 is superseded.
+- **Budget screen polish** (prototype and `/marketing/loyalty/budget`). The side card's "ใช้จริง" is "งบที่ใช้เดือนนี้"
+  (en "Effective for the month"): monthly budget → this month raised → effective. With a request already pending the
+  override button is the neutral `soft` variant, disabled ("มีคำขอรออยู่แล้ว"), never the filled primary; the prototype's
+  `.btn:disabled` matches. `screenshots/P4/p4-admin-budget-{390,1440}.png` re-shot (headless Chrome in the cloud
+  container, same frames as before).
+- **Also fixed.** `LoyaltyAnalytics.test.tsx` answered the funding split's read with the analytics fixture (the section
+  crashed); it now answers each operation with its own shape.
+- **Gates** (Linux VM, `$HOME/linuxbind` esbuild + rolldown, nothing installed into the repo): `gen:api --check` PASS;
+  `tsc` over every file changed since `14c09bc3` and over every file using a changed schema (temporary configs,
+  removed) PASS; ESLint on the changed TS/TSX PASS; Prettier PASS; Vitest `src/lib/api` (incl. `registry.test.ts`,
+  `loyalty-p4-mocks.test.ts` with three new integration tests), `src/i18n` (problem copy, parity, zones), `mocks`,
+  `features/admin/{marketing,approvals,finance,console,customers,shell}`, `features/partner`, `features/shared`,
+  `features/customer/{account,rewards,deals,loyalty,liff,shell,cart,checkout}`, `src/app`, `src/proxy.test.ts`,
+  `src/ui/design-language.test.ts` PASS. Confidentiality: the only P4 code a store operation documents is
+  `loyalty.feature_disabled`, worded without a budget, rollout or factory word. Storybook build, `next build` and e2e:
+  SKIPPED (the Mac; no e2e for P4, D-511).
+

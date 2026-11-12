@@ -1,5 +1,42 @@
 # API changes — P4 Factory co-funding, programme budget, company one-offs, surfaces, rollout (contract both sides build against)
 
+> **2026-11-05 — API build notes (deviations the codebase required; details in `API-P4-NOTES.md`):**
+> 1. **`funding.factoryShareToDate` is `factoryShareSoFar`**: the spectral rule `getpack-field-formats` reads a
+>    `…Date` field as a calendar date. Same meaning (accrued on offers that were accepted).
+> 2. **`admin.cofundingContributions.list` accepts `promotions.read` or `payables.read`** (D-512, integration): `@Can`
+>    requires every listed permission and `factory_payables.read` is a partner permission, so the new `@CanAny`
+>    (contract `x-required-permissions-any`) takes the staff `payables.read` instead. Marketing reads through
+>    `promotions.read`, Finance and the Finance Manager through `payables.read`, read-only; `admin.loyaltyAnalytics.funding`
+>    stays `loyalty.read` (both finance roles hold it, D-496).
+> 3. **`CofundingReverseReason` gains `no_payable`**: at the goods receipt a share with nothing left of the order's
+>    payable to net it from is reversed (getpack funds it; never carried to another payable).
+> 4. **`admin.loyalty.ledger` items are `AdminPointsEntryDto`** = `PointsEntryDto` + `companyClaim`
+>    (`{ companyId, legalName } | null`). `store.loyalty.ledger` keeps `PointsEntryDto` (no company).
+> 5. **`budgetCapped` is a field of `EntryMultipliersDto`** (`false` on entries before P4), so it also appears on the
+>    checkout preview's `points.multipliers` (`true` while this month's budget is used up).
+> 6. **The two 202s carry `x-async`**: `admin.programmeBudget.requestOverride` polls `admin.programmeBudget.get`,
+>    `admin.loyaltyRollout.advance` polls `admin.loyaltyRollout.get` (contract rule). Bodies unchanged.
+> 7. **Reason lengths**: `admin.cofundingOffers.withdraw` reason 10–800 characters (a 10–500 / 10–1000 reason schema
+>    already exists; no duplicate shapes); decline 5–500. `FactoryNameRefDto.name` (trade name, else legal name)
+>    has `minLength: 1`.
+> 8. **Notification audiences**: the router has no "the proposer" audience, so `cofunding.offer_answered` and
+>    `cofunding.offer_expired` go to the Marketing team (proposers are Marketing). The contract's "notifies the
+>    factory" on withdraw is a factory row `cofunding.offer_withdrawn` (in-app). Staff payloads carry `promotionId`
+>    (the inbox link to the deal); factory payloads carry `factoryId` + `recipientRoles: ['factory_owner']`.
+> 9. **Before the P4 settings are seeded** an environment behaves as before P4: surfaces all on, rollout `all`, no
+>    budget (never exhausted). `pnpm db:seed` creates them (`loyalty.rollout` starts at `internal`).
+> 10. **Budget guard scope**: `activate` of any discretionary promotion (`origin` manual / capacity deal, hidden or
+>     not) and `update` that turns visibility to public / unlisted answer `budget_exhausted`; a capacity deal approved
+>     while exhausted stays `draft` (`promotion.activation_deferred`) and is activated by Marketing later.
+> 11. **Spend simplification**: points are valued at the expected redemption rate in force at evaluation (not per
+>     credit time); reversals of earnings are `reversal_claim_refund` entries of the month.
+> 12. **Company-claim races** are settled by the partial unique indexes: the losing insert fails, the event consumer
+>     retries and the check then skips it (`company_claimed`). There is no in-transaction catch.
+> 13. **`store.loyalty.surfaces`** answers `Cache-Control: private, max-age=60` (signed in) / `public, max-age=60`
+>     (anonymous) with `Vary: Authorization`. `publicConfig.loyaltySurfaces` is the anonymous view.
+> 14. **Funding analytics** counts the orders of a deal placed in `from`..`to`; `offersAccepted` counts offers that
+>     were accepted at some point (answered, not declined), `factoryCount` their distinct factories.
+
 Source: `REPORT.md` "P4 brief"; decisions **D-506…D-511**. Plan: `plans/P4-PLAN.md` (§0.1 lists where the codebase
 refined the decisions). Conventions are unchanged:
 - money is a decimal string, points are integers, percentages are decimal strings;
