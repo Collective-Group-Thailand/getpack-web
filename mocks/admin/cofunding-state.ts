@@ -85,14 +85,23 @@ export interface ContributionRow {
   reverseReason: AdminCofundingContribution["reverseReason"];
 }
 
+/**
+ * The live capacity deal's week, relative to today (Bangkok): it started yesterday and runs six more days, so a new
+ * offer's default answer-by date (three days from now) always falls inside it, whatever day the mocks run.
+ */
+const DEAL_START = bangkokIso(-24 * 60).slice(0, 10);
+const DEAL_END = bangkokIso(5 * 24 * 60).slice(0, 10);
+
+export const CORRUGATED_WEEK_START = DEAL_START;
+
 const CORRUGATED: DealSnapshot = {
   name: "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5% (ข้อมูลจำลอง)",
   productTypeCode: "corrugated_rsc",
   productTypeName: "กล่องลูกฟูก",
-  weekStart: "2026-11-09",
+  weekStart: DEAL_START,
   discountPct: "5",
-  startsAt: "2026-11-09T00:00:00+07:00",
-  endsAt: "2026-11-15T23:59:59+07:00",
+  startsAt: `${DEAL_START}T00:00:00+07:00`,
+  endsAt: `${DEAL_END}T23:59:59+07:00`,
   status: "draft",
 };
 

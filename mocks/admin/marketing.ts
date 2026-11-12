@@ -20,7 +20,7 @@ import { bangkokIso, matchesQuery, mockId, paginate, precondition, problem, with
 import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
 import type { CampaignRow, CouponCodeRow, PromotionRow } from "./marketing-model";
-import { fundingOf } from "./cofunding-state";
+import { CORRUGATED_WEEK_START, fundingOf } from "./cofunding-state";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
 import { AGENT_ROWS } from "./loyalty-p2";
 import { etagOf as tableEtag } from "./tables";
@@ -305,7 +305,7 @@ promotions.push({
   origin: "capacity_deal",
   visibility: "hidden",
   capacityDeal: {
-    weekStart: "2026-11-09",
+    weekStart: CORRUGATED_WEEK_START,
     productTypeCode: "corrugated_rsc",
     freePct: "41.50",
     approval: null,
