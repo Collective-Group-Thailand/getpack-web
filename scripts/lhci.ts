@@ -28,6 +28,7 @@ const env = {
   PUBLIC_HOST: `localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
   PARTNER_HOST: `partner.localhost:${PORT}`,
+  AGENT_HOST: `agent.localhost:${PORT}`,
   API_INTERNAL_URL: "http://127.0.0.1:4999",
   API_MOCKS: "1",
   // Measure the storefront as a visitor who has answered, so the consent banner is not in

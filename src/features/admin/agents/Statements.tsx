@@ -15,6 +15,9 @@ import { DateField } from "@/ui/components/DateField";
 import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { SummaryRows } from "@/ui/components/FormLayout";
 import { Field } from "@/ui/components/Field";
+import { FilePickButton } from "@/ui/components/FilePickButton";
+import { Input } from "@/ui/components/Input";
+import { uploadFile } from "@/features/shared/files/upload";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { Statement, type StatementRow } from "@/ui/components/Statement";
 import { toast } from "@/ui/components/Toast";
@@ -28,6 +31,7 @@ import {
   QueryError,
   QueueTabs,
   ResourceList,
+  Section,
   StatusChip,
   useCan,
   type InitialPage,
@@ -202,8 +206,8 @@ async function readStatement(statementId: string) {
   return { data: data!, etag: response.headers.get("ETag") };
 }
 
-type StatementAction = "approve" | "void" | "markPaid";
-const STATEMENT_ACTION_ORDER: readonly StatementAction[] = ["approve", "markPaid", "void"];
+type StatementAction = "approve" | "void" | "markPaid" | "attachTaxInvoice";
+const STATEMENT_ACTION_ORDER: readonly StatementAction[] = ["attachTaxInvoice", "approve", "markPaid", "void"];
 
 /**
  * One statement (D-420): its lines and totals, and the step it is waiting for — approval (which
@@ -220,6 +224,8 @@ export function StatementDetail({ statementId }: { statementId: string }) {
   const key = queryKeys.detail("admin", "agent_statement", statementId);
   const [action, setAction] = useState<StatementAction | null>(null);
   const [paidOn, setPaidOn] = useState(bangkokToday());
+  const [invoiceNo, setInvoiceNo] = useState("");
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
 
   const query = useQuery({ queryKey: key, queryFn: async () => (await readStatement(statementId)).data });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
@@ -234,7 +240,10 @@ export function StatementDetail({ statementId }: { statementId: string }) {
   const actions: StatementAction[] = !canApprove
     ? []
     : s.status === "draft"
-      ? ["approve", "void"]
+      ? // D-465: a company agent's tax invoice can be attached before approval (required when VAT registered).
+        employee
+        ? ["approve", "void"]
+        : ["attachTaxInvoice", "approve", "void"]
       : employee && (s.status === "approved" || s.status === "exported")
         ? ["markPaid"]
         : [];
@@ -337,6 +346,14 @@ export function StatementDetail({ statementId }: { statementId: string }) {
             {s.voidReason}
           </Callout>
         ) : null}
+        {s.status === "draft" && !employee && !s.hasTaxInvoice ? (
+          <p className="text-muted text-sm">{t("taxInvoiceNeeded")}</p>
+        ) : null}
+        {s.hasTaxInvoice ? (
+          <Callout tone="success" title={t("taxInvoiceAttached")}>
+            {t("taxInvoiceNo")}: <span className="tabular-nums">{s.taxInvoiceNo}</span>
+          </Callout>
+        ) : null}
         {s.status === "approved" && !employee ? (
           <Callout tone="info" title={t("awaitingPayout")}>
             {t("awaitingPayoutBody")}
@@ -350,6 +367,25 @@ export function StatementDetail({ statementId }: { statementId: string }) {
           headers={{ label: t("columns.what"), amount: t("columns.amount") }}
           rows={statementRows}
         />
+        <Section title={t("whtWorking")}>
+          <SummaryRows
+            rows={[
+              {
+                key: "method",
+                label: t("whtMethodLabel"),
+                value: s.whtMethod ? t(`whtMethod.${s.whtMethod}`) : "–",
+              },
+              ...(s.whtWorking
+                ? [
+                    { key: "ytd", label: t("whtYtd"), value: format.thb(s.whtWorking.ytdPaid) },
+                    { key: "projected", label: t("whtProjected"), value: format.thb(s.whtWorking.projected) },
+                    { key: "allowances", label: t("whtAllowances"), value: format.thb(s.whtWorking.allowances) },
+                    { key: "annualTax", label: t("whtAnnualTax"), value: format.thb(s.whtWorking.annualTax) },
+                  ]
+                : []),
+            ]}
+          />
+        </Section>
       </DetailLayout>
 
       {action ? (
@@ -370,7 +406,15 @@ export function StatementDetail({ statementId }: { statementId: string }) {
             try {
               const api = adminBrowserApis().contract;
               const path = { statementId };
-              if (action === "approve") {
+              if (action === "attachTaxInvoice") {
+                if (!invoiceNo.trim() || !invoiceFile) throw new Error(t("taxInvoiceMissing"));
+                const uploaded = await uploadFile("admin", invoiceFile, "document");
+                const { etag } = await readStatement(statementId);
+                await api.POST("/v1/admin/agent-statements/{statementId}/actions/attach-tax-invoice", {
+                  params: { path, header: { "If-Match": etag ?? "" } },
+                  body: { fileId: uploaded.id, taxInvoiceNo: invoiceNo.trim() },
+                });
+              } else if (action === "approve") {
                 const { etag } = await readStatement(statementId);
                 await api.POST("/v1/admin/agent-statements/{statementId}/actions/approve", {
                   params: { path, header: { "If-Match": etag ?? "", "Idempotency-Key": idempotencyKey } },
@@ -394,6 +438,20 @@ export function StatementDetail({ statementId }: { statementId: string }) {
             }
           }}
         >
+          {action === "attachTaxInvoice" ? (
+            <div className="flex flex-col gap-3">
+              <Field label={t("taxInvoiceNo")} required>
+                <Input value={invoiceNo} onChange={(event) => setInvoiceNo(event.target.value)} />
+              </Field>
+              <Field label={t("taxInvoiceFile")} required>
+                <FilePickButton
+                  label={invoiceFile ? invoiceFile.name : t("pickFile")}
+                  accept="application/pdf,image/jpeg,image/png"
+                  onFiles={(files) => setInvoiceFile(files[0] ?? null)}
+                />
+              </Field>
+            </div>
+          ) : null}
           {action === "markPaid" ? (
             <Field label={t("paidOn")} required>
               <DateField

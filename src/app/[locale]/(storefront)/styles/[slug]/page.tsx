@@ -17,7 +17,6 @@ import { getFormat } from "@/features/shared/format/server";
 import { axisLabel, facetLabel, valueLabel, type StylesT } from "@/features/customer/styles/labels";
 import {
   codeOfSlug,
-  DIELINE_FRAGMENT,
   styleHref,
   styleSlug,
   STYLES_HREF,
@@ -302,7 +301,6 @@ export default async function StylePage({ params, searchParams }: { params: Para
           dieline={{
             sizeRanges: style.sizeRanges,
             signedIn,
-            signInHref: `/sign-in?returnTo=${encodeURIComponent(`${href}#${DIELINE_FRAGMENT}`)}`,
             orderHref: style.startingPrice ? configureHref(style.startingPrice.catalogProductSlug) : null,
             initialSize,
           }}

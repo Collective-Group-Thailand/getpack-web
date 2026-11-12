@@ -20,9 +20,15 @@ const ZONE_FILES = {
   // glob is minimatch, so `[locale]` would be read as a character class and match nothing
   // that exists. It also correctly covers the customer routes outside the locale segment,
   // such as `src/app/bff`.
-  customer: { files: ["src/app/**", "src/features/customer/**"], ignores: ["src/app/admin/**", "src/app/partner/**"] },
+  customer: {
+    files: ["src/app/**", "src/features/customer/**"],
+    ignores: ["src/app/admin/**", "src/app/partner/**", "src/app/agent-zone/**"],
+  },
   admin: { files: ["src/app/admin/**", "src/features/admin/**"] },
   partner: { files: ["src/app/partner/**", "src/features/partner/**"] },
+  // getpack Agent (D-467): isolated like admin and partner. What it shares with the storefront (sign-in, the
+  // plan's terms) lives in src/features/shared.
+  agent: { files: ["src/app/agent-zone/**", "src/features/agent/**"] },
 };
 
 function zoneBoundary(zone, forbidden) {
@@ -258,9 +264,10 @@ const eslintConfig = [
     rules: { "getpack-photos/no-stock-photos": "error" },
   },
 
-  zoneBoundary("customer", ["admin", "partner"]),
-  zoneBoundary("admin", ["customer", "partner"]),
-  zoneBoundary("partner", ["customer", "admin"]),
+  zoneBoundary("customer", ["admin", "partner", "agent"]),
+  zoneBoundary("admin", ["customer", "partner", "agent"]),
+  zoneBoundary("partner", ["customer", "admin", "agent"]),
+  zoneBoundary("agent", ["customer", "admin", "partner"]),
 
   {
     // `@getpack/dieline` is published on its own (ADR-0007): box geometry that knows nothing

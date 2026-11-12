@@ -154,7 +154,13 @@
     "businessBody": "เปิดบัญชีบริษัทฟรี ทั้งทีมใช้บัญชีเดียว ใบกำกับภาษีแยกสาขา และขอวงเงินเครดิตได้เมื่อสั่งครบตามเงื่อนไข",
     "businessAction": "ดูบัญชีบริษัท",
     "earnBanner": "รับแต้มเพิ่ม {points} แต้ม",
-    "earnBannerNext": "เริ่มจาก{task}"
+    "earnBannerNext": "เริ่มจาก{task}",
+    "agentTitle": "ร่วมเป็นตัวแทนขาย getpack",
+    "agentBody": "แนะนำลูกค้าใหม่ให้ getpack แล้วรับค่าคอมมิชชันเมื่อเขาสั่งซื้อ สมัครฟรี",
+    "agentAction": "ดูรายละเอียด",
+    "agentAppTitle": "getpack Agent",
+    "agentAppBody": "ลิงก์ของคุณ ลูกค้ามุ่งหวัง ค่าคอม และรายงานภาษี อยู่ในแอปตัวแทนของคุณแล้ว",
+    "agentAppAction": "เปิด getpack Agent"
   },
   "quotes": {
     "title": "ใบเสนอราคาที่บันทึกไว้",

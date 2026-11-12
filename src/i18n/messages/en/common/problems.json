@@ -9,6 +9,9 @@
     "option_unknown": "That board is not part of this advice",
     "material_not_board": "Board strength sheets are for corrugated boards only"
   },
+  "agent_statements": {
+    "tax_invoice_required": "Attach the agent’s tax invoice first"
+  },
   "agents": {
     "agent_inactive": "Agent not active",
     "agreement_missing": "No agent agreement yet",
@@ -18,29 +21,51 @@
     "application_decided": "Application already decided",
     "application_open": "An application is open",
     "backdated": "Back-dated",
+    "bank_name_mismatch": "The bank account name must match the legal name",
+    "card_scan_failed": "We couldn't read this card. Take a sharper, straighter photo, or type the details.",
     "code_invalid": "Invalid agent code",
     "commission_not_held": "Not held",
-    "factory_linked": "Factory already linked",
+    "deal_registered": "Another agent has registered a deal for this customer",
+    "discount_option_unavailable": "This option is no longer available",
+    "ended": "This agent account has ended. Your commission statements and withholding tax certificates (50 Tawi) are still available.",
+    "factory_links_retired": "Factory links are retired",
     "invalid_status": "Not allowed in this status",
     "lead_closed": "Lead closed",
     "lead_duplicate": "Duplicate lead",
-    "lead_existing_customer": "Already a customer",
-    "lead_taken": "Lead taken",
+    "lead_import_closed": "This import is closed. Upload the file again",
+    "lead_kind_unsupported": "Customer leads only",
+    "lead_stage_final": "This lead is closed; its stage can't change",
     "lead_unavailable": "This lead can't be registered",
     "link_ended": "Link ended",
     "maker_checker": "Needs another approver",
     "not_agent": "Not an agent",
     "nothing_to_export": "Nothing to export",
+    "payout_profile_missing": "The agent has no verified payout details yet, so this can't be approved",
+    "payout_profile_not_applicable": "Employee agents are paid through payroll",
+    "payout_profile_not_submitted": "This payout profile isn't waiting for review",
+    "payout_profile_verified": "These payout details are already verified",
+    "payout_profile_waiting": "Your payout details are with Finance and can't be changed meanwhile",
     "period_open": "Month not over",
+    "phone_in_use": "That number is already used by another account",
+    "phone_unverified": "Verify your mobile number before applying",
     "plan_code_taken": "Plan code taken",
     "plan_draft_open": "A draft is open",
     "plan_in_use": "Plan in use",
     "plan_not_in_force": "Plan not in force",
     "plan_version_decided": "Version already decided",
+    "programme_closed": "Agent applications aren't open right now",
+    "quote_closed": "This quote is closed",
     "self_link": "Cannot link to oneself",
     "statement_invalid_status": "Not allowed in this status",
     "statement_paid_by_payout": "Paid by payout runs",
-    "too_many_leads": "Too many leads"
+    "tax_declaration_decided": "Already decided",
+    "tax_declaration_not_applicable": "No ล.ย.01 needed",
+    "tax_declaration_open": "A ล.ย.01 is waiting",
+    "too_many_leads": "Too many leads",
+    "discount_request_closed": "This discount request is closed",
+    "rate_limited": "Too many requests — please wait a moment",
+    "waitlist_closed": "Registration isn't open at the moment",
+    "waitlist_consent_outdated": "The consent text has been updated — please read it and confirm again"
   },
   "approval": {
     "already_acted": "Already approved by you",
@@ -75,7 +100,10 @@
     "account_inactive": "Account inactive",
     "account_locked": "Account temporarily locked",
     "forbidden": "Forbidden",
+    "handoff_invalid": "This getpack Agent link can no longer be used. Sign in again to continue.",
+    "identity_last_method": "Last sign-in method",
     "identity_linked_elsewhere": "Identity already linked",
+    "identity_not_unlinkable": "Sign-in method cannot be removed",
     "identity_token_invalid": "Identity token invalid",
     "invalid_client": "Invalid client",
     "invalid_credentials": "Invalid credentials",
@@ -89,9 +117,7 @@
     "session_revoked": "Session revoked",
     "token_expired": "Token expired",
     "unauthenticated": "Authentication required",
-    "wrong_audience": "This account cannot be used here. Sign in with the right account.",
-    "identity_last_method": "Last sign-in method",
-    "identity_not_unlinkable": "Sign-in method cannot be removed"
+    "wrong_audience": "This account cannot be used here. Sign in with the right account."
   },
   "b2b": {
     "client_limit": "The company already has the most active keys allowed",
@@ -220,7 +246,8 @@
     "material_class_not_offered": "This style is not offered in that material class",
     "not_drawable": "This style cannot be drawn as a dieline",
     "size_out_of_range": "These sizes are outside the style's range",
-    "rate_limited": "Too many downloads — wait a moment and try again"
+    "rate_limited": "Too many downloads — wait a moment and try again",
+    "sign_in_required": "Sign in to keep downloading — it’s free"
   },
   "discount_memos": {
     "not_usable": "Memo cannot be used",
@@ -443,6 +470,13 @@
     "nothing_eligible": "Nothing to pay",
     "run_invalid_status": "Payout run state"
   },
+  "pnl": {
+    "plan_locked": "This plan is locked — copy it to a new plan to make changes",
+    "line_read_only": "This line is calculated or for reference only, so it cannot be entered",
+    "note_required": "The first value on this line needs a note on where the figure comes from",
+    "reason_required": "Overriding a system value needs a reason",
+    "not_computed": "Compute the plan from system data before locking it"
+  },
   "pricing": {
     "not_instant": "Not quoted instantly",
     "print_combination_invalid": "Invalid print choice",
@@ -492,6 +526,8 @@
     "unavailable": "Provider unavailable"
   },
   "quotes": {
+    "discount_request_open": "A discount request is already waiting for getpack",
+    "discount_round_limit": "A new round needs a different give-get from the last one",
     "no_target": "This quotation has no target price",
     "not_live": "Quotation not valid",
     "not_repriceable": "Cannot re-price",
@@ -665,5 +701,25 @@
     "invalid_transition": "This offer has changed; reload the page",
     "response_closed": "The time to answer this offer has passed",
     "disabled": "Co-funding is off in the settings"
+  },
+  "discount_approval": {
+    "already_open": "An approval is already open for this request",
+    "cost_unknown": "Not every quoted quantity has a buy price yet, so the approval cannot open",
+    "not_authorised": "This discount is above your approval authority",
+    "not_pending": "This approval has already been decided",
+    "self_approval": "You cannot approve your own request",
+    "stale": "The quotation changed, so this approval was voided. Open a new request"
+  },
+  "sales": {
+    "inbound_closed": "This enquiry is closed",
+    "lead_read_only": "Freelance agents' leads are read-only",
+    "no_employee_agent": "Your account has no active employee agent code yet",
+    "no_rep_available": "No sales rep can take work right now",
+    "rep_unavailable": "This sales rep cannot take work"
+  },
+  "sales_playbook": {
+    "maker_checker": "The author or submitter cannot publish; another person must",
+    "not_draft": "Only a draft can be edited, and a card has one draft at a time",
+    "not_submitted": "Submit the card before publishing"
   }
 }

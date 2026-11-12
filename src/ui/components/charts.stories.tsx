@@ -111,3 +111,27 @@ export const MeterWithThreshold: Story = {
     </div>
   ),
 };
+
+/** D-472: plan against actual — the validated `plan` / `actual` pair; months ahead have no actual (a dash in the table). */
+export const PlanVersusActual: Story = {
+  render: () => (
+    <Chart
+      kind="bar"
+      title="รายได้สุทธิรายเดือน (ข้อมูลจำลอง)"
+      index="month"
+      indexLabel="เดือน"
+      data={[
+        { month: "ม.ค.", plan: 2_600_000, actual: 2_564_238 },
+        { month: "ก.พ.", plan: 2_480_000, actual: 2_504_422 },
+        { month: "มี.ค.", plan: 2_700_000, actual: null },
+      ]}
+      series={[
+        { key: "plan", label: "แผน", tone: "plan" },
+        { key: "actual", label: "จริง", tone: "actual" },
+      ]}
+      formatValue={(value) => `฿${value.toLocaleString("th-TH")}`}
+      formatTick={(value) => `${value / 1_000_000}M`}
+      labels={{ showTable: "ดูเป็นตาราง", hideTable: "ดูเป็นกราฟ" }}
+    />
+  ),
+};

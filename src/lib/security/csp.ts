@@ -54,18 +54,22 @@ const ANALYTICS_IMG = ["https://www.googletagmanager.com", "https://www.google-a
 
 export function cspDirectives(zone: Zone, { nonce, isDev, origins }: CspOptions): Record<string, string[]> {
   const isCustomer = zone === "customer";
+  /** Zones where a customer signs in with Google, Apple or LINE: the storefront and getpack Agent (D-467). */
+  const signsInCustomers = isCustomer || zone === "agent";
   const extra = [origins.asset, origins.realtime, origins.sentry].filter((value): value is string => Boolean(value));
 
-  // Sign-in origins belong to the customer zone only. Staff and partners sign in with a
-  // password against this app's own server, so widening their policy would buy nothing.
-  const firebaseDomain = isCustomer && origins.firebaseAuthDomain ? [`https://${origins.firebaseAuthDomain}`] : [];
-  const signInConnect = isCustomer
+  // Sign-in origins belong to the zones customers sign in to — the storefront and the agent zone, whose people
+  // are customers too. Staff and partners sign in with a password against this app's own server, so widening
+  // their policy would buy nothing.
+  const firebaseDomain =
+    signsInCustomers && origins.firebaseAuthDomain ? [`https://${origins.firebaseAuthDomain}`] : [];
+  const signInConnect = signsInCustomers
     ? [
         ...(origins.firebaseAuthDomain ? [...FIREBASE_CONNECT, ...firebaseDomain] : []),
         ...(origins.line ? LINE_CONNECT : []),
       ]
     : [];
-  const signInFrame = isCustomer ? [...firebaseDomain, ...(origins.line ? LINE_FRAME : [])] : [];
+  const signInFrame = signsInCustomers ? [...firebaseDomain, ...(origins.line ? LINE_FRAME : [])] : [];
 
   return {
     "default-src": ["'self'"],

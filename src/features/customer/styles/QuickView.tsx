@@ -17,7 +17,7 @@ import { Icon } from "@/ui/icons";
 
 import { trackCatalog } from "@/lib/analytics/catalog";
 import { facetLabel, type StylesT } from "./labels";
-import { DIELINE_FRAGMENT, styleHref } from "./paths";
+import { styleHref } from "./paths";
 import { cmOf, cmOfSize } from "./size";
 import { VariantPicker } from "./VariantPicker";
 
@@ -101,7 +101,6 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
   const style = state.status === "ready" ? state.style : null;
   const name = style ? (locale === "en" ? style.nameEn || style.nameTh : style.nameTh || style.nameEn) : code;
   const href = style ? styleHref(style.code, name) : null;
-  const here = typeof window === "undefined" ? "/styles" : `${window.location.pathname}${window.location.search}`;
 
   const range = (min: number | null, max: number | null) =>
     min !== null && max !== null
@@ -306,7 +305,6 @@ export default function QuickView({ code, onClose, quoteHrefs, signedIn, taxInvo
             dieline={{
               sizeRanges: style.sizeRanges,
               signedIn,
-              signInHref: `/sign-in?returnTo=${encodeURIComponent(`${href ?? here}#${DIELINE_FRAGMENT}`)}`,
               orderHref: style.startingPrice ? configureHref(style.startingPrice.catalogProductSlug) : null,
             }}
           />

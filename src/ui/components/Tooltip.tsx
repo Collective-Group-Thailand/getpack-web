@@ -18,6 +18,8 @@ export interface TooltipProps extends Omit<TooltipPrimitive.TooltipProps, "child
   content: React.ReactNode;
   side?: TooltipPrimitive.TooltipContentProps["side"];
   align?: TooltipPrimitive.TooltipContentProps["align"];
+  /** A wider or roomier panel for a figure that explains itself in several parts (the P&L grid's cells). */
+  contentClassName?: string;
 }
 
 /**
@@ -25,7 +27,14 @@ export interface TooltipProps extends Omit<TooltipPrimitive.TooltipProps, "child
  * it is unavailable on touch, and WCAG 1.4.13 wants the content dismissible and hoverable —
  * both of which Radix handles, provided the trigger is a real focusable element.
  */
-export function Tooltip({ children, content, side = "top", align = "center", ...props }: TooltipProps) {
+export function Tooltip({
+  children,
+  content,
+  side = "top",
+  align = "center",
+  contentClassName,
+  ...props
+}: TooltipProps) {
   return (
     <TooltipPrimitive.Root {...props}>
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
@@ -37,6 +46,7 @@ export function Tooltip({ children, content, side = "top", align = "center", ...
           className={cn(
             "z-modal bg-neutral text-neutral-fg shadow-overlay max-w-64 rounded-md px-2 py-1 text-xs",
             "data-[state=delayed-open]:animate-in data-[state=closed]:animate-out",
+            contentClassName,
           )}
         >
           {content}

@@ -18,6 +18,8 @@ export interface BusinessEvents {
   contact_track: { type: "order" | "ticket" };
   fx_cta: { target: string };
   fx_apply_submit: { capabilities: number };
+  /** The sales agent programme landing (/agent, D-466): which CTA was used. */
+  agent_cta: { target: string };
 }
 
 export type BusinessEventName = keyof BusinessEvents;

@@ -1077,5 +1077,119 @@
   "stockAvailability": {
     "in_stock": "In stock",
     "out_of_stock": "Out of stock"
+  },
+  "agentTaxDeclaration": {
+    "submitted": "Waiting",
+    "accepted": "In use",
+    "rejected": "Not accepted"
+  },
+  "agentPayoutProfile": {
+    "draft": "Draft",
+    "submitted": "Waiting for review",
+    "verified": "Verified",
+    "rejected": "Needs a fix"
+  },
+  "agentLeadStage": {
+    "new": "New",
+    "contacted": "Contacted",
+    "quoted": "Quoted",
+    "negotiating": "Negotiating",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "agentQuote": {
+    "sent": "Sent",
+    "opened": "Opened by customer",
+    "accepted": "Accepted",
+    "expired": "Expired",
+    "withdrawn": "Withdrawn"
+  },
+  "agentDiscountRequest": {
+    "open": "Waiting for getpack",
+    "offered": "Options to choose",
+    "accepted": "Chosen",
+    "rejected": "Not approved",
+    "closed": "Closed"
+  },
+  "agentForecast": {
+    "in_progress": "Order in progress",
+    "pending": "Pending",
+    "held": "On hold",
+    "earned": "Earned",
+    "statemented": "On a statement",
+    "paid": "Paid"
+  },
+  "salesInbound": {
+    "new": "New, unassigned",
+    "assigned": "Assigned",
+    "contacted": "Contacted",
+    "converted_to_lead": "Lead created",
+    "disqualified": "Disqualified"
+  },
+  "salesApproval": {
+    "pending": "Awaiting approval",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "countered": "Countered",
+    "stale": "Voided, quote changed",
+    "withdrawn": "Withdrawn"
+  },
+  "salesAuthority": {
+    "green": "Within a rep's authority",
+    "amber": "Needs a sales manager",
+    "red": "Needs C-Level"
+  },
+  "salesFloor": {
+    "pass": "At or above the floor",
+    "fail": "Below the floor"
+  },
+  "salesPlaybook": {
+    "draft": "Draft",
+    "published": "Published",
+    "retired": "Retired"
+  },
+  "salesOutcome": {
+    "open": "Open",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "salesPriceLock": {
+    "requested": "Lock requested",
+    "confirmed": "Factory confirmed",
+    "expired": "Expired",
+    "released": "Released"
+  },
+  "salesSource": {
+    "contact_form": "Contact form",
+    "rfq": "Quote request",
+    "line_chat": "LINE chat",
+    "manual": "Added by the team",
+    "studio_idle": "Designed, not ordered",
+    "dieline_download": "Dieline download"
+  },
+  "pnlPlan": {
+    "draft": "Draft",
+    "locked": "Locked"
+  },
+  "pnlCell": {
+    "auto": "System",
+    "autoHint": "From system data — the posted ledger for actual months, the forecast rules for months ahead",
+    "calculated": "Calculated",
+    "calculatedHint": "Worked out from other lines by formula; not editable",
+    "manual": "Entered",
+    "manualHint": "No system data — entered by a person with a note on its source",
+    "override": "Override",
+    "overrideHint": "A person replaced the system value with a reason; the system value is kept beside it"
+  },
+  "pnlMonth": {
+    "actual": "Actual",
+    "forecast": "Forecast"
+  },
+  "pnlActual": {
+    "ledger": "From the posted ledger",
+    "calculated": "Calculated from actuals",
+    "includes_plan_values": "Includes values entered in the plan",
+    "none": "No actual data in the system",
+    "not_yet": "Period not reached yet"
   }
 }

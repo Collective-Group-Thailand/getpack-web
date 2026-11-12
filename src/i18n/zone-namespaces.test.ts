@@ -17,6 +17,7 @@ const ROOTS: Record<keyof typeof ZONE_NAMESPACES, string[]> = {
   partner: ["src/features/partner", "src/app/partner"],
   admin: ["src/features/admin", "src/app/admin"],
   customer: ["src/features/customer", "src/app/[locale]"],
+  agent: ["src/features/agent", "src/app/agent-zone"],
 };
 
 function files(dir: string): string[] {

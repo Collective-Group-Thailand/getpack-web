@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
-import { useConsentLabel } from "@/features/customer/auth/consent-label";
+import { useConsentLabel } from "@/features/shared/customer-auth/consent-label";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";

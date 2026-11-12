@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 
+import { useGridNavigation } from "../lib/useGridNavigation";
 import { Badge } from "./Badge";
+import { CellMark } from "./CellMark";
 import { Button } from "./Button";
 import { ColumnToggle } from "./ColumnToggle";
 import { Combobox, type ComboboxOption } from "./Combobox";
@@ -13,6 +15,7 @@ import { JsonView } from "./JsonView";
 import { Meter } from "./Meter";
 import { PageHeader, Toolbar } from "./PageHeader";
 import { Pagination } from "./Pagination";
+import { ScoreChip } from "./ScoreChip";
 import { SearchInput } from "./SearchInput";
 import { SlaTimer } from "./SlaTimer";
 import { Stat } from "./Stat";
@@ -238,3 +241,86 @@ function PickerDemo() {
 }
 
 export const Pickers: Story = { render: () => <PickerDemo /> };
+
+/** D-471 lead score chips: a plain label (an agent's own lead) and the interactive trigger staff open for reasons. */
+export const ScoreChips: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-3">
+      <ScoreChip value={86} tone="success" label="คะแนน 86 จาก 100" />
+      <ScoreChip value={52} tone="info" label="คะแนน 52 จาก 100" />
+      <ScoreChip value={18} tone="neutral" label="คะแนน 18 จาก 100" />
+      <ScoreChip value={null} label="ยังไม่มีคะแนน" />
+      <ScoreChip value={72} tone="success" label="คะแนน 72 จาก 100 — ดูเหตุผล" interactive />
+      <ScoreChip value={72} tone="success" label="คะแนน 72 จาก 100" size="sm" />
+    </div>
+  ),
+};
+
+/** D-472 source marks: four shapes a planner tells apart in greyscale — the words print in a legend (chip). */
+export const CellMarks: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-4">
+        <CellMark icon="zap" label="ระบบ" variant="chip" />
+        <CellMark icon="calculator" label="คำนวณ" variant="chip" />
+        <CellMark icon="edit" label="กรอกเอง" tone="primary" variant="chip" />
+        <CellMark icon="flag" label="แก้ทับ" tone="warning" variant="chip" />
+      </div>
+      <p className="flex items-center gap-2 text-sm tabular-nums">
+        1,240,500.00 <CellMark icon="flag" label="แก้ทับ" tone="warning" />
+      </p>
+    </div>
+  ),
+};
+
+function KeyboardGridDemo() {
+  const rows = ["รายได้", "ต้นทุน", "กำไร"];
+  const cols = ["ม.ค.", "ก.พ.", "มี.ค."];
+  const { gridRef, cellProps } = useGridNavigation({ rows: rows.length, cols: cols.length + 1 });
+  return (
+    <table
+      ref={gridRef}
+      role="grid"
+      aria-label="ตารางตัวอย่าง (ข้อมูลจำลอง)"
+      className="border-border text-sm tabular-nums [&_td]:border [&_td]:px-3 [&_td]:py-1.5 [&_th]:border [&_th]:px-3 [&_th]:py-1.5"
+    >
+      <thead>
+        <tr>
+          <th scope="col">รายการ</th>
+          {cols.map((col) => (
+            <th key={col} scope="col">
+              {col}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, r) => (
+          <tr key={row}>
+            <th
+              scope="row"
+              role="rowheader"
+              className="focus-visible:ring-focus-ring outline-none focus-visible:ring-2"
+              {...cellProps(r, 0)}
+            >
+              {row}
+            </th>
+            {cols.map((col, c) => (
+              <td
+                key={col}
+                role="gridcell"
+                className="focus-visible:ring-focus-ring text-end outline-none focus-visible:ring-2"
+                {...cellProps(r, c + 1)}
+              >
+                {(r + 1) * (c + 2) * 1000}.00
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+/** `useGridNavigation`: one tab stop, arrows between cells, Home / End, Ctrl+Home / Ctrl+End (ARIA data grid). */
+export const KeyboardGrid: Story = { render: () => <KeyboardGridDemo /> };

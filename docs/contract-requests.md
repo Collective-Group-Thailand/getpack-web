@@ -10,6 +10,7 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 |---|---|---|---|---|---|---|---|
 | store.reviews.reward-preview | 2026-11-04 | customer / order review card (loyalty P2) | published `store.reviews.get` (404 body) or `OrderDto.review` gains `reviewRewardPoints` / `photoRewardPoints` before a review exists | The form cannot say "+10 แต้ม" before the review exists (the web never computes points); it says "แนบรูปจริงรับแต้มเพิ่ม". The survey already shows its figure this way. | `{ reviewRewardPoints: int, photoRewardPoints: int }` (0 when the D-476 cap leaves no room) | — | Open — awaiting getpack-api triage · web: asked in WEB-P2-NOTES §3; no definition (a field on published reads) |
 | store.orders.reviewable | 2026-11-04 | customer / order page review card (loyalty P2) | published `store.orders.get` gains an `order.review` next action or `reviewable: boolean` | The card shows for delivered, not cancelled orders and reads `store.reviews.get` for each; the flag would skip that read on orders that cannot be reviewed. `reviews.not_delivered` is handled meanwhile. | `reviewable: boolean` or next action `order.review` | — | Open — awaiting getpack-api triage · web: asked in WEB-P2-NOTES §3; `canReview()` + `store.reviews.get` meanwhile |
+| admin.menu-pnl | 2026-11-04 | admin / management P&L `/finance/pnl` (D-472, agent portal P6) | `GET /v1/admin/me` → `menu[]` | The planner's readers are C-Level, VP, Director and Finance Manager (`pnl.read`). The `finance` entry opens for `payments.verify_slip`, `receivables.manage`, `ledger.read`, `payables.read`, `banking.read`, `tax.read` only, so a Director (who holds none of them) has no way to the planner from the sidebar. | add `"pnl.read"` to the `finance` entry's any-of permissions in `menu.catalog.ts` (or a separate `{ key: "pnl", path: "/admin/finance/pnl", permission: "pnl.read" }`) | — | Open — awaiting getpack-api triage · web: the mock's menu adds `pnl.read` to the finance gate (`// CONTRACT-REQUEST admin.menu-pnl`); the P&L desk shows under "การเงิน" only with `pnl.read`; the route answers a 403 page without it |
 | store.styles.card-commercial | 2026-10-25 | customer / `/styles` cards and quick view (PLAN.md §b) | `GET /v1/store/styles` → `StyleCardDto` | A card's spec row compares styles without opening each: the size it can be made in, the minimum order and the lead time. The detail has `sizeRanges` and `leadTime`; the list has neither, and MOQ is nowhere. Reading the detail per card is not an option (24 calls a page). | add `sizeRange: { minLMm, maxLMm, minWMm, maxWMm, minHMm, maxHMm } \| null` (the widest inside range over its material classes, D-182), `leadTime: LeadTimeRangeDto \| null`, `moqUnits: integer \| null`, `useCases: string[]`; and `moqUnits` on `StyleDetailDto` | — | Open — awaiting getpack-api triage · partly done (C0, getpack-api `design/styles-catalog-redesign`): card `fitRange`, `moqUnits`, `dielineUrl`, `fit`; lead time on the card still missing · web: spec row reads them |
 | store.styles.price-ex-vat | 2026-10-25 | customer / `/styles` toolbar "ราคารวม VAT" (PLAN.md C1) | `StylePriceDto` | B2B buyers compare prices before VAT. `unitPrice` is incl. VAT (D-220) and the web never does arithmetic on money, so a "ราคารวม VAT / ไม่รวม VAT" switch needs both figures from the API. | add `unitPriceExVat: Money` beside `unitPrice` | — | Open — awaiting getpack-api triage · web: prices are labelled "รวม VAT"; the switch appears once the field exists |
 | store.styles.multi-facets | 2026-10-25 | customer / `/styles` filters (PLAN.md C7) | `GET /v1/store/styles` | The redesign's filters are checkbox groups — values of one facet are alternatives (OR), facets all apply (AND), as `listVariants` already does for options (D-410). The list takes one value per facet, and has no total of matches (the page sums the category facet). | `closure`, `feature`, `family`, `materialClass`, `useCase` as repeatable (or comma-separated) params; each facet's counts computed without its own filter; `meta.total` | — | Open — awaiting getpack-api triage · partly done (C0): `useCase` takes groups `a,b;c` (used by the wizard); other facets still one value · web: `MULTI_VALUE_FACETS` stays false |
@@ -339,3 +340,26 @@ Made in getpack-api (D-456): `StoreMeDto.editorMode` + `PATCH /v1/store/me/prefe
 - **C8-4 print-file export / import:** PDF/X-4 (CMYK, outlined text, separate die-cut layer, bleed), `.ai` with layers,
   PDF/`.ai` import on the dieline with the same preflight — after Prepress's file spec. Web meanwhile: the existing
   exports; the chooser's "อัปโหลดไฟล์ PDF หรือ .ai" goes to `/studio/upload`.
+
+## Sales desk (agent portal P4, D-469 / D-470, 2026-11-03)
+
+Written down only — no registry entry, no mock: the screens work on today's contract and say so.
+
+- **`sales_playbook.card-actors`:** on `PlaybookCardAdminDto` — `createdBy: UserRefDto`, `submittedBy: UserRefDto | null`,
+  `publishedBy: UserRefDto | null`. The maker-checker is the API's (409 `sales_playbook.maker_checker`); without the
+  actors the web cannot tell the maker that they are the maker, so it holds the publish button back only for the
+  cards this browser drafted, saved or submitted (`PlaybookEditor`). With the field: disable for `createdBy` /
+  `submittedBy` = me, and name who did each step in the versions list.
+- **`admin.salesQuotes.products`:** the catalogue products a rep may quote with their reference configuration
+  (`sales.pipeline.self` / `.manage`). `sales_rep` and `sales_manager` hold no `catalog.read`, so the desk's
+  "สร้างใบเสนอราคา" starts from the configuration of a sales quote the desk already priced and sets the quantity and
+  postcode (`NewSalesQuote`); a desk with no quote yet cannot start one.
+- **`admin.sales.dashboard` per-period win rate:** `SalesPeriodFiguresDto.lost` and `.winRatePct` (string | null),
+  so the dashboard can draw the win-rate trend the brief asks for. Meanwhile it draws won per period and new leads per
+  period as two charts (one measure each) and never divides the API's counts itself.
+- **`admin.discountApprovals.get` deal registration:** `dealRegistration` (the agent quote's `AgentDealRegistrationDto`)
+  on `DiscountApprovalDto`, so an approver without a pipeline permission (Finance Manager) sees it in the header.
+  Meanwhile the header reads it from `admin.salesQuotes.list?leadId` when the viewer may, and otherwise says where it is.
+- **Admin menu:** the `sales` entry needs `sales.pipeline.self` or `.manage`, so Finance Manager (approval desk, export)
+  and Auditor (view log) reach `/sales/approvals` and `/sales/approvals/views` by link only. Ask: the entry also for
+  `discount_approvals.read` / `sales_waterfall_views.read` / `sales_reports.read` holders.

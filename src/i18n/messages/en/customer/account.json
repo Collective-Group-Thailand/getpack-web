@@ -154,7 +154,13 @@
     "businessBody": "Open a free company account: one account for the team, tax invoices per branch, and a credit limit once you meet the terms",
     "businessAction": "See company accounts",
     "earnBanner": "Earn {points} more points",
-    "earnBannerNext": "Start with: {task}"
+    "earnBannerNext": "Start with: {task}",
+    "agentTitle": "Become a getpack sales agent",
+    "agentBody": "Introduce new customers to getpack and earn commission when they order. Free to join.",
+    "agentAction": "Learn more",
+    "agentAppTitle": "getpack Agent",
+    "agentAppBody": "Your link, leads, commission and tax statements are in your agent app now.",
+    "agentAppAction": "Open getpack Agent"
   },
   "quotes": {
     "title": "Saved quotations",

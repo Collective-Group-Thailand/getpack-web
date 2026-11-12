@@ -12,6 +12,8 @@ const SURFACE: Record<Zone, keyof typeof SURFACE_PROBLEM_CODES> = {
   customer: "store",
   admin: "admin",
   partner: "partner",
+  // The agent zone's token is a customer token on the store surface (D-467).
+  agent: "store",
 };
 
 export function problemCodesFor(zone: Zone): ReadonlySet<string> {

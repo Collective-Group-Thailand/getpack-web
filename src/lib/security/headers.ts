@@ -23,7 +23,8 @@ export function securityHeaders(zone: Zone, { isHttps }: SecurityHeaderOptions):
     // error. `same-origin-allow-popups` keeps this document isolated from anything that
     // opened *it*, which is the protection that matters, while letting a popup it opened
     // report back. Admin and partner have no third-party sign-in, so they keep the strict one.
-    "Cross-Origin-Opener-Policy": zone === "customer" ? "same-origin-allow-popups" : "same-origin",
+    // The agent zone (D-467) signs customers in with the same providers, so it needs the same allowance.
+    "Cross-Origin-Opener-Policy": zone === "customer" || zone === "agent" ? "same-origin-allow-popups" : "same-origin",
     "Permissions-Policy": permissionsPolicy(zone),
   };
 

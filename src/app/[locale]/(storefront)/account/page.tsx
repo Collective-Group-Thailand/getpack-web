@@ -20,6 +20,8 @@ import { getNextSurvey } from "@/features/customer/surveys/api.server";
 import { SurveyCard } from "@/features/customer/surveys/SurveyCard";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { TierProgress } from "@/features/customer/account/TierProgress";
+import { getProgramme, getPublicProgramme } from "@/features/customer/agent/api.server";
+import { OpenAgentApp } from "@/features/customer/agent/OpenAgentApp";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getApprovals, getMyCompany } from "@/features/customer/business/api.server";
 import { listOrderPage } from "@/features/customer/orders/api.server";
@@ -117,6 +119,12 @@ export default async function Page() {
     tasks: surfaces.checklist ? tasks : null,
     bonusLots: surfaces.deals ? (points?.bonusLots ?? []) : [],
   });
+  // D-466: the agent programme, offered to a customer who is not an agent or applicant while it takes applications.
+  const [agentProgramme, publicProgramme] = await Promise.all([
+    getProgramme().catch(() => null),
+    getPublicProgramme().catch(() => null),
+  ]);
+  const offerAgent = agentProgramme?.state === "none" && publicProgramme?.applyOpen === true;
   // A company approver's queue leads (round 2, B2).
   const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
   const latestOrders = (latest?.groups ?? [])
@@ -360,6 +368,47 @@ export default async function Page() {
           </Button>
         </section>
       )}
+
+      {agentProgramme?.state === "agent" ? (
+        // D-467: an agent's work is in getpack Agent; this opens it signed in (one-time hand-off code).
+        <section
+          aria-labelledby="account-agent-app"
+          className="border-primary bg-surface grid gap-4 rounded-2xl border p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-5"
+        >
+          <span className="bg-primary-subtle text-primary-subtle-fg grid size-11 place-items-center rounded-xl">
+            <Icon name="handshake" size={22} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 id="account-agent-app" className="font-semibold">
+              {t("agentAppTitle")}
+            </h2>
+            <p className="text-muted mt-0.5 text-sm">{t("agentAppBody")}</p>
+          </div>
+          <div className="justify-self-start sm:justify-self-end">
+            <OpenAgentApp />
+          </div>
+        </section>
+      ) : null}
+
+      {offerAgent ? (
+        <section
+          aria-labelledby="account-agent"
+          className="border-border bg-surface grid gap-4 rounded-2xl border p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-5"
+        >
+          <span className="bg-primary-subtle text-primary-subtle-fg grid size-11 place-items-center rounded-xl">
+            <Icon name="handshake" size={22} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 id="account-agent" className="font-semibold">
+              {t("agentTitle")}
+            </h2>
+            <p className="text-muted mt-0.5 text-sm">{t("agentBody")}</p>
+          </div>
+          <Button asChild variant="secondary" className="justify-self-start sm:justify-self-end">
+            <Link href="/agent">{t("agentAction")}</Link>
+          </Button>
+        </section>
+      ) : null}
     </div>
   );
 }

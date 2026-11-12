@@ -40,15 +40,19 @@ import { bangkokToday, KindBadge, TermsList, usePlans, useRefreshAgents } from "
 
 type TermsDraft = Record<keyof AgentPlanTerms, string>;
 
+/**
+ * D-464 / P-03: new versions carry no commission cap and no factory bounty. `marginCapPct` is kept by the API for
+ * history and no longer applied, so the form does not show it; it carries the previous version's value forward.
+ */
 const BLANK: TermsDraft = {
   firstOrderPct: "5",
   repeatOrderPct: "3",
   attributionMonths: "12",
-  marginCapPct: "30",
+  marginCapPct: "0",
   minBaseAmount: "0",
   factoryBountyAmount: "0",
-  factoryQualifyJobs: "3",
-  factoryQualifyDays: "120",
+  factoryQualifyJobs: "0",
+  factoryQualifyDays: "0",
 };
 
 const termsOf = (terms: AgentPlanTerms): TermsDraft => ({
@@ -57,9 +61,9 @@ const termsOf = (terms: AgentPlanTerms): TermsDraft => ({
   attributionMonths: String(terms.attributionMonths),
   marginCapPct: terms.marginCapPct,
   minBaseAmount: terms.minBaseAmount,
-  factoryBountyAmount: terms.factoryBountyAmount,
-  factoryQualifyJobs: String(terms.factoryQualifyJobs),
-  factoryQualifyDays: String(terms.factoryQualifyDays),
+  factoryBountyAmount: "0",
+  factoryQualifyJobs: "0",
+  factoryQualifyDays: "0",
 });
 
 const PCT = /^\d{1,2}(\.\d{1,2})?$/;
@@ -68,24 +72,22 @@ const INT = /^\d+$/;
 
 /** Checks the figures and turns them into the API's shape; throws a `FormError` naming the field. */
 function parseTerms(draft: TermsDraft, t: (key: string) => string) {
-  for (const field of ["firstOrderPct", "repeatOrderPct", "marginCapPct"] as const) {
+  for (const field of ["firstOrderPct", "repeatOrderPct"] as const) {
     if (!PCT.test(draft[field].trim())) throw new FormError(t(`errors.${field}`));
   }
-  for (const field of ["minBaseAmount", "factoryBountyAmount"] as const) {
-    if (!MONEY.test(draft[field].trim())) throw new FormError(t(`errors.${field}`));
-  }
-  for (const field of ["attributionMonths", "factoryQualifyJobs", "factoryQualifyDays"] as const) {
-    if (!INT.test(draft[field].trim()) || Number(draft[field]) < 1) throw new FormError(t(`errors.${field}`));
-  }
+  if (!MONEY.test(draft.minBaseAmount.trim())) throw new FormError(t("errors.minBaseAmount"));
+  if (!INT.test(draft.attributionMonths.trim()) || Number(draft.attributionMonths) < 1)
+    throw new FormError(t("errors.attributionMonths"));
+  // Inputs are validated as text above; the API receives decimal strings (no money arithmetic here).
   return {
-    firstOrderPct: Number(draft.firstOrderPct).toFixed(2),
-    repeatOrderPct: Number(draft.repeatOrderPct).toFixed(2),
-    marginCapPct: Number(draft.marginCapPct).toFixed(2),
-    minBaseAmount: Number(draft.minBaseAmount).toFixed(2),
-    factoryBountyAmount: Number(draft.factoryBountyAmount).toFixed(2),
+    firstOrderPct: draft.firstOrderPct.trim(),
+    repeatOrderPct: draft.repeatOrderPct.trim(),
+    marginCapPct: PCT.test(draft.marginCapPct.trim()) ? draft.marginCapPct.trim() : "0",
+    minBaseAmount: draft.minBaseAmount.trim(),
+    factoryBountyAmount: "0.00",
     attributionMonths: Number(draft.attributionMonths),
-    factoryQualifyJobs: Number(draft.factoryQualifyJobs),
-    factoryQualifyDays: Number(draft.factoryQualifyDays),
+    factoryQualifyJobs: 0,
+    factoryQualifyDays: 0,
   };
 }
 
@@ -106,11 +108,8 @@ function TermsFields({ draft, onChange }: { draft: TermsDraft; onChange: (draft:
       {field("firstOrderPct", t("pctHint"))}
       {field("repeatOrderPct", t("pctHint"))}
       {field("attributionMonths")}
-      {field("marginCapPct", t("capHint"))}
       {field("minBaseAmount")}
-      {field("factoryBountyAmount", t("bountyHint"))}
-      {field("factoryQualifyJobs")}
-      {field("factoryQualifyDays")}
+      <p className="text-muted text-xs sm:col-span-2">{t("uncappedHint")}</p>
     </div>
   );
 }
@@ -347,16 +346,11 @@ export function PlanDetail({ planId }: { planId: string }) {
           {t("rates", {
             first: format.percent(row.firstOrderPct),
             repeat: format.percent(row.repeatOrderPct),
-            cap: format.percent(row.marginCapPct),
             months: row.attributionMonths,
           })}
           {Number(row.factoryBountyAmount) > 0 ? (
             <span className="text-muted block text-xs">
-              {tTerms("bountyValue", {
-                amount: format.thb(row.factoryBountyAmount),
-                jobs: row.factoryQualifyJobs,
-                days: row.factoryQualifyDays,
-              })}
+              {tTerms("bountyHistory", { amount: format.thb(row.factoryBountyAmount) })}
             </span>
           ) : null}
         </span>

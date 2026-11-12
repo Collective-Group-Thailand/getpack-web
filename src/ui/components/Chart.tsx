@@ -17,7 +17,13 @@ import {
 import { cn } from "../lib/cn";
 import { Button } from "./Button";
 
-export type ChartTone = "primary" | "info" | "success" | "warning" | "danger" | "neutral";
+/**
+ * The semantic tones, plus a validated pair for a plan against its actual (D-472): `plan` blue-400 #81afff and
+ * `actual` brand-600 #24907a — the dataviz validator passes lightness band, chroma floor, CVD (ΔE 20.2 deutan) and
+ * the normal-vision floor; `plan` sits under 3:1 on the surface, so a chart using it always has its legend and the
+ * table view (this component's own).
+ */
+export type ChartTone = "primary" | "info" | "success" | "warning" | "danger" | "neutral" | "plan" | "actual";
 
 export interface ChartSeries {
   key: string;
@@ -39,13 +45,16 @@ export interface ChartProps<TRow extends Record<string, unknown>> {
   layout?: "horizontal" | "vertical";
   height?: number;
   formatValue?: (value: number, seriesKey: string) => string;
+  /** The value axis' ticks, when they should be shorter than the tooltip's figures (฿2.4M rather than ฿2,400,000.00). */
+  formatTick?: (value: number) => string;
   formatIndex?: (value: string) => string;
   labels: { showTable: string; hideTable: string };
   className?: string;
 }
 
 const TONES: readonly ChartTone[] = ["primary", "info", "success", "warning", "danger", "neutral"];
-const colour = (tone: ChartTone) => `var(--color-${tone})`;
+const PAIR: Partial<Record<ChartTone, string>> = { plan: "var(--color-blue-400)", actual: "var(--color-brand-600)" };
+const colour = (tone: ChartTone) => PAIR[tone] ?? `var(--color-${tone})`;
 
 /**
  * A bar or line chart (design-system.md §3 "Charts"): Recharts, coloured only from the semantic
@@ -68,6 +77,7 @@ export function Chart<TRow extends Record<string, unknown>>({
   layout = "horizontal",
   height = 260,
   formatValue = (value) => String(value),
+  formatTick,
   formatIndex = (value) => value,
   labels,
   className,
@@ -107,7 +117,9 @@ export function Chart<TRow extends Record<string, unknown>>({
           <YAxis
             width={72}
             tick={{ fill: "var(--color-muted)", fontSize: 12 }}
-            tickFormatter={(value: number) => formatValue(value, series[0]?.key ?? "")}
+            tickFormatter={(value: number) =>
+              formatTick ? formatTick(value) : formatValue(value, series[0]?.key ?? "")
+            }
           />
         </>
       )}
@@ -215,7 +227,9 @@ export function Chart<TRow extends Record<string, unknown>>({
                 </th>
                 {series.map((item) => (
                   <td key={item.key} className="py-1.5 pe-3 text-right tabular-nums">
-                    {formatValue(Number(row[item.key]), item.key)}
+                    {row[item.key] === null || row[item.key] === undefined
+                      ? "—"
+                      : formatValue(Number(row[item.key]), item.key)}
                   </td>
                 ))}
               </tr>

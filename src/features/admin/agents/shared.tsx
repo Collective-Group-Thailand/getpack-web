@@ -84,18 +84,9 @@ export function TermsList({ terms }: { terms: AgentPlanTerms }) {
     [t("firstOrderPct"), format.percent(terms.firstOrderPct)],
     [t("repeatOrderPct"), format.percent(terms.repeatOrderPct)],
     [t("attributionMonths"), t("months", { count: terms.attributionMonths })],
-    [t("marginCapPct"), format.percent(terms.marginCapPct)],
     [t("minBaseAmount"), format.thb(terms.minBaseAmount)],
-    [
-      t("factoryBounty"),
-      Number(terms.factoryBountyAmount) > 0
-        ? t("bountyValue", {
-            amount: format.thb(terms.factoryBountyAmount),
-            jobs: terms.factoryQualifyJobs,
-            days: terms.factoryQualifyDays,
-          })
-        : t("none"),
-    ],
+    // D-464: the full rate at every order size; the old margin cap and factory bounty are history only.
+    [t("cap"), t("uncapped")],
   ];
   return (
     <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">

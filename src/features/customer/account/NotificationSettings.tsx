@@ -15,8 +15,8 @@ import { toast } from "@/ui/components/Toast";
 import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { linkLine } from "../auth/actions";
-import { lineConfigured } from "../auth/providers";
+import { linkLine } from "@/features/shared/customer-auth/actions";
+import { lineConfigured } from "@/features/shared/customer-auth/providers";
 
 type Preference = Schemas["NotificationPreferenceDto"];
 type Channel = "email" | "sms" | "line" | "web_push";
@@ -81,7 +81,7 @@ export function NotificationSettings({
   async function connectLine() {
     setLinking(true);
     try {
-      const { lineIdentity } = await import("../auth/provider-sdks");
+      const { lineIdentity } = await import("@/features/shared/customer-auth/provider-sdks");
       const identity = await lineIdentity(`${window.location.origin}${window.location.pathname}?link=line`);
       if (!identity) return; // navigating to LINE
       const result = await linkLine(identity);

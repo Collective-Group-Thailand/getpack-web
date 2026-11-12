@@ -1,0 +1,46 @@
+{
+  "extends": "./shared.json",
+  "ci": {
+    "collect": {
+      "url": [
+        "http://agent.localhost:3200/",
+        "http://agent.localhost:3200/leads",
+        "http://agent.localhost:3200/leads/import",
+        "http://agent.localhost:3200/quotes",
+        "http://agent.localhost:3200/quotes/new",
+        "http://agent.localhost:3200/commissions",
+        "http://agent.localhost:3200/statements",
+        "http://agent.localhost:3200/customers",
+        "http://agent.localhost:3200/payout",
+        "http://agent.localhost:3200/tax",
+        "http://agent.localhost:3200/playbook",
+        "http://agent.localhost:3200/notifications",
+        "http://agent.localhost:3200/profile"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "throttlingMethod": "simulate",
+        "extraHeaders": {
+          "Cookie": "pk_at=seed.access.token.customer.agent"
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": [
+          "warn",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 315900
+          }
+        ]
+      }
+    }
+  },
+  "$comment": "Agent portal P7 — getpack Agent (agent.getpack.co, the installable PWA) on the mobile preset, signed in as the mock persona `agent` through its fixed token (mocks/support.ts accessToken('customer', 'agent')): the cookie authenticates the zone the way partner.json does for the factory app, no login flow in a Lighthouse run. /sign-in and /handoff are left out: with a session they redirect, and the zone is noindex (no SEO assertion). Performance is a warning like every field-type metric in this repo (lighthouse/shared.json: a shared runner cannot stand in for a p75 measurement honestly); the target is 0.9 (the agent portal <responsive> contract) and the measured numbers are in docs/design/agent-portal/DESIGN-NOTES.md (P7). Accessibility is the shared error at 1.0 — stricter than the contract's 0.95; every page measures 100. RATCHET: script size pinned just above the P7 measurement."
+}

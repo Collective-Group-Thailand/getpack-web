@@ -34,12 +34,13 @@ export function Scene({
           <span aria-hidden="true" className="pk-story-strike bg-instant absolute top-[52%] left-0 h-px" />
         </span>
       </p>
-      <h3
+      {/* h2, not h3: the story sits right under the page's h1 (Lighthouse heading-order, agent P1). */}
+      <h2
         className="pk-story-up mt-2 text-[1.375rem] leading-[1.3] font-bold tracking-[-0.01em] sm:text-[1.75rem]"
         style={at(0.35)}
       >
         {title}
-      </h3>
+      </h2>
       <div className="pk-story-up relative mt-5 sm:mt-6" style={at(0.55)}>
         <span aria-hidden="true" className="pk-story-fan-l bg-primary-subtle rounded-panel absolute inset-0" />
         <span aria-hidden="true" className="pk-story-fan-r bg-bg-subtle rounded-panel absolute inset-0" />

@@ -3,6 +3,8 @@
  * RFQs, the cart, and the signed-in customer's own endpoints, published and requested.
  */
 
+import { storeAgentHandlers } from "./agent";
+import { storeAgentLeadHandlers } from "./agent-leads";
 import { storeAccountHandlers } from "./account";
 import { storeArtworkHandlers } from "./artwork";
 import { storeBookHandlers } from "./book";
@@ -40,6 +42,8 @@ import { loyaltyP4Handlers } from "./loyalty-p4";
 import { styleLibraryHandlers } from "./style-library";
 
 export const storeHandlers = [
+  ...storeAgentHandlers,
+  ...storeAgentLeadHandlers,
   ...fileCheckHandlers,
   // Samples first: they also serve the evidence photos (`files/:fileId/download`) of every zone.
   ...sampleHandlers,

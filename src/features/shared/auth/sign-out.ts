@@ -11,6 +11,7 @@ const AFTER_SIGN_OUT = {
   customer: "/",
   admin: "/login",
   partner: "/login",
+  agent: "/sign-in",
 } as const satisfies Record<Zone, string>;
 
 /**

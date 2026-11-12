@@ -16,6 +16,7 @@ One Next.js app gives one design system, one set of domain components (status ba
 | customer | `PUBLIC_HOST` | `localhost:3000` | anonymous + `customer` | `/v1/store/*` | light | indexed, th at `/`, en at `/en` |
 | admin | `ADMIN_HOST` | `admin.localhost:3000` | `staff` | `/v1/admin/*` | light | `noindex`, no sitemap |
 | partner | `PARTNER_HOST` | `partner.localhost:3000` | `partner` | `/v1/partner/*` | light / high-contrast | `noindex`, installable PWA |
+| agent (D-467) | `AGENT_HOST` | `agent.localhost:3000` | `customer` (own host-only cookies, session `client: agent`) | `/v1/store/agent/*`, `/v1/auth/customer/*` + an explicit list (`ZONE_CONFIG.agent`) | light | `noindex`, installable PWA "getpack Agent" |
 
 - **Host-based zones, not path-based**: `src/proxy.ts` (Next 16 replaces `middleware.ts` with `proxy.ts`) maps the request host to an internal route segment (`ADMIN_HOST/x` → `/admin/x`, `PARTNER_HOST/x` → `/partner/x`) and returns 404 for `/admin/*` or `/partner/*` on the customer host. Each zone therefore has its own origin: cookies are host-only, CSP differs per zone, and a storefront XSS cannot ride a staff session.
 - **Separate root layouts** (no `src/app/layout.tsx`): `src/app/[locale]/layout.tsx` (customer), `src/app/admin/layout.tsx`, `src/app/partner/layout.tsx` — each with its own `<html>`, providers, theme, fonts subset and analytics, so admin code and providers never ship to customers.

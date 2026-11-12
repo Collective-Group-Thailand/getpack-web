@@ -23,7 +23,8 @@
     "templates": "Templates",
     "productsPricing": "Pricing",
     "business": "Business",
-    "startFree": "Start designing free"
+    "startFree": "Start designing free",
+    "agent": "Agents"
   },
   "footer": {
     "tagline": "A packaging design studio and production partner",
@@ -46,7 +47,8 @@
       "contact": "Contact us",
       "guarantee": "Our guarantee",
       "network": "Production standard",
-      "reviews": "Customer reviews"
+      "reviews": "Customer reviews",
+      "agent": "Become a getpack sales agent"
     },
     "legal": {
       "heading": "Legal and privacy",

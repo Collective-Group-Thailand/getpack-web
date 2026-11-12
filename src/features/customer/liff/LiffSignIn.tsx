@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { signInWithLine } from "@/features/customer/auth/actions";
-import { lineConfigured } from "@/features/customer/auth/providers";
+import { signInWithLine } from "@/features/shared/customer-auth/actions";
+import { lineConfigured } from "@/features/shared/customer-auth/providers";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -25,7 +25,7 @@ export function LiffSignIn() {
     let cancelled = false;
     void (async () => {
       try {
-        const { lineIdentity } = await import("@/features/customer/auth/provider-sdks");
+        const { lineIdentity } = await import("@/features/shared/customer-auth/provider-sdks");
         const identity = await lineIdentity(window.location.href);
         if (!identity || cancelled) return;
         const result = await signInWithLine(identity);

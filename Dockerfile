@@ -3,7 +3,7 @@
 # zones (customer / admin / partner, chosen by Host header in src/proxy.ts).
 #
 # NEXT_PUBLIC_* values are inlined at build time, so they arrive as build args per environment.
-# The server env (PUBLIC_HOST, ADMIN_HOST, PARTNER_HOST, API_INTERNAL_URL, …) is read at run time from
+# The server env (PUBLIC_HOST, ADMIN_HOST, PARTNER_HOST, AGENT_HOST, API_INTERNAL_URL, …) is read at run time from
 # the container env; the build only needs valid values because NODE_ENV=production validates them.
 # Built natively on an arm64 runner (collective-infra reusable-build-push.yml).
 
@@ -26,6 +26,7 @@ COPY . .
 ARG PUBLIC_HOST=localhost:3000
 ARG ADMIN_HOST=admin.localhost:3000
 ARG PARTNER_HOST=partner.localhost:3000
+ARG AGENT_HOST=agent.localhost:3000
 ARG API_INTERNAL_URL=http://getpack-api:3000
 ARG NEXT_PUBLIC_ENV_BADGE
 ARG NEXT_PUBLIC_ASSET_BASE_URL
@@ -39,7 +40,7 @@ ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
 ARG NEXT_PUBLIC_LIFF_ID
 ARG NEXT_PUBLIC_GTM_ID
 ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY
-ENV PUBLIC_HOST=$PUBLIC_HOST ADMIN_HOST=$ADMIN_HOST PARTNER_HOST=$PARTNER_HOST API_INTERNAL_URL=$API_INTERNAL_URL \
+ENV PUBLIC_HOST=$PUBLIC_HOST ADMIN_HOST=$ADMIN_HOST PARTNER_HOST=$PARTNER_HOST AGENT_HOST=$AGENT_HOST API_INTERNAL_URL=$API_INTERNAL_URL \
     NEXT_PUBLIC_ENV_BADGE=$NEXT_PUBLIC_ENV_BADGE \
     NEXT_PUBLIC_ASSET_BASE_URL=$NEXT_PUBLIC_ASSET_BASE_URL \
     NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN \

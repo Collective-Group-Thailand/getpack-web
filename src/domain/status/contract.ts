@@ -365,6 +365,9 @@ export type AgentCommissionStatus = Schemas["AgentCommissionStatus"];
 
 /** A monthly agent statement (D-420). **Source: contract** (v0.65.0). */
 export type AgentStatementStatus = Schemas["AgentStatementStatus"];
+export type AgentTaxDeclarationStatus = Schemas["AgentTaxDeclarationStatus"];
+/** An agent's payout profile (D-466). **Source: contract**. */
+export type AgentPayoutProfileStatus = Schemas["AgentPayoutProfileStatus"];
 
 /** A commission plan version (D-418). **Source: contract** (v0.65.0). */
 export type AgentPlanVersionStatus = Schemas["AgentPlanVersionStatus"];
@@ -372,5 +375,30 @@ export type AgentPlanVersionStatus = Schemas["AgentPlanVersionStatus"];
 /** A factory brought in by an agent (D-419). **Source: contract** (v0.65.0). */
 export type AgentFactoryLinkStatus = Schemas["AgentFactoryLinkStatus"];
 
+/** Where a lead stands in the agent's pipeline (D-468). **Source: contract**. */
+export type AgentLeadStage = Schemas["AgentLeadStage"];
+/** An agent's quote on behalf of a lead (D-468). **Source: contract**. */
+export type AgentQuoteStatus = Schemas["AgentQuoteStatus"];
+/** A discount request round (D-468). **Source: contract**. */
+export type AgentDiscountRequestStatus = Schemas["AgentDiscountRequestStatus"];
+/** One order in the commission forecast (D-468, F47). **Source: contract**. */
+export type AgentForecastStatus = Schemas["AgentForecastStatus"];
+
 /** A reorder suggestion in the CS queue (D-288). **Source: contract** (v0.66.0). */
 export type ReorderSuggestionStatus = Schemas["ReorderSuggestionStatus"];
+
+// D-469 / D-470: the company sales desk.
+export type SalesInboundStatus = Schemas["SalesInboundStatus"];
+export type SalesInboundSource = Schemas["SalesInboundSource"];
+export type SalesDiscountApprovalStatus = Schemas["SalesDiscountApprovalStatus"];
+export type SalesAuthorityColour = Schemas["SalesAuthorityColour"];
+export type SalesFloorCheck = Schemas["SalesFloorCheck"];
+export type PlaybookCardStatus = Schemas["TemplateVersionStatus"];
+export type SalesNegotiationOutcome = Schemas["SalesNegotiationOutcome"];
+export type SalesFactoryPriceLockStatus = Schemas["SalesFactoryPriceLockStatus"];
+
+// D-472: the management P&L planner.
+export type PnlPlanStatus = Schemas["PnlPlanStatus"];
+export type PnlCellMode = Schemas["PnlCellMode"];
+export type PnlMonthKind = Schemas["PnlMonthKind"];
+export type PnlActualBasis = Schemas["PnlActualBasis"];

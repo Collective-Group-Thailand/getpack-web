@@ -9,11 +9,19 @@ import type { Zone } from "@/lib/zones";
 
 import { decodeVapidKey, mayPrompt, pushPermissionState, type PushPermissionState } from "./vapid";
 
-/** Where the browser is served; `/sw.js` so its scope is the whole origin. */
-const SERVICE_WORKER_PATH = "/sw.js";
+/**
+ * Where the browser is served; a root file so its scope is the whole origin. getpack Agent has its own worker
+ * (offline shell + push, D-467); every other zone's is push only.
+ */
+export function serviceWorkerPath(zone: Zone): string {
+  return zone === "agent" ? "/agent-sw.js" : "/sw.js";
+}
+
+/** The agent zone's subscription id on this device, so it can be removed again (`store.agentPush.unsubscribe`). */
+const AGENT_SUBSCRIPTION_KEY = "getpack.agent.push.subscription";
 
 /**
- * Web push for the customer and partner zones (D-143).
+ * Web push for the customer, partner and agent zones (D-143, D-467).
  *
  * The shape of this hook is the policy: it returns `enable`, and `enable` is only ever called
  * from a handler on something a person deliberately did. There is no effect that prompts, and
@@ -50,7 +58,7 @@ export function usePushSubscription(zone: Zone) {
         const key = await serverVapidKey(zone);
         if (!key) return false;
 
-        const registration = await navigator.serviceWorker.register(SERVICE_WORKER_PATH);
+        const registration = await navigator.serviceWorker.register(serviceWorkerPath(zone));
         const permission = await Notification.requestPermission();
         // No `setState`: the permission store below is notified by the browser, and forcing a
         // value here could disagree with it.
@@ -85,7 +93,51 @@ export function usePushSubscription(zone: Zone) {
     [state, zone],
   );
 
-  return { state, busy, enable };
+  /**
+   * Stops push on this device: unsubscribes in the browser and, in the agent zone, removes the subscription the
+   * API holds. Best-effort like `enable` — a failure leaves the screen as it was.
+   */
+  const disable = useCallback(async (): Promise<boolean> => {
+    setBusy(true);
+    try {
+      const registration = await navigator.serviceWorker.getRegistration(serviceWorkerPath(zone));
+      const subscription = await registration?.pushManager.getSubscription();
+      await subscription?.unsubscribe();
+      if (zone === "agent") {
+        const id = readStoredSubscription();
+        if (id) {
+          await browserApi().DELETE("/v1/store/agent/push/subscriptions/{subscriptionId}", {
+            params: { path: { subscriptionId: id } },
+          });
+          storeSubscription(null);
+        }
+      }
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }, [zone]);
+
+  return { state, busy, enable, disable };
+}
+
+function readStoredSubscription(): string | null {
+  try {
+    return window.localStorage.getItem(AGENT_SUBSCRIPTION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function storeSubscription(id: string | null): void {
+  try {
+    if (id) window.localStorage.setItem(AGENT_SUBSCRIPTION_KEY, id);
+    else window.localStorage.removeItem(AGENT_SUBSCRIPTION_KEY);
+  } catch {
+    // Private mode: the subscription still works; it just cannot be removed from this device's settings later.
+  }
 }
 
 /* ---------------------------------------------------------------------------------------- *
@@ -150,7 +202,9 @@ async function serverVapidKey(zone: Zone): Promise<string | null> {
       ? await api.GET("/v1/admin/web-push/vapid-public-key")
       : zone === "partner"
         ? await api.GET("/v1/partner/web-push/vapid-public-key")
-        : await api.GET("/v1/store/web-push/vapid-public-key");
+        : zone === "agent"
+          ? await api.GET("/v1/store/agent/push/vapid-public-key")
+          : await api.GET("/v1/store/web-push/vapid-public-key");
   return response.data?.vapidPublicKey ?? null;
 }
 
@@ -158,5 +212,9 @@ async function registerSubscription(zone: Zone, body: Schemas["SubscribeWebPushD
   const api = browserApi();
   if (zone === "admin") await api.POST("/v1/admin/web-push/subscriptions", { body });
   else if (zone === "partner") await api.POST("/v1/partner/web-push/subscriptions", { body });
-  else await api.POST("/v1/store/web-push/subscriptions", { body });
+  else if (zone === "agent") {
+    // Agent events push to agent-zone subscriptions only (D-467); the id is kept to remove it again.
+    const { data } = await api.POST("/v1/store/agent/push/subscriptions", { body });
+    if (data) storeSubscription(data.id);
+  } else await api.POST("/v1/store/web-push/subscriptions", { body });
 }

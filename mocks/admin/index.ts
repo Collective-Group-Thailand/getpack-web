@@ -3,6 +3,7 @@
  * published surface; see each module for what it stands in for.
  */
 
+import { agentWaitlistHandlers } from "./agent-waitlist";
 import { analyticsContractHandlers } from "./analytics";
 import { artworkContractHandlers } from "./artwork";
 import { catalogueHandlers } from "./catalogue";
@@ -21,10 +22,12 @@ import { marketingContractHandlers, marketingHandlers } from "./marketing";
 import { orderHandlers } from "./orders";
 import { partnerHandlers } from "./partners";
 import { platformHandlers } from "./platform";
+import { pnlHandlers } from "./pnl";
 import { designContractHandlers, prepressHandlers } from "./prepress";
 import { productionHandlers } from "./production";
 import { rfqHandlers } from "./rfq";
 import { salesHandlers } from "./sales";
+import { salesDeskHandlers } from "./sales-desk";
 import { shipmentHandlers } from "./shipments";
 import { styleLibraryContentHandlers } from "./style-library-content";
 import { adminConversationHandlers } from "../store/conversations";
@@ -42,6 +45,7 @@ export const adminHandlers = [
   ...productionHandlers,
   ...orderHandlers,
   ...customerHandlers,
+  ...salesDeskHandlers,
   ...salesHandlers,
   ...rfqHandlers,
   ...artworkContractHandlers,
@@ -54,6 +58,8 @@ export const adminHandlers = [
   ...marketingHandlers,
   ...companyHandlers,
   ...financeHandlers,
+  ...pnlHandlers,
+  ...agentWaitlistHandlers,
   ...loyaltyHandlers,
   ...shipmentHandlers,
   ...logisticsHandlers,

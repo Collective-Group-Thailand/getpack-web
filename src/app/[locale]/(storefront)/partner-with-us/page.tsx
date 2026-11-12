@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { TrackedAnchor } from "@/features/customer/business/landing/TrackedLink";
+import { TrackedAnchor, TrackedLink } from "@/features/customer/business/landing/TrackedLink";
 import { getProductTypes, getProvinces, getPublicConfig } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { pageContext } from "@/features/customer/content/page-meta.server";
@@ -392,6 +392,17 @@ export default async function PartnerWithUsPage({ params }: { params: Promise<{ 
               </details>
             ))}
           </div>
+          {/* D-466: someone who sells rather than makes — the agent programme. */}
+          <p className="text-muted mt-6 text-sm">
+            <TrackedLink
+              event="fx_cta"
+              target="agent"
+              href="/agent"
+              className="hover:text-fg underline underline-offset-4"
+            >
+              {t("agentLink")}
+            </TrackedLink>
+          </p>
         </section>
       </div>
     </div>

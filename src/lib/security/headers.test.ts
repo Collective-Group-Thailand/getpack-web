@@ -178,6 +178,41 @@ describe("sign-in origins", () => {
   });
 });
 
+describe("the agent zone (D-467)", () => {
+  const withSignIn = { ...options, origins: { firebaseAuthDomain: "getpack.firebaseapp.com", line: true } };
+
+  it("signs customers in like the storefront: Firebase and LINE origins, a popup it can hear back from", () => {
+    const directives = cspDirectives("agent", withSignIn);
+    expect(directives["connect-src"]).toEqual(
+      expect.arrayContaining([
+        "https://identitytoolkit.googleapis.com",
+        "https://securetoken.googleapis.com",
+        "https://getpack.firebaseapp.com",
+        "https://api.line.me",
+        "https://access.line.me",
+      ]),
+    );
+    expect(directives["frame-src"]).toEqual(
+      expect.arrayContaining(["https://getpack.firebaseapp.com", "https://access.line.me"]),
+    );
+    expect(securityHeaders("agent", { isHttps: true })["Cross-Origin-Opener-Policy"]).toBe("same-origin-allow-popups");
+  });
+
+  it("has no analytics, no blob: fetches and cannot be framed", () => {
+    const csp = contentSecurityPolicy("agent", options);
+    expect(csp).not.toContain("googletagmanager.com");
+    expect(csp).not.toContain("google-analytics.com");
+    expect(cspDirectives("agent", options)["connect-src"]).not.toContain("blob:");
+    expect(cspDirectives("agent", options)["frame-ancestors"]).toEqual(["'none'"]);
+  });
+
+  it("is noindex and keeps the camera off", () => {
+    const headers = securityHeaders("agent", { isHttps: true });
+    expect(headers["X-Robots-Tag"]).toBe("noindex, nofollow");
+    expect(headers["Permissions-Policy"]).toContain("camera=()");
+  });
+});
+
 describe("driver handover page (D-463)", () => {
   const token = `d${"A1b2C3d4_-".repeat(3)}xy`;
 

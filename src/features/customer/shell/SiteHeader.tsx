@@ -74,6 +74,8 @@ export async function SiteHeader() {
     ["/business", t("nav.business")],
     ["/contact", t("nav.contact")],
   ];
+  // D-466: the agent programme — in the drawer, and in the bar only from 74rem where the width budget has room.
+  const agentLink: [string, string] = ["/agent", t("nav.agent")];
   const navLink =
     "text-muted hover:text-fg hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-control inline-flex h-10 items-center px-2.5 text-[0.9375rem] font-medium whitespace-nowrap outline-none focus-visible:ring-2 min-[74rem]:px-3";
 
@@ -147,7 +149,7 @@ export async function SiteHeader() {
                 </div>
               )}
               <ul className="divide-border border-border divide-y border-y">
-                {links.map(([href, label], index) => (
+                {[...links, agentLink].map(([href, label], index) => (
                   <li key={href}>
                     <Link href={href} className="flex min-h-12 items-center justify-between text-base font-medium">
                       {label}
@@ -227,6 +229,9 @@ export async function SiteHeader() {
                   {label}
                 </HeaderNavLink>
               ))}
+              <HeaderNavLink href={agentLink[0]} className={`${navLink} hidden min-[74rem]:inline-flex`}>
+                {agentLink[1]}
+              </HeaderNavLink>
             </nav>
           </div>
 

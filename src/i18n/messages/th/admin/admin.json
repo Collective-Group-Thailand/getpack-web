@@ -43,6 +43,7 @@
     "payouts": "การจ่ายเงินโรงงาน",
     "marketing": "การตลาด",
     "agents": "ตัวแทนขาย",
+    "sales": "ฝ่ายขาย",
     "campaigns": "แคมเปญ",
     "customers": "ลูกค้า",
     "companies": "บริษัทคู่ค้า",
@@ -134,6 +135,7 @@
     "factory_purchaser": "เจ้าหน้าที่จัดซื้อ",
     "factory_maintenance": "ช่างซ่อมบำรุง",
     "factory_sales": "ฝ่ายขายโรงงาน",
-    "factory_auditor": "ผู้สอบบัญชี / CPA"
+    "factory_auditor": "ผู้สอบบัญชี / CPA",
+    "sales_rep": "พนักงานขาย"
   }
 }

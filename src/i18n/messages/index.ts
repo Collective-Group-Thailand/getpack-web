@@ -73,6 +73,7 @@ const NAMESPACES = [
   "reports",
   "finance",
   "agents",
+  "sales",
   "pricing",
   "advisor",
   "partner",
@@ -91,6 +92,8 @@ const NAMESPACES = [
   "partnerInsight",
   "partnerLedger",
   "docBranding",
+  "agentZone",
+  "agentSales",
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -177,6 +180,9 @@ export const ZONE_NAMESPACES = {
     "reports",
     "finance",
     "agents",
+    // D-469 / D-470: the company sales desk, and the agent zone's lead components it shares (src/features/shared/sales).
+    "sales",
+    "agentSales",
     "pricing",
     "advisor",
     // The designer, for prepress opening a design read-only or as a copy (F4 C.2).
@@ -208,6 +214,11 @@ export const ZONE_NAMESPACES = {
     "partnerLedger",
     "docBranding",
   ],
+  /**
+   * getpack Agent (D-467): its own shell, sign-in and settings (`agentZone`), and the programme's copy the moved
+   * agent pages already used (`agent`, shared with the storefront's landing and application).
+   */
+  agent: ["common", "auth", "status", "problems", "agent", "agentZone", "agentSales"],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
 type Loader = () => Promise<{ default: Record<string, unknown> }>;
@@ -245,6 +256,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     agent: () => import("./th/customer/agent.json"),
     deals: () => import("./th/customer/deals.json"),
     agents: () => import("./th/admin/agents.json"),
+    sales: () => import("./th/admin/sales.json"),
     pricing: () => import("./th/admin/pricing.json"),
     advisor: () => import("./th/admin/advisor.json"),
     admin: () => import("./th/admin/admin.json"),
@@ -286,6 +298,8 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     partnerInsight: () => import("./th/partner/insight.json"),
     partnerLedger: () => import("./th/partner/ledger.json"),
     docBranding: () => import("./th/common/document-branding.json"),
+    agentZone: () => import("./th/agent/zone.json"),
+    agentSales: () => import("./th/agent/sales.json"),
   },
   en: {
     common: () => import("./en/common/common.json"),
@@ -319,6 +333,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     agent: () => import("./en/customer/agent.json"),
     deals: () => import("./en/customer/deals.json"),
     agents: () => import("./en/admin/agents.json"),
+    sales: () => import("./en/admin/sales.json"),
     pricing: () => import("./en/admin/pricing.json"),
     advisor: () => import("./en/admin/advisor.json"),
     admin: () => import("./en/admin/admin.json"),
@@ -360,6 +375,8 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     partnerInsight: () => import("./en/partner/insight.json"),
     partnerLedger: () => import("./en/partner/ledger.json"),
     docBranding: () => import("./en/common/document-branding.json"),
+    agentZone: () => import("./en/agent/zone.json"),
+    agentSales: () => import("./en/agent/sales.json"),
   },
 };
 

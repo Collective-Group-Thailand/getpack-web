@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
 
 import { formatNumber } from "@/i18n/format";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
@@ -16,6 +17,11 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { SearchableSelect } from "@/features/shared/forms/SearchableSelect";
 
 import { facetLabel, type StylesT } from "./labels";
+import { DIELINE_FRAGMENT } from "./paths";
+
+const SignInSheet = dynamic(() => import("@/features/customer/auth/SignInSheet").then((module) => module.SignInSheet), {
+  ssr: false,
+});
 
 type Basis = "internal" | "external" | "over_crease";
 /** The engine's three formats plus `ai`: the designer PDF delivered as an Illustrator file (getpack-api v0.59.0). */
@@ -25,7 +31,6 @@ export interface DielineDownloadProps {
   variantCode: string;
   sizeRanges: Schemas["StyleSizeRangeDto"][];
   signedIn: boolean;
-  signInHref: string;
   /** Where to order this style (the configurator), for the nudge after a download. */
   orderHref: string | null;
   /** A size to start the form on (from the product page's link), in mm on the inside basis. */
@@ -34,24 +39,47 @@ export interface DielineDownloadProps {
 
 const MM = /^\d{1,4}(\.\d)?$/;
 
+type Request = Schemas["DownloadDielineDto"];
+/**
+ * The download a sign-in interrupted, kept for this tab only: after the sheet (or LINE's login page, which leaves the
+ * page) the same file continues by itself. Sizes and a style code — nothing personal.
+ */
+const PENDING_KEY = "gp:dieline:pending";
+/** The BFF writes the browser's real device id (its httpOnly cookie) over this placeholder (D-471). */
+const DEVICE_PLACEHOLDER = "00000000-0000-4000-8000-000000000000";
+
+function readPending(variantCode: string): Request | null {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(PENDING_KEY) ?? "null") as Request | null;
+    return value?.variantCode === variantCode ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The free dieline of a variant at the customer's sizes (U2.F2, D-271): PDF, DXF or SVG, no plan
- * gate and no watermark, drawn by getpack-api (`store.dielines.download`) within the style's range for
- * the material class — sizes entered on any basis are converted by the API. The PDF's layers are
- * explained; after a download the page says the box can be ordered as it is, never a paywall. A
- * signed-out visitor is asked to sign in (the API counts downloads per customer).
+ * gate and no watermark, drawn by getpack-api within the style's range for the material class —
+ * sizes entered on any basis are converted by the API. The PDF's layers are explained; after a
+ * download the page says the box can be ordered as it is, never a paywall.
+ *
+ * D-471: the first download needs no sign-in (`store.dielines.downloadFree`, counted by the browser's
+ * httpOnly device cookie at the BFF). From the second the API answers `dielines.sign_in_required`:
+ * the sign-in sheet opens with the one-tap providers first, and once signed in the same file
+ * downloads by itself (`store.dielines.download`) — the copy says "ฟรี" throughout, never a price.
  */
 export function DielineDownload({
   variantCode,
   sizeRanges,
-  signedIn,
-  signInHref,
+  signedIn: signedInAtLoad,
   orderHref,
   initialSize,
 }: DielineDownloadProps) {
   const t = useTranslations("styles.dieline");
   const words = useTranslations("styles") as unknown as StylesT;
   const locale = useLocale() as "th" | "en";
+  const router = useRouter();
+  const [signedIn, setSignedIn] = useState(signedInAtLoad);
   const [material, setMaterial] = useState(sizeRanges[0]?.materialClass ?? "");
   const [basis, setBasis] = useState<Basis>("internal");
   const [format, setFormat] = useState<Format>("pdf");
@@ -59,38 +87,71 @@ export function DielineDownload({
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [done, setDone] = useState<Schemas["DielineDownloadDto"] | null>(null);
+  const [signIn, setSignIn] = useState(false);
+  const [continuing, setContinuing] = useState(false);
+  const resumed = useRef(false);
 
-  if (!sizeRanges.length) return null;
   const flat = sizeRanges.find((r) => r.materialClass === material)?.maxHMm === null;
   const ready = MM.test(size.l) && MM.test(size.w) && (flat || MM.test(size.h));
 
-  const download = async () => {
-    setBusy(true);
-    setProblem(null);
-    try {
-      const { data } = await browserApi().POST("/v1/store/dielines/downloads", {
-        body: {
-          variantCode,
-          materialClass: material,
-          measurementBasis: basis,
-          format,
-          lengthMm: Number(size.l),
-          widthMm: Number(size.w),
-          heightMm: flat ? 0 : Number(size.h),
-        },
-      });
-      setDone(data!);
-      const a = document.createElement("a");
-      a.href = data!.url;
-      a.download = data!.fileName;
-      a.rel = "noopener";
-      a.click();
-    } catch (error) {
-      setProblem(isApiError(error) ? error.detail : t("failed"));
-    } finally {
-      setBusy(false);
-    }
-  };
+  /** Signed in: the customer's own free download (D-203 limits). Signed out: the first, free without sign-in. */
+  const run = useCallback(
+    async (body: Request, asCustomer: boolean, resuming = false) => {
+      setBusy(true);
+      setContinuing(resuming);
+      setProblem(null);
+      try {
+        const { data } = asCustomer
+          ? await browserApi().POST("/v1/store/dielines/downloads", { body })
+          : await browserApi().POST("/v1/store/dielines/downloads/free", {
+              body: { ...body, deviceId: DEVICE_PLACEHOLDER },
+            });
+        sessionStorage.removeItem(PENDING_KEY);
+        setDone(data!);
+        const a = document.createElement("a");
+        a.href = data!.url;
+        a.download = data!.fileName;
+        a.rel = "noopener";
+        a.click();
+      } catch (error) {
+        if (!asCustomer && isApiError(error) && error.code === "dielines.sign_in_required") {
+          // Not a failure: the next download is still free, after one sign-in.
+          sessionStorage.setItem(PENDING_KEY, JSON.stringify(body));
+          setSignIn(true);
+        } else setProblem(isApiError(error) ? error.detail : t("failed"));
+      } finally {
+        setBusy(false);
+        setContinuing(false);
+      }
+    },
+    [t],
+  );
+
+  // Back from LINE's login page (or a reload) signed in, with a download waiting: it continues by itself, once.
+  useEffect(() => {
+    if (!signedIn || resumed.current) return;
+    const pending = readPending(variantCode);
+    if (!pending) return;
+    // On the next task, so the page has its new session before the call.
+    const timer = window.setTimeout(() => {
+      if (resumed.current) return;
+      resumed.current = true;
+      void run(pending, true, true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [signedIn, variantCode, run]);
+
+  if (!sizeRanges.length) return null;
+
+  const request = (): Request => ({
+    variantCode,
+    materialClass: material,
+    measurementBasis: basis,
+    format,
+    lengthMm: Number(size.l),
+    widthMm: Number(size.w),
+    heightMm: flat ? 0 : Number(size.h),
+  });
 
   const range = sizeRanges.find((r) => r.materialClass === material);
   const span = (min: number | null, max: number | null) =>
@@ -107,101 +168,98 @@ export function DielineDownload({
         </h3>
         <p className="text-muted text-sm">{t("body")}</p>
       </div>
-      {!signedIn ? (
-        <Button asChild variant="secondary" iconStart="log-in">
-          <Link href={signInHref}>{t("signIn")}</Link>
+      <>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={t("material")}>
+            <SearchableSelect
+              value={material}
+              onValueChange={setMaterial}
+              options={sizeRanges.map((r) => ({
+                value: r.materialClass,
+                label: facetLabel(words, "materialClass", r.materialClass),
+              }))}
+            />
+          </Field>
+          <Field label={t("basis")}>
+            <SearchableSelect
+              value={basis}
+              onValueChange={(v) => setBasis(v as Basis)}
+              options={(["internal", "external", "over_crease"] as const).map((value) => ({
+                value,
+                label: t(`bases.${value}`),
+              }))}
+            />
+          </Field>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {(["l", "w", "h"] as const).map((k) =>
+            k === "h" && flat ? null : (
+              <Field
+                key={k}
+                label={t(`sizes.${k}`)}
+                hint={
+                  range
+                    ? t("range", {
+                        span: span(
+                          range[`min${k.toUpperCase()}Mm` as "minLMm"],
+                          range[`max${k.toUpperCase()}Mm` as "maxLMm"],
+                        ),
+                      })
+                    : undefined
+                }
+              >
+                <Input
+                  inputMode="decimal"
+                  value={size[k]}
+                  onChange={(event) => setSize((s) => ({ ...s, [k]: event.target.value.trim() }))}
+                />
+              </Field>
+            ),
+          )}
+        </div>
+        <SegmentedControl
+          label={t("format")}
+          value={format}
+          onValueChange={setFormat}
+          options={(["pdf", "ai", "dxf", "svg"] as const).map((value) => ({ value, label: value.toUpperCase() }))}
+        />
+        <Button iconStart="download" loading={busy} disabled={!ready} onClick={() => void run(request(), signedIn)}>
+          {continuing ? t("continuing") : t("download")}
         </Button>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={t("material")}>
-              <SearchableSelect
-                value={material}
-                onValueChange={setMaterial}
-                options={sizeRanges.map((r) => ({
-                  value: r.materialClass,
-                  label: facetLabel(words, "materialClass", r.materialClass),
-                }))}
-              />
-            </Field>
-            <Field label={t("basis")}>
-              <SearchableSelect
-                value={basis}
-                onValueChange={(v) => setBasis(v as Basis)}
-                options={(["internal", "external", "over_crease"] as const).map((value) => ({
-                  value,
-                  label: t(`bases.${value}`),
-                }))}
-              />
-            </Field>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {(["l", "w", "h"] as const).map((k) =>
-              k === "h" && flat ? null : (
-                <Field
-                  key={k}
-                  label={t(`sizes.${k}`)}
-                  hint={
-                    range
-                      ? t("range", {
-                          span: span(
-                            range[`min${k.toUpperCase()}Mm` as "minLMm"],
-                            range[`max${k.toUpperCase()}Mm` as "maxLMm"],
-                          ),
-                        })
-                      : undefined
-                  }
-                >
-                  <Input
-                    inputMode="decimal"
-                    value={size[k]}
-                    onChange={(event) => setSize((s) => ({ ...s, [k]: event.target.value.trim() }))}
-                  />
-                </Field>
-              ),
-            )}
-          </div>
-          <SegmentedControl
-            label={t("format")}
-            value={format}
-            onValueChange={setFormat}
-            options={(["pdf", "ai", "dxf", "svg"] as const).map((value) => ({ value, label: value.toUpperCase() }))}
-          />
-          <Button iconStart="download" loading={busy} disabled={!ready} onClick={() => void download()}>
-            {t("download")}
-          </Button>
-          {/* How to open what comes down, in three lines per format (U5.4 §2). */}
-          <ol
-            className="text-muted list-decimal ps-5 text-xs"
-            aria-label={t("guideTitle", { format: format.toUpperCase() })}
-          >
-            {(["1", "2", "3"] as const).map((n) => (
-              <li key={n}>{t(`guide.${format}.${n}`)}</li>
-            ))}
-          </ol>
-          {problem ? <Callout tone="danger" title={problem} /> : null}
-          {done ? (
-            <Callout tone="success" title={t("done", { file: done.fileName })}>
-              <p className="text-sm">
-                {t("drawn", {
-                  l: formatNumber(done.drawn.lengthMm, locale),
-                  w: formatNumber(done.drawn.widthMm, locale),
-                  h: formatNumber(done.drawn.heightMm, locale),
-                })}
-                {done.remainingToday !== null ? ` · ${t("remaining", { count: done.remainingToday })}` : ""}
+        {!signedIn ? (
+          <p className="text-muted -mt-1 text-xs">{done?.nextNeedsSignIn ? t("nextSignIn") : t("firstFree")}</p>
+        ) : null}
+        {/* How to open what comes down, in three lines per format (U5.4 §2). */}
+        <ol
+          className="text-muted list-decimal ps-5 text-xs"
+          aria-label={t("guideTitle", { format: format.toUpperCase() })}
+        >
+          {(["1", "2", "3"] as const).map((n) => (
+            <li key={n}>{t(`guide.${format}.${n}`)}</li>
+          ))}
+        </ol>
+        {problem ? <Callout tone="danger" title={problem} /> : null}
+        {done ? (
+          <Callout tone="success" title={t("done", { file: done.fileName })}>
+            <p className="text-sm">
+              {t("drawn", {
+                l: formatNumber(done.drawn.lengthMm, locale),
+                w: formatNumber(done.drawn.widthMm, locale),
+                h: formatNumber(done.drawn.heightMm, locale),
+              })}
+              {done.remainingToday !== null ? ` · ${t("remaining", { count: done.remainingToday })}` : ""}
+            </p>
+            {orderHref ? (
+              <p className="mt-2 text-sm">
+                {t("nudge")}{" "}
+                <Link href={orderHref} className="text-primary underline underline-offset-4">
+                  {t("order")}
+                </Link>
               </p>
-              {orderHref ? (
-                <p className="mt-2 text-sm">
-                  {t("nudge")}{" "}
-                  <Link href={orderHref} className="text-primary underline underline-offset-4">
-                    {t("order")}
-                  </Link>
-                </p>
-              ) : null}
-            </Callout>
-          ) : null}
-        </>
-      )}
+            ) : null}
+          </Callout>
+        ) : null}
+      </>
       <details className="text-sm">
         <summary className="cursor-pointer font-medium">{t("layersTitle")}</summary>
         <ul className="text-muted mt-2 flex flex-col gap-1">
@@ -212,6 +270,22 @@ export function DielineDownload({
           ))}
         </ul>
       </details>
+      {signIn ? (
+        <SignInSheet
+          open={signIn}
+          onOpenChange={setSignIn}
+          title={t("sheetTitle")}
+          description={t("sheetSubtitle")}
+          providersFirst
+          lineReturnUrl={`${window.location.origin}${window.location.pathname}${window.location.search}#${DIELINE_FRAGMENT}`}
+          onSignedIn={() => {
+            setSignIn(false);
+            setSignedIn(true);
+            router.refresh();
+            // The effect above picks the waiting download up and continues it.
+          }}
+        />
+      ) : null}
     </section>
   );
 }

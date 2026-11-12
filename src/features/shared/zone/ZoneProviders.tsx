@@ -1,5 +1,7 @@
 import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
+import { clientMessages } from "@/i18n/client-messages";
 import { WebVitals } from "@/lib/observability";
 import { QueryProvider } from "@/lib/query";
 import { RealtimeProvider } from "@/lib/realtime";
@@ -23,8 +25,11 @@ import { ZoneContextProvider } from "./ZoneContext";
  * throws without a provider above it. Storybook had one in its own preview decorator, so
  * every tooltip story worked while the first tooltip rendered in the actual app — the
  * collapsed admin sidebar — took the whole sidebar down with it.
+ *
+ * The client gets the zone's messages without the subtrees only server components read (`clientMessages`, P7): the
+ * catalogue is serialised into every page's HTML, and long server-rendered page copy has no reason to travel twice.
  */
-export function ZoneProviders({
+export async function ZoneProviders({
   zone,
   themeChoice,
   children,
@@ -34,7 +39,7 @@ export function ZoneProviders({
   children: React.ReactNode;
 }) {
   return (
-    <NextIntlClientProvider>
+    <NextIntlClientProvider messages={clientMessages(await getMessages())}>
       <ZoneContextProvider zone={zone}>
         <ThemeProvider initialChoice={themeChoice} zone={zone}>
           <TooltipProvider>

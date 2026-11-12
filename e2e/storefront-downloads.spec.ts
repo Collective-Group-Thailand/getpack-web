@@ -26,11 +26,11 @@ async function expectNoViolations(page: Page) {
 }
 
 test("a free dieline at my sizes, from a style's page", async ({ page }) => {
-  // Signed out: asked to sign in, never a paywall.
+  // Signed out: the form is there and the first download needs no sign-in (D-471) — never a paywall.
   await gotoHydrated(page, `${HOSTS.customer}/styles/pk-te-01`);
   await page.getByRole("button", { name: "ดาวน์โหลดแบบแผ่นคลี่ฟรี" }).click();
   const panel = page.getByRole("region", { name: "ดาวน์โหลดแบบแผ่นคลี่ฟรี" });
-  await expect(panel.getByRole("link", { name: "เข้าสู่ระบบเพื่อดาวน์โหลดฟรี" })).toBeVisible();
+  await expect(panel.getByText("ครั้งแรกดาวน์โหลดได้เลยโดยไม่ต้องเข้าสู่ระบบ")).toBeVisible();
 
   await signInAsCustomer(page, "/styles");
   await gotoHydrated(page, `${HOSTS.customer}/styles/pk-te-01`);

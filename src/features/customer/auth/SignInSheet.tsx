@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Dialog } from "@/ui/components/Dialog";
 import { Sheet } from "@/ui/components/Sheet";
 
-import { SignInFlow } from "./SignInFlow";
+import { SignInFlow } from "@/features/shared/customer-auth/SignInFlow";
 
 export interface SignInSheetProps {
   open: boolean;
@@ -17,6 +17,11 @@ export interface SignInSheetProps {
   resume?: "line";
   /** Where LINE should send the customer back to after its login page. */
   lineReturnUrl?: string;
+  /** The task's own words for the sheet, e.g. "ดาวน์โหลดต่อได้ฟรี" (D-471); the sign-in title otherwise. */
+  title?: string;
+  description?: string;
+  /** Google, Apple and LINE above the phone form — a sign-in asked in the middle of a task. */
+  providersFirst?: boolean;
 }
 
 const WIDE = "(min-width: 48rem)";
@@ -33,7 +38,16 @@ function subscribe(onChange: () => void): () => void {
  * "≥ md ใช้ centered dialog 480px; < md ใช้ bottom sheet"). The flow inside is `SignInFlow`, the
  * same one the `/sign-in` page shows.
  */
-export function SignInSheet({ open, onOpenChange, onSignedIn, resume, lineReturnUrl }: SignInSheetProps) {
+export function SignInSheet({
+  open,
+  onOpenChange,
+  onSignedIn,
+  resume,
+  lineReturnUrl,
+  title: taskTitle,
+  description: taskDescription,
+  providersFirst,
+}: SignInSheetProps) {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const wide = useSyncExternalStore(
@@ -44,8 +58,8 @@ export function SignInSheet({ open, onOpenChange, onSignedIn, resume, lineReturn
   const [step, setStep] = useState<"phone" | "otp" | "onboarding">("phone");
   const onStepChange = useCallback((next: "phone" | "otp" | "onboarding") => setStep(next), []);
 
-  const title = t("customer.title");
-  const description = step === "phone" ? t("customer.subtitle") : undefined;
+  const title = taskTitle ?? t("customer.title");
+  const description = step === "phone" ? (taskDescription ?? t("customer.subtitle")) : undefined;
   const flow = (
     <SignInFlow
       variant="overlay"
@@ -53,6 +67,7 @@ export function SignInSheet({ open, onOpenChange, onSignedIn, resume, lineReturn
       resume={open ? resume : undefined}
       lineReturnUrl={lineReturnUrl}
       onStepChange={onStepChange}
+      providersFirst={providersFirst}
     />
   );
 

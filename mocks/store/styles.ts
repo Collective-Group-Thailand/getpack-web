@@ -628,67 +628,100 @@ const FAKE_FILE: Record<Schemas["DielineDownloadFormat"], { mime: string; body: 
   ai: { mime: "application/illustrator", body: "%PDF-1.4\n% mock dieline (Illustrator)\n%%EOF\n" },
 };
 
+/**
+ * D-471: the first download needs no sign-in. The BFF puts the browser's device id (its httpOnly cookie) in the body;
+ * the mock counts by it like the API (1 free, `dielines.anonymous_free_downloads`), then asks for a free sign-in.
+ */
+const freeByDevice = new Map<string, number>();
+const FREE_WITHOUT_SIGN_IN = 1;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 storeStyleHandlers.push(
+  http.post("*/v1/store/dielines/downloads/free", async ({ request }) => {
+    const body = (await request.json().catch(() => null)) as Schemas["DownloadDielineFreeDto"] | null;
+    if (!body?.deviceId || !UUID.test(body.deviceId))
+      return problem(422, "validation.failed", "ข้อมูลไม่ครบ", [
+        { path: "deviceId", code: "uuid", message: "a device id" },
+      ]);
+    const used = freeByDevice.get(body.deviceId) ?? 0;
+    if (used >= FREE_WITHOUT_SIGN_IN)
+      return problem(
+        401,
+        "dielines.sign_in_required",
+        "ดาวน์โหลดแบบแผ่นคลี่ครั้งแรกไม่ต้องเข้าสู่ระบบ ตั้งแต่ครั้งที่สองกรุณาเข้าสู่ระบบก่อน ไม่มีค่าใช้จ่าย",
+      );
+    const { deviceId, ...rest } = body;
+    const answer = draw(rest, null);
+    if (answer.status === 201) freeByDevice.set(deviceId, used + 1);
+    return answer;
+  }),
+
   http.post("*/v1/store/dielines/downloads", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
     const body = (await request.json().catch(() => null)) as Schemas["DownloadDielineDto"] | null;
-    if (!body || !["pdf", "dxf", "svg", "ai"].includes(body.format))
-      return problem(422, "validation.failed", "ข้อมูลไม่ครบ", [
-        { path: "format", code: "enum", message: "pdf|dxf|svg|ai" },
-      ]);
-    const style = [...byCode.values()].find((s) => body.variantCode.startsWith(s.row.code));
-    if (!style) return problem(404, "styles.variant_not_found", "ไม่พบแบบกล่องนี้");
-    const range = detail(style, null).sizeRanges.find((r) => r.materialClass === body.materialClass);
-    if (!range) return problem(422, "dielines.material_class_not_offered", "แบบนี้ไม่มีวัสดุกลุ่มนี้");
-    const within = (v: number, min: number | null, max: number | null) =>
-      (min === null || v >= min) && (max === null || v <= max);
-    if (
-      !within(body.lengthMm, range.minLMm, range.maxLMm) ||
-      !within(body.widthMm, range.minWMm, range.maxWMm) ||
-      (range.maxHMm !== null && !within(body.heightMm, range.minHMm, range.maxHMm))
-    )
-      return problem(422, "dielines.size_out_of_range", "ขนาดนี้อยู่นอกช่วงที่แบบนี้ทำได้", [
-        { path: "lengthMm", code: "range", message: "out of the style's range" },
-      ]);
-    const used = downloadsToday.get(customer.id) ?? 0;
-    if (used >= DAILY) return problem(429, "dielines.rate_limited", "วันนี้ดาวน์โหลดครบจำนวนแล้ว ลองใหม่พรุ่งนี้");
-    downloadsToday.set(customer.id, used + 1);
-    const file = FAKE_FILE[body.format];
-    const sizes = { lengthMm: body.lengthMm, widthMm: body.widthMm, heightMm: body.heightMm };
-    return HttpResponse.json(
-      {
-        id: `0192f3a0-7c1e-7d2a-9b1f-${String(0xd1e0 + used).padStart(12, "0")}`,
-        variantCode: body.variantCode,
-        materialClass: body.materialClass,
-        measurementBasis: body.measurementBasis ?? "internal",
-        format: body.format,
-        entered: sizes,
-        drawn: sizes,
-        quantities: {
-          blankWidthMm: body.lengthMm * 2 + body.widthMm * 2 + 15,
-          blankHeightMm: body.heightMm + body.widthMm * 2,
-          cutMm: 1830,
-          creaseMm: 960,
-          perforationMm: 0,
-          halfCutMm: 0,
-          glueOutlineMm: 300,
-          blankAreaMm2: (body.lengthMm * 2 + body.widthMm * 2 + 15) * (body.heightMm + body.widthMm * 2),
-          cutoutAreaMm2: 0,
-          pieces: 1,
-        },
-        fileName: `${body.variantCode}-${body.lengthMm}x${body.widthMm}x${body.heightMm}.${body.format}`,
-        mimeType: file.mime,
-        sizeBytes: file.body.length,
-        url: `data:${file.mime};base64,${Buffer.from(file.body).toString("base64")}`,
-        expiresAt: bangkokIso(5),
-        createdAt: bangkokIso(),
-        cached: false,
-        engineVersion: "mock",
-        remainingToday: DAILY - used - 1,
-        violations: [],
-      } satisfies Schemas["DielineDownloadDto"],
-      { status: 201 },
-    );
+    return draw(body, customer.id);
   }),
 );
+
+/** The drawing both download paths share: a signed-in customer (`customerId`) or a browser without sign-in (null). */
+function draw(body: Schemas["DownloadDielineDto"] | null, customerId: string | null): Response {
+  if (!body || !["pdf", "dxf", "svg", "ai"].includes(body.format))
+    return problem(422, "validation.failed", "ข้อมูลไม่ครบ", [
+      { path: "format", code: "enum", message: "pdf|dxf|svg|ai" },
+    ]);
+  const style = [...byCode.values()].find((s) => body.variantCode.startsWith(s.row.code));
+  if (!style) return problem(404, "styles.variant_not_found", "ไม่พบแบบกล่องนี้");
+  const range = detail(style, null).sizeRanges.find((r) => r.materialClass === body.materialClass);
+  if (!range) return problem(422, "dielines.material_class_not_offered", "แบบนี้ไม่มีวัสดุกลุ่มนี้");
+  const within = (v: number, min: number | null, max: number | null) =>
+    (min === null || v >= min) && (max === null || v <= max);
+  if (
+    !within(body.lengthMm, range.minLMm, range.maxLMm) ||
+    !within(body.widthMm, range.minWMm, range.maxWMm) ||
+    (range.maxHMm !== null && !within(body.heightMm, range.minHMm, range.maxHMm))
+  )
+    return problem(422, "dielines.size_out_of_range", "ขนาดนี้อยู่นอกช่วงที่แบบนี้ทำได้", [
+      { path: "lengthMm", code: "range", message: "out of the style's range" },
+    ]);
+  const used = customerId ? (downloadsToday.get(customerId) ?? 0) : 0;
+  if (used >= DAILY) return problem(429, "dielines.rate_limited", "วันนี้ดาวน์โหลดครบจำนวนแล้ว ลองใหม่พรุ่งนี้");
+  if (customerId) downloadsToday.set(customerId, used + 1);
+  const file = FAKE_FILE[body.format];
+  const sizes = { lengthMm: body.lengthMm, widthMm: body.widthMm, heightMm: body.heightMm };
+  return HttpResponse.json(
+    {
+      id: `0192f3a0-7c1e-7d2a-9b1f-${String(0xd1e0 + used).padStart(12, "0")}`,
+      variantCode: body.variantCode,
+      materialClass: body.materialClass,
+      measurementBasis: body.measurementBasis ?? "internal",
+      format: body.format,
+      entered: sizes,
+      drawn: sizes,
+      quantities: {
+        blankWidthMm: body.lengthMm * 2 + body.widthMm * 2 + 15,
+        blankHeightMm: body.heightMm + body.widthMm * 2,
+        cutMm: 1830,
+        creaseMm: 960,
+        perforationMm: 0,
+        halfCutMm: 0,
+        glueOutlineMm: 300,
+        blankAreaMm2: (body.lengthMm * 2 + body.widthMm * 2 + 15) * (body.heightMm + body.widthMm * 2),
+        cutoutAreaMm2: 0,
+        pieces: 1,
+      },
+      fileName: `${body.variantCode}-${body.lengthMm}x${body.widthMm}x${body.heightMm}.${body.format}`,
+      mimeType: file.mime,
+      sizeBytes: file.body.length,
+      url: `data:${file.mime};base64,${Buffer.from(file.body).toString("base64")}`,
+      expiresAt: bangkokIso(5),
+      createdAt: bangkokIso(),
+      cached: false,
+      engineVersion: "mock",
+      remainingToday: customerId ? DAILY - used - 1 : null,
+      nextNeedsSignIn: customerId === null,
+      violations: [],
+    } satisfies Schemas["DielineDownloadDto"],
+    { status: 201 },
+  );
+}
