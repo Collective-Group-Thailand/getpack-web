@@ -34,6 +34,7 @@ import {
   type CampaignProblem,
 } from "./loyalty-campaign";
 import { SegmentPicker } from "./SegmentPicker";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 
 type Row = Schemas["AdminLoyaltyCampaignDto"];
 
@@ -317,6 +318,7 @@ export function LoyaltyCampaignForm({
   onSaved,
 }: LoyaltyCampaignFormProps) {
   const t = useTranslations("marketing.loyaltyCampaigns.form");
+  const p4Message = useLoyaltyProblem();
   const [draft, setDraft] = useState<CampaignDraft>(() =>
     campaign ? campaignDraftOf(campaign) : blankCampaignDraft(),
   );
@@ -354,7 +356,8 @@ export function LoyaltyCampaignForm({
         }
         setApiErrors(mapped);
       }
-      toast.error(problemMessage(failure, t("failed")));
+      // Loyalty P4 (D-507): an admin rule is active from creation, so a used-up budget refuses it.
+      toast.error(p4Message(failure, t("failed")));
     } finally {
       setSaving(false);
     }

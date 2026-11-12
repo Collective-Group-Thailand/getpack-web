@@ -20,6 +20,7 @@ import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, QueryError } from "../console";
 import { MovementChart } from "./MovementChart";
+import { FundingSplitSection } from "./FundingSplit";
 
 type Movement = Analytics["movement"][number];
 type Programme = Analytics["retention"]["programmes"][number];
@@ -379,6 +380,9 @@ export function LoyaltyAnalytics() {
           <Skeleton className="h-56 w-full" />
         )}
       </DeskSection>
+
+      {/* Loyalty P4 (D-506): who funded the capacity deals' discounts. */}
+      <FundingSplitSection range={range} />
 
       <p className="border-border flex flex-wrap gap-x-6 gap-y-2 border-t pt-4 text-sm">
         <Link href="/marketing" className="text-primary inline-flex items-center gap-1 font-medium hover:underline">

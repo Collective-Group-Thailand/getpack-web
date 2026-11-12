@@ -8,7 +8,8 @@ export type Customer = Schemas["AdminCustomerDto"];
 export type CustomerAddress = Schemas["AddressDto"];
 export type CustomerTaxProfile = Schemas["TaxProfileDto"];
 export type Loyalty = Schemas["LoyaltySummaryDto"];
-export type PointsEntry = Schemas["PointsEntryDto"];
+/** A staff ledger row: `companyClaim` names the company an earn-once task was claimed for (D-508), staff only. */
+export type PointsEntry = Schemas["AdminPointsEntryDto"];
 export type CustomerConsent = Schemas["AdminConsentDto"];
 export type Referral = Schemas["AdminReferralDto"];
 

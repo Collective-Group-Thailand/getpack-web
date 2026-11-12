@@ -27,6 +27,7 @@ import { can } from "../personas";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { REWARD_FIXTURES } from "../store/loyalty-p3";
 import { companyCreditOf } from "./companies";
+import { fundingOf } from "./cofunding-state";
 import { capacityDealPromotions } from "./marketing";
 
 const DAY = 24 * 60;
@@ -563,6 +564,8 @@ export const loyaltyP3AdminHandlers = [
       status: row.status,
       approval: row.capacityDeal!.approval,
       createdAt: bangkokIso(-4 * 60),
+      // Loyalty P4 (D-506): who funds the discount.
+      funding: fundingOf(row.id),
     }));
     return json(paginate(rows, pageOf(new URL(request.url).searchParams)));
   }),

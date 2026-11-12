@@ -65,6 +65,7 @@ export const CheckoutPoints: Story = {
           campaign: "1.00",
           anniversary: "1.00",
           earlyPay: "1.00",
+          budgetCapped: false,
           combined: "1.88",
           capped: false,
         },

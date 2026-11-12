@@ -6,7 +6,7 @@
  * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "6ec8adba", tag: "v0.75.0" } as const;
+export const RBAC_SOURCE = { commit: "add6b181", tag: "v0.75.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "advisory.evaluate",
@@ -103,6 +103,7 @@ export const STAFF_PERMISSIONS = [
   "ledger.read",
   "line.manage",
   "loyalty.adjust",
+  "loyalty.programme.manage",
   "loyalty.read",
   "margin.read",
   "margin.read_pct_when_discounting",
@@ -302,6 +303,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "ledger.read",
     "line.manage",
     "loyalty.adjust",
+    "loyalty.programme.manage",
     "loyalty.read",
     "margin.read",
     "margin.read_pct_when_discounting",
@@ -418,6 +420,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "fixed_assets.read",
     "guarantee_policies.read",
     "ledger.read",
+    "loyalty.programme.manage",
     "loyalty.read",
     "margin.read",
     "orders.read",
@@ -824,6 +827,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "ledger.periods.manage",
     "ledger.post_soft_closed",
     "ledger.read",
+    "loyalty.programme.manage",
     "loyalty.read",
     "margin.read",
     "orders.read",
@@ -892,6 +896,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "guarantee_policies.read",
     "line.manage",
     "loyalty.adjust",
+    "loyalty.programme.manage",
     "loyalty.read",
     "promotions.manage",
     "promotions.read",
@@ -1032,6 +1037,8 @@ export const FACTORY_PERMISSIONS = [
   "factory_capacity.read",
   "factory_claims.read",
   "factory_claims.respond",
+  "factory_cofunding.decide",
+  "factory_cofunding.read",
   "factory_delivery.manage",
   "factory_documents.manage",
   "factory_documents.read",
@@ -1107,6 +1114,8 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_capacity.read",
     "factory_claims.read",
     "factory_claims.respond",
+    "factory_cofunding.decide",
+    "factory_cofunding.read",
     "factory_delivery.manage",
     "factory_documents.manage",
     "factory_documents.read",
@@ -1247,6 +1256,7 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_ap.manage",
     "factory_ap.read",
     "factory_bank_account.propose",
+    "factory_cofunding.read",
     "factory_documents.read",
     "factory_insight.read",
     "factory_inventory.read",
@@ -1312,6 +1322,7 @@ export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermis
     "factory_quality.read",
   ],
   factory_sales: [
+    "factory_cofunding.read",
     "factory_delivery.manage",
     "factory_documents.read",
     "factory_inventory.read",

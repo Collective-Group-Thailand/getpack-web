@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { getLoyaltyTasks, getPoints, getPointsEntries } from "@/features/customer/account/api.server";
 import { EarnChecklist } from "@/features/customer/account/EarnChecklist";
 import { WinbackBanner } from "@/features/customer/loyalty/WinbackBanner";
+import { getLoyaltySurfaces } from "@/features/customer/loyalty/surfaces.server";
+import { FeatureUnavailable } from "@/features/customer/shell/FeatureUnavailable";
 import { getSupportChannels } from "@/features/customer/catalog/api.server";
 import { SummaryCards } from "@/features/customer/account/SummaryCards";
 import { LiffHeader } from "@/features/customer/liff/LiffHeader";
@@ -23,6 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Points in LINE (D-151): the balance and the latest movements; the rest on the site. */
 export default async function Page() {
   if (!(await liffCustomer())) return <LiffSignIn />;
+  // Loyalty P4 (D-509): `pointsLiff` is a web-only gate for this LINE page; the web points page always stays.
+  const surfaces = await getLoyaltySurfaces();
+  if (!surfaces.pointsLiff) return <FeatureUnavailable signedIn liff showPoints={false} />;
   const [t, tLiff, tDeals, tRewards, format, points, entries, tasks, support] = await Promise.all([
     getTranslations("account.points"),
     getTranslations("liff.points"),
@@ -56,9 +61,9 @@ export default async function Page() {
         ]}
       />
       {/* Loyalty P2: bonus points waiting (win-back). */}
-      <WinbackBanner variant="liff" lots={points.bonusLots} />
+      {surfaces.deals && surfaces.dealsLiff ? <WinbackBanner variant="liff" lots={points.bonusLots} /> : null}
       {/* Loyalty P1: the earn checklist, compact (first rows + "ดูทั้งหมด" on the web). */}
-      {tasks ? <EarnChecklist variant="compact" initial={tasks} lineOaId={lineOaId} /> : null}
+      {tasks && surfaces.checklist ? <EarnChecklist variant="compact" initial={tasks} lineOaId={lineOaId} /> : null}
       <section aria-labelledby="liff-entries" className="border-border bg-surface rounded-card border p-4">
         <h2 id="liff-entries" className="font-semibold">
           {tLiff("latest")}
@@ -78,12 +83,16 @@ export default async function Page() {
         </ul>
       </section>
       {/* Loyalty P3: the reward catalogue lives on the web page (the confirm sheet, my coupons). */}
-      <Button asChild variant="secondary" size="lg" iconStart="gift">
-        <Link href="/account/points/redeem">{tRewards("cta")}</Link>
-      </Button>
-      <Button asChild variant="secondary" size="lg" iconStart="ticket">
-        <Link href="/liff/deals">{tDeals("liff.openDeals")}</Link>
-      </Button>
+      {surfaces.redeem ? (
+        <Button asChild variant="secondary" size="lg" iconStart="gift">
+          <Link href="/account/points/redeem">{tRewards("cta")}</Link>
+        </Button>
+      ) : null}
+      {surfaces.deals && surfaces.dealsLiff ? (
+        <Button asChild variant="secondary" size="lg" iconStart="ticket">
+          <Link href="/liff/deals">{tDeals("liff.openDeals")}</Link>
+        </Button>
+      ) : null}
       <Button asChild variant="secondary" size="lg" iconEnd="external">
         <Link href="/account/points">{tLiff("more")}</Link>
       </Button>

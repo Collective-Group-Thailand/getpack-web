@@ -41,6 +41,8 @@ import {
 import { DetailSkeleton } from "../console/DetailSkeleton";
 import { benefitV2Body, withSchemaVersion } from "./benefit-v2";
 import { CapacityDealNote } from "./CapacityDeals";
+import { CofundingPanel } from "./Cofunding";
+import { useLoyaltyProblem } from "@/features/shared/loyalty-p4/useLoyaltyProblem";
 import { CouponCodes } from "./CouponCodes";
 import { PromotionAudience } from "./PromotionAudience";
 import { PromotionBundle } from "./PromotionBundle";
@@ -286,6 +288,7 @@ export async function readPromotion(promotionId: string) {
  */
 export function PromotionEditor({ promotionId, campaignId }: { promotionId?: string; campaignId?: string | null }) {
   const t = useTranslations("marketing.promotion");
+  const p4Message = useLoyaltyProblem();
   const tList = useTranslations("marketing.promotions");
   const tFilters = useTranslations("console.filters");
   const format = useFormat();
@@ -506,6 +509,13 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
           status={item!.status}
           canManage={can("promotions.manage")}
           onRequested={() => void queryClient.invalidateQueries({ queryKey: key })}
+        />
+      ) : null}
+      {/* Loyalty P4 (D-506): who funds the capacity deal's discount — getpack, or a factory that accepted an offer. */}
+      {capacityDeal && item ? (
+        <CofundingPanel
+          promotionId={item.id}
+          window={{ from: bangkokDayOf(item.startsAt), to: item.endsAt ? bangkokDayOf(item.endsAt) : null }}
         />
       ) : null}
 
@@ -974,7 +984,8 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
               void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "promotion") });
               toast.success(t("changed"));
             } catch (error) {
-              toast.error(problemMessage(error, t("failed")));
+              // Loyalty P4 (D-507): an activation refused for the month's budget says so.
+              toast.error(p4Message(error, t("failed")));
               throw error;
             }
           }}

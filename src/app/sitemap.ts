@@ -1,7 +1,12 @@
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 
-import { getSitemapEntries, listAllStyles, type SitemapEntry } from "@/features/customer/catalog/api.server";
+import {
+  getPublicConfig,
+  getSitemapEntries,
+  listAllStyles,
+  type SitemapEntry,
+} from "@/features/customer/catalog/api.server";
 import { styleHref, styleTopicHref, topicHubHref, forUseCaseHref } from "@/features/customer/styles/paths";
 import { topicsOf } from "@/features/customer/styles/topics";
 import { isLandingPublished, PACKAGING_LANDINGS, packagingHref } from "@/features/customer/styles/packaging-landings";
@@ -56,17 +61,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // The style library (U3.5 §5): one page per published base, at its Thai URL (the default locale);
   // a read that fails leaves the styles out, like the catalogue.
-  const [origin, catalogue, styles, deals] = await Promise.all([
+  const [origin, catalogue, styles, deals, config] = await Promise.all([
     publicOrigin(),
     getSitemapEntries(),
     listAllStyles().catch(() => []),
     // Only what the API shows (public, active, in its window); a failed read leaves the deals out.
     listDeals(),
+    // Loyalty P4 (D-509): `/deals` leaves the sitemap while the anonymous view has it closed.
+    getPublicConfig(),
   ]);
+  const dealsOpen = config?.loyaltySurfaces.deals ?? false;
 
   const entries: { path: string; priority: number; changeFrequency: Frequency; lastModified?: string }[] = [
-    ...STATIC_ROUTES,
-    ...(deals?.items ?? []).map((deal) => ({ path: dealHref(deal), priority: 0.6, changeFrequency: "daily" as const })),
+    ...STATIC_ROUTES.filter((route) => dealsOpen || route.path !== "/deals"),
+    ...(dealsOpen ? (deals?.items ?? []) : []).map((deal) => ({
+      path: dealHref(deal),
+      priority: 0.6,
+      changeFrequency: "daily" as const,
+    })),
     ...catalogue
       .filter((entry) => entry.kind in ENTRY)
       .map((entry) => ({ ...ENTRY[entry.kind](entry), lastModified: entry.lastModified })),

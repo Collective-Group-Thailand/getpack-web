@@ -22,6 +22,7 @@ import type { CheckoutPointsP2Fields } from "@/features/shared/loyalty-p2/types"
 import type { Schemas } from "@/lib/api/types";
 
 import { baht, customers as fakeCustomers, orders, refreshOrder, satang, type MockOrder } from "../admin/commerce";
+import { budgetExhausted } from "../admin/loyalty-p4";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { bookOf } from "./book";
 import { cartLines, cartOf, clearCart, codes as cartCodes } from "./cart";
@@ -1586,6 +1587,8 @@ function pointsP2Of(toEarn: number): CheckoutPointsP2Fields & Pick<Schemas["Poin
       earlyPay: "1.00",
       combined: "1.25",
       capped: false,
+      // Loyalty P4 (D-507, API-CHANGES-P4 note 5): true while this month's programme budget is used up.
+      budgetCapped: budgetExhausted(),
     },
     paymentBonus: { multiplier: "1.20", methods: ["scb_qr", "scb_qr_cross_bank", "bank_transfer_slip"] },
     toEarnWithPaymentBonus: Math.floor(toEarn * 1.2),

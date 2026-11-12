@@ -132,6 +132,19 @@ Phase-specific musts (in addition to PLAN):
         above cap → existing approval policy · priority production slot = planner flag only (no promise text that
         names a factory) · capacity-driven deals: worker drafts an `automatic` hidden promotion when planner free
         capacity ≥ setting; Marketing approval (maker-checker) before visibility can become public.
+  P4  · (owner delegated 2026-11-05; branch feat/loyalty-p4-cofunding-controls; plan plans/P4-PLAN.md; contract
+        API-CHANGES-P4.md; D-506…D-511) · NO e2e (D-511) · co-funding only on origin = capacity_deal, accepted
+        offers only, applies after the funding factory accepts the job, netted on the order's billing statement as
+        line kind cofunding "ส่วนร่วมส่วนลด (co-funding)", reversed on cancel / full refund, capped; P20F / P20FR +
+        account 4915, treatment pending_cpa · routing code never reads cofunding_* · no store response names a
+        funder, a factory or "capacity" (confidentiality spec) · loyalty.programme_budget with 80 / 100 % alerts,
+        guard budget_exhausted, campaign-type multipliers off at 100 %, nothing revoked, override via
+        programme_budget_override (Finance Manager → C-Level) · company one-off guard on points_ledger
+        (company_tax_id) + checklist claimed_by_company · loyalty.surfaces → loyalty.feature_disabled (404) +
+        store.loyalty.surfaces + publicConfig.loyaltySurfaces · loyalty.rollout cohort hash, out-of-cohort = pre-P1
+        baseline, advance needs loyalty_rollout_advance, rollback immediate, generic editor refuses the key ·
+        web builds against contract requests + MSW (store / admin / partner -loyalty-p4) and prototypes first
+        (p4-partner-cofunding, p4-admin-rollout, p4-admin-budget, p4-customer-states).
 
 === 4. Gate (every phase; both repos where applicable) ===
 1. pnpm lint · pnpm typecheck · unit tests · build (both repos).

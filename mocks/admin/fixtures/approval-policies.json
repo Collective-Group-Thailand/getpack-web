@@ -344,5 +344,35 @@
     "decisions": ["D-502"],
     "reason": "Seed from D-502 — Marketing approves capacity deals (plans/P3-PLAN.md §4)",
     "steps": [{ "name": "Marketing approval", "role": "marketing" }]
+  },
+  {
+    "key": "programme_budget_override",
+    "subjectType": "setting_version",
+    "description": "Raise the monthly loyalty programme budget (D-507): Finance Manager, then C-Level; the requester cannot approve",
+    "decisions": ["D-507"],
+    "reason": "Seed from D-507 (plans/P4-PLAN.md §2)",
+    "steps": [
+      {
+        "name": "Finance Manager approval",
+        "role": "finance_manager"
+      },
+      {
+        "name": "C-Level approval",
+        "role": "c_level"
+      }
+    ]
+  },
+  {
+    "key": "loyalty_rollout_advance",
+    "subjectType": "setting_version",
+    "description": "Grow the loyalty rollout cohort (D-510): Marketing proposes, the Finance Manager approves",
+    "decisions": ["D-510"],
+    "reason": "Seed from D-510 (plans/P4-PLAN.md §2)",
+    "steps": [
+      {
+        "name": "Finance Manager approval",
+        "role": "finance_manager"
+      }
+    ]
   }
 ]

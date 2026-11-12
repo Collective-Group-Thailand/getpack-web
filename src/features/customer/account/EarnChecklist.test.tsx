@@ -112,3 +112,20 @@ describe("EarnBanner", () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe("EarnChecklistView — company one-offs (loyalty P4, D-508)", () => {
+  it("shows a task the company already earned as a muted row without points or a link, and never who", () => {
+    const base = buildLoyaltyTasks(REVIEW_TASK_STATES);
+    const data = {
+      ...base,
+      tasks: base.tasks.map((task) =>
+        task.code === "tax_profile" ? { ...task, status: "claimed_by_company" as never, recommended: false } : task,
+      ),
+    };
+    renderTh(<EarnChecklistView data={data} />);
+    const row = screen.getByText("บริษัทของคุณรับแต้มนี้แล้ว").closest("div")!;
+    expect(within(row).queryByRole("link")).toBeNull();
+    expect(row.textContent).not.toMatch(/\+\d/);
+    expect(screen.queryByRole("link", { name: /ข้อมูลใบกำกับภาษี/ })).toBeNull();
+  });
+});

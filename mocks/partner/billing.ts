@@ -24,6 +24,7 @@ import { nextActions, type ActionRule } from "../next-actions";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
 import { buyAmountOf, extraOf, factoryJobs, titleOf } from "./jobs";
 import { canPartner, PARTNER_PERSONAS, type PartnerPersona } from "./personas";
+import { cofundingSharesOf } from "./loyalty-p4";
 import { once, own, ownScope } from "./support";
 
 type StatementDto = Schemas["BillingStatementDto"];
@@ -118,7 +119,8 @@ export interface InvoiceModel {
 
 export interface StatementLineModel {
   id: string;
-  kind: "production" | "shipping" | "deduction" | "advance_offset";
+  /** Loyalty P4 (D-506): `cofunding` — the factory's accepted share of a capacity deal's discount, netted. */
+  kind: "production" | "shipping" | "deduction" | "advance_offset" | "cofunding";
   description: string;
   reference: string | null;
   quantity: number | null;
@@ -136,6 +138,8 @@ export interface StatementModel {
     production: string;
     shipping: string;
     deductions: string;
+    /** Loyalty P4: the sum of the `cofunding` lines (≤ 0). */
+    cofunding: string;
     net: string;
     vat: string;
     gross: string;
@@ -296,7 +300,19 @@ function buildStatement(factoryId: string, index: 0 | 1): StatementModel {
       amount: baht(-advance),
     });
   const deducted = deductions.reduce((total, item) => total + item.amount, 0);
-  const net = production + shipping - deducted;
+  // Loyalty P4 (D-506): the netted co-funding shares of this factory's accepted offers, on the latest statement.
+  const shares = index === 0 ? cofundingSharesOf(factoryId) : [];
+  for (const share of shares)
+    lines.push({
+      id: mockId("bsl", lines.length + index * 500 + 1),
+      kind: "cofunding",
+      description: `ส่วนร่วมส่วนลด (co-funding) — ${share.dealName}`,
+      reference: share.orderCode,
+      quantity: null,
+      amount: baht(-share.amount),
+    });
+  const cofunded = shares.reduce((total, share) => total + share.amount, 0);
+  const net = production + shipping - deducted - cofunded;
   const vat = vatOf(net, store.factory.isVatRegistered);
   return {
     id,
@@ -308,6 +324,7 @@ function buildStatement(factoryId: string, index: 0 | 1): StatementModel {
       production: baht(production),
       shipping: baht(shipping),
       deductions: baht(-deducted),
+      cofunding: baht(-cofunded),
       net: baht(net),
       vat: baht(vat),
       gross: baht(net + vat),
@@ -412,29 +429,34 @@ export function toStatementDto(store: Store, statement: StatementModel, who: Par
     disputeNote: statement.disputeNote,
     disputedLineNos: statement.disputedLineNos,
     currency: "THB",
-    totals: {
-      production: statement.totals.production,
-      shipping: statement.totals.shipping,
-      // The mock has no mock-up, design or reproduction lines.
-      other: "0.00",
-      deductions: statement.totals.deductions,
-      advanceOffset: statement.totals.alreadyPaid,
-      net: statement.totals.net,
-      vat: statement.totals.vat,
-      gross: statement.totals.gross,
-      alreadyPaid: statement.totals.alreadyPaid,
-      remaining: statement.totals.remaining,
-    },
+    totals: Object.assign(
+      {
+        production: statement.totals.production,
+        shipping: statement.totals.shipping,
+        // The mock has no mock-up, design or reproduction lines.
+        other: "0.00",
+        deductions: statement.totals.deductions,
+        advanceOffset: statement.totals.alreadyPaid,
+        net: statement.totals.net,
+        vat: statement.totals.vat,
+        gross: statement.totals.gross,
+        alreadyPaid: statement.totals.alreadyPaid,
+        remaining: statement.totals.remaining,
+      },
+      { cofunding: statement.totals.cofunding ?? "0.00" },
+    ),
     netAmount: statement.totals.net,
     vatAmount: statement.totals.vat,
     grossAmount: statement.totals.gross,
     lines: statement.lines.map((line, index) => {
       const net = satang(line.amount);
-      const vat = vatOf(net, registered);
+      // A co-funding line carries no VAT (treatment contra_discount, pending CPA — D-506).
+      const vat = line.kind === "cofunding" ? 0 : vatOf(net, registered);
       return {
         lineNo: index + 1,
         // The contract has no advance-offset kind: as on the back office's statement, it is a deduction.
-        kind: line.kind === "advance_offset" ? "deduction" : line.kind,
+        // Loyalty P4 (D-506): `cofunding` lines after the deductions.
+        kind: (line.kind === "advance_offset" ? "deduction" : line.kind) as Schemas["BillingStatementLineKind"],
         description: line.description,
         reference: line.reference,
         quantity: line.quantity,

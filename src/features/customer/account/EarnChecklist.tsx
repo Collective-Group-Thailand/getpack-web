@@ -15,6 +15,8 @@ import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
+import { isClaimedByCompany } from "@/features/shared/loyalty-p4/types";
+
 import { checklistView, newlyDone, taskLink } from "./earn-tasks";
 import type { LoyaltyTask, LoyaltyTasks } from "./loyalty-types";
 
@@ -331,6 +333,21 @@ function TaskRow({
       </Link>
     );
   }
+
+  // Loyalty P4 (D-508): the company already earned this one-off. Muted, a neutral check, no figure, no link — and
+  // never who claimed it.
+  if (isClaimedByCompany(task))
+    return (
+      <div className={cn(ROW, pad)}>
+        <Icon name="check" size={16} aria-hidden="true" className="text-subtle justify-self-center" />
+        <span className="min-w-0">
+          <span className="text-muted block text-[0.90625rem]">{title}</span>
+          <span className="text-muted block text-[0.8125rem]">{t("earn.claimedByCompany")}</span>
+        </span>
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+      </div>
+    );
 
   const held = task.status === "held";
   return (

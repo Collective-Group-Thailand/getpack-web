@@ -20,6 +20,7 @@ import { bangkokIso, matchesQuery, mockId, paginate, precondition, problem, with
 import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
 import type { CampaignRow, CouponCodeRow, PromotionRow } from "./marketing-model";
+import { fundingOf } from "./cofunding-state";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
 import { AGENT_ROWS } from "./loyalty-p2";
 import { etagOf as tableEtag } from "./tables";
@@ -325,6 +326,8 @@ function requestCapacityPublish(row: PromotionRow, requester: (typeof PERSONAS)[
       weekStart: row.capacityDeal!.weekStart,
       freePct: row.capacityDeal!.freePct,
       discountPct: row.benefit.pct ?? null,
+      // Loyalty P4 (D-506): the funding split at request time — a snapshot; offers accepted later count too.
+      funding: fundingOf(row.id),
     },
   });
   row.capacityDeal = { ...row.capacityDeal!, approval: { id: opened.id, status: "pending" } };
@@ -429,7 +432,8 @@ function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
         ? 2
         : 1,
     origin: origin ?? (stored.kind === "referral" ? "system" : "manual"),
-    capacityDeal: capacityDeal ?? null,
+    // Loyalty P4 (D-506): a capacity deal carries who funds its discount.
+    capacityDeal: capacityDeal ? { ...capacityDeal, funding: fundingOf(row.id) } : null,
   });
 }
 

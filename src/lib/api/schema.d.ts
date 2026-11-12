@@ -5948,6 +5948,50 @@ export interface paths {
         patch: operations["admin.cmsVideos.update"];
         trace?: never;
     };
+    "/v1/admin/cofunding-contributions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List factory co-funding shares
+         * @description One row per order × deal (D-506): the deal discount on the lines the job produced, the share, whether a cap cut it, and where it stands — accrued, netted on a billing statement, reversed before netting, refunded after. Read-only for Marketing (`promotions.read`) and Finance (`payables.read`): the shares are netted from factory payouts (D-512).
+         *
+         *     Implements: D-506, D-512.
+         */
+        get: operations["admin.cofundingContributions.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cofunding-offers/{offerId}/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a co-funding offer
+         * @description From `proposed` or `accepted`, with a reason (≥ 10 characters) and `If-Match` (D-506). Orders placed after now no longer count; shares already accrued stay and follow their orders. The factory is told.
+         *
+         *     Implements: D-506.
+         */
+        post: operations["admin.cofundingOffers.withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/companies": {
         parameters: {
             query?: never;
@@ -11092,6 +11136,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/loyalty/analytics/funding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Funding split of capacity-deal discounts
+         * @description Per capacity deal for the months `from`..`to` (≤ 24, D-506): orders, the deal discount, the factory co-funding share (accrued + netted), getpack’s share and what was reversed or refunded; totals in `meta.totals`. Finance and the Finance Manager read it through `loyalty.read` (D-496, D-512), read-only. Capacity deals only. Cached 5 minutes.
+         *
+         *     Implements: D-506, D-512.
+         */
+        get: operations["admin.loyaltyAnalytics.funding"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/loyalty/campaigns": {
         parameters: {
             query?: never;
@@ -11164,6 +11230,50 @@ export interface paths {
          *     Implements: D-499.
          */
         post: operations["admin.loyaltyCampaigns.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/programme-budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the programme budget of a month
+         * @description The month’s budget (`monthOverrides[month]` or `monthlyBaht`), what it spent — points credited × the expected redemption rate, getpack-funded coupon and deal discounts, tier perks, less the factory co-funding share — the used %, the state (`ok`, `warning` from the first alert, `exhausted` at 100 %), the alerts fired and an open override request (D-507). Default the current Bangkok month.
+         *
+         *     Implements: D-507.
+         */
+        get: operations["admin.programmeBudget.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/programme-budget/overrides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request a higher budget for a month
+         * @description Writes a proposed version of `loyalty.programme_budget` with `monthOverrides[month] = amount` and opens `programme_budget_override` (Finance Manager, then C-Level; the requester cannot approve). On approval it applies and the alerts re-arm (D-507). The current or the next month; the amount must raise the budget.
+         *
+         *     Implements: D-507.
+         */
+        post: operations["admin.programmeBudget.requestOverride"];
         delete?: never;
         options?: never;
         head?: never;
@@ -11286,6 +11396,94 @@ export interface paths {
          *     Implements: D-498, D-479, D-497, D-133.
          */
         post: operations["admin.rewardCatalog.action"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/rollout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the loyalty rollout
+         * @description The stage and cohort in force (D-510), the cohort size (companies and accounts without a company), four advisory gates (redemption rate and margin after promotions over 3 months, the points liability now, this month’s budget use; `unknown` below 10 customers), the pending advance and the last 10 versions.
+         *
+         *     Implements: D-510.
+         */
+        get: operations["admin.loyaltyRollout.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/rollout/actions/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request a rollout advance
+         * @description The full target plus a reason; it must grow the cohort (a later stage, a higher percent or added allowlist ids — a mixed change counts as an advance). Writes a proposed version of `loyalty.rollout` under `loyalty_rollout_advance` (Finance Manager; the requester cannot approve); on approval `loyalty.rollout_changed` notifies Marketing and Finance (D-510).
+         *
+         *     Implements: D-510.
+         */
+        post: operations["admin.loyaltyRollout.advance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/rollout/actions/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Roll the rollout back
+         * @description The full target plus a reason; it must not grow the cohort. An open advance is withdrawn first; the version applies at once with no approval (audited `setting.changed`, `loyalty.rollout_changed`). Points already earned stay usable (D-510).
+         *
+         *     Implements: D-510.
+         */
+        post: operations["admin.loyaltyRollout.rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/loyalty/rollout/cohort": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Look up the rollout cohort of a company or account
+         * @description Exactly one of `companyId` or `userId`: the cohort key (the company, else the account), its stable bucket (0–99), whether it is in and why (D-510). For CS: "why don’t I see deals".
+         *
+         *     Implements: D-510.
+         */
+        get: operations["admin.loyaltyRollout.cohort"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -13601,6 +13799,56 @@ export interface paths {
         get: operations["admin.promotions.estimateAudience"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promotions/{promotionId}/cofunding-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the factories a capacity deal can be co-funded by
+         * @description Active factories with an active capability for the deal’s product type (D-506), and whether each already has a live offer. No capacity, utilisation or price figure.
+         *
+         *     Implements: D-506.
+         */
+        get: operations["admin.cofundingOffers.candidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promotions/{promotionId}/cofunding-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the co-funding offers of a capacity deal
+         * @description Every offer with its terms in Thai (`termsText`), status, accrued / cap and orders counted (D-506).
+         *
+         *     Implements: D-506.
+         */
+        get: operations["admin.cofundingOffers.list"];
+        put?: never;
+        /**
+         * Offer a factory to co-fund a capacity deal
+         * @description A voluntary offer (D-506): % of the deal discount (1–100) or a fixed amount per order, a total cap and a window inside the deal’s; the factory answers by `respondBy` in the partner portal (`cofunding.offer_proposed` to its owners). One live offer per deal × factory. Only accepted offers count, on the deal’s orders whose job that factory accepted; the share is netted from that order’s payout on its own billing-statement line. Routing never reads offers.
+         *
+         *     Implements: D-506.
+         */
+        post: operations["admin.cofundingOffers.create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -18851,6 +19099,94 @@ export interface paths {
          *     **Files:** upload first — `partner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
          */
         post: operations["partner.claims.respond"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/cofunding-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List co-funding offers to my factory
+         * @description The offers getpack made to my factories (D-506): the deal, the terms in Thai, the cap and what accrued, the answer window. Voluntary: not answering has no effect on receiving jobs.
+         *
+         *     Implements: D-506.
+         */
+        get: operations["partner.cofundingOffers.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/cofunding-offers/{offerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a co-funding offer
+         * @description With the latest 50 orders it counted (order and job codes I already see on my jobs, the discount and my share, where it stands, the billing statement it was netted on). No customer, address or price data (D-506).
+         *
+         *     Implements: D-506.
+         */
+        get: operations["partner.cofundingOffers.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/cofunding-offers/{offerId}/actions/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept a co-funding offer
+         * @description Only while proposed and before `respondBy` (D-506). From then, orders of the deal placed inside the window count when my factory accepts their job; my share is netted from that order’s payout.
+         *
+         *     Implements: D-506.
+         */
+        post: operations["partner.cofundingOffers.accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/cofunding-offers/{offerId}/actions/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline a co-funding offer
+         * @description Only while proposed and before `respondBy`, with a reason (≥ 5 characters, D-506).
+         *
+         *     Implements: D-506.
+         */
+        post: operations["partner.cofundingOffers.decline"];
         delete?: never;
         options?: never;
         head?: never;
@@ -31593,6 +31929,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/loyalty/surfaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Which loyalty surfaces are open for me
+         * @description Seven booleans (D-509): with a customer token the setting `loyalty.surfaces` ∧ the rollout cohort (D-510); without one the anonymous view (the setting, only while the rollout is open to everyone). A surface that is off answers `loyalty.feature_disabled` on its endpoints. `dealsLiff` / `pointsLiff` are web gates. There is no cohort or stage field. Cached 60 s.
+         *
+         *     Implements: D-509, D-510.
+         */
+        get: operations["store.loyalty.surfaces"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/loyalty/tasks": {
         parameters: {
             query?: never;
@@ -32642,9 +33000,9 @@ export interface paths {
         };
         /**
          * List public deals
-         * @description Promotions Marketing made public that are active and inside their dates (a hidden promotion is never served), as cards: headline, benefit in words, main conditions, end date with a static "ending soon" label under 72 h (no countdown, D-481), the code when the deal has one shared code. `tab` filters (`for_you`: the deals whose audience I match and deals for product types I ordered — signed out: new-customer deals and deals with no audience, D-494; `points`: the reward catalogue as `kind: reward` cards with a `reward` block linking to `/account/points/redeem#<code>`, D-498 — other tabs never contain rewards and `counts.points` is their number); `matching_only` deals are left out for anonymous and non-matching callers; bundle deals carry `bundle` (items priced today, VAT incl.); `productTypeCode` keeps the deals that concern a product type (PDP badge); `ref` records a sales agent's share-link attribution and is echoed in `shareUrl`. Visitors get a response cached up to 60 s; a signed-in customer gets `myStatus` per deal. Text in the `Accept-Language` language (Thai fallback).
+         * @description Promotions Marketing made public that are active and inside their dates (a hidden promotion is never served), as cards: headline, benefit in words, main conditions, end date with a static "ending soon" label under 72 h (no countdown, D-481), the code when the deal has one shared code. `tab` filters (`for_you`: the deals whose audience I match and deals for product types I ordered — signed out: new-customer deals and deals with no audience, D-494; `points`: the reward catalogue as `kind: reward` cards with a `reward` block linking to `/account/points/redeem#<code>`, D-498 — other tabs never contain rewards and `counts.points` is their number); `matching_only` deals are left out for anonymous and non-matching callers; bundle deals carry `bundle` (items priced today, VAT incl.); `productTypeCode` keeps the deals that concern a product type (PDP badge); `ref` records a sales agent's share-link attribution and is echoed in `shareUrl`. Visitors get a response cached up to 60 s; a signed-in customer gets `myStatus` per deal. Text in the `Accept-Language` language (Thai fallback). 404 `loyalty.feature_disabled` while the deals surface is off for the caller (D-509, D-510); `tab=points` is empty while `redeem` is off.
          *
-         *     Implements: D-481, D-053, D-486, D-494, D-498.
+         *     Implements: D-481, D-053, D-486, D-494, D-498, D-509.
          */
         get: operations["store.promotions.listPublic"];
         put?: never;
@@ -35806,7 +36164,7 @@ export interface components {
             status: components["schemas"]["CapabilityStatus"];
         };
         /** @enum {string} */
-        AccountEntryKind: "goods_receipt" | "advance_offset" | "payout" | "deduction" | "adjustment";
+        AccountEntryKind: "goods_receipt" | "advance_offset" | "payout" | "deduction" | "cofunding" | "adjustment";
         AccountFieldsDto: {
             /** @example asset */
             accountType?: components["schemas"]["AccountType"];
@@ -38521,6 +38879,65 @@ export interface components {
             templateNameEn: string;
             /** @example มัดจำ 50% ส่วนที่เหลือก่อนจัดส่ง */
             templateNameTh: string;
+        };
+        AdminPointsEntryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-28T10:00:00+07:00
+             */
+            availableAt: string | null;
+            /** @example 62.50 */
+            bahtValue: string;
+            /**
+             * @description Why an `earn_bonus` was given (D-493, D-494); null for every other entry
+             * @example null
+             */
+            bonusReason: components["schemas"]["PointsBonusReason"] | null;
+            /** @description D-508 the verified company this one-off reward counts for; null otherwise. Never on a store response */
+            companyClaim: components["schemas"]["CompanyClaimRefDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-21T10:00:00+07:00
+             */
+            createdAt: string;
+            /** @example earn_order */
+            entryType: components["schemas"]["PointsEntryType"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            expiresAt: string | null;
+            /** @example OG-2610-0001 */
+            groupCode: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000b0001
+             */
+            id: string;
+            /** @description The D-495 multipliers of an `earn_order`; null for every other entry and for earlier orders */
+            multipliers: components["schemas"]["EntryMultipliersDto"] | null;
+            /** @example OR-2610-0001 */
+            orderCode: string | null;
+            /**
+             * Format: uuid
+             * @description Link to the order page
+             * @example null
+             */
+            orderId: string | null;
+            /**
+             * @description Signed: earnings positive, redemptions and expiry negative
+             * @example 25
+             */
+            points: number;
+            /**
+             * @description Reason of a staff adjustment
+             * @example null
+             */
+            reason: string | null;
+            /** @description A `redeem` / `redeem_reversal` of the reward catalogue (D-498); null otherwise */
+            reward: components["schemas"]["EntryRewardDto"] | null;
+            /** @example pending */
+            status: components["schemas"]["PointsStatus"];
         };
         AdminPrivacyRequestDto: {
             /**
@@ -43066,7 +43483,7 @@ export interface components {
             vatAmount: string;
         };
         /** @enum {string} */
-        BillingStatementLineKind: "production" | "shipping" | "mockup" | "design" | "reproduction" | "deduction";
+        BillingStatementLineKind: "production" | "shipping" | "mockup" | "design" | "reproduction" | "deduction" | "cofunding";
         /** @enum {string} */
         BillingStatementQueue: "missing_tax_invoice";
         /** @enum {string} */
@@ -43078,6 +43495,11 @@ export interface components {
             advanceOffset: string;
             /** @example 2555.16 */
             alreadyPaid: string;
+            /**
+             * @description Sum of the `cofunding` lines “ส่วนร่วมส่วนลด (co-funding)” (≤ 0, D-506)
+             * @example 0.00
+             */
+            cofunding: string;
             /**
              * @description Claim deductions applied to the statement’s payables (D-083)
              * @example 0.00
@@ -43358,6 +43780,63 @@ export interface components {
             equity: string;
             /** @example 40000.00 */
             liabilities: string;
+        };
+        BudgetAlertDto: {
+            /** @example 250000.00 */
+            budget: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-21T10:15:00+07:00
+             */
+            firedAt: string;
+            /** @example 200410.00 */
+            spent: string;
+            /** @example 80 */
+            thresholdPct: number;
+        };
+        BudgetAmountsDto: {
+            /**
+             * @description The override or `monthlyBaht`
+             * @example 250000.00
+             */
+            effective: string;
+            /** @example 200000.00 */
+            monthlyBaht: string;
+            /**
+             * @description `monthOverrides[month]`
+             * @example 250000.00
+             */
+            override: string | null;
+            /**
+             * Format: uuid
+             * @description The `loyalty.programme_budget` version read
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d4001
+             */
+            settingVersionId: string;
+        };
+        BudgetSpentDto: {
+            /**
+             * @description Coupon and deal discounts getpack funds (manual, capacity deal, quote recovery)
+             * @example 78250.00
+             */
+            discounts: string;
+            /**
+             * @description Factory co-funding shares accrued this month (deducted)
+             * @example 6550.00
+             */
+            factoryShare: string;
+            /**
+             * @description Points credited this month × expected redemption rate
+             * @example 121400.00
+             */
+            points: string;
+            /**
+             * @description `tier.free_shipping` and tier-perk reward coupons
+             * @example 16900.00
+             */
+            tierPerks: string;
+            /** @example 210000.00 */
+            total: string;
         };
         BulkPaymentReminderDto: {
             /**
@@ -44149,6 +44628,8 @@ export interface components {
              * @example 41.50
              */
             freePct: string;
+            /** @description D-506 getpack funds 100 % by default; each factory co-funding offer and the factory share to date */
+            funding: components["schemas"]["CapacityDealFundingDto"];
             /** @example corrugated_rsc */
             productTypeCode: string;
             /** @example กล่องลูกฟูก */
@@ -44170,6 +44651,15 @@ export interface components {
              * @example 2026-11-09
              */
             weekStart: string;
+        };
+        CapacityDealFundingDto: {
+            /** @example 1 */
+            acceptedCount: number;
+            /** @example getpack */
+            defaultFunder: components["schemas"]["CofundingDefaultFunder"];
+            /** @example 4320.00 */
+            factoryShareSoFar: string;
+            offers: components["schemas"]["FundingOfferDto"][];
         };
         CapacityDto: {
             current: components["schemas"]["CapacityVersionDto"] | null;
@@ -45774,6 +46264,411 @@ export interface components {
             /** @example กรุงเทพมหานคร */
             nameTh: string;
         };
+        CofundingCandidateDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000000f01
+             */
+            factoryId: string;
+            /**
+             * @description A proposed or accepted offer for this deal exists
+             * @example false
+             */
+            hasLiveOffer: boolean;
+            /** @example โรงงาน ตัวอย่าง */
+            name: string;
+        };
+        CofundingContributionDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-10T11:00:00+07:00
+             */
+            accruedAt: string;
+            /** @example BS-26-00088 */
+            billingStatementNumber: string | null;
+            /** @example false */
+            capped: boolean;
+            /** @example 1200.00 */
+            discountAmount: string;
+            factory: components["schemas"]["FactoryNameRefDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f8001
+             */
+            id: string;
+            /** @example JB-26-00456 */
+            jobNumber: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-18T16:40:00+07:00
+             */
+            nettedAt: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f7001
+             */
+            offerId: string;
+            /** @example GP-2611-00123 */
+            orderCode: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f3001
+             */
+            promotionId: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            refundedAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            reversedAt: string | null;
+            /** @example null */
+            reverseReason: components["schemas"]["CofundingReverseReason"] | null;
+            /** @example 480.00 */
+            shareAmount: string;
+            /** @example netted */
+            status: components["schemas"]["CofundingContributionStatus"];
+        };
+        /** @enum {string} */
+        CofundingContributionStatus: "accrued" | "netted" | "reversed" | "refunded";
+        CofundingDealDto: {
+            /** @example 5 */
+            discountPct: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-15T23:59:59+07:00
+             */
+            endsAt: string | null;
+            /** @example สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5% */
+            name: string;
+            /** @example corrugated */
+            productTypeCode: string;
+            /** @example กล่องลูกฟูก */
+            productTypeName: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-09T00:00:00+07:00
+             */
+            startsAt: string;
+            /**
+             * @description The deal’s live status
+             * @example active
+             */
+            status: string;
+            /**
+             * Format: date
+             * @example 2026-11-09
+             */
+            weekStart: string;
+        };
+        /** @enum {string} */
+        CofundingDefaultFunder: "getpack";
+        /**
+         * @description Empty unless proposed, before `respondBy` and I hold `factory_cofunding.decide`
+         * @enum {string}
+         */
+        CofundingOfferAction: "accept" | "decline";
+        CofundingOfferDto: {
+            /** @example 4320.00 */
+            accruedAmount: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T10:12:00+07:00
+             */
+            answeredAt: string | null;
+            answeredBy: components["schemas"]["UserRefDto"] | null;
+            /** @example 20000.00 */
+            capAmount: string;
+            /** @example false */
+            capReached: boolean;
+            /** @example 15680.00 */
+            capRemaining: string;
+            /** @example null */
+            declineReason: string | null;
+            factory: components["schemas"]["FactoryNameRefDto"];
+            /**
+             * @description Set for `fixed_per_order`
+             * @example null
+             */
+            fixedAmount: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f7001
+             */
+            id: string;
+            /** @example pct_of_discount */
+            mode: components["schemas"]["CofundingShareMode"];
+            /** @example ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน */
+            note: string | null;
+            /**
+             * @description Orders with a live (accrued or netted) share
+             * @example 9
+             */
+            ordersCount: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f3001
+             */
+            promotionId: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T08:00:00+07:00
+             */
+            proposedAt: string;
+            proposedBy: components["schemas"]["UserRefDto"];
+            /**
+             * Format: date-time
+             * @example 2026-11-07T23:59:59+07:00
+             */
+            respondBy: string;
+            /** @example 3 */
+            rowVersion: number;
+            /**
+             * @description Set for `pct_of_discount`
+             * @example 40.00
+             */
+            sharePct: string | null;
+            /** @example accepted */
+            status: components["schemas"]["CofundingOfferStatus"];
+            /**
+             * @description The terms in Thai; show it as is
+             * @example 40 % ของส่วนลดดีล สูงสุด ฿20,000
+             */
+            termsText: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-09T00:00:00+07:00
+             */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-15T23:59:59+07:00
+             */
+            validTo: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            withdrawnAt: string | null;
+            /** @example null */
+            withdrawReason: string | null;
+        };
+        CofundingOfferPartnerDetailDto: {
+            /** @example 4320.00 */
+            accruedAmount: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T10:12:00+07:00
+             */
+            answeredAt: string | null;
+            /** @example 20000.00 */
+            capAmount: string;
+            /** @example false */
+            capReached: boolean;
+            /** @example 15680.00 */
+            capRemaining: string;
+            deal: components["schemas"]["CofundingDealDto"];
+            /** @example null */
+            declineReason: string | null;
+            factory: components["schemas"]["FactoryNameRefDto"];
+            /**
+             * @description Set for `fixed_per_order`
+             * @example null
+             */
+            fixedAmount: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f7001
+             */
+            id: string;
+            /** @example pct_of_discount */
+            mode: components["schemas"]["CofundingShareMode"];
+            /**
+             * @description Empty unless proposed, before `respondBy` and I hold `factory_cofunding.decide`
+             * @example [
+             *       "accept",
+             *       "decline"
+             *     ]
+             */
+            nextActions: components["schemas"]["CofundingOfferAction"][];
+            /** @example ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน */
+            note: string | null;
+            /** @description The latest 50 shares; no customer data */
+            orders: components["schemas"]["CofundingOrderDto"][];
+            /**
+             * @description Orders with a live (accrued or netted) share
+             * @example 9
+             */
+            ordersCount: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f3001
+             */
+            promotionId: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T08:00:00+07:00
+             */
+            proposedAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-07T23:59:59+07:00
+             */
+            respondBy: string;
+            /**
+             * @description Set for `pct_of_discount`
+             * @example 40.00
+             */
+            sharePct: string | null;
+            /** @example accepted */
+            status: components["schemas"]["CofundingOfferStatus"];
+            /**
+             * @description The terms in Thai; show it as is
+             * @example 40 % ของส่วนลดดีล สูงสุด ฿20,000
+             */
+            termsText: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-09T00:00:00+07:00
+             */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-15T23:59:59+07:00
+             */
+            validTo: string;
+            /** @example null */
+            withdrawReason: string | null;
+        };
+        CofundingOfferPartnerDto: {
+            /** @example 4320.00 */
+            accruedAmount: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T10:12:00+07:00
+             */
+            answeredAt: string | null;
+            /** @example 20000.00 */
+            capAmount: string;
+            /** @example false */
+            capReached: boolean;
+            /** @example 15680.00 */
+            capRemaining: string;
+            deal: components["schemas"]["CofundingDealDto"];
+            /** @example null */
+            declineReason: string | null;
+            factory: components["schemas"]["FactoryNameRefDto"];
+            /**
+             * @description Set for `fixed_per_order`
+             * @example null
+             */
+            fixedAmount: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f7001
+             */
+            id: string;
+            /** @example pct_of_discount */
+            mode: components["schemas"]["CofundingShareMode"];
+            /**
+             * @description Empty unless proposed, before `respondBy` and I hold `factory_cofunding.decide`
+             * @example [
+             *       "accept",
+             *       "decline"
+             *     ]
+             */
+            nextActions: components["schemas"]["CofundingOfferAction"][];
+            /** @example ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน */
+            note: string | null;
+            /**
+             * @description Orders with a live (accrued or netted) share
+             * @example 9
+             */
+            ordersCount: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f3001
+             */
+            promotionId: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T08:00:00+07:00
+             */
+            proposedAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-07T23:59:59+07:00
+             */
+            respondBy: string;
+            /**
+             * @description Set for `pct_of_discount`
+             * @example 40.00
+             */
+            sharePct: string | null;
+            /** @example accepted */
+            status: components["schemas"]["CofundingOfferStatus"];
+            /**
+             * @description The terms in Thai; show it as is
+             * @example 40 % ของส่วนลดดีล สูงสุด ฿20,000
+             */
+            termsText: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-09T00:00:00+07:00
+             */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-15T23:59:59+07:00
+             */
+            validTo: string;
+            /** @example null */
+            withdrawReason: string | null;
+        };
+        /** @enum {string} */
+        CofundingOfferStatus: "proposed" | "accepted" | "declined" | "withdrawn" | "expired" | "ended";
+        CofundingOrderDto: {
+            /** @example BS-26-00088 */
+            billingStatementNumber: string | null;
+            /** @example false */
+            capped: boolean;
+            /** @example 1200.00 */
+            discountAmount: string;
+            /** @example JB-26-00456 */
+            jobNumber: string;
+            /** @example GP-2611-00123 */
+            orderCode: string;
+            /** @example 480.00 */
+            shareAmount: string;
+            /** @example netted */
+            status: components["schemas"]["CofundingContributionStatus"];
+        };
+        /** @enum {string} */
+        CofundingReverseReason: "order_cancelled" | "order_refunded" | "job_reassigned" | "job_rejected" | "offer_withdrawn_before_job" | "no_payable";
+        /** @enum {string} */
+        CofundingShareMode: "pct_of_discount" | "fixed_per_order";
+        CohortDto: {
+            /** @example 37 */
+            bucket: number;
+            /** @example false */
+            inCohort: boolean;
+            /** @example company */
+            key: components["schemas"]["CohortKeyKind"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c0007
+             */
+            keyId: string;
+            /** @example bucket_above_percent */
+            reason: components["schemas"]["CohortReason"];
+        };
+        /** @enum {string} */
+        CohortKeyKind: "company" | "user";
+        /** @enum {string} */
+        CohortReason: "stage_all" | "allowlisted_company" | "allowlisted_user" | "bucket_below_percent" | "bucket_above_percent" | "not_allowlisted";
         ColourToleranceDto: {
             /**
              * @description ΔE2000 for flexo printing (corrugated); otherwise the standard
@@ -46105,6 +47000,15 @@ export interface components {
              * @example true
              */
             viewFinance: boolean;
+        };
+        CompanyClaimRefDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000c0001
+             */
+            companyId: string;
+            /** @example บริษัท ตัวอย่าง จำกัด */
+            legalName: string;
         };
         CompanyCreditDto: {
             /**
@@ -48095,6 +48999,50 @@ export interface components {
              * @example null
              */
             videoUrl?: string | null;
+        };
+        CreateCofundingOfferDto: {
+            /**
+             * @description 1 to `maxCapAmount`
+             * @example 20000.00
+             */
+            capAmount: string;
+            /**
+             * Format: uuid
+             * @description From `admin.cofundingOffers.candidates`
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000000f01
+             */
+            factoryId: string;
+            /**
+             * @description 1 to `maxFixedPerOrder`
+             * @example null
+             */
+            fixedAmount?: string | null;
+            /** @example pct_of_discount */
+            mode: components["schemas"]["CofundingShareMode"];
+            /** @example ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน */
+            note?: string | null;
+            /**
+             * Format: date-time
+             * @description At most `validTo`; default now + `offerResponseDays`
+             * @example 2026-11-07T23:59:59+07:00
+             */
+            respondBy?: string | null;
+            /**
+             * @description 1–100, 2 decimals
+             * @example 40.00
+             */
+            sharePct?: string | null;
+            /**
+             * Format: date-time
+             * @description Inside the deal window
+             * @example 2026-11-09T00:00:00+07:00
+             */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-15T23:59:59+07:00
+             */
+            validTo: string;
         };
         CreateConfigurationDraftDto: {
             /**
@@ -51443,6 +52391,48 @@ export interface components {
          * @enum {string}
          */
         DealForYouReason: "new_customer" | "tier" | "ordered_product_type";
+        DealFundingDto: {
+            /** @example 38750.00 */
+            discountTotal: string;
+            /** @example 1 */
+            factoryCount: number;
+            /**
+             * @description Accrued + netted shares (refunded ones excluded)
+             * @example 4320.00
+             */
+            factoryShare: string;
+            /**
+             * @description `discountTotal − factoryShare`
+             * @example 34430.00
+             */
+            getpackShare: string;
+            /** @example สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5% */
+            name: string;
+            /** @example 1 */
+            offersAccepted: number;
+            /**
+             * @description Orders of the deal placed in the range, not cancelled
+             * @example 31
+             */
+            orders: number;
+            /** @example กล่องลูกฟูก */
+            productTypeName: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f3001
+             */
+            promotionId: string;
+            /**
+             * @description Shares reversed before netting or refunded after it
+             * @example 960.00
+             */
+            reversed: string;
+            /**
+             * Format: date
+             * @example 2026-11-09
+             */
+            weekStart: string;
+        };
         DealListDto: {
             counts: components["schemas"]["DealCountsDto"];
             items: components["schemas"]["DealDto"][];
@@ -51558,6 +52548,10 @@ export interface components {
         DeclineConsultationDto: {
             /** @example Cannot make this material (fake) */
             note?: string;
+        };
+        DeclineOfferDto: {
+            /** @example ช่วงนี้ต้นทุนวัตถุดิบสูง ขอไม่ร่วมรอบนี้ */
+            reason: string;
         };
         DeclineQuoteDto: {
             /** @example งบประมาณไม่พอ */
@@ -53621,6 +54615,11 @@ export interface components {
              * @example 1.00
              */
             anniversary: string;
+            /**
+             * @description D-507: campaign, anniversary, reorder campaign and promotion counted as 1.00 because the month’s programme budget was used up (staff wording only; false for entries before P4)
+             * @example false
+             */
+            budgetCapped: boolean;
             /**
              * @description Best admin campaign (D-499); 1.00 for entries before P3
              * @example 1.00
@@ -62735,6 +63734,18 @@ export interface components {
              */
             inForce: boolean;
         };
+        FactoryNameRefDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-000000000f01
+             */
+            id: string;
+            /**
+             * @description Trade name, else legal name
+             * @example โรงงาน ตัวอย่าง
+             */
+            name: string;
+        };
         FactoryPerformanceDto: {
             /** @example 11 */
             accepted: number;
@@ -64477,6 +65488,40 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f501
              */
             heading: string;
+        };
+        FundingMetaDto: {
+            /** @example 1 */
+            page: number;
+            /** @example 50 */
+            perPage: number;
+            /** @example 1 */
+            total: number;
+            totals: components["schemas"]["FundingTotalsDto"];
+        };
+        FundingOfferDto: {
+            /** @example 4320.00 */
+            accruedAmount: string;
+            /** @example 20000.00 */
+            capAmount: string;
+            /** @example โรงงาน ตัวอย่าง */
+            factoryName: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000f7001
+             */
+            offerId: string;
+            /** @example accepted */
+            status: components["schemas"]["CofundingOfferStatus"];
+            /** @example 40 % ของส่วนลดดีล สูงสุด ฿20,000 */
+            termsText: string;
+        };
+        FundingTotalsDto: {
+            /** @example 38750.00 */
+            discountTotal: string;
+            /** @example 4320.00 */
+            factoryShare: string;
+            /** @example 34430.00 */
+            getpackShare: string;
         };
         FunnelReportDto: {
             /** @description Null = every product type */
@@ -67350,6 +68395,17 @@ export interface components {
         LoyaltyCampaignStatus: "active" | "ended" | "cancelled";
         /** @enum {string} */
         LoyaltyEarnSource: "order" | "activity" | "referral" | "bonus";
+        LoyaltyFundingDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-22T09:15:00+07:00
+             */
+            asOf: string;
+            /** @example THB */
+            currency: string;
+            data: components["schemas"]["DealFundingDto"][];
+            meta: components["schemas"]["FundingMetaDto"];
+        };
         /**
          * @description Customer copy of `priority_production_slot`: "คิวผลิตลำดับพิเศษ" (no date promise)
          * @enum {string}
@@ -67383,6 +68439,16 @@ export interface components {
         LoyaltyPerkStatus: "active" | "granted" | "used" | "next_quarter";
         /** @enum {string} */
         LoyaltyProgramme: "reorder_reminder" | "winback" | "quote_recovery" | "survey";
+        LoyaltyRolloutDto: {
+            cohort: components["schemas"]["RolloutCohortSizeDto"];
+            current: components["schemas"]["RolloutCurrentDto"];
+            gates: components["schemas"]["RolloutGateDto"][];
+            /** @description The last 10 versions */
+            history: components["schemas"]["RolloutHistoryDto"][];
+            pendingAdvance: components["schemas"]["PendingAdvanceDto"] | null;
+        };
+        /** @enum {string} */
+        LoyaltyRolloutStage: "internal" | "uat" | "percent" | "all";
         LoyaltySummaryDto: {
             /**
              * @description My active points campaigns (reorder bonus, D-492)
@@ -67479,6 +68545,43 @@ export interface components {
             /** @example silver */
             tier: components["schemas"]["LoyaltyTier"];
         };
+        LoyaltySurfacesDto: {
+            /**
+             * @description The earn checklist (`store.loyalty.tasks`)
+             * @example true
+             */
+            checklist: boolean;
+            /**
+             * @description Deal pages and saved deals (`store.promotions.*`)
+             * @example true
+             */
+            deals: boolean;
+            /**
+             * @description Web gate only: the LIFF deal pages
+             * @example true
+             */
+            dealsLiff: boolean;
+            /**
+             * @description Web gate only: the LIFF points pages
+             * @example true
+             */
+            pointsLiff: boolean;
+            /**
+             * @description Saved-quotation recovery messages
+             * @example true
+             */
+            quoteRecovery: boolean;
+            /**
+             * @description The reward catalogue (`store.rewards.list` / `preview` / `redeem`)
+             * @example true
+             */
+            redeem: boolean;
+            /**
+             * @description Tier perks shown on `store.loyalty.get`
+             * @example true
+             */
+            tierPerks: boolean;
+        };
         /**
          * @description The web owns titles, descriptions and routes (i18n `account.points.tasks.<code>.*`)
          * @enum {string}
@@ -67490,7 +68593,7 @@ export interface components {
          */
         LoyaltyTaskHeldReason: "duplicate_identity";
         /** @enum {string} */
-        LoyaltyTaskStatus: "todo" | "held" | "done";
+        LoyaltyTaskStatus: "todo" | "held" | "done" | "claimed_by_company";
         /** @enum {string} */
         LoyaltyTier: "member" | "silver" | "gold" | "platinum";
         MachineDto: {
@@ -70628,6 +71731,46 @@ export interface components {
              */
             sha256: string;
         };
+        PendingAdvanceDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a9101
+             */
+            approvalId: string;
+            /** @example อัตราการแลกและกำไรผ่านเกณฑ์ที่ 10 % มาสองสัปดาห์ */
+            reason: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-22T09:00:00+07:00
+             */
+            requestedAt: string;
+            requestedBy: components["schemas"]["UserRefDto"] | null;
+            target: components["schemas"]["RolloutTargetDto"];
+        };
+        PendingApprovalDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a9101
+             */
+            approvalId: string;
+            /** @example pending */
+            status: string;
+        };
+        PendingOverrideDto: {
+            /** @example 300000.00 */
+            amount: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000a9101
+             */
+            approvalId: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-22T09:00:00+07:00
+             */
+            requestedAt: string;
+            requestedBy: components["schemas"]["UserRefDto"] | null;
+        };
         /** @enum {string} */
         PeriodAction: "soft-close" | "reopen" | "close" | "lock";
         /** @enum {string} */
@@ -72828,6 +73971,34 @@ export interface components {
             to: string;
             totals: components["schemas"]["PlTotalsDto"];
         };
+        ProgrammeBudgetDto: {
+            /**
+             * @example [
+             *       80,
+             *       100
+             *     ]
+             */
+            alertPcts: number[];
+            alerts: components["schemas"]["BudgetAlertDto"][];
+            /**
+             * Format: date-time
+             * @example 2026-11-22T09:15:00+07:00
+             */
+            asOf: string;
+            budget: components["schemas"]["BudgetAmountsDto"];
+            /** @example THB */
+            currency: string;
+            /** @example 2026-11 */
+            month: string;
+            pendingOverride: components["schemas"]["PendingOverrideDto"] | null;
+            spent: components["schemas"]["BudgetSpentDto"];
+            /** @example warning */
+            state: components["schemas"]["ProgrammeBudgetState"];
+            /** @example 84.00 */
+            usedPct: string;
+        };
+        /** @enum {string} */
+        ProgrammeBudgetState: "ok" | "warning" | "exhausted";
         ProgrammeConversionDto: {
             /** @example 37 */
             converted: number;
@@ -72944,6 +74115,8 @@ export interface components {
              * @example 41.50
              */
             freePct: string;
+            /** @description D-506 who funds the discount: getpack 100 % by default, plus each co-funding offer and the factory share to date */
+            funding: components["schemas"]["CapacityDealFundingDto"];
             /** @example corrugated_rsc */
             productTypeCode: string;
             /**
@@ -73838,6 +75011,8 @@ export interface components {
             contact: components["schemas"]["ContactDto"];
             /** @description D-447: the legal name of the entity that issues customer tax invoices (D-010, D-092 entity settings) — the storefront names the company from here, never from its own copy */
             issuer: components["schemas"]["IssuerDto"];
+            /** @description D-509 the anonymous view of the loyalty surfaces: `loyalty.surfaces`, open only while the rollout (D-510) is at `all`. Guests, the sitemap and the header read it; signed-in pages use `store.loyalty.surfaces` */
+            loyaltySurfaces: components["schemas"]["LoyaltySurfacesDto"];
             minOrderQty: components["schemas"]["MinOrderQtyDto"];
             /**
              * @description D-458 the payment methods anyone can start a payment with now (feature flags, D-176) — instalments excluded (hidden until live, DECISIONS §3); the business page lists these and nothing else
@@ -76571,6 +77746,20 @@ export interface components {
             /** @example ลูกค้าขอเปลี่ยนจำนวน */
             reason: string;
         };
+        RequestBudgetOverrideDto: {
+            /**
+             * @description Above that month's effective budget (`must_raise`)
+             * @example 300000.00
+             */
+            amount: string;
+            /**
+             * @description The current or the next Bangkok month
+             * @example 2026-11
+             */
+            month: string;
+            /** @example แคมเปญปลายปีได้ผลดี ขอเพิ่มงบเดือนพฤศจิกายน */
+            reason: string;
+        };
         RequestCallOffDto: {
             /**
              * @description At most `calloff.max_months` (D-290)
@@ -78007,6 +79196,119 @@ export interface components {
              * @example P11
              */
             ruleKey: string;
+        };
+        RolloutChangeDto: {
+            /** @example [] */
+            allowlistCompanyIds: string[];
+            /** @example [] */
+            allowlistUserIds: string[];
+            /**
+             * @description 1–99 at stage `percent`, else 0
+             * @example 25
+             */
+            percent: number;
+            /** @example อัตราการแลกและกำไรผ่านเกณฑ์ที่ 10 % มาสองสัปดาห์ */
+            reason: string;
+            /** @example percent */
+            stage: components["schemas"]["LoyaltyRolloutStage"];
+        };
+        RolloutCohortSizeDto: {
+            /** @example 41 */
+            companies: number;
+            /** @example 402 */
+            companiesTotal: number;
+            /** @example 318 */
+            usersWithoutCompany: number;
+            /** @example 3120 */
+            usersWithoutCompanyTotal: number;
+        };
+        RolloutCurrentDto: {
+            /** @example [] */
+            allowlistCompanyIds: string[];
+            /** @example [] */
+            allowlistUserIds: string[];
+            /**
+             * Format: date-time
+             * @example 2026-11-20T09:00:00+07:00
+             */
+            effectiveFrom: string;
+            /**
+             * @description 1–99 at stage `percent`, else 0
+             * @example 25
+             */
+            percent: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d4001
+             */
+            settingVersionId: string;
+            /** @example percent */
+            stage: components["schemas"]["LoyaltyRolloutStage"];
+        };
+        /** @enum {string} */
+        RolloutGateDirection: "min" | "max";
+        RolloutGateDto: {
+            /** @example min */
+            direction: components["schemas"]["RolloutGateDirection"];
+            /** @example redemption_rate */
+            metric: components["schemas"]["RolloutGateMetric"];
+            /** @example pass */
+            status: components["schemas"]["RolloutGateStatus"];
+            /**
+             * @description From `loyalty.rollout.gates` (advisory, never enforced)
+             * @example 15.00
+             */
+            target: string;
+            /**
+             * @description Null without data
+             * @example 18.40
+             */
+            value: string | null;
+            /** @example 3m */
+            window: components["schemas"]["RolloutGateWindow"];
+        };
+        /** @enum {string} */
+        RolloutGateMetric: "redemption_rate" | "points_liability" | "margin_after_promotions" | "budget_use";
+        /** @enum {string} */
+        RolloutGateStatus: "pass" | "attention" | "unknown";
+        /** @enum {string} */
+        RolloutGateWindow: "3m" | "now" | "month";
+        RolloutHistoryDto: {
+            approvedBy: components["schemas"]["UserRefDto"] | null;
+            by: components["schemas"]["UserRefDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-20T09:00:00+07:00
+             */
+            effectiveFrom: string;
+            /** @example advance */
+            kind: components["schemas"]["RolloutHistoryKind"];
+            /** @example 10 */
+            percent: number;
+            /** @example ผ่านเกณฑ์ UAT สองสัปดาห์ */
+            reason: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-0000000d4001
+             */
+            settingVersionId: string;
+            /** @example percent */
+            stage: components["schemas"]["LoyaltyRolloutStage"];
+        };
+        /** @enum {string} */
+        RolloutHistoryKind: "advance" | "rollback" | "seed";
+        RolloutTargetDto: {
+            /** @example [] */
+            allowlistCompanyIds: string[];
+            /** @example [] */
+            allowlistUserIds: string[];
+            /**
+             * @description 1–99 at stage `percent`, else 0
+             * @example 25
+             */
+            percent: number;
+            /** @example percent */
+            stage: components["schemas"]["LoyaltyRolloutStage"];
         };
         RollupQueuedDto: {
             /**
@@ -90053,6 +91355,10 @@ export interface components {
         WhtForm: "pnd3" | "pnd53";
         WithdrawDto: {
             /** @example Raised by mistake */
+            reason: string;
+        };
+        WithdrawOfferDto: {
+            /** @example ดีลถูกยกเลิก ไม่ต้องร่วมสนับสนุน */
             reason: string;
         };
         ZoneDto: {
@@ -103699,6 +105005,7 @@ export interface operations {
                      *           "totals": {
                      *             "advanceOffset": "2555.16",
                      *             "alreadyPaid": "2555.16",
+                     *             "cofunding": "0.00",
                      *             "deductions": "0.00",
                      *             "gross": "8517.20",
                      *             "net": "7960.00",
@@ -103849,6 +105156,7 @@ export interface operations {
                      *       "totals": {
                      *         "advanceOffset": "2555.16",
                      *         "alreadyPaid": "2555.16",
+                     *         "cofunding": "0.00",
                      *         "deductions": "0.00",
                      *         "gross": "8517.20",
                      *         "net": "7960.00",
@@ -136495,6 +137803,297 @@ export interface operations {
             };
         };
     };
+    "admin.cofundingContributions.list": {
+        parameters: {
+            query?: {
+                factoryId?: string;
+                /** @description Accrued on or after (Bangkok day) */
+                from?: string;
+                offerId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                promotionId?: string;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["CofundingContributionStatus"];
+                /** @description Accrued on or before (Bangkok day) */
+                to?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "accruedAt": "2026-11-10T11:00:00+07:00",
+                     *           "billingStatementNumber": "BS-26-00088",
+                     *           "capped": false,
+                     *           "discountAmount": "1200.00",
+                     *           "factory": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *             "name": "โรงงาน ตัวอย่าง"
+                     *           },
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f8001",
+                     *           "jobNumber": "JB-26-00456",
+                     *           "nettedAt": "2026-11-18T16:40:00+07:00",
+                     *           "offerId": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *           "orderCode": "GP-2611-00123",
+                     *           "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *           "refundedAt": null,
+                     *           "reverseReason": null,
+                     *           "reversedAt": null,
+                     *           "shareAmount": "480.00",
+                     *           "status": "netted"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["CofundingContributionDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cofundingOffers.withdraw": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WithdrawOfferDto"];
+            };
+        };
+        responses: {
+            /** @description Offer */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accruedAmount": "4320.00",
+                     *       "answeredAt": "2026-11-05T10:12:00+07:00",
+                     *       "answeredBy": {
+                     *         "displayName": "คุณวิชัย",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a31"
+                     *       },
+                     *       "capAmount": "20000.00",
+                     *       "capReached": false,
+                     *       "capRemaining": "15680.00",
+                     *       "declineReason": null,
+                     *       "factory": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *         "name": "โรงงาน ตัวอย่าง"
+                     *       },
+                     *       "fixedAmount": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *       "mode": "pct_of_discount",
+                     *       "note": "ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน",
+                     *       "ordersCount": 9,
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *       "proposedAt": "2026-11-04T08:00:00+07:00",
+                     *       "proposedBy": {
+                     *         "displayName": "มาลี ส.",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *       },
+                     *       "respondBy": "2026-11-07T23:59:59+07:00",
+                     *       "rowVersion": 3,
+                     *       "sharePct": "40.00",
+                     *       "status": "withdrawn",
+                     *       "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000",
+                     *       "validFrom": "2026-11-09T00:00:00+07:00",
+                     *       "validTo": "2026-11-15T23:59:59+07:00",
+                     *       "withdrawReason": "ดีลถูกยกเลิก ไม่ต้องร่วมสนับสนุน",
+                     *       "withdrawnAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CofundingOfferDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cofunding.invalid_transition` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.companies.list": {
         parameters: {
             query?: {
@@ -149161,6 +150760,7 @@ export interface operations {
                      *         "minimumPoints": 4,
                      *         "multipliers": {
                      *           "anniversary": "1.00",
+                     *           "budgetCapped": false,
                      *           "campaign": "1.00",
                      *           "capped": false,
                      *           "combined": "1.88",
@@ -149591,6 +151191,7 @@ export interface operations {
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000b0001",
                      *       "multipliers": {
                      *         "anniversary": "1.00",
+                     *         "budgetCapped": false,
                      *         "campaign": "1.00",
                      *         "capped": false,
                      *         "combined": "2.25",
@@ -149734,6 +151335,7 @@ export interface operations {
                      *           "availableAt": "2026-10-28T10:00:00+07:00",
                      *           "bahtValue": "62.50",
                      *           "bonusReason": null,
+                     *           "companyClaim": null,
                      *           "createdAt": "2026-10-21T10:00:00+07:00",
                      *           "entryType": "earn_order",
                      *           "expiresAt": null,
@@ -149741,6 +151343,7 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000b0001",
                      *           "multipliers": {
                      *             "anniversary": "1.00",
+                     *             "budgetCapped": false,
                      *             "campaign": "1.00",
                      *             "capped": false,
                      *             "combined": "2.25",
@@ -149766,7 +151369,7 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        data: components["schemas"]["PointsEntryDto"][];
+                        data: components["schemas"]["AdminPointsEntryDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
                 };
@@ -172673,6 +174276,121 @@ export interface operations {
             };
         };
     };
+    "admin.loyaltyAnalytics.funding": {
+        parameters: {
+            query: {
+                from: string;
+                page?: number;
+                perPage?: number;
+                /** @description At most 24 months after `from` */
+                to: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Funding split */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2026-11-22T09:15:00+07:00",
+                     *       "currency": "THB",
+                     *       "data": [
+                     *         {
+                     *           "discountTotal": "38750.00",
+                     *           "factoryCount": 1,
+                     *           "factoryShare": "4320.00",
+                     *           "getpackShare": "34430.00",
+                     *           "name": "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5%",
+                     *           "offersAccepted": 1,
+                     *           "orders": 31,
+                     *           "productTypeName": "กล่องลูกฟูก",
+                     *           "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *           "reversed": "960.00",
+                     *           "weekStart": "2026-11-09"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 50,
+                     *         "total": 1,
+                     *         "totals": {
+                     *           "discountTotal": "38750.00",
+                     *           "factoryShare": "4320.00",
+                     *           "getpackShare": "34430.00"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LoyaltyFundingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.loyaltyCampaigns.list": {
         parameters: {
             query?: {
@@ -172885,6 +174603,16 @@ export interface operations {
             };
             /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
             403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `loyalty.budget_exhausted` */
+            409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -173289,6 +175017,251 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.programmeBudget.get": {
+        parameters: {
+            query?: {
+                /** @description Default the current Bangkok month; at most 24 months back, never after next month */
+                month?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Budget */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "alertPcts": [
+                     *         80,
+                     *         100
+                     *       ],
+                     *       "alerts": [
+                     *         {
+                     *           "budget": "250000.00",
+                     *           "firedAt": "2026-11-21T10:15:00+07:00",
+                     *           "spent": "200410.00",
+                     *           "thresholdPct": 80
+                     *         }
+                     *       ],
+                     *       "asOf": "2026-11-22T09:15:00+07:00",
+                     *       "budget": {
+                     *         "effective": "250000.00",
+                     *         "monthlyBaht": "200000.00",
+                     *         "override": "250000.00",
+                     *         "settingVersionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001"
+                     *       },
+                     *       "currency": "THB",
+                     *       "month": "2026-11",
+                     *       "pendingOverride": {
+                     *         "amount": "300000.00",
+                     *         "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000a9101",
+                     *         "requestedAt": "2026-11-22T09:00:00+07:00",
+                     *         "requestedBy": {
+                     *           "displayName": "มาลี ส.",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *         }
+                     *       },
+                     *       "spent": {
+                     *         "discounts": "78250.00",
+                     *         "factoryShare": "6550.00",
+                     *         "points": "121400.00",
+                     *         "tierPerks": "16900.00",
+                     *         "total": "210000.00"
+                     *       },
+                     *       "state": "warning",
+                     *       "usedPct": "84.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProgrammeBudgetDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.programmeBudget.requestOverride": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestBudgetOverrideDto"];
+            };
+        };
+        responses: {
+            /** @description Approval opened. Poll `admin.programmeBudget.get` until it completes. */
+            202: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000a9101",
+                     *       "status": "pending"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PendingApprovalDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `settings.pending_exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -174258,8 +176231,559 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Problem: `loyalty.budget_exhausted` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
             /** @description Problem: `concurrency.stale` */
             412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyRollout.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rollout */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cohort": {
+                     *         "companies": 41,
+                     *         "companiesTotal": 402,
+                     *         "usersWithoutCompany": 318,
+                     *         "usersWithoutCompanyTotal": 3120
+                     *       },
+                     *       "current": {
+                     *         "allowlistCompanyIds": [
+                     *           "0192f3a0-7c1e-7d2a-9b1f-0000000c0001"
+                     *         ],
+                     *         "allowlistUserIds": [],
+                     *         "effectiveFrom": "2026-11-20T09:00:00+07:00",
+                     *         "percent": 10,
+                     *         "settingVersionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *         "stage": "percent"
+                     *       },
+                     *       "gates": [
+                     *         {
+                     *           "direction": "min",
+                     *           "metric": "redemption_rate",
+                     *           "status": "pass",
+                     *           "target": "15.00",
+                     *           "value": "18.40",
+                     *           "window": "3m"
+                     *         },
+                     *         {
+                     *           "direction": "max",
+                     *           "metric": "points_liability",
+                     *           "status": "pass",
+                     *           "target": "500000.00",
+                     *           "value": "412800.00",
+                     *           "window": "now"
+                     *         },
+                     *         {
+                     *           "direction": "min",
+                     *           "metric": "margin_after_promotions",
+                     *           "status": "attention",
+                     *           "target": "18.00",
+                     *           "value": "17.10",
+                     *           "window": "3m"
+                     *         },
+                     *         {
+                     *           "direction": "max",
+                     *           "metric": "budget_use",
+                     *           "status": "pass",
+                     *           "target": "100.00",
+                     *           "value": "84.00",
+                     *           "window": "month"
+                     *         }
+                     *       ],
+                     *       "history": [
+                     *         {
+                     *           "approvedBy": {
+                     *             "displayName": "สมชาย ก.",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a02"
+                     *           },
+                     *           "by": {
+                     *             "displayName": "มาลี ส.",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *           },
+                     *           "effectiveFrom": "2026-11-20T09:00:00+07:00",
+                     *           "kind": "advance",
+                     *           "percent": 10,
+                     *           "reason": "ผ่านเกณฑ์ UAT สองสัปดาห์",
+                     *           "settingVersionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *           "stage": "percent"
+                     *         }
+                     *       ],
+                     *       "pendingAdvance": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LoyaltyRolloutDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyRollout.advance": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RolloutChangeDto"];
+            };
+        };
+        responses: {
+            /** @description Approval opened. Poll `admin.loyaltyRollout.get` until it completes. */
+            202: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalId": "0192f3a0-7c1e-7d2a-9b1f-0000000a9201",
+                     *       "status": "pending"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PendingApprovalDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `settings.pending_exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyRollout.rollback": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RolloutChangeDto"];
+            };
+        };
+        responses: {
+            /** @description Rollout */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cohort": {
+                     *         "companies": 41,
+                     *         "companiesTotal": 402,
+                     *         "usersWithoutCompany": 318,
+                     *         "usersWithoutCompanyTotal": 3120
+                     *       },
+                     *       "current": {
+                     *         "allowlistCompanyIds": [
+                     *           "0192f3a0-7c1e-7d2a-9b1f-0000000c0001"
+                     *         ],
+                     *         "allowlistUserIds": [],
+                     *         "effectiveFrom": "2026-11-20T09:00:00+07:00",
+                     *         "percent": 10,
+                     *         "settingVersionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *         "stage": "percent"
+                     *       },
+                     *       "gates": [
+                     *         {
+                     *           "direction": "min",
+                     *           "metric": "redemption_rate",
+                     *           "status": "pass",
+                     *           "target": "15.00",
+                     *           "value": "18.40",
+                     *           "window": "3m"
+                     *         },
+                     *         {
+                     *           "direction": "max",
+                     *           "metric": "points_liability",
+                     *           "status": "pass",
+                     *           "target": "500000.00",
+                     *           "value": "412800.00",
+                     *           "window": "now"
+                     *         },
+                     *         {
+                     *           "direction": "min",
+                     *           "metric": "margin_after_promotions",
+                     *           "status": "attention",
+                     *           "target": "18.00",
+                     *           "value": "17.10",
+                     *           "window": "3m"
+                     *         },
+                     *         {
+                     *           "direction": "max",
+                     *           "metric": "budget_use",
+                     *           "status": "pass",
+                     *           "target": "100.00",
+                     *           "value": "84.00",
+                     *           "window": "month"
+                     *         }
+                     *       ],
+                     *       "history": [
+                     *         {
+                     *           "approvedBy": {
+                     *             "displayName": "สมชาย ก.",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a02"
+                     *           },
+                     *           "by": {
+                     *             "displayName": "มาลี ส.",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *           },
+                     *           "effectiveFrom": "2026-11-20T09:00:00+07:00",
+                     *           "kind": "advance",
+                     *           "percent": 10,
+                     *           "reason": "ผ่านเกณฑ์ UAT สองสัปดาห์",
+                     *           "settingVersionId": "0192f3a0-7c1e-7d2a-9b1f-0000000d4001",
+                     *           "stage": "percent"
+                     *         }
+                     *       ],
+                     *       "pendingAdvance": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LoyaltyRolloutDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.loyaltyRollout.cohort": {
+        parameters: {
+            query?: {
+                /** @description Exactly one of companyId or userId */
+                companyId?: string;
+                userId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cohort */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bucket": 37,
+                     *       "inCohort": false,
+                     *       "key": "company",
+                     *       "keyId": "0192f3a0-7c1e-7d2a-9b1f-0000000c0007",
+                     *       "reason": "bucket_above_percent"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CohortDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -190828,7 +193352,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `http.not_found` */
+            /** @description Problem: `http.not_found`, `loyalty.feature_disabled` */
             404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -190948,6 +193472,424 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cofundingOffers.candidates": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                promotionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "factoryId": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *           "hasLiveOffer": false,
+                     *           "name": "โรงงาน ตัวอย่าง"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["CofundingCandidateDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found`, `loyalty.feature_disabled` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cofunding.deal_not_eligible`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cofundingOffers.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["CofundingOfferStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                promotionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "accruedAmount": "4320.00",
+                     *           "answeredAt": "2026-11-05T10:12:00+07:00",
+                     *           "answeredBy": {
+                     *             "displayName": "คุณวิชัย",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a31"
+                     *           },
+                     *           "capAmount": "20000.00",
+                     *           "capReached": false,
+                     *           "capRemaining": "15680.00",
+                     *           "declineReason": null,
+                     *           "factory": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *             "name": "โรงงาน ตัวอย่าง"
+                     *           },
+                     *           "fixedAmount": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *           "mode": "pct_of_discount",
+                     *           "note": "ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน",
+                     *           "ordersCount": 9,
+                     *           "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *           "proposedAt": "2026-11-04T08:00:00+07:00",
+                     *           "proposedBy": {
+                     *             "displayName": "มาลี ส.",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *           },
+                     *           "respondBy": "2026-11-07T23:59:59+07:00",
+                     *           "rowVersion": 3,
+                     *           "sharePct": "40.00",
+                     *           "status": "accepted",
+                     *           "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000",
+                     *           "validFrom": "2026-11-09T00:00:00+07:00",
+                     *           "validTo": "2026-11-15T23:59:59+07:00",
+                     *           "withdrawReason": null,
+                     *           "withdrawnAt": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["CofundingOfferDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.cofundingOffers.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                promotionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCofundingOfferDto"];
+            };
+        };
+        responses: {
+            /** @description Offer */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accruedAmount": "0.00",
+                     *       "answeredAt": null,
+                     *       "answeredBy": null,
+                     *       "capAmount": "20000.00",
+                     *       "capReached": false,
+                     *       "capRemaining": "15680.00",
+                     *       "declineReason": null,
+                     *       "factory": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *         "name": "โรงงาน ตัวอย่าง"
+                     *       },
+                     *       "fixedAmount": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *       "mode": "pct_of_discount",
+                     *       "note": "ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน",
+                     *       "ordersCount": 9,
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *       "proposedAt": "2026-11-04T08:00:00+07:00",
+                     *       "proposedBy": {
+                     *         "displayName": "มาลี ส.",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000a01"
+                     *       },
+                     *       "respondBy": "2026-11-07T23:59:59+07:00",
+                     *       "rowVersion": 3,
+                     *       "sharePct": "40.00",
+                     *       "status": "proposed",
+                     *       "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000",
+                     *       "validFrom": "2026-11-09T00:00:00+07:00",
+                     *       "validTo": "2026-11-15T23:59:59+07:00",
+                     *       "withdrawReason": null,
+                     *       "withdrawnAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CofundingOfferDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found`, `loyalty.feature_disabled` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cofunding.disabled`, `cofunding.offer_exists`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cofunding.deal_not_eligible`, `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -191952,6 +194894,21 @@ export interface operations {
                      *           "createdAt": "2026-11-04T07:20:00+07:00",
                      *           "discountPct": "5",
                      *           "freePct": "41.50",
+                     *           "funding": {
+                     *             "acceptedCount": 1,
+                     *             "defaultFunder": "getpack",
+                     *             "factoryShareSoFar": "4320.00",
+                     *             "offers": [
+                     *               {
+                     *                 "accruedAmount": "4320.00",
+                     *                 "capAmount": "20000.00",
+                     *                 "factoryName": "โรงงาน ตัวอย่าง",
+                     *                 "offerId": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *                 "status": "accepted",
+                     *                 "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000"
+                     *               }
+                     *             ]
+                     *           },
                      *           "productTypeCode": "corrugated_rsc",
                      *           "productTypeName": "กล่องลูกฟูก",
                      *           "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
@@ -226342,6 +229299,7 @@ export interface operations {
                      *           "totals": {
                      *             "advanceOffset": "2555.16",
                      *             "alreadyPaid": "2555.16",
+                     *             "cofunding": "0.00",
                      *             "deductions": "0.00",
                      *             "gross": "8517.20",
                      *             "net": "7960.00",
@@ -226490,6 +229448,7 @@ export interface operations {
                      *       "totals": {
                      *         "advanceOffset": "2555.16",
                      *         "alreadyPaid": "2555.16",
+                     *         "cofunding": "0.00",
                      *         "deductions": "0.00",
                      *         "gross": "8517.20",
                      *         "net": "7960.00",
@@ -226641,6 +229600,7 @@ export interface operations {
                      *       "totals": {
                      *         "advanceOffset": "2555.16",
                      *         "alreadyPaid": "2555.16",
+                     *         "cofunding": "0.00",
                      *         "deductions": "0.00",
                      *         "gross": "8517.20",
                      *         "net": "7960.00",
@@ -226816,6 +229776,7 @@ export interface operations {
                      *       "totals": {
                      *         "advanceOffset": "2555.16",
                      *         "alreadyPaid": "2555.16",
+                     *         "cofunding": "0.00",
                      *         "deductions": "0.00",
                      *         "gross": "8517.20",
                      *         "net": "7960.00",
@@ -228091,6 +231052,594 @@ export interface operations {
                 };
             };
             /** @description Problem: `artwork.file_not_usable`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.cofundingOffers.list": {
+        parameters: {
+            query?: {
+                /** @description One of my factories */
+                factoryId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["CofundingOfferStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "accruedAmount": "4320.00",
+                     *           "answeredAt": null,
+                     *           "capAmount": "20000.00",
+                     *           "capReached": false,
+                     *           "capRemaining": "15680.00",
+                     *           "deal": {
+                     *             "discountPct": "5",
+                     *             "endsAt": "2026-11-15T23:59:59+07:00",
+                     *             "name": "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5%",
+                     *             "productTypeCode": "corrugated",
+                     *             "productTypeName": "กล่องลูกฟูก",
+                     *             "startsAt": "2026-11-09T00:00:00+07:00",
+                     *             "status": "active",
+                     *             "weekStart": "2026-11-09"
+                     *           },
+                     *           "declineReason": null,
+                     *           "factory": {
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *             "name": "โรงงาน ตัวอย่าง"
+                     *           },
+                     *           "fixedAmount": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *           "mode": "pct_of_discount",
+                     *           "nextActions": [
+                     *             "accept",
+                     *             "decline"
+                     *           ],
+                     *           "note": "ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน",
+                     *           "ordersCount": 9,
+                     *           "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *           "proposedAt": "2026-11-04T08:00:00+07:00",
+                     *           "respondBy": "2026-11-07T23:59:59+07:00",
+                     *           "sharePct": "40.00",
+                     *           "status": "proposed",
+                     *           "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000",
+                     *           "validFrom": "2026-11-09T00:00:00+07:00",
+                     *           "validTo": "2026-11-15T23:59:59+07:00",
+                     *           "withdrawReason": null
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["CofundingOfferPartnerDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.cofundingOffers.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offer */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accruedAmount": "4320.00",
+                     *       "answeredAt": null,
+                     *       "capAmount": "20000.00",
+                     *       "capReached": false,
+                     *       "capRemaining": "15680.00",
+                     *       "deal": {
+                     *         "discountPct": "5",
+                     *         "endsAt": "2026-11-15T23:59:59+07:00",
+                     *         "name": "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5%",
+                     *         "productTypeCode": "corrugated",
+                     *         "productTypeName": "กล่องลูกฟูก",
+                     *         "startsAt": "2026-11-09T00:00:00+07:00",
+                     *         "status": "active",
+                     *         "weekStart": "2026-11-09"
+                     *       },
+                     *       "declineReason": null,
+                     *       "factory": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *         "name": "โรงงาน ตัวอย่าง"
+                     *       },
+                     *       "fixedAmount": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *       "mode": "pct_of_discount",
+                     *       "nextActions": [
+                     *         "accept",
+                     *         "decline"
+                     *       ],
+                     *       "note": "ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน",
+                     *       "orders": [
+                     *         {
+                     *           "billingStatementNumber": "BS-26-00088",
+                     *           "capped": false,
+                     *           "discountAmount": "1200.00",
+                     *           "jobNumber": "JB-26-00456",
+                     *           "orderCode": "GP-2611-00123",
+                     *           "shareAmount": "480.00",
+                     *           "status": "netted"
+                     *         }
+                     *       ],
+                     *       "ordersCount": 9,
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *       "proposedAt": "2026-11-04T08:00:00+07:00",
+                     *       "respondBy": "2026-11-07T23:59:59+07:00",
+                     *       "sharePct": "40.00",
+                     *       "status": "proposed",
+                     *       "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000",
+                     *       "validFrom": "2026-11-09T00:00:00+07:00",
+                     *       "validTo": "2026-11-15T23:59:59+07:00",
+                     *       "withdrawReason": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CofundingOfferPartnerDetailDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.cofundingOffers.accept": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Offer */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accruedAmount": "4320.00",
+                     *       "answeredAt": null,
+                     *       "capAmount": "20000.00",
+                     *       "capReached": false,
+                     *       "capRemaining": "15680.00",
+                     *       "deal": {
+                     *         "discountPct": "5",
+                     *         "endsAt": "2026-11-15T23:59:59+07:00",
+                     *         "name": "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5%",
+                     *         "productTypeCode": "corrugated",
+                     *         "productTypeName": "กล่องลูกฟูก",
+                     *         "startsAt": "2026-11-09T00:00:00+07:00",
+                     *         "status": "active",
+                     *         "weekStart": "2026-11-09"
+                     *       },
+                     *       "declineReason": null,
+                     *       "factory": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *         "name": "โรงงาน ตัวอย่าง"
+                     *       },
+                     *       "fixedAmount": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *       "mode": "pct_of_discount",
+                     *       "nextActions": [],
+                     *       "note": "ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน",
+                     *       "ordersCount": 9,
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *       "proposedAt": "2026-11-04T08:00:00+07:00",
+                     *       "respondBy": "2026-11-07T23:59:59+07:00",
+                     *       "sharePct": "40.00",
+                     *       "status": "accepted",
+                     *       "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000",
+                     *       "validFrom": "2026-11-09T00:00:00+07:00",
+                     *       "validTo": "2026-11-15T23:59:59+07:00",
+                     *       "withdrawReason": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CofundingOfferPartnerDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cofunding.invalid_transition`, `cofunding.response_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.cofundingOffers.decline": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclineOfferDto"];
+            };
+        };
+        responses: {
+            /** @description Offer */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accruedAmount": "4320.00",
+                     *       "answeredAt": null,
+                     *       "capAmount": "20000.00",
+                     *       "capReached": false,
+                     *       "capRemaining": "15680.00",
+                     *       "deal": {
+                     *         "discountPct": "5",
+                     *         "endsAt": "2026-11-15T23:59:59+07:00",
+                     *         "name": "สั่งกล่องลูกฟูกสัปดาห์นี้ ลด 5%",
+                     *         "productTypeCode": "corrugated",
+                     *         "productTypeName": "กล่องลูกฟูก",
+                     *         "startsAt": "2026-11-09T00:00:00+07:00",
+                     *         "status": "active",
+                     *         "weekStart": "2026-11-09"
+                     *       },
+                     *       "declineReason": null,
+                     *       "factory": {
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-000000000f01",
+                     *         "name": "โรงงาน ตัวอย่าง"
+                     *       },
+                     *       "fixedAmount": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-0000000f7001",
+                     *       "mode": "pct_of_discount",
+                     *       "nextActions": [],
+                     *       "note": "ช่วงโรงงานว่างสัปดาห์ที่ 2 ของเดือน",
+                     *       "ordersCount": 9,
+                     *       "promotionId": "0192f3a0-7c1e-7d2a-9b1f-0000000f3001",
+                     *       "proposedAt": "2026-11-04T08:00:00+07:00",
+                     *       "respondBy": "2026-11-07T23:59:59+07:00",
+                     *       "sharePct": "40.00",
+                     *       "status": "declined",
+                     *       "termsText": "40 % ของส่วนลดดีล สูงสุด ฿20,000",
+                     *       "validFrom": "2026-11-09T00:00:00+07:00",
+                     *       "validTo": "2026-11-15T23:59:59+07:00",
+                     *       "withdrawReason": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CofundingOfferPartnerDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `cofunding.invalid_transition`, `cofunding.response_closed`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -306805,6 +310354,7 @@ export interface operations {
                      *         "minimumPoints": 4,
                      *         "multipliers": {
                      *           "anniversary": "1.00",
+                     *           "budgetCapped": false,
                      *           "campaign": "1.00",
                      *           "capped": false,
                      *           "combined": "1.88",
@@ -322852,6 +326402,7 @@ export interface operations {
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-0000000b0001",
                      *           "multipliers": {
                      *             "anniversary": "1.00",
+                     *             "budgetCapped": false,
                      *             "campaign": "1.00",
                      *             "capped": false,
                      *             "combined": "2.25",
@@ -323351,6 +326902,95 @@ export interface operations {
             };
         };
     };
+    "store.loyalty.surfaces": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Surfaces */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "checklist": true,
+                     *       "deals": true,
+                     *       "dealsLiff": true,
+                     *       "pointsLiff": true,
+                     *       "quoteRecovery": true,
+                     *       "redeem": true,
+                     *       "tierPerks": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LoyaltySurfacesDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.loyalty.tasks": {
         parameters: {
             query?: never;
@@ -323435,6 +327075,16 @@ export interface operations {
             };
             /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
             403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `loyalty.feature_disabled` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -330863,6 +334513,16 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Problem: `loyalty.feature_disabled` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
             /** @description Problem: `validation.failed` */
             422: {
                 headers: {
@@ -331195,7 +334855,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `http.not_found` */
+            /** @description Problem: `http.not_found`, `loyalty.feature_disabled` */
             404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -331359,7 +335019,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `http.not_found` */
+            /** @description Problem: `http.not_found`, `loyalty.feature_disabled` */
             404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -332480,6 +336140,15 @@ export interface operations {
                      *         "legalNameEn": "Example Co., Ltd.",
                      *         "legalNameTh": "บริษัท ตัวอย่าง จำกัด",
                      *         "taxId": "0000000000000"
+                     *       },
+                     *       "loyaltySurfaces": {
+                     *         "checklist": false,
+                     *         "deals": false,
+                     *         "dealsLiff": false,
+                     *         "pointsLiff": false,
+                     *         "quoteRecovery": false,
+                     *         "redeem": false,
+                     *         "tierPerks": false
                      *       },
                      *       "minOrderQty": {
                      *         "custom": 500,
@@ -337601,6 +341270,16 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Problem: `loyalty.feature_disabled` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
             /** @description Problem: `validation.failed` */
             422: {
                 headers: {
@@ -337720,7 +341399,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `http.not_found` */
+            /** @description Problem: `http.not_found`, `loyalty.feature_disabled` */
             404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -337828,7 +341507,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `http.not_found` */
+            /** @description Problem: `http.not_found`, `loyalty.feature_disabled` */
             404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

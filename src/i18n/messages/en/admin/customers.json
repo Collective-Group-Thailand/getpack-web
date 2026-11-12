@@ -123,7 +123,8 @@
     "spend": "12-month spend {value}",
     "ledger": "Points ledger",
     "empty": "No points yet",
-    "entryFilter": "Entry type"
+    "entryFilter": "Entry type",
+    "companyClaim": "Claimed for {company}"
   },
   "referrals": {
     "title": "Friends referred with {code}",

@@ -600,5 +600,70 @@
     "decisions": ["D-033"],
     "confirmation": "proposed",
     "ownerRole": "finance_manager"
+  },
+  {
+    "key": "loyalty.programme_budget",
+    "valueType": "json",
+    "value": {
+      "monthlyBaht": "200000.00",
+      "alertPcts": [80, 100],
+      "monthOverrides": {}
+    },
+    "description": "D-507 monthly programme budget: points issued at value × expected redemption rate, getpack-funded coupon and deal discounts, tier perks; alerts at 80 / 100 %; every change through approval programme_budget_override",
+    "decisions": ["D-507"],
+    "confirmation": "proposed",
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "loyalty.surfaces",
+    "valueType": "json",
+    "value": {
+      "deals": true,
+      "dealsLiff": true,
+      "redeem": true,
+      "tierPerks": true,
+      "capacityDeals": true,
+      "checklist": true,
+      "pointsLiff": true,
+      "quoteRecovery": true
+    },
+    "description": "D-509 feature flags per loyalty surface; a disabled store surface answers loyalty.feature_disabled and the web hides it",
+    "decisions": ["D-509"],
+    "ownerRole": "marketing"
+  },
+  {
+    "key": "loyalty.rollout",
+    "valueType": "json",
+    "value": {
+      "stage": "percent",
+      "percent": 10,
+      "allowlistCompanyIds": ["00000000-0000-4000-8000-0000000c0001"],
+      "allowlistUserIds": [],
+      "gates": {
+        "minRedemptionPct": "15.00",
+        "maxLiabilityBaht": "500000.00",
+        "minMarginAfterPromotionsPct": "18.00",
+        "maxBudgetUsePct": "100.00"
+      }
+    },
+    "description": "D-510 phased rollout internal → uat → percent → all; edited only on the rollout screen (advance with approval loyalty_rollout_advance, rollback at once)",
+    "decisions": ["D-510"],
+    "confirmation": "proposed",
+    "ownerRole": "marketing"
+  },
+  {
+    "key": "promotions.cofunding",
+    "valueType": "json",
+    "value": {
+      "enabled": true,
+      "offerResponseDays": 3,
+      "maxFixedPerOrder": "5000.00",
+      "maxCapAmount": "200000.00",
+      "accountingTreatment": "contra_discount"
+    },
+    "description": "D-506 voluntary factory co-funding of capacity deals; accounting treatment pending CPA",
+    "decisions": ["D-506"],
+    "confirmation": "pending_cpa",
+    "ownerRole": "finance_manager"
   }
 ]

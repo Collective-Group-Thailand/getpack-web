@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -22,6 +23,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, problemMessage } from "../console";
+import { BUDGET_PAGE } from "./ProgrammeBudget";
 import {
   canPublish,
   displayInput,
@@ -78,6 +80,8 @@ export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionD
       return t("refusals.blocked_word", { field });
     }
     if (refusal.path === "visibility" && refusal.code === "system_managed") return t("refusals.system_managed");
+    // Loyalty P4 (D-507): the month's programme budget is used up.
+    if (refusal.code === "budget_exhausted") return t("refusals.budget_exhausted");
     if (refusal.path === "status") return t("refusals.status");
     if (refusal.path === "display.slug") return t("refusals.slug");
     if (refusal.path === "display.headline.th") return t("refusals.headline");
@@ -211,7 +215,17 @@ export function PromotionDisplay({ item, editable }: { item: Schemas["PromotionD
               <Callout tone="danger" live title={t("refusals.title")}>
                 <ul className="m-0 flex list-disc flex-col gap-1 ps-4 text-[0.8125rem]">
                   {refusals.map((refusal) => (
-                    <li key={`${refusal.path}:${refusal.code}`}>{refusalText(refusal)}</li>
+                    <li key={`${refusal.path}:${refusal.code}`}>
+                      {refusalText(refusal)}
+                      {refusal.code === "budget_exhausted" ? (
+                        <>
+                          {" "}
+                          <Link href={BUDGET_PAGE} className="font-medium underline underline-offset-4">
+                            {t("refusals.budgetLink")}
+                          </Link>
+                        </>
+                      ) : null}
+                    </li>
                   ))}
                 </ul>
               </Callout>

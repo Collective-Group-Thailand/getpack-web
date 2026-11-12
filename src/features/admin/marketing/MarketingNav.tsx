@@ -16,6 +16,9 @@ export function MarketingNav() {
         { href: "/marketing/loyalty", label: t("loyalty"), permission: "settings.read", exact: true },
         // Loyalty P2: liability, movement, breakage and retention (permission `loyalty.read`).
         { href: "/marketing/loyalty/analytics", label: t("analytics"), permission: "loyalty.read" },
+        // Loyalty P4: the monthly programme budget and the phased rollout (D-507, D-510).
+        { href: "/marketing/loyalty/budget", label: t("programmeBudget"), permission: "loyalty.read" },
+        { href: "/marketing/loyalty/rollout", label: t("rollout"), permission: "loyalty.read" },
         // Loyalty P3: the reward catalogue and the points campaigns.
         { href: "/marketing/loyalty/rewards", label: t("rewards"), permission: "promotions.read" },
         { href: "/marketing/loyalty/campaigns", label: t("loyaltyCampaigns"), permission: "promotions.read" },

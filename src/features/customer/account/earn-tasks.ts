@@ -1,3 +1,5 @@
+import { isClaimedByCompany } from "@/features/shared/loyalty-p4/types";
+
 import type { LoyaltyTask, LoyaltyTaskCode, LoyaltyTasks } from "./loyalty-types";
 
 import { studioHref } from "../studio/paths";
@@ -63,13 +65,16 @@ export function checklistView(data: LoyaltyTasks): ChecklistView {
     ? null
     : (data.tasks.find((task) => task.recommended && task.status === "todo") ?? null);
   const done = data.tasks.filter((task) => task.status === "done").length;
+  // Loyalty P4 (D-508): a task the customer's company already earned is shown, but it is not theirs to do — it is
+  // not counted in "ทำแล้ว n จาก m".
+  const total = data.tasks.filter((task) => !isClaimedByCompany(task)).length;
   return {
     recommended,
     rows: data.tasks.filter((task) => task !== recommended),
     done,
-    total: data.tasks.length,
+    total,
     capReached,
-    allDone: data.tasks.length > 0 && done === data.tasks.length,
+    allDone: total > 0 && done === total,
   };
 }
 

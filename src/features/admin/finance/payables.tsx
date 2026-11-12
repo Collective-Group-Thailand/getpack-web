@@ -64,6 +64,7 @@ import {
   type VendorInvoice,
 } from "./resources";
 import { DocumentSheet, StatusViews, FinanceDateField, EmptyLink } from "./frame";
+import { cofundingTotalOf } from "@/features/shared/loyalty-p4/types";
 import { AccountNo, fieldErrorsOf, SourceJournals } from "./shared";
 import { invalidateMoney } from "./slips";
 
@@ -572,6 +573,10 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
             { key: "shipping", label: t("totals.shipping"), amount: format.thb(data.totals.shipping) },
             { key: "other", label: t("totals.other"), amount: format.thb(data.totals.other) },
             { key: "deductions", label: t("totals.deductions"), amount: format.thb(data.totals.deductions) },
+            // Loyalty P4 (D-506): the factory's co-funding share of a capacity deal, netted (only when there is one).
+            ...(cofundingTotalOf(data.totals)
+              ? [{ key: "cofunding", label: t("totals.cofunding"), amount: format.thb(cofundingTotalOf(data.totals)!) }]
+              : []),
             { key: "advance", label: t("totals.advanceOffset"), amount: format.thb(data.totals.advanceOffset) },
             { key: "net", label: t("columns.net"), amount: format.thb(data.totals.net), strong: true },
             { key: "vat", label: t("vat"), amount: format.thb(data.totals.vat) },

@@ -571,6 +571,7 @@ function statementOf({ store, statement }: ReturnType<typeof statementsAll>[numb
     // The partner model keeps the dispute note only, not the lines it named.
     disputedLineNos: [],
     currency: "THB",
+    // Loyalty P4 (D-506): `totals.cofunding`, the sum of the co-funding lines (≤ 0).
     totals: {
       production: statement.totals.production,
       shipping: statement.totals.shipping,
@@ -583,6 +584,7 @@ function statementOf({ store, statement }: ReturnType<typeof statementsAll>[numb
       gross: statement.totals.gross,
       alreadyPaid: statement.totals.alreadyPaid,
       remaining: statement.totals.remaining,
+      cofunding: statement.totals.cofunding ?? "0.00",
     },
     taxInvoices: [...invoices].reverse(),
     taxInvoiceStatus: !latest || latest.status === "void" ? "none" : latest.status,
@@ -594,11 +596,13 @@ function statementOf({ store, statement }: ReturnType<typeof statementsAll>[numb
     grossAmount: statement.totals.gross,
     lines: statement.lines.map((line, index) => {
       const net = satangOf(line.amount);
-      const vat = vatOf(net, registered);
+      // A co-funding line carries no VAT (contra_discount, pending CPA — D-506).
+      const vat = line.kind === "cofunding" ? 0 : vatOf(net, registered);
       return {
         lineNo: index + 1,
-        // The contract has no advance-offset kind: the partner model's offset is a deduction here.
-        kind: line.kind === "advance_offset" ? "deduction" : line.kind,
+        // The contract has no advance-offset kind: the partner model's offset is a deduction here. Loyalty P4 adds
+        // `cofunding` (D-506).
+        kind: (line.kind === "advance_offset" ? "deduction" : line.kind) as Schemas["BillingStatementLineKind"],
         description: line.description,
         reference: line.reference,
         quantity: line.quantity,
