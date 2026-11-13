@@ -208,8 +208,9 @@ jobs:
   lighthouse:
     name: lighthouse (performance budgets)
     runs-on: ubuntu-latest
-    # Seven URL sets, three runs a URL, on one server: past half an hour on a shared runner.
-    timeout-minutes: 45
+    # Ten URL sets (the agent portal added agent-landing, agent-apply and agent-zone), three runs
+    # a URL, on one server: about 40 minutes of Lighthouse alone on a shared runner.
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v5
 
