@@ -481,3 +481,22 @@ catalogue into every page's RSC payload (~1.1 MB of HTML on `/agent`, ~200 KB gz
 subtrees on the server (`src/i18n/client-messages.ts`: `/agent` HTML 1,133 KB → 1,017 KB, gzip 199 → 188 KB); the
 next lever is per-route client namespaces (a nested provider per route with only the namespaces its client
 components read), which touches every storefront page and is left as a follow-up.
+
+## Merge of loyalty P1–P4 with the agent portal (2026-11-13)
+
+Measured by CI run 43272820013 on `main` after the merge (`lighthouse` job), maximum of three runs:
+
+| Set (page) | Ratchet before | Measured | Ratchet |
+|---|---|---|---|
+| admin-crud (`/partners`) | 513,100 | 517,439 | **517,600** |
+| admin-lists (`/analytics`) | 397,900 | 404,829 | **405,000** |
+| admin (`/login`) | 365,000 | 374,914 | **375,100** |
+| customer-app (`/rfq/rigid-box`) | 385,700 | 389,024 | **389,200** |
+| customer-marketing (`/studio`) | 352,100 | 352,689 | **352,900** |
+| partner (`/alerts`) | 313,600 | 316,669 | **316,800** |
+
+Neither stream was measured against the other's code: the agent portal grew the shared `common`
+copy (sales, discount-approval, P&L and playbook problem messages, the agent status vocabulary) and
+the loyalty line grew it too (rewards, co-funding, surveys, showcase problem messages), and every
+zone's `NextIntlClientProvider` carries `common` in each page's flight data. The targets are unchanged; scoping client messages per zone or route (the
+follow-up named under U4.6 and U2.F4) is what wins this back.
