@@ -86,7 +86,8 @@ test.describe("the month in numbers (§6, §7)", () => {
     await page.getByRole("link", { name: "งบกำไรขาดทุน" }).click();
     await choiceList(page, "จัดกลุ่มตาม").click();
     await page.getByRole("option", { name: "ศูนย์ต้นทุน" }).click();
-    await expect(page.getByRole("table", { name: "งบกำไรขาดทุน" })).toContainText("ADMIN");
+    // Pivoted by a dimension, the figures per cost centre are their own table under the statement (G4).
+    await expect(page.getByRole("table", { name: "ศูนย์ต้นทุน" })).toContainText("ADMIN");
     await expectAxeClean(page);
     await page.getByRole("link", { name: "รายงานความเคลื่อนไหว" }).click();
     await expect(page.getByRole("table", { name: "หนี้สินคะแนนสะสม (2330)" }).getByRole("row")).not.toHaveCount(1);

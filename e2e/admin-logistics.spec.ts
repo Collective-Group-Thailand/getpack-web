@@ -58,8 +58,9 @@ test.describe("the logistics desk (D-013, D-114)", () => {
     await dialog.getByLabel(/^เหตุผลที่ใช้ขนส่งสำรอง/).fill("โรงงานไม่ส่งในพื้นที่นี้");
     await dialog.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(header(page)).toContainText("Flash Express");
-    await expect(header(page)).toContainText(/TH\d{9}/);
+    // The carrier and its tracking number are in the shipment's facts since the redesign (G2), not the header.
+    await expect(page.getByRole("main")).toContainText("Flash Express");
+    await expect(page.getByRole("main")).toContainText(/TH\d{9}/);
   });
 
   test("a shipment held by an unpaid instalment cannot be booked out", async ({ page }) => {
@@ -67,9 +68,9 @@ test.describe("the logistics desk (D-013, D-114)", () => {
     await gotoHydrated(page, `${HOSTS.admin}/shipments/${shipment(62)}`);
     // The hold is on the shipment (`blockedByPayment`), and the API offers booking disabled with its reason.
     await expect(page.getByText("ยังรับของไม่ได้")).toBeVisible();
-    await expect(page.getByRole("button", { name: "จองขนส่งสำรอง" })).toHaveCount(0);
-    await page.getByRole("button", { name: "การดำเนินการอื่น" }).click();
-    await expect(page.getByRole("menuitem", { name: /จองขนส่งสำรอง/ })).toBeDisabled();
+    // The next-steps panel (admin redesign G2) shows the blocked step disabled, with the reason beside it.
+    await expect(page.getByRole("button", { name: "จองขนส่งสำรอง" })).toBeDisabled();
+    await expect(page.getByText("รอชำระเงิน", { exact: true }).first()).toBeVisible();
   });
 
   test("part of a draft shipment is split into a new one (D-230)", async ({ page }) => {
@@ -115,7 +116,7 @@ test.describe("the logistics desk (D-013, D-114)", () => {
 });
 
 test.describe("claims (D-082, D-083)", () => {
-  /** The claim's offered actions past the first sit behind "more" (`nextActions`, U-B0.3). */
+  /** "More" holds only offered actions this screen has no flow for; the claim's own steps are buttons (G2). */
   const more = (page: Page) => page.getByRole("button", { name: "การดำเนินการอื่น" });
 
   test("a claim is reviewed, approved and resolved through a credit note", async ({ page }) => {
@@ -131,8 +132,7 @@ test.describe("claims (D-082, D-083)", () => {
     await expectAxeClean(page);
 
     const claimNo = (await page.getByRole("heading", { level: 1 }).textContent())!;
-    await more(page).click();
-    await page.getByRole("menuitem", { name: "อนุมัติเคลม" }).click();
+    await page.getByRole("button", { name: "อนุมัติเคลม" }).click();
     const approve = page.getByRole("alertdialog", { name: "อนุมัติเคลม" });
     await approve.getByLabel(/^เหตุผล/).fill("รูปแสดงกล่องบุบจากการขนส่ง");
     // An irreversible action (`irreversible: true`): the claim number is retyped.
@@ -164,11 +164,10 @@ test.describe("claims (D-082, D-083)", () => {
     await dialog.getByRole("button", { name: "เริ่มตรวจสอบ" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
 
-    // The API offers approval blocked, and says why (`claims.liability_undetermined`).
-    await more(page).click();
-    await expect(page.getByRole("menuitem", { name: /อนุมัติเคลม/ })).toBeDisabled();
-    await expect(page.getByRole("menuitem", { name: /อนุมัติเคลม/ })).toContainText("ยังไม่ระบุผู้รับผิดชอบ");
-    await page.getByRole("menuitem", { name: /เปลี่ยนผู้รับผิดชอบ/ }).click();
+    // The API offers approval blocked, and the next-steps panel says why beside it (`claims.liability_undetermined`).
+    await expect(page.getByRole("button", { name: "อนุมัติเคลม" })).toBeDisabled();
+    await expect(page.getByText("ยังไม่ระบุผู้รับผิดชอบ", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "เปลี่ยนผู้รับผิดชอบ" }).click();
     const override = page.getByRole("dialog", { name: "เปลี่ยนผู้รับผิดชอบ" });
     await choose(page, /^ผู้รับผิดชอบ/, "โรงงาน");
     await override.getByLabel(/^เหตุผล/).fill("โรงงานเริ่มผลิตช้ากว่าแผน");
@@ -177,8 +176,7 @@ test.describe("claims (D-082, D-083)", () => {
     await expect(page.getByText("เปลี่ยนจากที่กฎกำหนด")).toBeVisible();
     // Who overrode is published now (U-B0.2).
     await expect(page.getByText(/^เปลี่ยนโดย /)).toBeVisible();
-    await more(page).click();
-    await expect(page.getByRole("menuitem", { name: /อนุมัติเคลม/ })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "อนุมัติเคลม" })).toBeEnabled();
   });
 
   test("a role without claims.manage reads a claim but cannot move it", async ({ page }) => {
@@ -202,10 +200,8 @@ test.describe("demand analytics (D-102)", () => {
   test("the dashboard reads as tables too, and breaks demand down by province", async ({ page }) => {
     await signInAsStaff(page, "c_level");
     await gotoHydrated(page, `${HOSTS.admin}/analytics`);
-    const funnel = page.getByRole("figure", { name: "เส้นทางการซื้อ" });
-    await expect(funnel.getByRole("table", { name: "เส้นทางการซื้อ" })).toContainText("ชำระแล้ว");
-    await funnel.getByRole("button", { name: "ดูเป็นตาราง" }).click();
-    await expect(funnel.getByRole("button", { name: "ดูเป็นกราฟ" })).toHaveAttribute("aria-expanded", "true");
+    // Since the platform redesign (G5) the funnel is drawn as its steps table (FunnelSteps), with no chart to toggle.
+    await expect(page.getByRole("table", { name: "เส้นทางการซื้อ" })).toContainText("ชำระแล้ว");
 
     // Staff dashboards are not k-suppressed (D-044 applies to the prospectus): every province shows.
     await page.getByRole("radio", { name: "จังหวัด" }).click();
@@ -228,10 +224,13 @@ test.describe("demand analytics (D-102)", () => {
     // Whether a drop is alarming is the API's call (D-303): the mock's claim journey fell.
     await expect(page.getByText("1 เส้นทางลดลงเกินเกณฑ์ในสัปดาห์ล่าสุด")).toBeVisible();
 
+    // The dashboard's sections above load after the page: open the list once they have, or the list opens where the
+    // trigger was before the page grew.
+    await page.waitForLoadState("networkidle").catch(() => {});
     await choiceList(page, "เส้นทาง").click();
     await page.getByRole("option", { name: "T9 · แจ้งปัญหาสินค้า" }).click();
     // The funnel's own step ("ส่งเรื่อง <count>"); the weekly table may name the step in its rows too.
-    await expect(page.getByRole("row", { name: /^ส่งเรื่อง [\d,]+$/ })).toBeVisible();
+    await expect(page.getByRole("row", { name: /^ส่งเรื่อง [\d,]+ [\d.]+%$/ })).toBeVisible();
     const week = page.getByRole("table", { name: "การตรวจรายสัปดาห์" });
     await expect(week).toContainText("ลดลงผิดปกติ");
     await expectAxeClean(page);

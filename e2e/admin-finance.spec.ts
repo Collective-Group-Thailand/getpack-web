@@ -46,7 +46,10 @@ test.describe("the finance home", () => {
     await expect(queues.getByRole("link", { name: /สลิปรอตรวจ/ })).toBeVisible();
     await expect(queues.getByRole("link", { name: /รอ 50 ทวิ จากลูกค้า/ })).toBeVisible();
     await expect(queues.getByRole("link", { name: /ใบแจ้งหนี้ B2B เกินกำหนด/ })).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "เมนูการเงิน" }).first()).toBeVisible();
+    // Finance's own menu became the main navigation's "การเงิน" entry, with its count of waiting work (G4).
+    await expect(
+      page.getByRole("navigation", { name: "เมนูหลัก" }).getByRole("link", { name: /^การเงิน/ }),
+    ).toBeVisible();
     await expectAxeClean(page);
   });
 });

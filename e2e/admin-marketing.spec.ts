@@ -67,7 +67,8 @@ test.describe("campaigns (D-154)", () => {
   test("pausing restates the spend and asks why, and a paused campaign is resumed", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing/campaigns/${campaign(2)}`);
-    await expect(page.getByText("ผลของแคมเปญ")).toBeVisible();
+    // The figures are a labelled region since the marketing redesign (G1): the label names it, the stat strip shows it.
+    await expect(page.getByRole("region", { name: "ผลของแคมเปญ" })).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "พักแคมเปญ" }).click();
@@ -103,10 +104,12 @@ test.describe("promotions (D-053)", () => {
     await page.getByRole("button", { name: "เปิดใช้" }).click();
     let dialog = page.getByRole("alertdialog", { name: "เปิดใช้โปรโมชัน" });
     await dialog.getByRole("button", { name: "เปิดใช้" }).click();
-    await expect(page.getByText("สร้างโค้ดก่อนเปิดใช้โปรโมชันแบบโค้ด")).toBeVisible();
+    // The refusal is said in this app's words for `promotions.no_codes` (common/problems.json), not the API's detail.
+    await expect(page.getByText("ยังไม่มีรหัสคูปอง")).toBeVisible();
     await dialog.getByRole("button", { name: "ยกเลิก" }).click();
 
-    await page.getByRole("button", { name: "สร้างโค้ด" }).click();
+    // The codes section offers the same action as the header (its empty state).
+    await page.getByRole("button", { name: "สร้างโค้ด" }).first().click();
     const generate = page.getByRole("dialog", { name: "สร้างโค้ดคูปอง" });
     await generate.getByLabel(/^โค้ด/).fill("NEWYEAR7");
     await generate.getByRole("button", { name: "สร้าง", exact: true }).click();
@@ -204,10 +207,16 @@ test.describe("loyalty rules (D-130…D-136)", () => {
     // but a setting is changed only by its owner (D-063): these belong to someone else.
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing`);
-    await page.getByRole("navigation", { name: "ส่วนงานการตลาด" }).getByRole("link", { name: "แต้มสะสม" }).click();
+    // Marketing's own section menu became entries of the main navigation (admin redesign G1).
+    await page.getByRole("navigation", { name: "เมนูหลัก" }).getByRole("link", { name: "แต้มสะสม" }).click();
     await expect(page).toHaveURL(/\/marketing\/loyalty$/);
     await expect(page.getByRole("heading", { name: /^รางวัลเพื่อนแนะนำ/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: "ตั้งค่าใหม่" })).toHaveCount(0);
+    // The referral reward is someone else's setting: no way to change it here. The loyalty P3–P4 settings Marketing
+    // owns (D-498, D-500, D-499, D-502: catalogue, tier perks, multipliers, capacity deals) are the only ones it changes.
+    const referral = page.getByRole("heading", { name: /^รางวัลเพื่อนแนะนำ/ }).locator("../..");
+    await expect(referral.getByRole("button", { name: "ตั้งค่าใหม่" })).toHaveCount(0);
+    const redeem = page.getByRole("heading", { name: /^แลกแต้มเป็นคูปอง/ }).locator("../..");
+    await expect(redeem.getByRole("button", { name: "ตั้งค่าใหม่" })).toBeVisible();
   });
 
   test("the setting's owner schedules a new version", async ({ page }) => {
@@ -243,7 +252,8 @@ test.describe("customers", () => {
     await expect(list).not.toContainText("ร้านกาแฟตัวอย่าง");
 
     await gotoHydrated(page, `${HOSTS.admin}/customers/${customer(2)}?tab=points`);
-    await expect(page.getByText("แต้มที่ใช้ได้")).toBeVisible();
+    // The summary card names the balance too; the points tab holds the ledger's own figure.
+    await expect(page.getByRole("tabpanel", { name: "แต้ม" }).getByText("แต้มที่ใช้ได้")).toBeVisible();
     await expect(page.getByRole("table", { name: "รายการแต้ม" })).toContainText("รอเข้าบัญชี");
     await expectAxeClean(page);
 

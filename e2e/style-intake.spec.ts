@@ -57,7 +57,8 @@ test("CS assigns a designer, the designer delivers, Prepress approves and publis
   await signInAsStaff(page, "cs");
   await gotoHydrated(page, `${HOSTS.admin}/orders`);
   await (await adminMenuLink(page, "คำขอออกแบบโครงสร้าง")).click();
-  await expect(page).toHaveURL(/\/structural-requests$/);
+  // The menu entry opens the desk on its waiting queue (submitted) since the admin redesign (G1).
+  await expect(page).toHaveURL(/\/structural-requests\?status=submitted$/);
   // Newest first: this run's request (a rerun on the same server leaves the last one below it).
   await page
     .getByRole("link", { name: /กล่องใส่เทียนหอม/ })

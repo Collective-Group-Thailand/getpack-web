@@ -31,10 +31,9 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 
 const header = (page: Page) => page.getByRole("heading", { level: 1 }).locator("..");
 
-/** An action the RFQ offers behind the header's "more" menu (the API's first action leads). */
+/** An action the RFQ offers: a button of the record's next-steps panel since the admin redesign (G1). */
 async function moreAction(page: Page, name: string | RegExp) {
-  await page.getByRole("button", { name: "การดำเนินการอื่น" }).click();
-  await page.getByRole("menuitem", { name }).click();
+  await page.getByRole("complementary").getByRole("button", { name }).click();
 }
 
 test.describe("the RFQ desk", () => {

@@ -41,8 +41,7 @@ test("a customer asks, CS quotes on the desk, and the customer accepts into the 
   await staff.goto(`${HOSTS.admin}/rfq/${rfqId}?tab=quotes`);
   await staff.locator("html[data-hydrated]").waitFor();
   await expect(staff.getByRole("heading", { level: 1 })).toHaveText(code);
-  await staff.getByRole("button", { name: "การดำเนินการอื่น" }).click();
-  await staff.getByRole("menuitem", { name: "เริ่มพิจารณา" }).click();
+  await staff.getByRole("complementary").getByRole("button", { name: "เริ่มพิจารณา" }).click();
   await expect(staff.getByText("กำลังพิจารณาคำขอ").first()).toBeVisible();
   await staff.getByRole("tabpanel").getByRole("button", { name: "จัดทำใบเสนอราคา" }).click();
   for (const input of await staff.getByLabel(/^ราคาขายต่อชิ้น/).all()) await input.fill("42.50");

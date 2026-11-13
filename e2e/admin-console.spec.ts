@@ -197,9 +197,12 @@ test.describe("settings", () => {
   test("a superadmin schedules a change, confirmed by retyping the key", async ({ page }) => {
     await signInAsStaff(page, "superadmin");
     await gotoHydrated(page, `${HOSTS.admin}/settings/${CS_LIMIT_SETTING}`);
-    await expect(page.getByRole("heading", { level: 1, name: "discounts.cs_limit_pct" })).toBeVisible();
+    // The setting's name heads the page since the platform redesign (G5); its key is printed under it.
+    await expect(page.getByRole("heading", { level: 1, name: "ส่วนลดที่ทีมบริการลูกค้าให้ได้" })).toBeVisible();
+    await expect(page.getByRole("main").getByText("discounts.cs_limit_pct", { exact: true }).first()).toBeVisible();
 
-    await page.getByLabel("ค่าใหม่").fill("5.5");
+    // The new value's field is named after the setting since the platform redesign (G5).
+    await page.getByRole("spinbutton", { name: "ส่วนลดที่ทีมบริการลูกค้าให้ได้" }).fill("5.5");
     await page.getByRole("radio", { name: "ตั้งเวลา" }).click();
     await page.getByLabel(/วันและเวลาที่มีผล/).fill("2027-01-01T00:00");
     await page.getByLabel(/เหตุผลที่เปลี่ยน/).fill("ทบทวนเพดานส่วนลดประจำปี");
@@ -213,7 +216,7 @@ test.describe("settings", () => {
 
     // The outcome, on the page: a scheduled 5.5 % beside its date, and a new history row.
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
-    await expect(page.getByText(/ตั้งเวลาไว้\s*5\.5%/).first()).toBeVisible();
+    await expect(page.getByText(/ตั้งเวลาไว้\s*5\.5\s*%/).first()).toBeVisible();
     await expect(page.getByRole("table", { name: "ประวัติ" })).toContainText("ทบทวนเพดานส่วนลดประจำปี");
   });
 
@@ -221,7 +224,8 @@ test.describe("settings", () => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/settings/${CS_LIMIT_SETTING}`);
     await expect(page.getByText(/เฉพาะ ซูเปอร์แอดมิน เท่านั้นที่เปลี่ยนค่านี้ได้/)).toBeVisible();
-    await expect(page.getByLabel("ค่าใหม่")).toHaveCount(0);
+    await expect(page.getByRole("spinbutton", { name: "ส่วนลดที่ทีมบริการลูกค้าให้ได้" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "ตรวจทานการเปลี่ยน" })).toHaveCount(0);
   });
 });
 
@@ -264,7 +268,7 @@ test.describe("every 2.1 screen is axe-clean", () => {
     ["/approvals?tab=delegations", "รายการรออนุมัติ"],
     ["/users", "ผู้ใช้และสิทธิ์"],
     ["/settings", "ตั้งค่าระบบ"],
-    [`/settings/${CS_LIMIT_SETTING}`, "discounts.cs_limit_pct"],
+    [`/settings/${CS_LIMIT_SETTING}`, "ส่วนลดที่ทีมบริการลูกค้าให้ได้"],
     ["/audit-logs", "บันทึกการใช้งาน"],
     ["/feature-flags", "เปิด/ปิดฟีเจอร์"],
     ["/notifications/templates", "แม่แบบข้อความแจ้งเตือน"],

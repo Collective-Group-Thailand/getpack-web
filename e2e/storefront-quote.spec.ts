@@ -215,9 +215,8 @@ test.describe("requests for quotation", () => {
     const rfqId = rfqUrl.split("/").at(-1)!;
     await gotoHydrated(staff, `${HOSTS.admin}/rfq/${rfqId}?tab=quotes`);
     await expect(staff.getByRole("heading", { level: 1 })).toHaveText(code);
-    // The RFQ header leads with the API's first action (assign); start review is under "more".
-    await staff.getByRole("button", { name: "การดำเนินการอื่น" }).click();
-    await staff.getByRole("menuitem", { name: "เริ่มพิจารณา" }).click();
+    // The RFQ's next-steps panel (admin redesign G1) offers start review as its own button.
+    await staff.getByRole("complementary").getByRole("button", { name: "เริ่มพิจารณา" }).click();
     await expect(staff.getByText("กำลังพิจารณาคำขอ").first()).toBeVisible();
     await staff.getByRole("tabpanel").getByRole("button", { name: "จัดทำใบเสนอราคา" }).click();
     for (const input of await staff.getByLabel(/^ราคาขายต่อชิ้น/).all()) await input.fill("42.50");

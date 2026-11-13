@@ -97,7 +97,8 @@ test.describe("the general ledger (§1, §8)", () => {
 
     // The API totals the lines, not the screen: an entry that does not balance is not saved.
     await finance.getByRole("button", { name: "บันทึกฉบับร่าง" }).click();
-    await expect(finance.getByText("รายการไม่สมดุล")).toBeVisible();
+    // Said at the form and again in its summary panel (finance redesign G4).
+    await expect(finance.getByText("รายการไม่สมดุล").first()).toBeVisible();
     await expect(finance).toHaveURL(/\/new$/);
     await finance.getByLabel("จำนวนเงินของบรรทัด 2").fill("2500.00");
     await finance.getByRole("button", { name: "บันทึกฉบับร่าง" }).click();
@@ -166,7 +167,9 @@ test.describe("the general ledger (§1, §8)", () => {
     await gotoHydrated(manager, `${HOSTS.admin}/finance/ledger/periods`);
     await expectAxeClean(manager);
     const month = nextMonth().slice(0, 7);
+    // Each fiscal year is its own table (the mock keeps this year and the next open).
     const row = manager
+      .getByRole("table", { name: `ปีบัญชี FY${month.slice(0, 4)}` })
       .getByRole("row")
       .filter({ has: manager.getByRole("cell", { name: String(Number(month.slice(5, 7))), exact: true }) });
     await row.getByRole("button", { name: "ปิดชั่วคราว" }).click();

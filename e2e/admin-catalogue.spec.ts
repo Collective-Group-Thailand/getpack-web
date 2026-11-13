@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Locator, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
@@ -84,16 +84,27 @@ test.describe("the catalogue", () => {
   });
 });
 
+/**
+ * The row's quote-mode menu (one quiet menu per row since the catalogue redesign, G3). The page settles after load
+ * — the list is drawn again once its client data arrives, which closes a menu opened before — so open it after that.
+ */
+async function quoteModeMenu(page: Page, table: Locator, row: RegExp, item: string) {
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await expect(async () => {
+    await table.getByRole("row", { name: row }).getByRole("button", { name: "การเสนอราคา" }).click();
+    await expect(page.getByRole("menuitem", { name: item })).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
+  await page.getByRole("menuitem", { name: item }).click();
+}
+
 test.describe("quote mode (D-100)", () => {
   test("instant is refused where no calculator has shipped; RFQ is a reasoned change", async ({ page }) => {
     await signInAsStaff(page, "admin");
     await gotoHydrated(page, `${HOSTS.admin}/catalogue/product-types`);
     const table = page.getByRole("table", { name: "ประเภทสินค้า" });
 
-    await table
-      .getByRole("row", { name: /rigid_box/ })
-      .getByRole("button", { name: "เปิดราคาทันที" })
-      .click();
+    // One quiet menu per row since the catalogue redesign (G3): the row's "การเสนอราคา" menu holds the switch.
+    await quoteModeMenu(page, table, /rigid_box/, "เปิดราคาทันที");
     let dialog = page.getByRole("alertdialog", { name: "เปิดราคาทันที" });
     await dialog.getByLabel(/^เหตุผล/).fill("ทดลองเปิดราคา");
     await dialog.getByLabel(/พิมพ์ rigid_box/).fill("rigid_box");
@@ -101,10 +112,7 @@ test.describe("quote mode (D-100)", () => {
     await expect(page.getByText("ยังไม่มีเครื่องคำนวณราคาสำหรับประเภทนี้").first()).toBeVisible();
     await dialog.getByRole("button", { name: "ยกเลิก" }).click();
 
-    await table
-      .getByRole("row", { name: /label_sticker/ })
-      .getByRole("button", { name: "เปลี่ยนเป็นขอใบเสนอราคา" })
-      .click();
+    await quoteModeMenu(page, table, /label_sticker/, "เปลี่ยนเป็นขอใบเสนอราคา");
     dialog = page.getByRole("alertdialog", { name: "เปลี่ยนเป็นขอใบเสนอราคา" });
     await dialog.getByLabel(/^เหตุผล/).fill("โรงงานฉลากหยุดรับงานชั่วคราว");
     await dialog.getByLabel(/พิมพ์ label_sticker/).fill("label_sticker");

@@ -63,7 +63,8 @@ test.describe("the factory workspace", () => {
     await signInAsStaff(page, "partner_manager");
     await gotoHydrated(page, `${HOSTS.admin}/partners/${factory(6)}`);
     await expect(header(page)).toContainText("กำลังพิจารณา");
-    await expect(page.getByRole("meter", { name: "ความคืบหน้าการรับเข้า" })).toBeVisible();
+    // The factory workspace (redesign G3) shows onboarding as its steps table rather than a header meter.
+    await expect(page.getByRole("table", { name: "ขั้นตอนการรับเข้า" })).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "เปลี่ยนสถานะ" }).click();
@@ -262,10 +263,9 @@ test.describe("the production floor", () => {
     await expect(table).toContainText("นัดตรวจแล้ว");
     await expectAxeClean(page);
 
-    await table
-      .getByRole("button", { name: /^บันทึกผล / })
-      .first()
-      .click();
+    // One "⋯" per open inspection since the production redesign (G2): recording is an item of the row's menu.
+    await table.getByRole("button", { name: "บันทึกผล", exact: true }).first().click();
+    await page.getByRole("menuitem", { name: /^บันทึกผล / }).click();
     const dialog = page.getByRole("alertdialog", { name: /^บันทึกผลตรวจ/ });
     await dialog.getByLabel("หลัก", { exact: true }).fill("1");
     await dialog.getByRole("button", { name: "บันทึกผล" }).click();
