@@ -119,8 +119,8 @@ export const JOURNEYS: Record<JourneyId, JourneyBudget> = {
     journey: "dieline",
     budget: { unit: "steps", max: 3 },
     start: "home page, signed out",
-    // The sign-in D-271 asks for on the way (step-counting rule 8).
-    requiredFields: ["เบอร์มือถือ"],
+    // D-471: the first download needs no sign-in, so the walk meets no required field.
+    requiredFields: [],
   },
 };
 
@@ -176,9 +176,9 @@ export const EXCEPTIONS: Partial<Record<JourneyId, BudgetException>> = {
     owner: "Partner Manager · getpack-api",
   },
   T12: {
-    ceiling: 7,
+    ceiling: 5,
     cause:
-      "D-203 / D-271: the free dieline needs a signed-in customer (2 steps); reaching a style from the home page takes 2 screens — a dieline entry without the library is open",
+      "D-471 dropped the sign-in for the first download; reaching a style from the home page still takes 2 screens and the free dieline opens from a button — a dieline entry without the library is open",
     owner: "Marketing (D-203) · getpack-web (dieline entry)",
   },
 };

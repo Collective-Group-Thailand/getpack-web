@@ -49,7 +49,9 @@ const intersects = (a: Box, b: Box) =>
 async function expectNoOverlap(page: Page, where: string, cta: string) {
   const { logo, nav, tools } = await boxes(page);
   expect(logo, `${where}: logo`).not.toBeNull();
-  expect(nav.length, `${where}: nav links`).toBe(5);
+  // D-466: the agent programme joins the five destinations in the bar from 74rem (1184 px), where the width budget has
+  // room; below that it is in the drawer only.
+  expect(nav.length, `${where}: nav links`).toBe(page.viewportSize()!.width >= 1184 ? 6 : 5);
   expect(tools.length, `${where}: tools`).toBeGreaterThanOrEqual(3);
   // The primary action is in the bar at every width from the collapse point up (polish 1).
   expect(

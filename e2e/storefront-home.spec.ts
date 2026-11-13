@@ -95,12 +95,14 @@ test("the header's five links, in the board's order, lead to the studio, templat
 }) => {
   await gotoHydrated(page, HOSTS.customer);
   const nav = page.getByRole("banner").getByRole("navigation", { name: "เมนูหลัก" });
+  // At 1280 px the agent programme (D-466) follows them; it joins the bar from 74rem.
   await expect(nav.getByRole("link")).toHaveText([
     "สตูดิโอออกแบบ",
     "แบบกล่อง",
     "สินค้าและราคา",
     "สำหรับธุรกิจ",
     "ติดต่อ",
+    "ตัวแทนขาย",
   ]);
   await page.getByRole("banner").getByRole("link", { name: "เริ่มออกแบบฟรี" }).click();
   await expect(page).toHaveURL(/\/studio$/);
