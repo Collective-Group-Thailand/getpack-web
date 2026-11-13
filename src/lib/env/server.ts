@@ -26,11 +26,14 @@ export const zoneHosts: ZoneHosts = {
   customer: serverEnv.PUBLIC_HOST,
   admin: serverEnv.ADMIN_HOST,
   partner: serverEnv.PARTNER_HOST,
-  agent: serverEnv.AGENT_HOST,
+  // No AGENT_HOST: no host can match, and `enabledZones` leaves the agent zone out.
+  agent: serverEnv.AGENT_HOST ?? "",
 };
 
-/** The zones this deployment answers for; every zone unless `ZONES` narrows it. */
-export const enabledZones: readonly Zone[] = serverEnv.ZONES ?? ZONES;
+/** The zones this deployment answers for; every zone unless `ZONES` narrows it, and the agent zone only with `AGENT_HOST`. */
+export const enabledZones: readonly Zone[] = (serverEnv.ZONES ?? ZONES).filter(
+  (zone) => zone !== "agent" || Boolean(serverEnv.AGENT_HOST),
+);
 
 /** Stage C feature flags (`FEATURE_*`, off unless `1`). */
 export const featureFlags = {

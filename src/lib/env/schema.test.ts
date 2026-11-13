@@ -33,8 +33,15 @@ describe("serverEnvSchema", () => {
     expect(message).toContain("PUBLIC_HOST");
     expect(message).toContain("ADMIN_HOST");
     expect(message).toContain("PARTNER_HOST");
-    expect(message).toContain("AGENT_HOST");
+    expect(message).not.toContain("AGENT_HOST");
     expect(message).toContain("API_INTERNAL_URL");
+  });
+
+  it("boots in production without AGENT_HOST, leaving the agent zone unset", () => {
+    const hosts: Record<string, string> = productionHosts();
+    delete hosts.AGENT_HOST;
+    expect(parseEnv(production, hosts, "server").AGENT_HOST).toBeUndefined();
+    expect(parseEnv(production, productionHosts(), "server").AGENT_HOST).toBe("agent.getpack.co");
   });
 
   it("trusts no proxy hop unless told how many there are", () => {

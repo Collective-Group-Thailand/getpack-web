@@ -41,7 +41,10 @@ export async function resolveDeepLink(zone: Zone, token: string): Promise<DeepLi
   if (owner !== zone) {
     const forwarded = (await headers()).get("x-forwarded-proto");
     const scheme = forwarded ?? (process.env.NODE_ENV === "production" ? "https" : "http");
-    return { kind: "elsewhere", url: `${scheme}://${await zoneHostOf(owner)}/l/${encodeURIComponent(token)}` };
+    const host = await zoneHostOf(owner);
+    // A zone this environment does not serve (no AGENT_HOST yet) has nowhere to send the link.
+    if (!host) return { kind: "not-found" };
+    return { kind: "elsewhere", url: `${scheme}://${host}/l/${encodeURIComponent(token)}` };
   }
   try {
     const path = safeReturnTo(await resolveOn(zone, token), "");
