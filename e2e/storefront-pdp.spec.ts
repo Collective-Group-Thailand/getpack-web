@@ -36,9 +36,10 @@ test.describe("the product page", () => {
       .click();
     await buy.getByRole("group", { name: "วัสดุ" }).getByRole("button", { name: /ลอน E/ }).click();
     await buy.getByRole("group", { name: "สีพิมพ์ด้านนอก" }).getByRole("button", { name: "ดำ" }).click();
+    // The quantity is chosen on the volume ladder (P1.5, D-481): each row is a button with its price.
     await buy
-      .getByRole("group", { name: "จำนวน" })
-      .getByRole("button", { name: /^2,000/ })
+      .getByRole("table", { name: "สั่งมากขึ้น ราคาต่อชิ้นลดลง" })
+      .getByRole("button", { name: /^เลือก 2,000 ชิ้น/ })
       .click();
     await expect(buy.getByText(/2,000 ชิ้น · เบอร์ B/)).toBeVisible({ timeout: 15_000 });
     await expect(configure).toHaveAttribute("href", /size=B/);

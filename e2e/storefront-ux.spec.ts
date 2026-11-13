@@ -36,7 +36,7 @@ test.describe("U5.1 — the signed-in home and deep links", () => {
     await expect(next.getByText("ขั้นต่อไปที่แนะนำ")).toBeVisible();
     await expect(next.getByRole("link")).toHaveAttribute("href", /\/(account|studio|products)/);
     // The overview since the account redesign (C6): what needs doing, then the latest orders.
-    await expect(page.getByRole("region", { name: "คำสั่งซื้อล่าสุด" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "คำสั่งซื้อล่าสุด", exact: true })).toBeVisible();
     await expectNoViolations(page);
   });
 

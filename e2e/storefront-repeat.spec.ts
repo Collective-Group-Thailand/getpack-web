@@ -28,7 +28,7 @@ async function expectNoViolations(page: Page) {
 test("the dashboard and replenishment: where things stand, when to order again and why", async ({ page }) => {
   await signInAsCustomer(page, "/account", MOCK_RECEIVER_PHONE);
   // The overview since the account redesign (C6): what needs doing, the latest orders, and reordering.
-  await expect(page.getByRole("region", { name: "คำสั่งซื้อล่าสุด" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "คำสั่งซื้อล่าสุด", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "สั่งซ้ำ" })).toBeVisible();
   await expectNoViolations(page);
 
