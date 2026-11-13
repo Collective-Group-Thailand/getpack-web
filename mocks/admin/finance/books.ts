@@ -257,8 +257,7 @@ function lastDay(month: string): string {
  * (the new business had nothing in them, D-092); last month is still open while its close runs;
  * this month is open.
  */
-function buildYear(): FiscalYear {
-  const year = Number(currentMonth().slice(0, 4));
+function buildYear(year: number): FiscalYear {
   const periods: Period[] = Array.from({ length: 12 }, (_, index) => {
     const month = `${year}-${String(index + 1).padStart(2, "0")}`;
     const status: Period["status"] = month < previousMonth() ? "locked" : "open";
@@ -281,7 +280,14 @@ function buildYear(): FiscalYear {
   };
 }
 
-export const fiscalYears: FiscalYear[] = [buildYear()];
+/**
+ * This calendar year and the next, open: a posting dated in December, or after a soft-closed December, still has a
+ * later month to land in (§1.4) whatever month the mocks run in.
+ */
+export const fiscalYears: FiscalYear[] = [
+  buildYear(Number(currentMonth().slice(0, 4))),
+  buildYear(Number(currentMonth().slice(0, 4)) + 1),
+];
 
 export function periodOfDate(date: string): Period | undefined {
   return fiscalYears.flatMap((year) => year.periods).find((p) => p.startDate <= date && p.endDate >= date);
