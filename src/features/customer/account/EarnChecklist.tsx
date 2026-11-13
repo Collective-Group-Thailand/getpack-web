@@ -287,7 +287,7 @@ function TaskRow({
     <span
       className={cn(
         "min-w-10 text-end text-sm tabular-nums",
-        task.status === "todo" && !capReached ? "font-semibold" : "text-subtle font-medium",
+        task.status === "todo" && !capReached ? "font-semibold" : "text-muted font-medium",
         task.status === "held" && "text-muted",
       )}
     >

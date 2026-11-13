@@ -166,7 +166,7 @@ function PickerRow({
             </span>
             <span className="flex flex-col items-end self-start pt-0.5 leading-tight">
               <span
-                className={cn("text-[0.90625rem] font-semibold tabular-nums", blocked ? "text-subtle" : "text-success")}
+                className={cn("text-[0.90625rem] font-semibold tabular-nums", blocked ? "text-muted" : "text-success")}
               >
                 {t("saving", { amount: format.thb(row.saving) })}
               </span>

@@ -120,7 +120,7 @@ const RADIUS = {
 const STUB_TONE = {
   normal: "bg-primary-subtle text-primary-subtle-fg",
   featured: "bg-primary text-primary-fg",
-  spent: "bg-neutral-subtle text-subtle",
+  spent: "bg-neutral-subtle text-muted",
 } as const;
 
 export function Ticket({

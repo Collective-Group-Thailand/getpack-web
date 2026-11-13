@@ -221,6 +221,13 @@ export function DataTable<TRow extends RowData>({
   } else {
     body = table.getRowModel().rows.map((row) => {
       const tone = rowTone?.(row.original);
+      // The row's tone bar is an inset shadow on the row; on a desk the pinned first cell paints over the row's start,
+      // so that cell carries the bar too.
+      const toneBar = cn(
+        tone === "danger" && "md:shadow-[inset_3px_0_0_var(--color-danger)]",
+        tone === "warning" && "md:shadow-[inset_3px_0_0_var(--color-warning)]",
+        tone === "info" && "md:shadow-[inset_3px_0_0_var(--color-info)]",
+      );
       const isSelected = row.getIsSelected();
       return (
         <tr
@@ -255,6 +262,7 @@ export function DataTable<TRow extends RowData>({
                 "w-10 max-md:absolute max-md:end-4 max-md:top-3 max-md:w-auto max-md:p-0",
                 PIN,
                 "md:start-0",
+                toneBar,
               )}
             >
               <input
@@ -279,7 +287,7 @@ export function DataTable<TRow extends RowData>({
                   "align-middle",
                   column?.numeric && "text-end tabular-nums",
                   column?.className,
-                  index === 0 && cn(PIN, selectable ? "md:start-10" : "md:start-0"),
+                  index === 0 && cn(PIN, selectable ? "md:start-10" : cn("md:start-0", toneBar)),
                   "max-md:w-auto max-md:p-0",
                   index === 0 && selectable && "max-md:pe-8",
                   index === 0

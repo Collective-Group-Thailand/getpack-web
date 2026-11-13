@@ -172,7 +172,7 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
               to: campaign.endsAt ? format.date(campaign.endsAt) : t("noEnd"),
             })}
             {campaign.owner ? (
-              <span className="text-subtle">
+              <span className="text-muted">
                 {" · "}
                 {t("createdBy", { name: campaign.owner.displayName })} · <When at={campaign.createdAt} />
               </span>

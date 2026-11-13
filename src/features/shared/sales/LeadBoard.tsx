@@ -80,7 +80,9 @@ export function LeadBoard({
               void drop(stage, event.dataTransfer.getData("text/x-getpack-lead"));
             }}
             className={cn(
-              "bg-surface-subtle rounded-card flex min-h-64 flex-col gap-3 border border-transparent p-3 transition-colors duration-150 motion-reduce:transition-none",
+              // min-w-0 + overflow-hidden: a column keeps its quarter of the board whatever a card's longest word, so
+              // the page never scrolls sideways at 1024 (P4 / P7 responsive QA).
+              "bg-surface-subtle rounded-card flex min-h-64 min-w-0 flex-col gap-3 overflow-hidden border border-transparent p-3 transition-colors duration-150 motion-reduce:transition-none",
               over === stage && "border-primary/40 bg-primary-subtle",
             )}
           >

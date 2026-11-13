@@ -444,7 +444,9 @@ export function TaxReportDetail({ reportId }: { reportId: string }) {
                   label: t("difference"),
                   value: (
                     <span
-                      className={reconciled ? "text-success tabular-nums" : "text-danger font-semibold tabular-nums"}
+                      className={
+                        reconciled ? "text-success-subtle-fg tabular-nums" : "text-danger font-semibold tabular-nums"
+                      }
                     >
                       {format.thb(data.glDifference)}
                     </span>

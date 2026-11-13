@@ -113,7 +113,8 @@ export function VolumeLadder({
                     <span className="bg-bg-subtle inline-block h-3 w-12 animate-pulse rounded-sm align-middle" />
                   )}
                 </td>
-                <td className="text-success px-3.5 text-end tabular-nums">
+                {/* On the chosen row's tint the success green falls under 4.5:1; the deeper success ink keeps it readable. */}
+                <td className={cn("px-3.5 text-end tabular-nums", current ? "text-success-subtle-fg" : "text-success")}>
                   {saving(row) ?? <span className="text-muted">{t("none")}</span>}
                 </td>
               </tr>
@@ -167,7 +168,12 @@ export function VolumeLadder({
                   >
                     {price(row) ?? "—"}
                   </span>
-                  <small className={cn("text-xs", saving(row) ? "text-success" : "text-muted")}>
+                  <small
+                    className={cn(
+                      "text-xs",
+                      !saving(row) ? "text-muted" : current ? "text-success-subtle-fg" : "text-success",
+                    )}
+                  >
                     {saving(row) ?? t("start")}
                   </small>
                 </button>

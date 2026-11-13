@@ -39,7 +39,7 @@ export function DateField({ type = "date", display, className, value, defaultVal
         aria-hidden="true"
         className={cn(
           "pointer-events-none absolute inset-y-0 start-0 end-10 flex items-center truncate px-3 tabular-nums peer-focus:hidden",
-          empty ? "text-subtle" : "text-fg",
+          empty ? "text-muted" : "text-fg",
         )}
       >
         {display}

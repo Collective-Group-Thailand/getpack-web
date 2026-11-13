@@ -204,9 +204,10 @@ export function SearchSelect<T extends string = string>({
           sideOffset={4}
           collisionPadding={8}
           onOpenAutoFocus={(event) => {
-            // Focus the search box (or the list) instead of the first focusable thing.
+            // Focus the search box (or the list) instead of the first focusable thing — without scrolling: the content is
+            // focused before it is positioned, and scrolling to it there threw the page (and the list) out of view.
             event.preventDefault();
-            (listRef.current?.parentElement?.querySelector("input") ?? listRef.current)?.focus();
+            (listRef.current?.parentElement?.querySelector("input") ?? listRef.current)?.focus({ preventScroll: true });
           }}
           className={cn(
             POPOVER_SURFACE,

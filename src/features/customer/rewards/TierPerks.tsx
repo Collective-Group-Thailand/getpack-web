@@ -185,9 +185,9 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
             {t("top", { spend: format.thb(points.spend12m) })}
           </p>
         )}
-        <p className="text-subtle mt-0.5 text-[0.78125rem]">{pick(locale, points.spendBasisTh, points.spendBasisEn)}</p>
+        <p className="text-muted mt-0.5 text-[0.78125rem]">{pick(locale, points.spendBasisTh, points.spendBasisEn)}</p>
         {/[1-9]/.test(points.spendNotYetCounted) ? (
-          <p className="text-subtle mt-0.5 text-[0.78125rem]">
+          <p className="text-muted mt-0.5 text-[0.78125rem]">
             {t("notYetCounted", { amount: format.thb(points.spendNotYetCounted) })}
           </p>
         ) : null}
@@ -215,7 +215,7 @@ export function TierPerks({ points, loyalty, className }: TierPerksProps) {
                 </li>
               ))}
             </ul>
-            <p className="text-subtle mt-2.5 text-[0.78125rem]">
+            <p className="text-muted mt-2.5 text-[0.78125rem]">
               {t("cap", { value: shortMultiplier(loyalty.maxCombinedMultiplier) })}
             </p>
           </div>
